@@ -1,0 +1,229 @@
+{
+  "topbar": {
+    "delivery_info": "نوصل لك يومياً من الساعة 7:00 إلى 23:00"
+  },
+  "navbar": {
+    "search_placeholder": "ابحث عن المنتجات...",
+    "wishlist": "المفضلة",
+    "cart": "السلة",
+    "profile": "الملف الشخصي",
+    "orders": "طلباتي",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "announcement": {
+    "text": "توصيل مجاني وخصم 40% على الطلبات الثلاثة القادمة! اطلب طلبك الأول",
+    "countdown_label": "حتى نهاية العرض:",
+    "days": "يوم",
+    "hours": "ساعة",
+    "minutes": "دقيقة",
+    "seconds": "ثانية"
+  },
+  "categories": {
+    "title": "الفئات",
+    "all_categories": "جميع الفئات",
+    "fruits_vegetables": "الفواكه والخضروات",
+    "meats_seafood": "اللحوم والمأكولات البحرية",
+    "breakfast_dairy": "الإفطار ومنتجات الألبان",
+    "breads_bakery": "الخبز والمخبوزات",
+    "beverages": "المشروبات",
+    "frozen_foods": "الأطعمة المجمدة",
+    "biscuits_snacks": "البسكويت والوجبات الخفيفة",
+    "grocery_staples": "البقالة والأساسيات",
+    "household_needs": "احتياجات المنزل",
+    "healthcare": "الرعاية الصحية",
+    "baby_pregnancy": "الطفل والحمل"
+  },
+  "secondary_navbar": {
+    "home": "الرئيسية",
+    "shop": "المتجر",
+    "blog": "المدونة",
+    "contact": "اتصل بنا",
+    "trending_products": "المنتجات الرائجة",
+    "almost_finished": "أوشك على الانتهاء",
+    "sale": "تخفيض"
+  },
+  "secondary_nav": {
+    "home": "الرئيسية",
+    "shop": "المتجر",
+    "blog": "المدونة",
+    "contact": "اتصل بنا",
+    "trending_products": "المنتجات الرائجة",
+    "almost_finished": "أوشك على الانتهاء",
+    "sale": "تخفيض"
+  },
+  "new_arrivals": {
+    "title": "الوصول الحديث",
+    "subtitle": "اكتشف أحدث المنتجات الطازجة والعالية الجودة التي وصلت حديثاً إلى متجرنا",
+    "view_all": "عرض الكل",
+    "new": "جديد",
+    "bestseller": "الأكثر مبيعاً",
+    "currency": "ر.س",
+    "add_to_cart": "أضف للسلة"
+  },
+  "best_sellers": {
+    "title": "الأكثر مبيعاً",
+    "subtitle": "اكتشف المنتجات الأكثر شعبية والأعلى تقييماً من عملائنا",
+    "view_all": "عرض الكل",
+    "bestseller": "الأكثر مبيعاً",
+    "new": "جديد",
+    "currency": "ر.س",
+    "add_to_cart": "أضف للسلة",
+    "add_to_wishlist": "أضف للمفضلة",
+    "remove_from_wishlist": "إزالة من المفضلة"
+  },
+  "features": {
+    "payment_online": {
+      "title": "الدفع عبر الإنترنت فقط",
+      "description": "طرق دفع آمنة ومتنوعة عبر الإنترنت"
+    },
+    "new_stocks": {
+      "title": "مخزون جديد وتخفيضات",
+      "description": "منتجات جديدة وعروض حصرية يومياً"
+    },
+    "quality_assurance": {
+      "title": "ضمان الجودة",
+      "description": "منتجات عالية الجودة مع ضمان الرضا"
+    },
+    "fast_delivery": {
+      "title": "التوصيل خلال ساعة واحدة",
+      "description": "توصيل سريع وموثوق إلى باب منزلك"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "مرحباً بك مجدداً! قم بتسجيل الدخول للمتابعة",
+      "email": "البريد الإلكتروني",
+      "email_placeholder": "أدخل بريدك الإلكتروني",
+      "password": "كلمة المرور",
+      "password_placeholder": "أدخل كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "no_account": "ليس لديك حساب؟",
+      "signup": "إنشاء حساب"
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "subtitle": "أنشئ حسابك للوصول إلى جميع المميزات",
+      "name": "الاسم الكامل",
+      "name_placeholder": "أدخل اسمك الكامل",
+      "email": "البريد الإلكتروني",
+      "email_placeholder": "أدخل بريدك الإلكتروني",
+      "password": "كلمة المرور",
+      "password_placeholder": "أدخل كلمة المرور",
+      "confirm_password": "تأكيد كلمة المرور",
+      "confirm_password_placeholder": "أعد إدخال كلمة المرور",
+      "submit": "إنشاء حساب",
+      "have_account": "لديك حساب بالفعل؟",
+      "signin": "تسجيل الدخول"
+    }
+  },
+  "product_detail": {
+    "home": "الرئيسية",
+    "order_whatsapp": "اطلب عبر الواتساب",
+    "special_offer": "عرض خاص",
+    "offer_text": "يتبقى حتى انتهاء العرض",
+    "add_to_cart": "أضف للسلة",
+    "buy_now": "اشتري الآن",
+    "add_to_wishlist": "أضف للمفضلة",
+    "remove_from_wishlist": "إزالة من المفضلة",
+    "share": "شارك هذا المنتج",
+    "compare": "قارن",
+    "payment": "الدفع",
+    "payment_desc": "الدفع عند استلام البضائع، الدفع بالبطاقة في القسم، جوجل باي، البطاقة الإلكترونية، خصم 5% في حالة الدفع",
+    "warranty": "الضمان",
+    "warranty_desc": "قانون حماية المستهلك لا ينص على إرجاع هذا المنتج ذو الجودة المناسبة",
+    "reviews": "تقييم",
+    "sku": "رقم المنتج",
+    "new": "جديد",
+    "organic": "عضوي",
+    "fresh": "طازج",
+    "handmade": "صنع يدوي",
+    "best_seller": "الأكثر مبيعاً",
+    "sale": "تخفيض",
+    "premium": "فاخر",
+    "natural": "طبيعي",
+    "pure": "نقي",
+    "healthy": "صحي",
+    "currency": "ر.س"
+  },
+  "related_products": {
+    "title": "منتجات مشابهة",
+    "subtitle": "اكتشف المزيد من المنتجات من نفس الفئة",
+    "view_all": "عرض الكل",
+    "add_to_cart": "أضف للسلة",
+    "currency": "ر.س"
+  },
+  "shop": {
+    "only_this_week": "هذا الأسبوع فقط",
+    "hero_title": "متجر بقالة بكنوز مختلفة",
+    "hero_subtitle": "لقد أعددنا خصومات خاصة لك على منتجات البقالة...",
+    "shop_now": "تسوق الآن",
+    "filters": "الفلاتر",
+    "clear_filters": "مسح الفلاتر",
+    "price_filter": "فلتر الأسعار",
+    "min_price": "أقل سعر",
+    "max_price": "أعلى سعر",
+    "price": "السعر",
+    "filter": "فلتر",
+    "product_categories": "فئات المنتجات",
+    "filter_by_color": "فلتر حسب اللون",
+    "filter_by_brands": "فلتر حسب العلامة التجارية",
+    "product_status": "حالة المنتج",
+    "in_stock": "متوفر",
+    "on_sale": "في التخفيضات",
+    "showing_results": "عرض {{start}}-{{end}} من {{total}} نتيجة",
+    "sort": "ترتيب",
+    "sort_by_latest": "ترتيب حسب الأحدث",
+    "sort_by_price_low": "ترتيب حسب السعر: من الأقل للأعلى",
+    "sort_by_price_high": "ترتيب حسب السعر: من الأعلى للأقل",
+    "sort_by_name": "ترتيب حسب الاسم",
+    "show": "عرض",
+    "items": "عنصر",
+    "quick_view": "عرض سريع",
+    "compare": "مقارنة",
+    "add_to_cart": "أضف للسلة",
+    "currency": "ر.س",
+    "colors": {
+      "green": "أخضر",
+      "red": "أحمر",
+      "yellow": "أصفر",
+      "orange": "برتقالي",
+      "blue": "أزرق",
+      "purple": "بنفسجي"
+    },
+    "brands": {
+      "organic": "عضوي",
+      "fresh": "طازج",
+      "premium": "فاخر",
+      "natural": "طبيعي",
+      "handmade": "صنع يدوي",
+      "healthy": "صحي",
+      "ready": "جاهز",
+      "crispy": "مقرمش",
+      "extra virgin": "بكر ممتاز",
+      "concentrated": "مركز",
+      "soft": "ناعم",
+      "antibacterial": "مضاد للبكتيريا",
+      "complete": "كاملة",
+      "ultra soft": "ناعم جداً",
+      "nutritious": "مغذي",
+      "gentle": "لطيف"
+    },
+    "no_products_title": "لم يتم العثور على منتجات في هذه الفئة",
+    "no_products_description": "جرب البحث في فئة أخرى أو تصفح جميع المنتجات",
+    "browse_all_products": "تصفح جميع المنتجات"
+  },
+  "wishlist": {
+    "items_count": "{{count}} عنصر في قائمة المفضلة",
+    "remove": "إزالة من المفضلة",
+    "empty_title": "قائمة المفضلة فارغة",
+    "empty_description": "ابدأ بإضافة المنتجات التي تحبها إلى قائمة المفضلة",
+    "continue_shopping": "متابعة التسوق",
+    "add_to_cart": "أضف للسلة",
+    "add_to_wishlist": "أضف للمفضلة",
+    "remove_from_wishlist": "إزالة من المفضلة",
+    "added_to_wishlist": "تم إضافته للمفضلة!",
+    "removed_from_wishlist": "تم إزالته من المفضلة!"
+  }
+} 

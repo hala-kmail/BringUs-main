@@ -1,0 +1,403 @@
+.related-products {
+  padding: 3rem 0;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 2rem;
+}
+
+.related-products-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Section Header */
+.related-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.related-section-header-title {
+  flex: 1;
+}
+
+.related-section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.related-section-subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.related-view-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #634C9F;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #634C9F;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.related-view-all-btn:hover {
+  background-color: #634C9F;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.related-view-all-btn svg {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.related-view-all-btn:hover svg {
+  transform: translateX(2px);
+}
+
+/* Products Grid */
+.related-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Product Card */
+.related-product-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.related-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #634C9F;
+}
+
+/* Product Image */
+.related-product-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f9fafb;
+  flex-shrink: 0;
+}
+
+.related-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.related-product-card:hover .related-product-image img {
+  transform: scale(1.05);
+}
+
+/* Wishlist Heart Icon - Simple and Clean */
+.wishlist-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.wishlist-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+[dir="rtl"] .wishlist-btn {
+  right: auto;
+  left: 15px;
+}
+
+/* Product Badges */
+.related-product-badges {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.related-product-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.related-product-discount-badge {
+  background: #ef4444;
+  color: white;
+}
+
+/* Feature Badge */
+.related-feature-badge {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #374151;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Product Info */
+.related-product-info {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.related-product-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  font-family: 'Tajawal', sans-serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+/* Product Price */
+.related-product-price {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.related-current-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.related-original-price {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+/* Add to Cart Button */
+.related-add-to-cart-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Tajawal', sans-serif;
+  margin-top: auto;
+}
+
+.related-add-to-cart-btn:hover {
+  background: #634C9F;
+  transform: translateY(-1px);
+}
+
+.related-add-to-cart-btn svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* RTL Support */
+[dir="rtl"] .related-section-header {
+  direction: rtl;
+}
+
+[dir="rtl"] .related-view-all-btn svg {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .related-view-all-btn:hover svg {
+  transform: scaleX(-1) translateX(2px);
+}
+
+[dir="rtl"] .related-product-badges {
+  left: auto;
+  right: 0.75rem;
+}
+
+[dir="rtl"] .related-feature-badge {
+  left: auto;
+  right: 0.75rem;
+}
+
+/* Desktop - ensure button text is visible */
+@media (min-width: 769px) {
+  .related-add-to-cart-btn .button-text {
+    display: inline !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .related-products {
+    padding: 2rem 0;
+  }
+
+  .related-products-container {
+    padding: 0 0.75rem;
+  }
+
+  .related-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .related-section-title {
+    font-size: 1.5rem;
+  }
+
+  .related-section-subtitle {
+    display: none;
+  }
+
+  .related-view-all-btn {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .related-products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .related-product-image {
+    height: 150px;
+  }
+
+  .related-product-info {
+    padding: 0.75rem;
+  }
+
+  .related-product-name {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .related-current-price {
+    font-size: 0.875rem;
+  }
+
+  .related-original-price {
+    font-size: 0.75rem;
+  }
+
+  .related-add-to-cart-btn {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .related-add-to-cart-btn svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* إخفاء النص على الموبايل */
+  .related-add-to-cart-btn span,
+  .related-add-to-cart-btn .button-text {
+    display: none;
+  }
+
+  /* تصغير زر المفضلة على الموبايل */
+  .wishlist-btn {
+    width: 32px;
+    height: 32px;
+    top: 8px;
+    right: 8px;
+  }
+
+  [dir="rtl"] .wishlist-btn {
+    right: auto;
+    left: 8px;
+  }
+
+  .wishlist-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .related-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .related-product-image {
+    height: 120px;
+  }
+
+  .related-section-title {
+    font-size: 1.25rem;
+  }
+
+  .related-section-subtitle {
+    font-size: 0.875rem;
+  }
+} 

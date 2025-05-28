@@ -1,0 +1,73 @@
+#root {
+  width: 100%;
+  padding: 0;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.App {
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content {
+  padding-top: 60px; /* Height of the announcement bar */
+  min-height: 100vh;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 50px; /* Reduced for mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding-top: 45px; /* Further reduced for small screens */
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .App {
+  text-align: right;
+}
+
+[dir="ltr"] .App {
+  text-align: left;
+}

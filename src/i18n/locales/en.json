@@ -1,0 +1,227 @@
+{
+  "topbar": {
+    "delivery_info": "We deliver to you every day from 7:00 to 23:00"
+  },
+  "navbar": {
+    "search_placeholder": "Search products...",
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "profile": "Profile",
+    "orders": "My Orders",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "announcement": {
+    "text": "FREE delivery & 40% Discount for next 3 orders! Place your 1st order in",
+    "countdown_label": "Until the end of the sale:",
+    "days": "days",
+    "hours": "hours",
+    "minutes": "minutes",
+    "seconds": "sec"
+  },
+  "categories": {
+    "title": "Categories",
+    "all_categories": "All Categories",
+    "fruits_vegetables": "Fruits & Vegetables",
+    "meats_seafood": "Meats & Seafood",
+    "breakfast_dairy": "Breakfast & Dairy",
+    "breads_bakery": "Breads & Bakery",
+    "beverages": "Beverages",
+    "frozen_foods": "Frozen Foods",
+    "biscuits_snacks": "Biscuits & Snacks",
+    "grocery_staples": "Grocery & Staples",
+    "household_needs": "Household Needs",
+    "healthcare": "Healthcare",
+    "baby_pregnancy": "Baby & Pregnancy"
+  },
+  "secondary_navbar": {
+    "home": "Home",
+    "shop": "Shop",
+    "blog": "Blog",
+    "contact": "Contact Us",
+    "trending_products": "Trending Products",
+    "almost_finished": "Almost Finished",
+    "sale": "Sale"
+  },
+  "secondary_nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "blog": "Blog",
+    "contact": "Contact Us",
+    "trending_products": "Trending Products",
+    "almost_finished": "Almost Finished",
+    "sale": "Sale"
+  },
+  "new_arrivals": {
+    "title": "New Arrivals",
+    "subtitle": "Discover the latest fresh and high-quality products that have recently arrived at our store",
+    "view_all": "View All",
+    "new": "New",
+    "bestseller": "Best Seller",
+    "currency": "SAR",
+    "add_to_cart": "Add to Cart"
+  },
+  "best_sellers": {
+    "title": "Best Sellers",
+    "subtitle": "Discover the most popular and highest-rated products from our customers",
+    "view_all": "View All",
+    "bestseller": "Best Seller",
+    "new": "New",
+    "currency": "SAR",
+    "add_to_cart": "Add to Cart",
+    "add_to_wishlist": "Add to Wishlist",
+    "remove_from_wishlist": "Remove from Wishlist"
+  },
+  "features": {
+    "payment_online": {
+      "title": "Payment only online",
+      "description": "Secure and diverse online payment methods"
+    },
+    "new_stocks": {
+      "title": "New stocks and sales",
+      "description": "New products and exclusive offers daily"
+    },
+    "quality_assurance": {
+      "title": "Quality assurance",
+      "description": "High-quality products with satisfaction guarantee"
+    },
+    "fast_delivery": {
+      "title": "Delivery from 1 hour",
+      "description": "Fast and reliable delivery to your doorstep"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "subtitle": "Welcome back! Sign in to continue",
+      "email": "Email",
+      "email_placeholder": "Enter your email",
+      "password": "Password",
+      "password_placeholder": "Enter your password",
+      "submit": "Sign In",
+      "no_account": "Don't have an account?",
+      "signup": "Sign Up"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Create your account to access all features",
+      "name": "Full Name",
+      "name_placeholder": "Enter your full name",
+      "email": "Email",
+      "email_placeholder": "Enter your email",
+      "password": "Password",
+      "password_placeholder": "Enter your password",
+      "confirm_password": "Confirm Password",
+      "confirm_password_placeholder": "Re-enter your password",
+      "submit": "Create Account",
+      "have_account": "Already have an account?",
+      "signin": "Sign In"
+    }
+  },
+  "product_detail": {
+    "home": "Home",
+    "order_whatsapp": "Order on WhatsApp",
+    "special_offer": "Special Offer",
+    "offer_text": "Remains until the end of the offer",
+    "add_to_cart": "Add to cart",
+    "buy_now": "Buy Now",
+    "add_to_wishlist": "Add to wishlist",
+    "remove_from_wishlist": "Remove from wishlist",
+    "share": "Share this Product",
+    "compare": "Compare",
+    "payment": "Payment",
+    "payment_desc": "Payment upon receipt of goods, Payment by card in the department, Google Pay, Online card, -5% discount in case of payment",
+    "warranty": "Warranty",
+    "warranty_desc": "The Consumer Protection Act does not provide for the return of this product of proper quality",
+    "reviews": "reviews",
+    "sku": "SKU",
+    "new": "New",
+    "organic": "Organic",
+    "fresh": "Fresh",
+    "handmade": "Handmade",
+    "best_seller": "Best Seller",
+    "sale": "Sale",
+    "premium": "Premium",
+    "natural": "Natural",
+    "pure": "Pure",
+    "healthy": "Healthy",
+    "currency": "SAR"
+  },
+  "related_products": {
+    "title": "Related Products",
+    "subtitle": "Discover more products from the same category",
+    "view_all": "View All",
+    "add_to_cart": "Add to Cart",
+    "currency": "SAR"
+  },
+  "shop": {
+    "only_this_week": "Only This Week",
+    "hero_title": "Quality Groceries at Your Doorstep",
+    "hero_subtitle": "Fresh, organic, and locally sourced products delivered fast",
+    "shop_now": "Shop Now",
+    "filters": "Filters",
+    "clear_filters": "Clear All",
+    "price_filter": "Filter by Price",
+    "min_price": "Min",
+    "max_price": "Max",
+    "price": "Price",
+    "filter": "Filter",
+    "product_categories": "Product Categories",
+    "filter_by_color": "Filter by Color",
+    "filter_by_brands": "Filter by Brands",
+    "product_status": "Product Status",
+    "in_stock": "In Stock",
+    "on_sale": "On Sale",
+    "sort": "Sort by",
+    "sort_by_latest": "Latest",
+    "sort_by_price_low": "Price: Low to High",
+    "sort_by_price_high": "Price: High to Low",
+    "sort_by_name": "Name",
+    "show": "Show",
+    "items": "items",
+    "quick_view": "Quick View",
+    "add_to_cart": "Add to Cart",
+    "add_to_wishlist": "Add to Wishlist",
+    "remove_from_wishlist": "Remove from Wishlist",
+    "added_to_wishlist": "Added to wishlist!",
+    "removed_from_wishlist": "Removed from wishlist!",
+    "showing_results": "Showing {{start}}–{{end}} of {{total}} results",
+    "currency": "SAR",
+    "colors": {
+      "red": "Red",
+      "green": "Green",
+      "yellow": "Yellow",
+      "orange": "Orange",
+      "blue": "Blue",
+      "purple": "Purple"
+    },
+    "brands": {
+      "organic": "Organic",
+      "fresh": "Fresh",
+      "premium": "Premium",
+      "natural": "Natural",
+      "handmade": "Handmade",
+      "healthy": "Healthy",
+      "ready": "Ready",
+      "crispy": "Crispy",
+      "extra virgin": "Extra Virgin",
+      "concentrated": "Concentrated",
+      "soft": "Soft",
+      "antibacterial": "Antibacterial",
+      "complete": "Complete",
+      "ultra soft": "Ultra Soft",
+      "nutritious": "Nutritious",
+      "gentle": "Gentle"
+    },
+    "no_products_title": "No products found in this category",
+    "no_products_description": "Try searching in another category or browse all products",
+    "browse_all_products": "Browse All Products"
+  },
+  "wishlist": {
+    "items_count": "{{count}} items in your wishlist",
+    "remove": "Remove from wishlist",
+    "empty_title": "Your wishlist is empty",
+    "empty_description": "Start adding products you love to your wishlist",
+    "continue_shopping": "Continue Shopping"
+  }
+} 

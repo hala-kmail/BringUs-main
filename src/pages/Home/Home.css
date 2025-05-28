@@ -1,0 +1,31 @@
+.home {
+  min-height: 100vh;
+  background-color: #ffffff;
+  width: 100%;
+}
+
+.home-content {
+  width: 100%;
+  padding: 0;
+}
+
+.home-content > *:not(.carousel-container) {
+  max-width: 85%;
+  margin: 1rem auto;
+  padding: 1rem;
+}
+
+/* Responsive adjustments for home content */
+@media (max-width: 768px) {
+  .home-content > *:not(.carousel-container) {
+    padding: 0 0.75rem;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-content > *:not(.carousel-container) {
+    padding: 0 0.5rem;
+    max-width: 100%;
+  }
+} 
