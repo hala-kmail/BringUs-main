@@ -857,16 +857,6 @@ const Shop = () => {
                       <h3 className="product-name">{product.name[currentLang]}</h3>
                     </Link>
                     
-                    {/* Rating */}
-                    <div className="product-rating">
-                      <div className="stars">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span key={star} className="star">★</span>
-                        ))}
-                      </div>
-                      <span className="rating-count">(3)</span>
-                    </div>
-
                     {/* Price */}
                     <div className="product-price">
                       {product.discountPrice ? (

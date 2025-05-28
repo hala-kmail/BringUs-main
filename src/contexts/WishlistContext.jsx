@@ -125,6 +125,7 @@ export const WishlistProvider = ({ children }) => {
 
   const value = {
     items: state.items,
+    wishlist: state.items,
     count: state.count,
     addToWishlist,
     removeFromWishlist,

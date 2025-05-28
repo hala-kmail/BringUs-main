@@ -99,6 +99,22 @@
   background: rgba(99, 76, 159, 0.1);
 }
 
+/* خيار "الكل" - ستايل خاص */
+.category-item:first-child {
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.category-item:first-child.active {
+  background: rgba(99, 76, 159, 0.15);
+}
+
+.category-item:first-child .category-name {
+  font-weight: 700;
+  color: #634C9F;
+}
+
 .category-item.active::before {
   content: '';
   position: absolute;
@@ -129,15 +145,15 @@
   font-weight: 600;
 }
 
-/* Products Section */
-.products-section {
+/* Subcategories Section */
+.subcategories-section {
   flex: 1;
   padding: 1rem;
   overflow-y: auto;
 }
 
 .section-header {
-    flex-direction: row;
+  flex-direction: row;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -159,7 +175,7 @@
   background: none;
   border: none;
   color: #634C9F;
-  font-size: 0.875rem;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: color 0.3s ease;
@@ -175,230 +191,225 @@
   height: 16px;
 }
 
-/* Products Grid */
-.products-grid {
+/* Subcategories Grid */
+.subcategories-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
-/* Mobile version - 2 columns */
-@media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.subcategory-item {
   
-  .product-image {
-    height: 140px; /* ارتفاع متوسط للتابلت */
-  }
-}
-
-/* For smaller tablets */
-@media (max-width: 640px) {
-  .product-image {
-    height: 120px; /* ارتفاع أصغر للشاشات الصغيرة */
-  }
-}
-
-.product-item {
-  background: white;
   border-radius: 12px;
-  overflow: hidden;
+  padding: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
 }
 
-.product-item:hover {
+.subcategory-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(99, 76, 159, 0.15);
+  border-color: #634C9F;
 }
 
-.product-image {
-  position: relative;
-  width: 100%;
-  height: 200px; /* ارتفاع مناسب لسطح المكتب */
+.subcategory-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   overflow: hidden;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
 }
 
-.product-image img {
+.subcategory-item:hover .subcategory-image {
+  border-color: #634C9F;
+}
+
+.subcategory-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.product-item:hover .product-image img {
-  transform: scale(1.05);
-}
-
-/* Wishlist Button */
-.wishlist-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 10;
-  backdrop-filter: blur(4px);
-}
-
-[dir="rtl"] .wishlist-btn {
-  right: auto;
-  left: 8px;
-}
-
-.wishlist-btn:hover {
-  background: white;
+.subcategory-item:hover .subcategory-img {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.wishlist-btn svg {
-  transition: all 0.3s ease;
+.subcategory-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-.discount-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: #ef4444;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-[dir="rtl"] .discount-badge {
-  left: auto;
-  right: 8px;
-}
-
-.product-info {
-  padding: 0.75rem;
-}
-
-.product-name {
+.subcategory-name {
   font-size: 0.875rem;
   font-weight: 600;
   color: #1f2937;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
+  font-family: 'Tajawal', sans-serif;
   line-height: 1.3;
-  font-family: 'Tajawal', sans-serif;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-.product-price {
+.subcategory-arrow {
+  font-size: 1rem;
+  color: #634C9F;
+  transition: transform 0.3s ease;
+}
+
+/* انعكاس السهم في اللغة العربية */
+[dir="rtl"] .subcategory-arrow {
+  transform: scaleX(-1);
+}
+
+.subcategory-item:hover .subcategory-arrow {
+  transform: translateX(4px);
+}
+
+[dir="rtl"] .subcategory-item:hover .subcategory-arrow {
+  transform: translateX(-4px) scaleX(-1);
+}
+
+.no-subcategories {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.current-price {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #ef4444;
-  font-family: 'Tajawal', sans-serif;
-}
-
-.original-price {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  text-decoration: line-through;
-  font-family: 'Tajawal', sans-serif;
-}
-
-/* No Products */
-.no-products {
+  justify-content: center;
+  padding: 2rem;
   text-align: center;
-  padding: 3rem 1rem;
-  color: #6b7280;
 }
 
-.no-products-icon {
+.no-subcategories-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
 }
 
-.no-products h3 {
+.no-subcategories h3 {
   font-size: 1.125rem;
-  font-weight: 600;
   color: #374151;
-  margin: 0 0 0.5rem 0;
+  margin-bottom: 0.5rem;
   font-family: 'Tajawal', sans-serif;
 }
 
-.no-products p {
+.no-subcategories p {
   font-size: 0.875rem;
+  color: #6b7280;
   margin: 0;
 }
 
-/* Responsive Design */
+/* Mobile version - 2 columns */
+@media (max-width: 768px) {
+  .subcategories-grid {
+    grid-template-columns: repeat(3 1fr);
+  }
+  
+  .subcategory-image {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .subcategory-name {
+    font-size: 0.8rem;
+  }
+
+  /* إخفاء الأسهم على الهاتف */
+  .subcategory-arrow {
+    display: none;
+  }
+
+  .subcategory-item {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 480px) {
-  .categories-sidebar {
-    width: 100px;
+  .mobile-categories-page {
+    padding: 0.5rem;
   }
-  
-  .category-item {
-    padding: 0.75rem 0.25rem;
-    min-height: 50px;
-  }
-  
-  .category-name {
-    font-size: 0.75rem;
-  }
-  
-  .products-section {
+
+  .mobile-categories-header {
     padding: 0.75rem;
   }
-  
-  .section-title {
+
+  .page-title {
     font-size: 1rem;
   }
-  
+
+  .categories-sidebar {
+    width: 80px;
+  }
+
+  .category-item {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .category-name {
+    font-size: 0.6rem;
+  }
+
+  .subcategories-section {
+    padding: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 10px;
+  }
+
+  .subcategory-image {
+    width: 50px;
+    height: 50px;
+  }
+
+  .subcategory-item {
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .subcategory-name {
+    font-size: 9px;
+  }
+
+  /* إخفاء الأسهم على الهاتف */
+  .subcategory-arrow {
+    display: none;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+
   .product-image {
-    height: 100px;
+    height: 135px;
   }
-  
+
   .product-info {
-    padding: 0.75rem;
+    padding: 0.4rem;
   }
-  
+
   .product-name {
-    font-size: 0.875rem;
+    font-size: 0.65rem;
   }
-  
+
   .current-price {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
-  
-  /* تحسين أيقونة المفضلة للأجهزة الصغيرة */
-  .wishlist-btn {
-    width: 28px;
-    height: 28px;
-    top: 6px;
-    right: 6px;
+
+  .original-price {
+    font-size: 0.6rem;
   }
-  
-  [dir="rtl"] .wishlist-btn {
-    right: auto;
-    left: 6px;
-  }
-  
-  .wishlist-btn svg {
-    width: 16px;
-    height: 16px;
+
+  .add-to-cart-btn {
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -406,21 +417,30 @@
   .categories-sidebar {
     width: 90px;
   }
-  
+
   .category-item {
-    padding: 0.5rem 0.125rem;
-    min-height: 45px;
+    padding: 0.5rem 0.25rem;
   }
-  
+
   .category-name {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
-  
-  .products-grid {
-    gap: 0.75rem;
+
+  .subcategories-grid {
+    gap: 0.5rem;
   }
-  
-  .product-image {
-    height: 90px;
+
+  .subcategory-image {
+    width: 35px;
+    height: 35px;
+  }
+
+  .subcategory-item {
+    padding: 0.4rem;
+    gap: 0.3rem;
+  }
+
+  .subcategory-name {
+    font-size: 10px;
   }
 } 

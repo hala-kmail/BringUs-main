@@ -2,15 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
-import { allProducts, categories, getProductsByCategory } from '../../data/index';
+import { 
+  allProducts, 
+  categories, 
+  subcategories, 
+  getProductsByCategory, 
+  getSubcategoriesByCategory,
+  getProductsBySubcategory 
+} from '../../data/index';
 import './MobileCategories.css';
 
 const MobileCategories = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [categoryProducts, setCategoryProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [categorySubcategories, setCategorySubcategories] = useState([]);
 
   const currentLang = i18n.language;
 
@@ -29,9 +36,41 @@ const MobileCategories = () => {
     11: 'baby-pregnancy'
   };
 
+  // Subcategory mapping for URL slugs to IDs
+  const subcategorySlugMapping = {
+    1: 'fresh-fruits',
+    2: 'fresh-vegetables',
+    3: 'fresh-meat',
+    4: 'seafood',
+    5: 'dairy-products',
+    6: 'breakfast-items',
+    7: 'fresh-bread',
+    8: 'pastries',
+    9: 'hot-beverages',
+    10: 'cold-beverages',
+    11: 'frozen-meals',
+    12: 'frozen-desserts',
+    13: 'cookies-biscuits',
+    14: 'nuts-snacks',
+    15: 'cooking-essentials',
+    16: 'grains-rice',
+    17: 'cleaning-supplies',
+    18: 'paper-products',
+    19: 'vitamins-supplements',
+    20: 'personal-care',
+    21: 'baby-care',
+    22: 'baby-food'
+  };
+
   // دالة للتحقق من وجود منتجات في فئة
   const hasProductsInCategory = (categoryId) => {
     const products = getProductsByCategory(categoryId);
+    return products.length > 0;
+  };
+
+  // دالة للتحقق من وجود منتجات في فئة فرعية معينة
+  const hasProductsInSubcategory = (subcategoryId) => {
+    const products = getProductsBySubcategory(subcategoryId);
     return products.length > 0;
   };
 
@@ -40,42 +79,74 @@ const MobileCategories = () => {
     return categories.filter(category => hasProductsInCategory(category.id));
   };
 
-  // دالة لجلب منتجات فئة معينة
-  const getCategoryProducts = (categoryId) => {
-    const products = getProductsByCategory(categoryId);
-    return products.slice(0, 12); // أول 12 منتج فقط
+  // دالة لجلب الفئات الفرعية لفئة معينة
+  const getCategorySubcategories = (categoryId) => {
+    const subCategories = getSubcategoriesByCategory(categoryId);
+    // تصفية الفئات الفرعية لإظهار فقط التي تحتوي على منتجات
+    return subCategories.filter(subcategory => hasProductsInSubcategory(subcategory.id));
   };
 
-  // تحديد الفئة الأولى كافتراضية
+  // دالة لجلب جميع الفئات الفرعية من جميع الفئات
+  const getAllSubcategories = () => {
+    // جلب جميع الفئات الفرعية وتصفيتها لإظهار فقط التي تحتوي على منتجات
+    return subcategories.filter(subcategory => hasProductsInSubcategory(subcategory.id));
+  };
+
+  // تحديد خيار "الكل" كافتراضي
   useEffect(() => {
-    const filteredCategories = getFilteredCategories();
-    if (filteredCategories.length > 0 && !selectedCategory) {
-      const firstCategory = filteredCategories[0];
-      setSelectedCategory(firstCategory.id);
-      setCategoryProducts(getCategoryProducts(firstCategory.id));
+    if (selectedCategory === 'all') {
+      setCategorySubcategories(getAllSubcategories());
     }
   }, []);
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
-    setCategoryProducts(getCategoryProducts(categoryId));
-  };
-
-  const handleCategoryClick = (categoryId) => {
-    const categorySlug = categorySlugMapping[categoryId];
-    if (categorySlug) {
-      navigate(`/category/${categorySlug}`);
+    if (categoryId === 'all') {
+      setCategorySubcategories(getAllSubcategories());
+    } else {
+      setCategorySubcategories(getCategorySubcategories(categoryId));
     }
   };
 
-  const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
+  const handleCategoryClick = (categoryId) => {
+    if (categoryId === 'all') {
+      navigate('/shop'); // الانتقال لصفحة المتجر عند النقر على "عرض الكل"
+    } else {
+      const categorySlug = categorySlugMapping[categoryId];
+      if (categorySlug) {
+        navigate(`/category/${categorySlug}`);
+      }
+    }
   };
 
-  const handleAddToCart = (product, e) => {
-    e.stopPropagation();
-    console.log('Added to cart:', product);
-    // Add your cart logic here
+  const handleSubcategoryClick = (subcategoryId) => {
+    // البحث عن الفئة الرئيسية للفئة الفرعية
+    const subcategory = subcategories.find(sub => sub.id === subcategoryId);
+    if (subcategory) {
+      const mainCategorySlug = categorySlugMapping[subcategory.categoryId];
+      const subcategorySlug = subcategorySlugMapping[subcategoryId];
+      
+      if (mainCategorySlug && subcategorySlug) {
+        navigate(`/category/${mainCategorySlug}/${subcategorySlug}`);
+      }
+    }
+  };
+
+  // دالة للحصول على اسم القسم المحدد
+  const getSelectedCategoryName = () => {
+    if (selectedCategory === 'all') {
+      return t('categories.all_categories');
+    }
+    const filteredCategories = getFilteredCategories();
+    return filteredCategories.find(cat => cat.id === selectedCategory)?.name[currentLang];
+  };
+
+  // دالة للحصول على نص الزر "عرض الكل"
+  const getViewAllText = () => {
+    if (selectedCategory === 'all') {
+      return t('shop.browse_all_products');
+    }
+    return t('new_arrivals.view_all');
   };
 
   const filteredCategories = getFilteredCategories();
@@ -100,6 +171,15 @@ const MobileCategories = () => {
       <div className="mobile-categories-content">
         {/* Categories Sidebar */}
         <div className="categories-sidebar">
+          {/* خيار الكل */}
+          <button
+            className={`category-item ${selectedCategory === 'all' ? 'active' : ''}`}
+            onClick={() => handleCategorySelect('all')}
+          >
+            <span className="category-name">{t('categories.all_categories')}</span>
+          </button>
+          
+          {/* باقي الفئات */}
           {filteredCategories.map((category) => (
             <button
               key={category.id}
@@ -111,93 +191,51 @@ const MobileCategories = () => {
           ))}
         </div>
 
-        {/* Products Grid */}
-        <div className="products-section">
-          {selectedCategory && (
-            <>
-              <div className="section-header">
-                <h2 className="section-title">
-                  {filteredCategories.find(cat => cat.id === selectedCategory)?.name[currentLang]}
-                </h2>
-                <button 
-                  className="view-all-btn"
-                  onClick={() => handleCategoryClick(selectedCategory)}
-                >
-                  {t('new_arrivals.view_all')}
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={currentLang === 'ar' ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
-                  </svg>
-                </button>
-              </div>
+        {/* Subcategories Grid */}
+        <div className="subcategories-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              {getSelectedCategoryName()}
+            </h2>
+            <button 
+              className="view-all-btn"
+              onClick={() => handleCategoryClick(selectedCategory)}
+            >
+              {getViewAllText()}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={currentLang === 'ar' ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
+              </svg>
+            </button>
+          </div>
 
-              <div className="products-grid">
-                {categoryProducts.map((product) => (
-                  <div 
-                    key={product.id} 
-                    className="product-item"
-                  >
-                    <div className="product-image">
-                      <Link to={`/product/${product.id}`}>
-                        <img src={product.image} alt={product.name[currentLang]} />
-                      </Link>
-                      
-                      {/* Wishlist Heart Icon */}
-                      <div 
-                        className="wishlist-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist(product);
-                        }}
-                      >
-                        <svg 
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24" 
-                          fill={isInWishlist(product.id) ? '#ef4444' : 'none'}
-                          stroke={isInWishlist(product.id) ? '#ef4444' : '#6b7280'}
-                          strokeWidth="2"
-                        >
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                      </div>
-                      
-                      {product.discountPercentage && (
-                        <div className="discount-badge">
-                          -{product.discountPercentage}%
-                        </div>
-                      )}
-                    </div>
-                    <div className="product-info" onClick={() => handleProductClick(product.id)}>
-                      <h3 className="product-name">{product.name[currentLang]}</h3>
-                      <div className="product-price">
-                        {product.discountPrice ? (
-                          <>
-                            <span className="current-price">
-                              {product.discountPrice.toFixed(2)} {t('shop.currency')}
-                            </span>
-                            <span className="original-price">
-                              {product.originalPrice.toFixed(2)}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="current-price">
-                            {product.originalPrice.toFixed(2)} {t('shop.currency')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {categoryProducts.length === 0 && (
-                <div className="no-products">
-                  <div className="no-products-icon">📦</div>
-                  <h3>{t('shop.no_products_title')}</h3>
-                  <p>{t('shop.no_products_description')}</p>
+          <div className="subcategories-grid">
+            {categorySubcategories.map((subcategory) => (
+              <div 
+                key={subcategory.id} 
+                className="subcategory-item"
+                onClick={() => handleSubcategoryClick(subcategory.id)}
+              >
+                <div className="subcategory-image">
+                  <img 
+                    src={subcategory.image} 
+                    alt={subcategory.name[currentLang]}
+                    className="subcategory-img"
+                  />
                 </div>
-              )}
-            </>
+                <div className="subcategory-info">
+                  <h3 className="subcategory-name">{subcategory.name[currentLang]}</h3>
+                  <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {categorySubcategories.length === 0 && (
+            <div className="no-subcategories">
+              <div className="no-subcategories-icon">📂</div>
+              <h3>{t('shop.no_products_title')}</h3>
+              <p>{t('shop.no_products_description')}</p>
+            </div>
           )}
         </div>
       </div>

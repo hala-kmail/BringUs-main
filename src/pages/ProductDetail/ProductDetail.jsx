@@ -187,23 +187,6 @@ const ProductDetail = () => {
 
             <h1 className="product-title">{product.name[currentLang]}</h1>
 
-            {/* Rating */}
-            <div className="product-detail-rating">
-              <div className="product-rating-stars">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={star <= product.rating ? 'product-rating-star star-filled' : 'product-rating-star'}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-              <span className="product-rating-text">{product.rating}</span>
-              <span className="product-review-count">({product.reviewCount} {t('product_detail.reviews')})</span>
-              <span className="product-sku">{t('product_detail.sku')}: {product.sku}</span>
-            </div>
-
             <p className="product-description">{product.description[currentLang]}</p>
 
             {/* Price */}

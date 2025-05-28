@@ -99,14 +99,14 @@
 
 .subcategory-card {
   background: white;
-  border: 2px solid #e5e7eb;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   text-align: left;
 }
 
@@ -118,6 +118,29 @@
   border-color: #634C9F;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(99, 76, 159, 0.15);
+}
+
+.subcategory-image {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+}
+
+.subcategory-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.subcategory-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .subcategory-card h4 {
@@ -376,6 +399,10 @@
   flex-direction: column;
 }
 
+.product-link:hover .product-name {
+  color: #634C9F;
+}
+
 .product-name {
   font-size: 1rem;
   font-weight: 600;
@@ -385,32 +412,6 @@
   transition: color 0.3s ease;
   font-family: 'Tajawal', sans-serif;
   flex-grow: 1;
-}
-
-.product-link:hover .product-name {
-  color: #634C9F;
-}
-
-.product-rating {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 1rem;
-}
-
-.stars {
-  display: flex;
-  gap: 2px;
-}
-
-.star {
-  color: #fbbf24;
-  font-size: 14px;
-}
-
-.rating-count {
-  font-size: 12px;
-  color: #64748b;
 }
 
 .product-price {
@@ -569,16 +570,19 @@
 @media (max-width: 768px) {
   .category-container {
     max-width: 100%;
+    padding: 1rem 0.5rem;
   }
 
   .category-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .category-toolbar {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: stretch;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 
   .toolbar-left,
@@ -588,10 +592,71 @@
 
   .subcategories-grid {
     grid-template-columns: 1fr;
+    margin-bottom: 2rem;
+  }
+
+  /* ستايل خاص للفروع في الموبايل */
+  .subcategory-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .subcategory-image {
+    width: 60px;
+    height: 60px;
+    align-self: center;
+    border: 2px solid #634C9F;
+  }
+
+  .subcategory-content {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .subcategory-content h4 {
+    margin: 0;
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  .subcategory-arrow {
+    display: none;
+  }
+
+  .subcategory-card:hover .subcategory-img {
+    transform: scale(1.1);
+  }
+
+  .subcategory-card:hover .subcategory-image {
+    border-color: #5a4389;
   }
 
   .products-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .product-image {
+    height: 120px;
+  }
+
+  .product-info {
+    padding: 0.5rem;
+  }
+
+  .product-name {
+    font-size: 0.7rem;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .current-price {
+    font-size: 0.8rem;
+  }
+
+  .original-price {
+    font-size: 0.65rem;
   }
 
   .products-grid.list .product-card {
@@ -601,33 +666,33 @@
 
   .products-grid.list .product-image {
     width: 100%;
-    height: 200px;
-    margin: 0 0 1rem 0;
+    height: 120px;
+    margin: 0 0 0.5rem 0;
   }
 
   .add-to-cart-btn {
-    width: 45px;
-    height: 45px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     padding: 0;
     justify-content: center;
   }
 
   .add-to-cart-btn svg {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 0.9rem;
+    height: 0.9rem;
   }
 
   .wishlist-btn {
-    width: 32px;
-    height: 32px;
-    top: 10px;
-    right: 10px;
+    width: 28px;
+    height: 28px;
+    top: 8px;
+    right: 8px;
   }
 
   [dir="rtl"] .wishlist-btn {
     right: auto;
-    left: 10px;
+    left: 8px;
   }
 
   /* إخفاء النص على الموبايل */
@@ -639,41 +704,69 @@
 
 @media (max-width: 480px) {
   .category-container {
-    padding: 1rem 0.5rem;
+    padding: 0.75rem 0.25rem;
   }
 
   .category-title {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
   }
 
   .breadcrumb {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     flex-wrap: wrap;
   }
 
+  /* تحسين عرض الفروع للشاشات الصغيرة */
   .subcategory-card {
-    padding: 1rem;
+    padding: 0.75rem 0.5rem;
   }
 
-  .products-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  .subcategory-image {
+    width: 50px;
+    height: 50px;
+  }
+
+  .subcategory-content h4 {
+    font-size: 0.65rem;
+  }
+
+  .subcategories-grid {
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
   }
 
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+
+  .product-image {
+    height: 135px;
+  }
+
   .product-info {
-    padding: 1rem;
+    padding: 0.4rem;
   }
 
   .product-name {
-    font-size: 0.875rem;
+    font-size: 0.65rem;
   }
 
   .current-price {
-    font-size: 1rem;
+    font-size: 0.75rem;
+  }
+
+  .original-price {
+    font-size: 0.6rem;
+  }
+
+  .add-to-cart-btn {
+    width: 32px;
+    height: 32px;
   }
 
   .toolbar-right {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 } 

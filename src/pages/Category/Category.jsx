@@ -179,10 +179,33 @@ const Category = () => {
   };
 
   const handleSubcategoryClick = (subcategoryId) => {
-    // Find the subcategory slug from the mapping
-    const subcategorySlug = Object.keys(subcategorySlugMapping).find(
-      key => subcategorySlugMapping[key] === subcategoryId
-    );
+    // Find the subcategory slug from the mapping - using the same mapping as defined above
+    const subcategorySlugMappingReverse = {
+      1: 'fresh-fruits', // Fruits
+      2: 'fresh-vegetables', // Vegetables
+      3: 'fresh-meat', // Fresh Meat
+      4: 'seafood', // Seafood
+      5: 'dairy-products', // Dairy Products
+      6: 'breakfast-items', // Breakfast Items
+      7: 'fresh-bread', // Fresh Bread
+      8: 'pastries', // Pastries
+      9: 'hot-beverages', // Hot Beverages
+      10: 'cold-beverages', // Cold Beverages
+      11: 'frozen-meals', // Frozen Meals
+      12: 'frozen-desserts', // Frozen Desserts
+      13: 'cookies-biscuits', // Cookies & Biscuits
+      14: 'nuts-snacks', // Nuts & Snacks
+      15: 'cooking-essentials', // Cooking Essentials
+      16: 'grains-rice', // Grains & Rice
+      17: 'cleaning-supplies', // Cleaning Supplies
+      18: 'paper-products', // Paper Products
+      19: 'vitamins-supplements', // Vitamins & Supplements
+      20: 'personal-care', // Personal Care
+      21: 'baby-care', // Baby Care
+      22: 'baby-food' // Baby Food
+    };
+    
+    const subcategorySlug = subcategorySlugMappingReverse[subcategoryId];
     
     if (subcategorySlug) {
       navigate(`/category/${categorySlug}/${subcategorySlug}`);
@@ -286,8 +309,17 @@ const Category = () => {
                   className="subcategory-card"
                   onClick={() => handleSubcategoryClick(subcategory.id)}
                 >
-                  <h4>{subcategory.name[currentLang]}</h4>
-                  <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
+                  <div className="subcategory-image">
+                    <img 
+                      src={subcategory.image} 
+                      alt={subcategory.name[currentLang]}
+                      className="subcategory-img"
+                    />
+                  </div>
+                  <div className="subcategory-content">
+                    <h4>{subcategory.name[currentLang]}</h4>
+                    <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -384,16 +416,6 @@ const Category = () => {
                 <Link to={`/product/${product.id}`} className="product-link">
                   <h3 className="product-name">{product.name[currentLang]}</h3>
                 </Link>
-                
-                {/* Rating */}
-                <div className="product-rating">
-                  <div className="stars">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span key={star} className="star">★</span>
-                    ))}
-                  </div>
-                  <span className="rating-count">(3)</span>
-                </div>
 
                 {/* Price */}
                 <div className="product-price">

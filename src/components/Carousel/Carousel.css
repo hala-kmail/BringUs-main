@@ -236,7 +236,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .carousel-wrapper {
-    height: 500px;
+    height: 350px;
   }
 
   .slide-content {
@@ -245,12 +245,12 @@
   }
 
   .slide-title {
-    font-size: 2.8rem;
+    font-size: 2.5rem;
     margin-bottom: 1rem;
   }
 
   .slide-subtitle {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     margin-bottom: 2rem;
   }
 
@@ -260,31 +260,7 @@
   }
 
   .carousel-arrow {
-    width: 50px;
-    height: 50px;
-  }
-
-  .carousel-arrow svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .carousel-arrow-prev {
-    left: 20px;
-  }
-
-  .carousel-arrow-next {
-    right: 20px;
-  }
-
-  [dir="rtl"] .carousel-arrow-prev {
-    right: 20px;
-    left: auto;
-  }
-
-  [dir="rtl"] .carousel-arrow-next {
-    left: 20px;
-    right: auto;
+    display: none !important;
   }
 
   .carousel-dots {
@@ -303,7 +279,7 @@
 
 @media (max-width: 480px) {
   .carousel-wrapper {
-    height: 450px;
+    height: 250px;
   }
 
   .slide-content {
@@ -311,56 +287,32 @@
   }
 
   .slide-title {
-    font-size: 2.2rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
   }
 
   .slide-subtitle {
-    font-size: 1.1rem;
-    margin-bottom: 1.75rem;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .slide-button {
-    padding: 0.875rem 2rem;
-    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
   }
 
   .carousel-arrow {
-    width: 45px;
-    height: 45px;
-  }
-
-  .carousel-arrow svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .carousel-arrow-prev {
-    left: 15px;
-  }
-
-  .carousel-arrow-next {
-    right: 15px;
-  }
-
-  [dir="rtl"] .carousel-arrow-prev {
-    right: 15px;
-    left: auto;
-  }
-
-  [dir="rtl"] .carousel-arrow-next {
-    left: 15px;
-    right: auto;
+    display: none !important;
   }
 
   .carousel-dots {
-    bottom: 12px;
+    bottom: 10px;
     gap: 1px;
   }
 
   .carousel-dot {
-    width: 5.5px;
-    height: 5.5px;
+    width: 6px;
+    height: 6px;
     padding: 0.5px;
     min-height: unset !important;
     min-width: unset !important;
@@ -369,58 +321,34 @@
 
 @media (max-width: 360px) {
   .carousel-wrapper {
-    height: 400px;
+    height: 220px;
   }
 
   .slide-title {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
 
   .slide-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .slide-button {
-    padding: 0.75rem 1.75rem;
-    font-size: 0.95rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
   }
 
   .carousel-arrow {
-    width: 40px;
-    height: 40px;
-  }
-
-  .carousel-arrow svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .carousel-arrow-prev {
-    left: 10px;
-  }
-
-  .carousel-arrow-next {
-    right: 10px;
-  }
-
-  [dir="rtl"] .carousel-arrow-prev {
-    right: 10px;
-    left: auto;
-  }
-
-  [dir="rtl"] .carousel-arrow-next {
-    left: 10px;
-    right: auto;
+    display: none !important;
   }
 
   .carousel-dots {
-    bottom: 10px;
+    bottom: 8px;
     gap: 0.5px;
   }
 
   .carousel-dot {
-    width: 1px;
-    height: 1px;
+    width: 5px;
+    height: 5px;
     padding: 0.5px;
     min-height: unset !important;
     min-width: unset !important;

@@ -56,6 +56,15 @@
   transform: scale(1.1);
 }
 
+/* أيقونة المفضلة الممتلئة */
+.bottom-nav-item[data-id="wishlist"] .bottom-nav-icon svg[fill="currentColor"] {
+  color: #ef4444;
+}
+
+.bottom-nav-item[data-id="wishlist"].active .bottom-nav-icon svg[fill="currentColor"] {
+  color: #ef4444;
+}
+
 .bottom-nav-icon svg {
   width: 100%;
   height: 100%;

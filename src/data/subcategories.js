@@ -7,6 +7,7 @@ export const subcategories = [
       en: "Fruits",
       ar: "الفواكه"
     },
+    image: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 1
   },
   {
@@ -15,6 +16,7 @@ export const subcategories = [
       en: "Vegetables",
       ar: "الخضروات"
     },
+    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 1
   },
   
@@ -25,6 +27,7 @@ export const subcategories = [
       en: "Fresh Meat",
       ar: "اللحوم الطازجة"
     },
+    image: "https://images.unsplash.com/photo-1603048588665-791ca8aea617?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 2
   },
   {
@@ -33,6 +36,7 @@ export const subcategories = [
       en: "Seafood",
       ar: "المأكولات البحرية"
     },
+    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 2
   },
   
@@ -43,6 +47,7 @@ export const subcategories = [
       en: "Dairy Products",
       ar: "منتجات الألبان"
     },
+    image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 3
   },
   {
@@ -51,6 +56,7 @@ export const subcategories = [
       en: "Breakfast Items",
       ar: "أصناف الإفطار"
     },
+    image: "https://images.unsplash.com/photo-1484723091739-30a097e8f929?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 3
   },
   
@@ -61,6 +67,7 @@ export const subcategories = [
       en: "Fresh Bread",
       ar: "الخبز الطازج"
     },
+    image: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 4
   },
   {
@@ -69,6 +76,7 @@ export const subcategories = [
       en: "Pastries",
       ar: "المعجنات"
     },
+    image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 4
   },
   
@@ -79,6 +87,7 @@ export const subcategories = [
       en: "Hot Beverages",
       ar: "المشروبات الساخنة"
     },
+    image: "https://images.unsplash.com/photo-1545665225-b23b99e4d45e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 5
   },
   {
@@ -87,6 +96,7 @@ export const subcategories = [
       en: "Cold Beverages",
       ar: "المشروبات الباردة"
     },
+    image: "https://images.unsplash.com/photo-1544145945-f90425340c7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 5
   },
   
@@ -97,6 +107,7 @@ export const subcategories = [
       en: "Frozen Meals",
       ar: "الوجبات المجمدة"
     },
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 6
   },
   {
@@ -105,6 +116,7 @@ export const subcategories = [
       en: "Frozen Desserts",
       ar: "الحلويات المجمدة"
     },
+    image: "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 6
   },
   
@@ -115,6 +127,7 @@ export const subcategories = [
       en: "Cookies & Biscuits",
       ar: "الكوكيز والبسكويت"
     },
+    image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 7
   },
   {
@@ -123,6 +136,7 @@ export const subcategories = [
       en: "Nuts & Snacks",
       ar: "المكسرات والوجبات الخفيفة"
     },
+    image: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 7
   },
   
@@ -133,6 +147,7 @@ export const subcategories = [
       en: "Cooking Essentials",
       ar: "أساسيات الطبخ"
     },
+    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 8
   },
   {
@@ -141,6 +156,7 @@ export const subcategories = [
       en: "Grains & Rice",
       ar: "الحبوب والأرز"
     },
+    image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 8
   },
   
@@ -151,6 +167,7 @@ export const subcategories = [
       en: "Cleaning Supplies",
       ar: "مستلزمات التنظيف"
     },
+    image: "https://images.unsplash.com/photo-1563453392212-326d32d890d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 9
   },
   {
@@ -159,6 +176,7 @@ export const subcategories = [
       en: "Paper Products",
       ar: "المنتجات الورقية"
     },
+    image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 9
   },
   
@@ -169,6 +187,7 @@ export const subcategories = [
       en: "Vitamins & Supplements",
       ar: "الفيتامينات والمكملات"
     },
+    image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 10
   },
   {
@@ -177,6 +196,7 @@ export const subcategories = [
       en: "Personal Care",
       ar: "العناية الشخصية"
     },
+    image: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 10
   },
   
@@ -187,6 +207,7 @@ export const subcategories = [
       en: "Baby Care",
       ar: "رعاية الطفل"
     },
+    image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 11
   },
   {
@@ -195,6 +216,7 @@ export const subcategories = [
       en: "Baby Food",
       ar: "طعام الأطفال"
     },
+    image: "https://images.unsplash.com/photo-1607500243345-f82b8db4f18b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     categoryId: 11
   }
 ];
