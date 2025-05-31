@@ -51,7 +51,7 @@ const ProductDetail = () => {
           const featureData = getFeatureById(productData.featureId);
           setFeature(featureData);
         }
-      } else {
+    } else {
         navigate('/shop');
       }
     }
@@ -118,8 +118,93 @@ const ProductDetail = () => {
     setIsMobileSearchOpen(false);
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: product.name[currentLang],
+      text: `${product.name[currentLang]} - ${product.description[currentLang]}`,
+      url: window.location.href
+    };
+
+    try {
+      // Try to use Web Share API if available (mobile browsers)
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // For desktop: Show share options
+        const userChoice = window.prompt(
+          `${t('product_detail.share_product')}\n\n` +
+          `1. ${t('product_detail.copy_link_question')}\n` +
+          `2. أو اكتب "w" للمشاركة عبر الواتساب\n\n` +
+          `اختر (1 أو اكتب w):`,
+          "1"
+        );
+        
+        if (userChoice === null) {
+          return; // User cancelled
+        }
+        
+        if (userChoice.toLowerCase() === 'w' || userChoice.toLowerCase() === 'whatsapp') {
+          // Open WhatsApp share
+          const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareData.title}\n${shareData.text}\n${shareData.url}`)}`;
+          window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        } else {
+          // Copy to clipboard (default choice)
+          try {
+            await navigator.clipboard.writeText(shareData.url);
+            alert(t('product_detail.link_copied'));
+          } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = shareData.url;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert(t('product_detail.link_copied'));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        alert(t('product_detail.link_copied'));
+      } catch (err) {
+        alert(t('product_detail.share_error'));
+      }
+    }
+  };
+
   if (!product) {
-    return <div>Loading...</div>;
+    return (
+      <div className="product-detail">
+        <TopBar />
+        <Navbar 
+          onMobileSearchToggle={handleMobileSearchToggle}
+          isMobileSearchOpen={isMobileSearchOpen}
+        />
+        <SecondaryNavbar />
+        <MobileSearch 
+          isOpen={isMobileSearchOpen}
+          onClose={handleMobileSearchClose}
+        />
+        <main className="product-detail-content">
+          <div className="loading-container" style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '400px',
+            fontSize: '1.125rem',
+            color: '#6b7280'
+          }}>
+            {t('common.loading')}...
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -150,7 +235,11 @@ const ProductDetail = () => {
           <div className="product-image-gallery">
             <div className="product-main-image">
               <img src={product.image} alt={product.name[currentLang]} />
-              <button className="product-zoom-btn">
+              <button 
+                className="product-zoom-btn"
+                aria-label={t('product_detail.zoom_image')}
+                type="button"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                 </svg>
@@ -238,17 +327,35 @@ const ProductDetail = () => {
             {/* Quantity and Actions */}
             <div className="product-detail-actions">
               <div className="product-quantity-selector">
-                <button onClick={() => handleQuantityChange(-1)}>−</button>
-                <span>{quantity}</span>
-                <button onClick={() => handleQuantityChange(1)}>+</button>
+                <button 
+                  onClick={() => handleQuantityChange(-1)}
+                  aria-label={t('product_detail.decrease_quantity')}
+                  type="button"
+                >−</button>
+                <span aria-label={`${t('product_detail.quantity')}: ${quantity}`}>{quantity}</span>
+                <button 
+                  onClick={() => handleQuantityChange(1)}
+                  aria-label={t('product_detail.increase_quantity')}
+                  type="button"
+                >+</button>
               </div>
-              <button className="product-add-to-cart-btn" onClick={handleAddToCart}>
+              <button 
+                className="product-add-to-cart-btn" 
+                onClick={handleAddToCart}
+                aria-label={`${t('product_detail.add_to_cart')} ${product.name[currentLang]}`}
+                type="button"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <span className="button-text">{t('product_detail.add_to_cart')}</span>
               </button>
-              <button className="product-buy-now-btn" onClick={handleBuyNow}>
+              <button 
+                className="product-buy-now-btn" 
+                onClick={handleBuyNow}
+                aria-label={`${t('product_detail.buy_now')} ${product.name[currentLang]}`}
+                type="button"
+              >
                 {t('product_detail.buy_now')}
               </button>
             </div>
@@ -264,23 +371,17 @@ const ProductDetail = () => {
                     <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
                 )}
                 {isInWishlist(product.id) ? t('product_detail.remove_from_wishlist') : t('product_detail.add_to_wishlist')}
               </button>
-              <button className="product-action-btn">
+              <button className="product-action-btn" onClick={handleShare}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                 </svg>
                 {t('product_detail.share')}
-              </button>
-              <button className="product-action-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2-2z" />
-                </svg>
-                {t('product_detail.compare')}
               </button>
             </div>
 

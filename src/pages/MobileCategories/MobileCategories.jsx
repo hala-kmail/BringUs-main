@@ -193,49 +193,49 @@ const MobileCategories = () => {
 
         {/* Subcategories Grid */}
         <div className="subcategories-section">
-          <div className="section-header">
-            <h2 className="section-title">
+              <div className="section-header">
+                <h2 className="section-title">
               {getSelectedCategoryName()}
-            </h2>
-            <button 
-              className="view-all-btn"
-              onClick={() => handleCategoryClick(selectedCategory)}
-            >
+                </h2>
+                <button 
+                  className="view-all-btn"
+                  onClick={() => handleCategoryClick(selectedCategory)}
+                >
               {getViewAllText()}
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={currentLang === 'ar' ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
-              </svg>
-            </button>
-          </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={currentLang === 'ar' ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
+                  </svg>
+                </button>
+              </div>
 
           <div className="subcategories-grid">
             {categorySubcategories.map((subcategory) => (
-              <div 
+                  <div 
                 key={subcategory.id} 
                 className="subcategory-item"
                 onClick={() => handleSubcategoryClick(subcategory.id)}
-              >
+                  >
                 <div className="subcategory-image">
                   <img 
                     src={subcategory.image} 
                     alt={subcategory.name[currentLang]}
                     className="subcategory-img"
                   />
-                </div>
+                        </div>
                 <div className="subcategory-info">
                   <h3 className="subcategory-name">{subcategory.name[currentLang]}</h3>
                   <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
-                </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
           {categorySubcategories.length === 0 && (
             <div className="no-subcategories">
               <div className="no-subcategories-icon">📂</div>
-              <h3>{t('shop.no_products_title')}</h3>
-              <p>{t('shop.no_products_description')}</p>
-            </div>
+                  <h3>{t('shop.no_products_title')}</h3>
+                  <p>{t('shop.no_products_description')}</p>
+                </div>
           )}
         </div>
       </div>

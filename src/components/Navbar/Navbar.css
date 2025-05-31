@@ -51,7 +51,7 @@
   width: 100%;
   height: 2.75rem;
   padding: 0 2.75rem 0 1rem;
-  border: none;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 1rem;
   font-family: 'Tajawal', sans-serif;
@@ -62,6 +62,8 @@
 .search-input::placeholder {
   font-family: 'Tajawal', sans-serif;
   color: #9CA3AF;
+  position: relative;
+  animation: placeholderAnimation 4s linear infinite;
 }
 
 [dir="rtl"] .search-input {
@@ -72,6 +74,32 @@
   outline: none;
   border-color: #634C9F;
   box-shadow: 0 0 0 3px rgba(99, 76, 159, 0.1);
+}
+
+@keyframes placeholderAnimation {
+  0%, 100% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  10%, 90% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+[dir="rtl"] .search-input::placeholder {
+  animation: placeholderAnimationRTL 4s linear infinite;
+}
+
+@keyframes placeholderAnimationRTL {
+  0%, 100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  10%, 90% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .search-button {
@@ -184,7 +212,8 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .navbar {
-    display: none; /* إخفاء الـ Navbar على الموبايل لاستخدام Bottom Navigation */
+    display: flex;
+    padding: 0.5rem 0;
   }
 
   .navbar-container {
@@ -223,6 +252,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    order: 2;
+  }
+
+  .mobile-search-trigger svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  /* Hide wishlist and cart on mobile */
+  .action-item[href="/wishlist"],
+  .action-item[href="/cart"] {
+    display: none !important;
   }
 
   .action-label {
@@ -283,5 +324,7 @@
     height: 1.25rem;
   }
 
-
-} 
+  .mobile-search-trigger {
+    padding: 0.4rem;
+  }
+}

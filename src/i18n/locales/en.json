@@ -1,9 +1,22 @@
 {
+  "common": {
+    "loading": "Loading"
+  },
   "topbar": {
-    "delivery_info": "We deliver to you every day from 7:00 to 23:00"
+    "delivery_info": "We deliver daily from 7:00 AM to 11:00 PM"
   },
   "navbar": {
     "search_placeholder": "Search products...",
+    "search_placeholders": [
+      "Search for fresh fruits...",
+      "Shop organic vegetables...",
+      "Discover dairy products...",
+      "Try fresh bakery items...",
+      "Find daily deals...",
+      "Browse healthy products...",
+      "Find delicious snacks...",
+      "Discover household care..."
+    ],
     "wishlist": "Wishlist",
     "cart": "Cart",
     "profile": "Profile",
@@ -120,20 +133,24 @@
   },
   "product_detail": {
     "home": "Home",
-    "order_whatsapp": "Order on WhatsApp",
+    "order_whatsapp": "Order via WhatsApp",
     "special_offer": "Special Offer",
-    "offer_text": "Remains until the end of the offer",
-    "add_to_cart": "Add to cart",
+    "offer_text": "Until the offer ends",
+    "add_to_cart": "Add to Cart",
     "buy_now": "Buy Now",
-    "add_to_wishlist": "Add to wishlist",
-    "remove_from_wishlist": "Remove from wishlist",
+    "add_to_wishlist": "Add to Wishlist",
+    "remove_from_wishlist": "Remove from Wishlist",
     "share": "Share this Product",
+    "share_product": "Share Product",
+    "copy_link_question": "Do you want to copy the product link?",
+    "link_copied": "Link copied successfully!",
+    "share_error": "Error sharing product",
     "compare": "Compare",
     "payment": "Payment",
-    "payment_desc": "Payment upon receipt of goods, Payment by card in the department, Google Pay, Online card, -5% discount in case of payment",
+    "payment_desc": "Cash on delivery, card payment at checkout, Google Pay, digital card, 5% discount for prepayment",
     "warranty": "Warranty",
-    "warranty_desc": "The Consumer Protection Act does not provide for the return of this product of proper quality",
-    "reviews": "reviews",
+    "warranty_desc": "Consumer protection law does not provide for the return of this quality product",
+    "reviews": "Reviews",
     "sku": "SKU",
     "new": "New",
     "organic": "Organic",
@@ -145,7 +162,11 @@
     "natural": "Natural",
     "pure": "Pure",
     "healthy": "Healthy",
-    "currency": "SAR"
+    "currency": "SAR",
+    "zoom_image": "Zoom Image",
+    "decrease_quantity": "Decrease Quantity",
+    "increase_quantity": "Increase Quantity",
+    "quantity": "Quantity"
   },
   "related_products": {
     "title": "Related Products",
@@ -172,7 +193,7 @@
     "product_status": "Product Status",
     "in_stock": "In Stock",
     "on_sale": "On Sale",
-    "sort": "Sort by",
+    "sorting": "Sort by",
     "sort_by_latest": "Latest",
     "sort_by_price_low": "Price: Low to High",
     "sort_by_price_high": "Price: High to Low",
@@ -223,5 +244,68 @@
     "empty_title": "Your wishlist is empty",
     "empty_description": "Start adding products you love to your wishlist",
     "continue_shopping": "Continue Shopping"
+  },
+  "filters": {
+    "title": "Filters",
+    "categories": "Categories",
+    "features": "Features",
+    "colors": "Colors",
+    "status": "Status",
+    "color_section": "Colors",
+    "price_range": "Price Range",
+    "reset": "Reset",
+    "apply": "Apply",
+    "close": "Close",
+    "clearAll": "Clear All",
+    "activeFilters": "{{count}} active filter",
+    "activeFilters_plural": "{{count}} active filters",
+    "totalProducts": "{{count}} total product",
+    "totalProducts_plural": "{{count}} total products",
+    "viewResults": "View Results",
+    "filter_by_features": "Filter by Features",
+    "color_names": {
+      "red": "Red",
+      "green": "Green",
+      "blue": "Blue",
+      "yellow": "Yellow",
+      "orange": "Orange",
+      "purple": "Purple",
+      "white": "White",
+      "black": "Black",
+      "brown": "Brown",
+      "gray": "Gray",
+      "golden": "Golden",
+      "silver": "Silver",
+      "pink": "Pink",
+      "beige": "Beige",
+      "navy": "Navy",
+      "maroon": "Maroon",
+      "teal": "Teal",
+      "olive": "Olive",
+      "coral": "Coral",
+      "turquoise": "Turquoise",
+      "indigo": "Indigo",
+      "magenta": "Magenta",
+      "cream": "Cream",
+      "burgundy": "Burgundy",
+      "clear": "Clear",
+      "mixed": "Mixed Colors"
+    },
+    "status_names": {
+      "in_stock": "In Stock",
+      "on_sale": "On Sale",
+      "new": "New",
+      "featured": "Featured"
+    },
+    "sort": {
+      "default": "Default Sorting",
+      "latest": "Latest",
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "name_a_z": "Name: A-Z",
+      "name_z_a": "Name: Z-A",
+      "newest": "Newest",
+      "oldest": "Oldest"
+    }
   }
 } 

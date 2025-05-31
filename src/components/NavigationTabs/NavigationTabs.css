@@ -1,0 +1,103 @@
+.navigation-tabs {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tabs-container {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6B7280;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  min-width: 80px;
+}
+
+.tab-item:hover {
+  color: #634C9F;
+  background-color: rgba(99, 76, 159, 0.05);
+}
+
+.tab-item.active {
+  color: #634C9F;
+  background-color: rgba(99, 76, 159, 0.1);
+}
+
+.tab-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s ease;
+}
+
+.tab-item:hover .tab-icon svg,
+.tab-item.active .tab-icon svg {
+  transform: scale(1.1);
+}
+
+.tab-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* RTL Support */
+[dir="rtl"] .tab-item {
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .navigation-tabs {
+    display: none !important;
+  }
+
+  .tabs-container {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .tab-item {
+    padding: 0.5rem;
+    min-width: 60px;
+  }
+
+  .tab-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .tab-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Hide on very small screens (when bottom navigation is shown) */
+@media (max-width: 480px) {
+  .navigation-tabs {
+    display: none !important;
+  }
+} 

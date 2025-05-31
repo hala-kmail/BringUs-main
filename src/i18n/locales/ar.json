@@ -1,9 +1,22 @@
 {
+  "common": {
+    "loading": "جاري التحميل"
+  },
   "topbar": {
     "delivery_info": "نوصل لك يومياً من الساعة 7:00 إلى 23:00"
   },
   "navbar": {
     "search_placeholder": "ابحث عن المنتجات...",
+    "search_placeholders": [
+      "ابحث عن الفواكه الطازجة...",
+      "تسوق الخضروات العضوية...",
+      "اكتشف منتجات الألبان...",
+      "جرب المخبوزات الطازجة...",
+      "ابحث عن العروض اليومية...",
+      "تصفح المنتجات الصحية...",
+      "اعثر على وجبات خفيفة لذيذة...",
+      "اكتشف منتجات العناية المنزلية..."
+    ],
     "wishlist": "المفضلة",
     "cart": "السلة",
     "profile": "الملف الشخصي",
@@ -128,6 +141,10 @@
     "add_to_wishlist": "أضف للمفضلة",
     "remove_from_wishlist": "إزالة من المفضلة",
     "share": "شارك هذا المنتج",
+    "share_product": "مشاركة المنتج",
+    "copy_link_question": "هل تريد نسخ رابط المنتج؟",
+    "link_copied": "تم نسخ الرابط بنجاح!",
+    "share_error": "حدث خطأ في المشاركة",
     "compare": "قارن",
     "payment": "الدفع",
     "payment_desc": "الدفع عند استلام البضائع، الدفع بالبطاقة في القسم، جوجل باي، البطاقة الإلكترونية، خصم 5% في حالة الدفع",
@@ -145,7 +162,11 @@
     "natural": "طبيعي",
     "pure": "نقي",
     "healthy": "صحي",
-    "currency": "ر.س"
+    "currency": "ر.س",
+    "zoom_image": "تكبير الصورة",
+    "decrease_quantity": "تقليل الكمية",
+    "increase_quantity": "زيادة الكمية",
+    "quantity": "الكمية"
   },
   "related_products": {
     "title": "منتجات مشابهة",
@@ -173,7 +194,12 @@
     "in_stock": "متوفر",
     "on_sale": "في التخفيضات",
     "showing_results": "عرض {{start}}-{{end}} من {{total}} نتيجة",
-    "sort": "ترتيب",
+    "sorting": "ترتيب",
+    "all_categories": "جميع الفئات",
+    "all_colors": "جميع الألوان",
+    "all_brands": "جميع العلامات التجارية",
+    "all_status": "جميع الحالات",
+    "advanced_filters": "تفاصيل الفلاتر",
     "sort_by_latest": "ترتيب حسب الأحدث",
     "sort_by_price_low": "ترتيب حسب السعر: من الأقل للأعلى",
     "sort_by_price_high": "ترتيب حسب السعر: من الأعلى للأقل",
@@ -225,5 +251,66 @@
     "remove_from_wishlist": "إزالة من المفضلة",
     "added_to_wishlist": "تم إضافته للمفضلة!",
     "removed_from_wishlist": "تم إزالته من المفضلة!"
+  },
+  "filters": {
+    "title": "الفلاتر",
+    "categories": "الفئات",
+    "features": "الميزات",
+    "colors": "الألوان",
+    "status": "الحالة",
+    "color_section": "الألوان",
+    "price_range": "نطاق السعر",
+    "reset": "إعادة تعيين",
+    "apply": "تطبيق",
+    "close": "إغلاق",
+    "clearAll": "مسح الكل",
+    "activeFilters": "{{count}} فلتر نشط",
+    "totalProducts": "{{count}} منتج إجمالي",
+    "viewResults": "عرض النتائج",
+    "filter_by_features": "فلتر حسب الميزات",
+    "color_names": {
+      "red": "أحمر",
+      "green": "أخضر",
+      "blue": "أزرق",
+      "yellow": "أصفر",
+      "orange": "برتقالي",
+      "purple": "بنفسجي",
+      "white": "أبيض",
+      "black": "أسود",
+      "brown": "بني",
+      "gray": "رمادي",
+      "golden": "ذهبي",
+      "silver": "فضي",
+      "pink": "وردي",
+      "beige": "بيج",
+      "navy": "كحلي",
+      "maroon": "عنابي",
+      "teal": "أزرق مخضر",
+      "olive": "زيتوني",
+      "coral": "مرجاني",
+      "turquoise": "فيروزي",
+      "indigo": "نيلي",
+      "magenta": "أرجواني",
+      "cream": "كريمي",
+      "burgundy": "نبيذي",
+      "clear": "شفاف",
+      "mixed": "متعدد الألوان"
+    },
+    "status_names": {
+      "in_stock": "متوفر",
+      "on_sale": "في التخفيضات",
+      "new": "جديد",
+      "featured": "مميز"
+    },
+    "sort": {
+      "default": "الترتيب الافتراضي",
+      "latest": "الأحدث",
+      "price_low_high": "السعر: من الأقل للأعلى",
+      "price_high_low": "السعر: من الأعلى للأقل",
+      "name_a_z": "الاسم: أ-ي",
+      "name_z_a": "الاسم: ي-أ",
+      "newest": "الأحدث",
+      "oldest": "الأقدم"
+    }
   }
 } 

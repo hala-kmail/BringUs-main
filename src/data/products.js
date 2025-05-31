@@ -1017,4 +1017,4 @@ export const allProducts = [
   }
 ];
 
-export default allProducts;
+export default allProducts; 

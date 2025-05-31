@@ -10,9 +10,7 @@ const SecondaryNavbar = () => {
 
   const navigationLinks = [
     { id: 'home', name: t('secondary_nav.home'), path: '/home' },
-    { id: 'shop', name: t('secondary_nav.shop'), path: '/shop' },
-    { id: 'blog', name: t('secondary_nav.blog'), path: '/blog' },
-    { id: 'contact', name: t('secondary_nav.contact'), path: '/contact' }
+    { id: 'shop', name: t('secondary_nav.shop'), path: '/shop' }
   ];
 
   // Update top position based on announcement bar, top bar, and navbar heights

@@ -34,6 +34,18 @@ const BottomNavigation = () => {
       isActive: location.pathname === '/mobile-categories' || location.pathname.startsWith('/category/')
     },
     {
+      id: 'shop',
+      label: t('secondary_nav.shop'),
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+      ),
+      path: '/shop',
+      isActive: location.pathname === '/shop',
+      isShopButton: true
+    },
+    {
       id: 'wishlist',
       label: t('navbar.wishlist'),
       icon: wishlist.length > 0 ? (
@@ -73,7 +85,7 @@ const BottomNavigation = () => {
         {navItems.map((item) => (
           <button
             key={item.id}
-            className={`bottom-nav-item ${item.isActive ? 'active' : ''}`}
+            className={`bottom-nav-item ${item.isActive ? 'active' : ''} ${item.isShopButton ? 'shop-button' : ''}`}
             onClick={() => handleNavigation(item.path)}
             data-id={item.id}
           >

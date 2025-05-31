@@ -93,7 +93,7 @@ export const WishlistProvider = ({ children }) => {
   const addToWishlist = (product) => {
     const isAlreadyInWishlist = state.items.some(item => item.id === product.id);
     if (!isAlreadyInWishlist) {
-      dispatch({ type: 'ADD_TO_WISHLIST', payload: product });
+    dispatch({ type: 'ADD_TO_WISHLIST', payload: product });
       showToast(t('wishlist.added_to_wishlist'), 'success');
     }
   };

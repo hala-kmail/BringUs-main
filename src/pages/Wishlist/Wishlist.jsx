@@ -74,9 +74,9 @@ const Wishlist = () => {
                       {item.isNew && (
                         <span className="product-badge product-new-badge">{t('best_sellers.new')}</span>
                       )}
-                      {item.discountPercentage && (
+                    {item.discountPercentage && (
                         <span className="product-badge product-discount-badge">
-                          -{item.discountPercentage}%
+                        -{item.discountPercentage}%
                         </span>
                       )}
                     </div>

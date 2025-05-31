@@ -208,7 +208,7 @@ const Category = () => {
     const subcategorySlug = subcategorySlugMappingReverse[subcategoryId];
     
     if (subcategorySlug) {
-      navigate(`/category/${categorySlug}/${subcategorySlug}`);
+    navigate(`/category/${categorySlug}/${subcategorySlug}`);
     }
   };
 
@@ -289,13 +289,13 @@ const Category = () => {
               </span>
             )}
           </h1>
-          <p className="category-description">
+          {/* <p className="category-description">
             {t('shop.showing_results', { 
               start: startIndex + 1,
               end: Math.min(endIndex, filteredProducts.length),
               total: filteredProducts.length 
             })}
-          </p>
+          </p> */}
         </div>
 
         {/* Subcategories */}
@@ -318,7 +318,7 @@ const Category = () => {
                   </div>
                   <div className="subcategory-content">
                     <h4>{subcategory.name[currentLang]}</h4>
-                    <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
+                  <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
                   </div>
                 </button>
               ))}
@@ -340,7 +340,7 @@ const Category = () => {
           
           <div className="toolbar-right">
             <div className="sort-controls">
-              <label>{t('shop.sort')}:</label>
+              <label>{t('shop.sorting')}:</label>
               <select 
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}

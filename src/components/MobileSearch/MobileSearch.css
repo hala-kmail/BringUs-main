@@ -58,6 +58,20 @@
   transform: scaleX(-1);
 }
 
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+
+
+[dir="rtl"] .search-icon {
+  left: auto;
+  right: 1rem;
+}
+
 .mobile-search-input {
   flex: 1;
   height: 2.5rem;
@@ -66,7 +80,7 @@
   font-size: 1rem;
   font-family: 'Tajawal', sans-serif;
   background-color: #f8f7fa;
-  padding: 0 1rem;
+  padding: 0 2.5rem;
   transition: all 0.3s ease;
 }
 
@@ -174,6 +188,7 @@
   .mobile-search-input {
     height: 2.25rem;
     font-size: 0.875rem;
+    padding: 0 2.25rem;
   }
 
   .mobile-search-back svg,
@@ -194,4 +209,15 @@
   .suggestion-item {
     padding: 0.625rem;
   }
-} 
+
+  .search-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    left: 0.75rem;
+  }
+
+  [dir="rtl"] .search-icon {
+    left: auto;
+    right: 0.75rem;
+  }
+}

@@ -45,9 +45,9 @@ function AppContent() {
 function App() {
   return (
     <WishlistProvider>
-      <Router>
-        <AppContent />
-      </Router>
+    <Router>
+      <AppContent />
+    </Router>
     </WishlistProvider>
   );
 }

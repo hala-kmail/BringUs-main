@@ -6,6 +6,7 @@ import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
+import MobileFilters from '../../components/MobileFilters/MobileFilters';
 import { allProducts, categories, features } from '../../data/index';
 import './Shop.css';
 
@@ -20,8 +21,8 @@ const Shop = () => {
   const [filters, setFilters] = useState({
     priceRange: { min: 0, max: 100 },
     categories: [],
+    features: [],
     colors: [],
-    brands: [],
     status: [],
     sortBy: 'latest'
   });
@@ -57,7 +58,7 @@ const Shop = () => {
   };
   
   const brands = getAllBrands();
-  const statusOptions = ['In Stock', 'On Sale'];
+  const statusOptions = ['in_stock', 'on_sale', 'new', 'featured'];
 
   // Function to count products by color from filtered products
   const getColorCount = (color) => {
@@ -74,30 +75,32 @@ const Shop = () => {
     if (filters.categories.length > 0) {
       baseProducts = baseProducts.filter(product => {
         const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.name.en);
+        return category && filters.categories.includes(category.id);
       });
     }
 
-    // Apply brand filter
-    if (filters.brands.length > 0) {
+    // Apply feature filter
+    if (filters.features.length > 0) {
       baseProducts = baseProducts.filter(product => {
-        const feature = features.find(feat => feat.id === product.featureId);
-        if (feature) {
-          return filters.brands.some(brand => 
-            feature.name.en.toLowerCase() === brand.toLowerCase()
-          );
-        }
-        return false;
+        return filters.features.includes(product.featureId);
       });
     }
 
     // Apply status filter
-    if (filters.status.includes('On Sale')) {
-      baseProducts = baseProducts.filter(product => product.discountPrice);
+    if (filters.status.includes('on_sale')) {
+      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
     }
 
-    if (filters.status.includes('In Stock')) {
-      baseProducts = baseProducts.filter(product => product.stock > 0);
+    if (filters.status.includes('in_stock')) {
+      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+    }
+
+    if (filters.status.includes('new')) {
+      baseProducts = baseProducts.filter(product => product.isNew === true);
+    }
+
+    if (filters.status.includes('featured')) {
+      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
     }
 
     // Now count products that match this color
@@ -123,9 +126,9 @@ const Shop = () => {
     }).length;
   };
 
-  // Function to count products by brand from filtered products
-  const getBrandCount = (brandName) => {
-    // Get products that match current filters (excluding brand filter)
+  // Function to count products by feature from filtered products
+  const getFeatureCount = (featureId) => {
+    // Get products that match current filters (excluding feature filter)
     let baseProducts = [...allProducts];
     
     // Apply price filter
@@ -138,7 +141,7 @@ const Shop = () => {
     if (filters.categories.length > 0) {
       baseProducts = baseProducts.filter(product => {
         const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.name.en);
+        return category && filters.categories.includes(category.id);
       });
     }
 
@@ -171,18 +174,25 @@ const Shop = () => {
     }
 
     // Apply status filter
-    if (filters.status.includes('On Sale')) {
-      baseProducts = baseProducts.filter(product => product.discountPrice);
+    if (filters.status.includes('on_sale')) {
+      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
     }
 
-    if (filters.status.includes('In Stock')) {
-      baseProducts = baseProducts.filter(product => product.stock > 0);
+    if (filters.status.includes('in_stock')) {
+      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
     }
 
-    // Now count products that match this brand
+    if (filters.status.includes('new')) {
+      baseProducts = baseProducts.filter(product => product.isNew === true);
+    }
+
+    if (filters.status.includes('featured')) {
+      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
+    }
+
+    // Now count products that match this feature
     return baseProducts.filter(product => {
-      const feature = features.find(feat => feat.id === product.featureId);
-      return feature && feature.name.en.toLowerCase() === brandName.toLowerCase();
+      return product.featureId === featureId;
     }).length;
   };
 
@@ -197,16 +207,10 @@ const Shop = () => {
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
-    // Apply brand filter
-    if (filters.brands.length > 0) {
+    // Apply feature filter
+    if (filters.features.length > 0) {
       baseProducts = baseProducts.filter(product => {
-        const feature = features.find(feat => feat.id === product.featureId);
-        if (feature) {
-          return filters.brands.some(brand => 
-            feature.name.en.toLowerCase() === brand.toLowerCase()
-          );
-        }
-        return false;
+        return filters.features.includes(product.featureId);
       });
     }
 
@@ -239,12 +243,20 @@ const Shop = () => {
     }
 
     // Apply status filter
-    if (filters.status.includes('On Sale')) {
-      baseProducts = baseProducts.filter(product => product.discountPrice);
+    if (filters.status.includes('on_sale')) {
+      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
     }
 
-    if (filters.status.includes('In Stock')) {
-      baseProducts = baseProducts.filter(product => product.stock > 0);
+    if (filters.status.includes('in_stock')) {
+      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+    }
+
+    if (filters.status.includes('new')) {
+      baseProducts = baseProducts.filter(product => product.isNew === true);
+    }
+
+    if (filters.status.includes('featured')) {
+      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
     }
 
     // Now count products that match this category
@@ -288,9 +300,9 @@ const Shop = () => {
       counts[`color_${color}`] = getColorCount(color);
     });
     
-    // Count brands
-    brands.forEach(brand => {
-      counts[`brand_${brand}`] = getBrandCount(brand);
+    // Count features
+    features.forEach(feature => {
+      counts[`feature_${feature.id}`] = getFeatureCount(feature.id);
     });
     
     setFilterCounts(counts);
@@ -318,28 +330,26 @@ const Shop = () => {
     if (filters.categories.length > 0) {
       filtered = filtered.filter(product => {
         const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.name.en);
+        return category && filters.categories.includes(category.id);
       });
       console.log('After category filter:', filtered.length);
     }
 
-    // Brand filter - using new features structure
-    if (filters.brands.length > 0) {
-      console.log('Selected brands:', filters.brands);
+    // Features filter - using new features structure
+    if (filters.features.length > 0) {
+      console.log('Selected features:', filters.features);
       filtered = filtered.filter(product => {
         const feature = features.find(feat => feat.id === product.featureId);
         if (feature) {
-          const matches = filters.brands.some(brand => 
-            feature.name.en.toLowerCase() === brand.toLowerCase()
-          );
+          const matches = filters.features.includes(feature.id);
           if (matches) {
-            console.log('Product matches brand filter:', product.name.en, 'Feature:', feature.name.en);
+            console.log('Product matches feature filter:', product.name.en, 'Feature:', feature.name.en);
           }
           return matches;
         }
         return false;
       });
-      console.log('After brand filter:', filtered.length);
+      console.log('After features filter:', filtered.length);
     }
 
     // Color filter (based on product colors array or name)
@@ -381,14 +391,37 @@ const Shop = () => {
       console.log('After color filter:', filtered.length);
     }
 
-    // Status filter
-    if (filters.status.includes('On Sale')) {
-      filtered = filtered.filter(product => product.discountPrice);
-    }
+    // Status filter - أستخدام نفس منطق استنتاج الحالة
+    if (filters.status.length > 0) {
+      console.log('Selected status filters:', filters.status);
+      
+      if (filters.status.includes('on_sale')) {
+        const beforeCount = filtered.length;
+        // عليه خصم - إذا كان له سعر خصم أو نسبة خصم
+        filtered = filtered.filter(product => product.discountPrice || product.discountPercentage);
+        console.log(`After 'on_sale' filter: ${filtered.length} (was ${beforeCount})`);
+      }
 
-    if (filters.status.includes('In Stock')) {
-      // Using the new stock field
-      filtered = filtered.filter(product => product.stock > 0);
+      if (filters.status.includes('in_stock')) {
+        const beforeCount = filtered.length;
+        // متوفر - إذا كان المخزون أكبر من 0
+        filtered = filtered.filter(product => product.stock && product.stock > 0);
+        console.log(`After 'in_stock' filter: ${filtered.length} (was ${beforeCount})`);
+      }
+
+      if (filters.status.includes('new')) {
+        const beforeCount = filtered.length;
+        // جديد - إذا كان الحقل isNew = true
+        filtered = filtered.filter(product => product.isNew === true);
+        console.log(`After 'new' filter: ${filtered.length} (was ${beforeCount})`);
+      }
+
+      if (filters.status.includes('featured')) {
+        const beforeCount = filtered.length;
+        // مميز/الأكثر مبيعاً - إذا كان الحقل isBestSeller = true
+        filtered = filtered.filter(product => product.isBestSeller === true);
+        console.log(`After 'featured' filter: ${filtered.length} (was ${beforeCount})`);
+      }
     }
 
     // Sort
@@ -436,8 +469,8 @@ const Shop = () => {
     setFilters({
       priceRange: { min: 0, max: 100 },
       categories: [],
+      features: [],
       colors: [],
-      brands: [],
       status: [],
       sortBy: 'latest'
     });
@@ -517,6 +550,10 @@ const Shop = () => {
     return rangeWithDots.filter((page, index, array) => array.indexOf(page) === index && page <= totalPages);
   };
 
+  const handleSortChange = (newSortBy) => {
+    setFilters(prev => ({ ...prev, sortBy: newSortBy }));
+  };
+
   return (
     <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
       <TopBar />
@@ -530,19 +567,42 @@ const Shop = () => {
         onClose={handleMobileSearchClose}
       />
 
+      {/* Mobile Filters */}
+      <MobileFilters
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        filters={filters}
+        onFiltersChange={setFilters}
+      />
+
       <div className="shop-container">
-        {/* Hero Banner */}
-        <div className="shop-hero">
-          <div className="shop-hero-content">
-            <span className="shop-hero-badge">{t('shop.only_this_week')}</span>
-            <h1 className="shop-hero-title">{t('shop.hero_title')}</h1>
-            <p className="shop-hero-subtitle">{t('shop.hero_subtitle')}</p>
-            <button className="shop-hero-btn">
-              {t('shop.shop_now')} {currentLang === 'ar' ? '←' : '→'}
+        {/* Shop Header with Filter Button */}
+        <div className="shop-header">
+          <div className="shop-filters-toggle">
+            <button 
+              className="filter-button"
+              onClick={() => setShowFilters(true)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span>{t('filters.title')}</span>
             </button>
           </div>
-          <div className="shop-hero-image">
-            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80" alt="Grocery" />
+          
+          {/* Hero Banner */}
+          <div className="shop-hero">
+            <div className="shop-hero-content">
+              <span className="shop-hero-badge">{t('shop.only_this_week')}</span>
+              <h1 className="shop-hero-title">{t('shop.hero_title')}</h1>
+              <p className="shop-hero-subtitle">{t('shop.hero_subtitle')}</p>
+              <button className="shop-hero-btn">
+                {t('shop.shop_now')} {currentLang === 'ar' ? '←' : '→'}
+              </button>
+            </div>
+            <div className="shop-hero-image">
+              <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80" alt="Grocery" />
+            </div>
           </div>
         </div>
 
@@ -557,26 +617,29 @@ const Shop = () => {
             </div>
 
             {/* Active Filters */}
-            {(filters.categories.length > 0 || filters.brands.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
+            {(filters.categories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
               <div className="active-filters">
-                {filters.categories.map(category => (
+                {filters.categories.map(categoryId => {
+                  const category = categories.find(cat => cat.id === categoryId);
+                  return (
+                    <span 
+                      key={categoryId} 
+                      className="active-filter"
+                      onClick={() => removeFilter('categories', categoryId)}
+                      title={`Remove ${category?.name[currentLang] || categoryId} filter`}
+                    >
+                      <span className="filter-close">✕</span> {category?.name[currentLang] || categoryId}
+                    </span>
+                  );
+                })}
+                {filters.features.map(feature => (
                   <span 
-                    key={category} 
+                    key={feature} 
                     className="active-filter"
-                    onClick={() => removeFilter('categories', category)}
-                    title={`Remove ${category} filter`}
+                    onClick={() => removeFilter('features', feature)}
+                    title={`Remove ${feature} filter`}
                   >
-                    <span className="filter-close">✕</span> {category}
-                  </span>
-                ))}
-                {filters.brands.map(brand => (
-                  <span 
-                    key={brand} 
-                    className="active-filter"
-                    onClick={() => removeFilter('brands', brand)}
-                    title={`Remove ${brand} filter`}
-                  >
-                    <span className="filter-close">✕</span> {t(`shop.brands.${brand.toLowerCase()}`)}
+                    <span className="filter-close">✕</span> {features.find(f => f.id === feature)?.name[currentLang] || feature}
                   </span>
                 ))}
                 {filters.colors.map(color => (
@@ -596,7 +659,7 @@ const Shop = () => {
                     onClick={() => removeFilter('status', status)}
                     title={`Remove ${status} filter`}
                   >
-                    <span className="filter-close">✕</span> {t(`shop.${status.toLowerCase().replace(' ', '_')}`)}
+                    <span className="filter-close">✕</span> {t(`filters.status_names.${status}`)}
                   </span>
                 ))}
                 <button className="clear-category-btn" onClick={clearFilters}>
@@ -661,17 +724,17 @@ const Shop = () => {
             <div className="filter-section">
               <h4>{t('shop.product_categories')}</h4>
               <div className="category-list">
-                {categoriesList.map(category => {
-                  const count = filterCounts[`category_${category}`] || 0;
+                {categories.map(category => {
+                  const count = filterCounts[`category_${category.name.en}`] || 0;
                   return count > 0 ? (
-                    <label key={category} className="filter-checkbox">
+                    <label key={category.id} className="filter-checkbox">
                       <input
                         type="checkbox"
-                        checked={filters.categories.includes(category)}
-                        onChange={(e) => handleFilterChange('categories', category, e.target.checked)}
+                        checked={filters.categories.includes(category.id)}
+                        onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
                       />
                       <span className="checkmark">+</span>
-                      {t(`categories.${getCategoryTranslationKey(category)}`, category)} ({count})
+                      {category.name[currentLang]} ({count})
                     </label>
                   ) : null;
                 })}
@@ -699,21 +762,21 @@ const Shop = () => {
               </div>
             </div>
 
-            {/* Filter by Brands */}
+            {/* Filter by Features */}
             <div className="filter-section">
-              <h4>{t('shop.filter_by_brands')}</h4>
-              <div className="brand-filters">
-                {brands.map(brand => {
-                  const count = filterCounts[`brand_${brand}`] || 0;
+              <h4>{t('shop.filter_by_features')}</h4>
+              <div className="feature-filters">
+                {features.map(feature => {
+                  const count = filterCounts[`feature_${feature.id}`] || 0;
                   return count > 0 ? (
-                    <label key={brand} className="filter-checkbox">
+                    <label key={feature.id} className="filter-checkbox">
                       <input
                         type="checkbox"
-                        checked={filters.brands.includes(brand)}
-                        onChange={(e) => handleFilterChange('brands', brand, e.target.checked)}
+                        checked={filters.features.includes(feature.id)}
+                        onChange={(e) => handleFilterChange('features', feature.id, e.target.checked)}
                       />
                       <span className="checkmark"></span>
-                      {t(`shop.brands.${brand.toLowerCase()}`)} ({count})
+                      {feature.name[currentLang]} ({count})
                     </label>
                   ) : null;
                 })}
@@ -732,7 +795,7 @@ const Shop = () => {
                       onChange={(e) => handleFilterChange('status', status, e.target.checked)}
                     />
                     <span className="checkmark"></span>
-                    {t(`shop.${status.toLowerCase().replace(' ', '_')}`)}
+                    {t(`filters.status_names.${status}`)}
                   </label>
                 ))}
               </div>
@@ -741,8 +804,85 @@ const Shop = () => {
 
           {/* Main Content */}
           <main className="shop-content">
-            {/* Toolbar */}
-            <div className="shop-toolbar">
+            {/* Mobile Toolbar */}
+            <div className="mobile-shop-toolbar">
+              {/* Top Row: Filter Controls */}
+              <div className="mobile-filter-controls">
+                <button 
+                  className="mobile-filter-btn"
+                  onClick={() => setShowFilters(true)}
+                  title={t('filters.title')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                </button>
+
+                <div className="mobile-view-controls">
+                  <button 
+                    className={`mobile-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                    onClick={() => setViewMode('grid')}
+                    title={t('shop.grid_view')}
+                  >
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>
+                    </svg>
+                  </button>
+                  <button 
+                    className={`mobile-view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                    onClick={() => setViewMode('list')}
+                    title={t('shop.list_view')}
+                  >
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3 6h18v2H3zM3 10h18v2H3zM3 14h18v2H3zM3 18h18v2H3z"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="mobile-sort-control">
+                  <select 
+                    value={filters.sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="mobile-sort-select"
+                  >
+                    <option value="default">{t('shop.sort.default', 'الافتراضي')}</option>
+                    <option value="price-low-high">{t('shop.sort.price_low_high', 'السعر ↑')}</option>
+                    <option value="price-high-low">{t('shop.sort.price_high_low', 'السعر ↓')}</option>
+                    <option value="name-a-z">{t('shop.sort.name_a_z', 'الاسم أ-ي')}</option>
+                    <option value="name-z-a">{t('shop.sort.name_z_a', 'الاسم ي-أ')}</option>
+                    <option value="newest">{t('shop.sort.newest', 'الأحدث')}</option>
+                    <option value="oldest">{t('shop.sort.oldest', 'الأقدم')}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Bottom Row: Results Info */}
+              <div className="mobile-results-info">
+                <span className="mobile-results-count">
+                  {t('shop.showing_results', { 
+                    start: (currentPage - 1) * itemsPerPage + 1,
+                    end: Math.min(currentPage * itemsPerPage, filteredProducts.length),
+                    total: filteredProducts.length 
+                  })}
+                </span>
+                
+                <div className="mobile-items-per-page">
+                  <label>{t('shop.show')}:</label>
+                  <select 
+                    value={itemsPerPage}
+                    onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                    className="mobile-items-select"
+                  >
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Toolbar (hidden on mobile) */}
+            <div className="shop-toolbar desktop-only">
               <div className="toolbar-left">
                 <button 
                   className="mobile-filter-toggle"
@@ -761,15 +901,19 @@ const Shop = () => {
               
               <div className="toolbar-right">
                 <div className="sort-controls">
-                  <label>{t('shop.sort')}:</label>
+                  <label>{t('shop.sorting')}:</label>
                   <select 
                     value={filters.sortBy}
-                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="sort-select"
                   >
-                    <option value="latest">{t('shop.sort_by_latest')}</option>
-                    <option value="price-low">{t('shop.sort_by_price_low')}</option>
-                    <option value="price-high">{t('shop.sort_by_price_high')}</option>
-                    <option value="name">{t('shop.sort_by_name')}</option>
+                    <option value="default">{t('shop.sort.default', 'الترتيب الافتراضي')}</option>
+                    <option value="price-low-high">{t('shop.sort.price_low_high', 'السعر: من الأقل للأعلى')}</option>
+                    <option value="price-high-low">{t('shop.sort.price_high_low', 'السعر: من الأعلى للأقل')}</option>
+                    <option value="name-a-z">{t('shop.sort.name_a_z', 'الاسم: أ-ي')}</option>
+                    <option value="name-z-a">{t('shop.sort.name_z_a', 'الاسم: ي-أ')}</option>
+                    <option value="newest">{t('shop.sort.newest', 'الأحدث')}</option>
+                    <option value="oldest">{t('shop.sort.oldest', 'الأقدم')}</option>
                   </select>
                 </div>
                 
