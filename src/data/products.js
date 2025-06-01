@@ -19,6 +19,11 @@ export const allProducts = [
       "Red",
       "Green"
     ],
+    "sizes": [
+      { "name": "1 kg", "ar": "1 كيلو", "priceModifier": 0 },
+      { "name": "2 kg", "ar": "2 كيلو", "priceModifier": 15 },
+      { "name": "5 kg", "ar": "5 كيلو", "priceModifier": 35 }
+    ],
     "categoryId": 1,
     "subcategoryId": 1,
     "stock": 100,
@@ -44,6 +49,11 @@ export const allProducts = [
     "featureId": 2,
     "colors": [
       "Yellow"
+    ],
+    "sizes": [
+      { "name": "1 dozen", "ar": "دزينة", "priceModifier": 0 },
+      { "name": "2 dozen", "ar": "دزينتان", "priceModifier": 7 },
+      { "name": "3 dozen", "ar": "3 دزينات", "priceModifier": 12 }
     ],
     "categoryId": 1,
     "subcategoryId": 1,
@@ -71,6 +81,11 @@ export const allProducts = [
     "colors": [
       "Green"
     ],
+    "sizes": [
+      { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 8 },
+      { "name": "1kg", "ar": "1 كيلو", "priceModifier": 15 }
+    ],
     "categoryId": 1,
     "subcategoryId": 2,
     "stock": 50,
@@ -96,6 +111,11 @@ export const allProducts = [
     "featureId": 2,
     "colors": [
       "Red"
+    ],
+    "sizes": [
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 0 },
+      { "name": "1kg", "ar": "1 كيلو", "priceModifier": 10 },
+      { "name": "2kg", "ar": "2 كيلو", "priceModifier": 18 }
     ],
     "categoryId": 1,
     "subcategoryId": 2,
@@ -123,6 +143,11 @@ export const allProducts = [
     "colors": [
       "Orange"
     ],
+    "sizes": [
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 0 },
+      { "name": "1kg", "ar": "1 كيلو", "priceModifier": 6 },
+      { "name": "2kg", "ar": "2 كيلو", "priceModifier": 11 }
+    ],
     "categoryId": 1,
     "subcategoryId": 2,
     "stock": 120,
@@ -148,6 +173,11 @@ export const allProducts = [
     "featureId": 2,
     "colors": [
       "Pink"
+    ],
+    "sizes": [
+      { "name": "300g", "ar": "300 جرام", "priceModifier": 0 },
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 25 },
+      { "name": "1kg", "ar": "1 كيلو", "priceModifier": 45 }
     ],
     "categoryId": 2,
     "subcategoryId": 4,
@@ -175,6 +205,11 @@ export const allProducts = [
     "colors": [
       "Red"
     ],
+    "sizes": [
+      { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 20 },
+      { "name": "750g", "ar": "750 جرام", "priceModifier": 35 }
+    ],
     "categoryId": 2,
     "subcategoryId": 3,
     "stock": 30,
@@ -200,6 +235,11 @@ export const allProducts = [
     "featureId": 2,
     "colors": [
       "White"
+    ],
+    "sizes": [
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 0 },
+      { "name": "1kg", "ar": "1 كيلو", "priceModifier": 15 },
+      { "name": "2kg", "ar": "2 كيلو", "priceModifier": 28 }
     ],
     "categoryId": 2,
     "subcategoryId": 3,
@@ -227,6 +267,11 @@ export const allProducts = [
     "colors": [
       "Pink"
     ],
+    "sizes": [
+      { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 30 },
+      { "name": "1kg", "ar": "1 كيلو", "priceModifier": 55 }
+    ],
     "categoryId": 2,
     "subcategoryId": 4,
     "stock": 20,
@@ -252,6 +297,11 @@ export const allProducts = [
     "featureId": 2,
     "colors": [
       "White"
+    ],
+    "sizes": [
+      { "name": "500ml", "ar": "500 مل", "priceModifier": 0 },
+      { "name": "1L", "ar": "1 لتر", "priceModifier": 8 },
+      { "name": "2L", "ar": "2 لتر", "priceModifier": 15 }
     ],
     "categoryId": 3,
     "subcategoryId": 5,
@@ -279,6 +329,11 @@ export const allProducts = [
     "colors": [
       "White"
     ],
+    "sizes": [
+      { "name": "150g", "ar": "150 جرام", "priceModifier": 0 },
+      { "name": "300g", "ar": "300 جرام", "priceModifier": 12 },
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 20 }
+    ],
     "categoryId": 3,
     "subcategoryId": 5,
     "stock": 75,
@@ -304,6 +359,11 @@ export const allProducts = [
     "featureId": 1,
     "colors": [
       "Brown"
+    ],
+    "sizes": [
+      { "name": "6 pieces", "ar": "6 قطع", "priceModifier": 0 },
+      { "name": "12 pieces", "ar": "12 قطعة", "priceModifier": 8 },
+      { "name": "24 pieces", "ar": "24 قطعة", "priceModifier": 15 }
     ],
     "categoryId": 3,
     "subcategoryId": 6,
@@ -331,6 +391,11 @@ export const allProducts = [
     "colors": [
       "Yellow"
     ],
+    "sizes": [
+      { "name": "200g", "ar": "200 جرام", "priceModifier": 0 },
+      { "name": "400g", "ar": "400 جرام", "priceModifier": 18 },
+      { "name": "800g", "ar": "800 جرام", "priceModifier": 32 }
+    ],
     "categoryId": 3,
     "subcategoryId": 5,
     "stock": 40,
@@ -357,6 +422,11 @@ export const allProducts = [
     "colors": [
       "Brown"
     ],
+    "sizes": [
+      { "name": "Small", "ar": "صغير", "priceModifier": 0 },
+      { "name": "Medium", "ar": "متوسط", "priceModifier": 5 },
+      { "name": "Large", "ar": "كبير", "priceModifier": 8 }
+    ],
     "categoryId": 4,
     "subcategoryId": 7,
     "stock": 60,
@@ -382,6 +452,11 @@ export const allProducts = [
     "featureId": 2,
     "colors": [
       "Golden"
+    ],
+    "sizes": [
+      { "name": "2 pieces", "ar": "قطعتان", "priceModifier": 0 },
+      { "name": "4 pieces", "ar": "4 قطع", "priceModifier": 8 },
+      { "name": "6 pieces", "ar": "6 قطع", "priceModifier": 12 }
     ],
     "categoryId": 4,
     "subcategoryId": 8,
@@ -435,6 +510,23 @@ export const allProducts = [
     "colors": [
       "Brown"
     ],
+    "sizes":     [
+      {
+        "name": "2 pieces",
+        "ar": "قطعتان",
+        "priceModifier": 0
+      },
+      {
+        "name": "4 pieces",
+        "ar": "4 قطع",
+        "priceModifier": 8
+      },
+      {
+        "name": "6 pieces",
+        "ar": "6 قطع",
+        "priceModifier": 12
+      }
+    ],
     "categoryId": 4,
     "subcategoryId": 8,
     "stock": 42,
@@ -460,6 +552,23 @@ export const allProducts = [
     "featureId": 2,
     "colors": [
       "Orange"
+    ],
+    "sizes":     [
+      {
+        "name": "250ml",
+        "ar": "250 مل",
+        "priceModifier": 0
+      },
+      {
+        "name": "500ml",
+        "ar": "500 مل",
+        "priceModifier": 6
+      },
+      {
+        "name": "1L",
+        "ar": "1 لتر",
+        "priceModifier": 10
+      }
     ],
     "categoryId": 5,
     "subcategoryId": 10,
@@ -487,6 +596,23 @@ export const allProducts = [
     "colors": [
       "Clear"
     ],
+    "sizes":     [
+      {
+        "name": "330ml",
+        "ar": "330 مل",
+        "priceModifier": 0
+      },
+      {
+        "name": "500ml",
+        "ar": "500 مل",
+        "priceModifier": 3
+      },
+      {
+        "name": "1L",
+        "ar": "1 لتر",
+        "priceModifier": 5
+      }
+    ],
     "categoryId": 5,
     "subcategoryId": 10,
     "stock": 180,
@@ -512,6 +638,23 @@ export const allProducts = [
     "featureId": 1,
     "colors": [
       "Green"
+    ],
+    "sizes":     [
+      {
+        "name": "20 bags",
+        "ar": "20 كيس",
+        "priceModifier": 0
+      },
+      {
+        "name": "50 bags",
+        "ar": "50 كيس",
+        "priceModifier": 15
+      },
+      {
+        "name": "100 bags",
+        "ar": "100 كيس",
+        "priceModifier": 25
+      }
     ],
     "categoryId": 5,
     "subcategoryId": 9,
@@ -539,6 +682,23 @@ export const allProducts = [
     "colors": [
       "Brown"
     ],
+    "sizes":     [
+      {
+        "name": "20 bags",
+        "ar": "20 كيس",
+        "priceModifier": 0
+      },
+      {
+        "name": "50 bags",
+        "ar": "50 كيس",
+        "priceModifier": 15
+      },
+      {
+        "name": "100 bags",
+        "ar": "100 كيس",
+        "priceModifier": 25
+      }
+    ],
     "categoryId": 5,
     "subcategoryId": 9,
     "stock": 65,
@@ -564,6 +724,23 @@ export const allProducts = [
     "featureId": 6,
     "colors": [
       "Mixed"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 6,
     "subcategoryId": 11,
@@ -591,6 +768,23 @@ export const allProducts = [
     "colors": [
       "Mixed"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 6,
     "subcategoryId": 11,
     "stock": 70,
@@ -616,6 +810,23 @@ export const allProducts = [
     "featureId": 3,
     "colors": [
       "White"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 6,
     "subcategoryId": 12,
@@ -643,6 +854,23 @@ export const allProducts = [
     "colors": [
       "Brown"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 7,
     "subcategoryId": 13,
     "stock": 125,
@@ -668,6 +896,23 @@ export const allProducts = [
     "featureId": 4,
     "colors": [
       "Mixed"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 7,
     "subcategoryId": 14,
@@ -695,6 +940,23 @@ export const allProducts = [
     "colors": [
       "Yellow"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 7,
     "subcategoryId": 14,
     "stock": 140,
@@ -720,6 +982,23 @@ export const allProducts = [
     "featureId": 4,
     "colors": [
       "Golden"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 8,
     "subcategoryId": 15,
@@ -747,6 +1026,23 @@ export const allProducts = [
     "colors": [
       "White"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 8,
     "subcategoryId": 16,
     "stock": 60,
@@ -772,6 +1068,23 @@ export const allProducts = [
     "featureId": 9,
     "colors": [
       "Green"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 8,
     "subcategoryId": 15,
@@ -799,6 +1112,23 @@ export const allProducts = [
     "colors": [
       "Blue"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 9,
     "subcategoryId": 17,
     "stock": 90,
@@ -824,6 +1154,23 @@ export const allProducts = [
     "featureId": 11,
     "colors": [
       "White"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 9,
     "subcategoryId": 18,
@@ -851,6 +1198,23 @@ export const allProducts = [
     "colors": [
       "Green"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 9,
     "subcategoryId": 17,
     "stock": 115,
@@ -876,6 +1240,23 @@ export const allProducts = [
     "featureId": 4,
     "colors": [
       "Orange"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 10,
     "subcategoryId": 19,
@@ -903,6 +1284,23 @@ export const allProducts = [
     "colors": [
       "Clear"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 10,
     "subcategoryId": 20,
     "stock": 150,
@@ -928,6 +1326,23 @@ export const allProducts = [
     "featureId": 13,
     "colors": [
       "Red"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 10,
     "subcategoryId": 20,
@@ -955,6 +1370,23 @@ export const allProducts = [
     "colors": [
       "White"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 11,
     "subcategoryId": 21,
     "stock": 120,
@@ -981,6 +1413,23 @@ export const allProducts = [
     "colors": [
       "White"
     ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
     "categoryId": 11,
     "subcategoryId": 22,
     "stock": 55,
@@ -1006,6 +1455,23 @@ export const allProducts = [
     "featureId": 16,
     "colors": [
       "White"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
     ],
     "categoryId": 11,
     "subcategoryId": 21,

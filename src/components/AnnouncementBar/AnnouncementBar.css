@@ -71,21 +71,52 @@
   .announcement-bar {
     padding: 0.375rem 0;
     min-height: var(--announcement-bar-height);
+    overflow: hidden;
+    position: relative;
   }
 
   .announcement-content {
-    padding: 0 1rem;
-    flex-direction: column;
-    gap: 0.375rem;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
   }
 
   .announcement-text {
     font-size: 0.875rem;
     line-height: 1.3;
+    white-space: nowrap;
+    animation: marquee 20s linear infinite;
+    display: inline-block;
+    will-change: transform;
+  }
+
+  /* دعم اللغة العربية */
+  [dir="rtl"] .announcement-text {
+    animation: marqueeRTL 20s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(100vw);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes marqueeRTL {
+    0% {
+      transform: translateX(-100vw);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
 
   .countdown {
-    gap: 0.5rem;
+    display: none;
   }
 
   .countdown-label {
@@ -114,15 +145,33 @@
   .announcement-bar {
     padding: 0.25rem 0;
     min-height: var(--announcement-bar-height);
+    overflow: hidden;
+    position: relative;
   }
 
   .announcement-content {
-    padding: 0 0.75rem;
-    gap: 0.25rem;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
   }
 
   .announcement-text {
     font-size: 0.8rem;
+    white-space: nowrap;
+    animation: marquee 18s linear infinite;
+    display: inline-block;
+    will-change: transform;
+  }
+
+  /* دعم اللغة العربية */
+  [dir="rtl"] .announcement-text {
+    animation: marqueeRTL 18s linear infinite;
+  }
+
+  .countdown {
+    display: none;
   }
 
   .countdown-label {
@@ -143,6 +192,6 @@
   }
 
   .countdown-unit {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
 } 

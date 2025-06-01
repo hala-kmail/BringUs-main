@@ -3,7 +3,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0.75rem 0;
   position: sticky;
-  top: 0;
+  top: calc(var(--announcement-bar-height) + var(--top-bar-height));
   z-index: 998;
   width: 100%;
   min-height: var(--navbar-height);

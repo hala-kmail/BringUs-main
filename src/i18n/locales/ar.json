@@ -190,10 +190,13 @@
     "product_categories": "فئات المنتجات",
     "filter_by_color": "فلتر حسب اللون",
     "filter_by_brands": "فلتر حسب العلامة التجارية",
+    "filter_by_features": "فلتر حسب الميزات",
     "product_status": "حالة المنتج",
     "in_stock": "متوفر",
     "on_sale": "في التخفيضات",
     "showing_results": "عرض {{start}}-{{end}} من {{total}} نتيجة",
+    "showing_products": "عرض {{count}} منتج",
+    "search_results": "تم العثور على {{count}} نتيجة للبحث \"{{query}}\"",
     "sorting": "ترتيب",
     "all_categories": "جميع الفئات",
     "all_colors": "جميع الألوان",
@@ -206,10 +209,23 @@
     "sort_by_name": "ترتيب حسب الاسم",
     "show": "عرض",
     "items": "عنصر",
+    "items_per_page": "عنصر في الصفحة",
+    "grid_view": "عرض الشبكة",
+    "list_view": "عرض القائمة",
     "quick_view": "عرض سريع",
     "compare": "مقارنة",
     "add_to_cart": "أضف للسلة",
     "currency": "ر.س",
+    "sort": {
+      "default": "الترتيب الافتراضي",
+      "latest": "الأحدث",
+      "price_low_high": "السعر: من الأقل للأعلى",
+      "price_high_low": "السعر: من الأعلى للأقل",
+      "name_a_z": "الاسم: أ-ي",
+      "name_z_a": "الاسم: ي-أ",
+      "newest": "الأحدث",
+      "oldest": "الأقدم"
+    },
     "colors": {
       "green": "أخضر",
       "red": "أحمر",
@@ -312,5 +328,13 @@
       "newest": "الأحدث",
       "oldest": "الأقدم"
     }
+  },
+  "search": {
+    "searching_for": "البحث عن: \"{{query}}\"",
+    "clear": "مسح البحث",
+    "placeholder": "ابحث عن المنتجات...",
+    "results": "نتائج البحث",
+    "no_results": "لم يتم العثور على نتائج",
+    "suggestions": "اقتراحات"
   }
 } 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import './TopBar.css';
@@ -12,28 +12,6 @@ const TopBar = () => {
 
   // Temporary mock data - replace with real data later
   const userName = "محمد أحمد";
-
-  // Update top position based on announcement bar height
-  useEffect(() => {
-    const updateTopPosition = () => {
-      const announcementBar = document.querySelector('.announcement-bar');
-      const topBar = document.querySelector('.top-bar');
-      
-      if (announcementBar && topBar) {
-        const announcementHeight = announcementBar.offsetHeight;
-        topBar.style.top = `${announcementHeight}px`;
-      }
-    };
-
-    // Update on mount and resize
-    updateTopPosition();
-    window.addEventListener('resize', updateTopPosition);
-    
-    // Update after a short delay to ensure content is rendered
-    setTimeout(updateTopPosition, 100);
-
-    return () => window.removeEventListener('resize', updateTopPosition);
-  }, []);
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },

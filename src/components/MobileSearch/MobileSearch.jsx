@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { allProducts } from '../../data/products';
+import { useNavigate } from 'react-router-dom';
+import { allProducts } from '../../data/index';
 import './MobileSearch.css';
 
-const MobileSearch = ({ isOpen, onClose }) => {
+const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuery }) => {
   const { t, i18n } = useTranslation();
-  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState(parentSearchQuery || '');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const language = i18n.language === 'ar' ? 'ar' : 'en';
 
@@ -33,7 +35,7 @@ const MobileSearch = ({ isOpen, onClose }) => {
       product.name[language].toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description[language].toLowerCase().includes(searchQuery.toLowerCase())
     );
-    setFilteredProducts(results);
+    setFilteredProducts(results.slice(0, 10)); // Limit to 10 results for performance
   }, [searchQuery, language]);
 
   const handleClose = () => {
@@ -43,6 +45,28 @@ const MobileSearch = ({ isOpen, onClose }) => {
 
   const handleClear = () => {
     setSearchQuery('');
+    if (onSearch) {
+      onSearch('');
+    }
+  };
+
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+    handleClose();
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim() && onSearch) {
+      onSearch(searchQuery);
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -63,7 +87,8 @@ const MobileSearch = ({ isOpen, onClose }) => {
             type="text"
             placeholder={t('navbar.search_placeholder')}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
             className="mobile-search-input"
             autoFocus
           />
@@ -83,11 +108,44 @@ const MobileSearch = ({ isOpen, onClose }) => {
           filteredProducts.length > 0 ? (
             <div className="search-suggestions">
               {filteredProducts.map(product => (
-                <div className="suggestion-item" key={product.id}>
-                  <img src={product.image} alt={product.name[language]} style={{width: 40, height: 40, borderRadius: 8, objectFit: 'cover', marginRight: 12}} />
-                  <span>{product.name[language]}</span>
+                <div 
+                  className="suggestion-item" 
+                  key={product.id}
+                  onClick={() => handleProductClick(product.id)}
+                >
+                  <img 
+                    src={product.image} 
+                    alt={product.name[language]} 
+                    style={{width: 40, height: 40, borderRadius: 8, objectFit: 'cover', marginRight: 12}} 
+                  />
+                  <div className="suggestion-content">
+                    <span className="suggestion-name">{product.name[language]}</span>
+                    <span className="suggestion-price">
+                      {product.discountPrice ? (
+                        <>
+                          <span className="current-price">${product.discountPrice}</span>
+                          <span className="original-price">${product.originalPrice}</span>
+                        </>
+                      ) : (
+                        <span className="current-price">${product.originalPrice}</span>
+                      )}
+                    </span>
+                  </div>
                 </div>
               ))}
+              {searchQuery.trim() && (
+                <div 
+                  className="suggestion-item search-all"
+                  onClick={handleSearchSubmit}
+                >
+                  <div className="search-icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <span>{t('search.search_all_for', `البحث عن جميع النتائج لـ "${searchQuery}"`)}</span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="search-placeholder">

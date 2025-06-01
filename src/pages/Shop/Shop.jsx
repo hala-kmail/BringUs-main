@@ -17,6 +17,9 @@ const Shop = () => {
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  
   // Filter states
   const [filters, setFilters] = useState({
     priceRange: { min: 0, max: 100 },
@@ -24,7 +27,7 @@ const Shop = () => {
     features: [],
     colors: [],
     status: [],
-    sortBy: 'latest'
+    sortBy: 'default'
   });
 
   const [showFilters, setShowFilters] = useState(false);
@@ -277,7 +280,7 @@ const Shop = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [filters]);
+  }, [filters, searchQuery]);
 
   useEffect(() => {
     applyPagination();
@@ -316,8 +319,20 @@ const Shop = () => {
   };
 
   const applyFilters = () => {
-    console.log('Applying filters:', filters);
+    console.log('Applying filters:', filters, 'Search query:', searchQuery);
     let filtered = [...allProducts];
+
+    // Search filter - apply first
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(product => {
+        const searchTerm = searchQuery.toLowerCase();
+        const productName = product.name[currentLang].toLowerCase();
+        const productDescription = product.description[currentLang].toLowerCase();
+        
+        return productName.includes(searchTerm) || productDescription.includes(searchTerm);
+      });
+      console.log('After search filter:', filtered.length);
+    }
 
     // Price filter
     filtered = filtered.filter(product => {
@@ -426,17 +441,37 @@ const Shop = () => {
 
     // Sort
     switch (filters.sortBy) {
-      case 'price-low':
+      case 'price-low-high':
         filtered.sort((a, b) => (a.discountPrice || a.originalPrice) - (b.discountPrice || b.originalPrice));
         break;
-      case 'price-high':
+      case 'price-high-low':
         filtered.sort((a, b) => (b.discountPrice || b.originalPrice) - (a.discountPrice || a.originalPrice));
         break;
-      case 'name':
+      case 'name-a-z':
         filtered.sort((a, b) => a.name[currentLang].localeCompare(b.name[currentLang]));
         break;
+      case 'name-z-a':
+        filtered.sort((a, b) => b.name[currentLang].localeCompare(a.name[currentLang]));
+        break;
+      case 'newest':
+        // Sort by newest (assuming products with higher ID are newer)
+        filtered.sort((a, b) => b.id - a.id);
+        break;
+      case 'oldest':
+        // Sort by oldest
+        filtered.sort((a, b) => a.id - b.id);
+        break;
+      case 'latest':
+      case 'default':
       default:
-        // latest - keep original order
+        // keep original order or sort by featured/bestseller first
+        filtered.sort((a, b) => {
+          if (a.isBestSeller && !b.isBestSeller) return -1;
+          if (!a.isBestSeller && b.isBestSeller) return 1;
+          if (a.isNew && !b.isNew) return -1;
+          if (!a.isNew && b.isNew) return 1;
+          return 0;
+        });
         break;
     }
 
@@ -472,7 +507,7 @@ const Shop = () => {
       features: [],
       colors: [],
       status: [],
-      sortBy: 'latest'
+      sortBy: 'default'
     });
   };
 
@@ -507,6 +542,11 @@ const Shop = () => {
 
   const handleMobileSearchClose = () => {
     setIsMobileSearchOpen(false);
+  };
+
+  // Search function
+  const handleSearch = (query) => {
+    setSearchQuery(query);
   };
 
   // Pagination functions
@@ -565,6 +605,8 @@ const Shop = () => {
       <MobileSearch 
         isOpen={isMobileSearchOpen}
         onClose={handleMobileSearchClose}
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
       />
 
       {/* Mobile Filters */}
@@ -578,7 +620,7 @@ const Shop = () => {
       <div className="shop-container">
         {/* Shop Header with Filter Button */}
         <div className="shop-header">
-          <div className="shop-filters-toggle">
+          <div className="shop-filters-toggle" style={{ display: 'none' }}>
             <button 
               className="filter-button"
               onClick={() => setShowFilters(true)}
@@ -804,9 +846,9 @@ const Shop = () => {
 
           {/* Main Content */}
           <main className="shop-content">
-            {/* Mobile Toolbar */}
+            {/* Mobile Toolbar - Show on mobile */}
             <div className="mobile-shop-toolbar">
-              {/* Top Row: Filter Controls */}
+              {/* Top Row: Search info + Advanced Filters + View Controls */}
               <div className="mobile-filter-controls">
                 <button 
                   className="mobile-filter-btn"
@@ -818,14 +860,28 @@ const Shop = () => {
                   </svg>
                 </button>
 
+                {/* Search Display */}
+                {searchQuery && (
+                  <div className="mobile-search-display">
+                    <span>{t('search.searching_for', { query: searchQuery })}</span>
+                    <button 
+                      className="mobile-search-clear"
+                      onClick={() => handleSearch('')}
+                      title={t('search.clear')}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
                 <div className="mobile-view-controls">
                   <button 
                     className={`mobile-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                     onClick={() => setViewMode('grid')}
                     title={t('shop.grid_view')}
                   >
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                   </button>
                   <button 
@@ -833,8 +889,8 @@ const Shop = () => {
                     onClick={() => setViewMode('list')}
                     title={t('shop.list_view')}
                   >
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 6h18v2H3zM3 10h18v2H3zM3 14h18v2H3zM3 18h18v2H3z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
                   </button>
                 </div>
@@ -845,37 +901,42 @@ const Shop = () => {
                     onChange={(e) => handleSortChange(e.target.value)}
                     className="mobile-sort-select"
                   >
-                    <option value="default">{t('shop.sort.default', 'الافتراضي')}</option>
-                    <option value="price-low-high">{t('shop.sort.price_low_high', 'السعر ↑')}</option>
-                    <option value="price-high-low">{t('shop.sort.price_high_low', 'السعر ↓')}</option>
-                    <option value="name-a-z">{t('shop.sort.name_a_z', 'الاسم أ-ي')}</option>
-                    <option value="name-z-a">{t('shop.sort.name_z_a', 'الاسم ي-أ')}</option>
-                    <option value="newest">{t('shop.sort.newest', 'الأحدث')}</option>
-                    <option value="oldest">{t('shop.sort.oldest', 'الأقدم')}</option>
+                    <option value="default">{t('shop.sort.default')}</option>
+                    <option value="price-low-high">{t('shop.sort.price_low_high')}</option>
+                    <option value="price-high-low">{t('shop.sort.price_high_low')}</option>
+                    <option value="name-a-z">{t('shop.sort.name_a_z')}</option>
+                    <option value="name-z-a">{t('shop.sort.name_z_a')}</option>
+                    <option value="newest">{t('shop.sort.newest')}</option>
+                    <option value="oldest">{t('shop.sort.oldest')}</option>
                   </select>
                 </div>
               </div>
 
               {/* Bottom Row: Results Info */}
               <div className="mobile-results-info">
-                <span className="mobile-results-count">
-                  {t('shop.showing_results', { 
-                    start: (currentPage - 1) * itemsPerPage + 1,
-                    end: Math.min(currentPage * itemsPerPage, filteredProducts.length),
-                    total: filteredProducts.length 
-                  })}
-                </span>
+                <div className="mobile-results-count">
+                  {searchQuery ? (
+                    t('shop.search_results', { 
+                      count: filteredProducts.length,
+                      query: searchQuery 
+                    })
+                  ) : (
+                    t('shop.showing_products', { 
+                      count: filteredProducts.length 
+                    })
+                  )}
+                </div>
                 
                 <div className="mobile-items-per-page">
-                  <label>{t('shop.show')}:</label>
+                  <label>{t('shop.items_per_page')}:</label>
                   <select 
                     value={itemsPerPage}
                     onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
                     className="mobile-items-select"
                   >
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
                   </select>
                 </div>
               </div>
@@ -907,13 +968,13 @@ const Shop = () => {
                     onChange={(e) => handleSortChange(e.target.value)}
                     className="sort-select"
                   >
-                    <option value="default">{t('shop.sort.default', 'الترتيب الافتراضي')}</option>
-                    <option value="price-low-high">{t('shop.sort.price_low_high', 'السعر: من الأقل للأعلى')}</option>
-                    <option value="price-high-low">{t('shop.sort.price_high_low', 'السعر: من الأعلى للأقل')}</option>
-                    <option value="name-a-z">{t('shop.sort.name_a_z', 'الاسم: أ-ي')}</option>
-                    <option value="name-z-a">{t('shop.sort.name_z_a', 'الاسم: ي-أ')}</option>
-                    <option value="newest">{t('shop.sort.newest', 'الأحدث')}</option>
-                    <option value="oldest">{t('shop.sort.oldest', 'الأقدم')}</option>
+                    <option value="default">{t('shop.sort.default')}</option>
+                    <option value="price-low-high">{t('shop.sort.price_low_high')}</option>
+                    <option value="price-high-low">{t('shop.sort.price_high_low')}</option>
+                    <option value="name-a-z">{t('shop.sort.name_a_z')}</option>
+                    <option value="name-z-a">{t('shop.sort.name_z_a')}</option>
+                    <option value="newest">{t('shop.sort.newest')}</option>
+                    <option value="oldest">{t('shop.sort.oldest')}</option>
                   </select>
                 </div>
                 

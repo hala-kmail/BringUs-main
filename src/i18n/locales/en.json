@@ -190,6 +190,7 @@
     "product_categories": "Product Categories",
     "filter_by_color": "Filter by Color",
     "filter_by_brands": "Filter by Brands",
+    "filter_by_features": "Filter by Features",
     "product_status": "Product Status",
     "in_stock": "In Stock",
     "on_sale": "On Sale",
@@ -200,6 +201,9 @@
     "sort_by_name": "Name",
     "show": "Show",
     "items": "items",
+    "items_per_page": "items per page",
+    "grid_view": "Grid View",
+    "list_view": "List View",
     "quick_view": "Quick View",
     "add_to_cart": "Add to Cart",
     "add_to_wishlist": "Add to Wishlist",
@@ -207,7 +211,19 @@
     "added_to_wishlist": "Added to wishlist!",
     "removed_from_wishlist": "Removed from wishlist!",
     "showing_results": "Showing {{start}}–{{end}} of {{total}} results",
+    "showing_products": "Showing {{count}} products",
+    "search_results": "Found {{count}} results for \"{{query}}\"",
     "currency": "SAR",
+    "sort": {
+      "default": "Default Sorting",
+      "latest": "Latest",
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "name_a_z": "Name: A-Z",
+      "name_z_a": "Name: Z-A",
+      "newest": "Newest",
+      "oldest": "Oldest"
+    },
     "colors": {
       "red": "Red",
       "green": "Green",
@@ -307,5 +323,13 @@
       "newest": "Newest",
       "oldest": "Oldest"
     }
+  },
+  "search": {
+    "searching_for": "Searching for: \"{{query}}\"",
+    "clear": "Clear search",
+    "placeholder": "Search for products...",
+    "results": "Search results",
+    "no_results": "No results found",
+    "suggestions": "Suggestions"
   }
 } 

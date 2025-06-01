@@ -4,7 +4,7 @@
   padding: 0.375rem 0;
   font-size: 0.875rem;
   position: sticky;
-  top: 0;
+  top: var(--announcement-bar-height);
   z-index: 999;
   min-height: var(--top-bar-height);
   display: flex;

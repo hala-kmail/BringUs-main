@@ -12,31 +12,6 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const placeholders = t('navbar.search_placeholders', { returnObjects: true });
 
-  // Update top position based on announcement bar and top bar heights
-  useEffect(() => {
-    const updateTopPosition = () => {
-      const announcementBar = document.querySelector('.announcement-bar');
-      const topBar = document.querySelector('.top-bar');
-      const navbar = document.querySelector('.navbar');
-      
-      if (announcementBar && topBar && navbar) {
-        const announcementHeight = announcementBar.offsetHeight;
-        const topBarHeight = topBar.offsetHeight;
-        const totalHeight = announcementHeight + topBarHeight;
-        navbar.style.top = `${totalHeight}px`;
-      }
-    };
-
-    // Update on mount and resize
-    updateTopPosition();
-    window.addEventListener('resize', updateTopPosition);
-    
-    // Update after a short delay to ensure content is rendered
-    setTimeout(updateTopPosition, 100);
-
-    return () => window.removeEventListener('resize', updateTopPosition);
-  }, []);
-
   // Update placeholder text every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {

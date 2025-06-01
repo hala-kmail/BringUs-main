@@ -46,20 +46,20 @@
 }
 
 .main-content {
-  padding-top: 60px; /* Height of the announcement bar */
+  padding-top: var(--announcement-bar-height);
   min-height: 100vh;
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: 50px; /* Reduced for mobile */
+    padding-top: var(--announcement-bar-height);
   }
 }
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: 45px; /* Further reduced for small screens */
+    padding-top: var(--announcement-bar-height);
   }
 }
 

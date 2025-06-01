@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Categories from '../Categories/Categories';
@@ -12,33 +12,6 @@ const SecondaryNavbar = () => {
     { id: 'home', name: t('secondary_nav.home'), path: '/home' },
     { id: 'shop', name: t('secondary_nav.shop'), path: '/shop' }
   ];
-
-  // Update top position based on announcement bar, top bar, and navbar heights
-  useEffect(() => {
-    const updateTopPosition = () => {
-      const announcementBar = document.querySelector('.announcement-bar');
-      const topBar = document.querySelector('.top-bar');
-      const navbar = document.querySelector('.navbar');
-      const secondaryNavbar = document.querySelector('.secondary-navbar');
-      
-      if (announcementBar && topBar && navbar && secondaryNavbar) {
-        const announcementHeight = announcementBar.offsetHeight;
-        const topBarHeight = topBar.offsetHeight;
-        const navbarHeight = navbar.offsetHeight;
-        const totalHeight = announcementHeight + topBarHeight + navbarHeight;
-        secondaryNavbar.style.top = `${totalHeight}px`;
-      }
-    };
-
-    // Update on mount and resize
-    updateTopPosition();
-    window.addEventListener('resize', updateTopPosition);
-    
-    // Update after a short delay to ensure content is rendered
-    setTimeout(updateTopPosition, 100);
-
-    return () => window.removeEventListener('resize', updateTopPosition);
-  }, []);
 
   return (
     <div className="secondary-navbar">
