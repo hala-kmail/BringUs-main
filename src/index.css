@@ -15,7 +15,7 @@
 
   /* Dynamic Heights for Responsive Design */
   --announcement-bar-height: 60px;
-  --top-bar-height: 40px;
+  --top-bar-height: 52px;
   --navbar-height: 70px;
 }
 
@@ -23,7 +23,7 @@
 @media (max-width: 768px) {
   :root {
     --announcement-bar-height: 50px;
-    --top-bar-height: 35px;
+    --top-bar-height: 52px;
     --navbar-height: 60px;
   }
 }

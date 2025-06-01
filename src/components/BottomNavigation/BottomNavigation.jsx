@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
+import { useCart } from '../../contexts/CartContext';
 import './BottomNavigation.css';
 
 const BottomNavigation = () => {
@@ -9,6 +10,11 @@ const BottomNavigation = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const { wishlist } = useWishlist();
+  const { getCartTotals } = useCart();
+
+  // Get real cart items count
+  const cartTotals = getCartTotals();
+  const cartItemsCount = cartTotals.itemsCount;
 
   const navItems = [
     {
@@ -71,7 +77,7 @@ const BottomNavigation = () => {
       ),
       path: '/cart',
       isActive: location.pathname === '/cart',
-      badge: 3 // يمكن ربطه بـ state الـ cart لاحقاً
+      badge: cartItemsCount > 0 ? cartItemsCount : null
     }
   ];
 

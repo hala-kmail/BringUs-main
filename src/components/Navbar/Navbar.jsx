@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
+import { useCart } from '../../contexts/CartContext';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
 
 const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const { t } = useTranslation();
   const { count: wishlistCount } = useWishlist();
+  const { getCartTotals } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const placeholders = t('navbar.search_placeholders', { returnObjects: true });
@@ -21,8 +23,9 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
     return () => clearInterval(interval);
   }, [placeholders.length]);
 
-  // Temporary mock data - replace with real data later
-  const cartItemsCount = 3;
+  // Get real cart items count
+  const cartTotals = getCartTotals();
+  const cartItemsCount = cartTotals.itemsCount;
 
   return (
     <nav className="navbar">

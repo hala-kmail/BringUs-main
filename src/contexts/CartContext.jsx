@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import Toast from '../components/Toast/Toast';
 
 const CartContext = createContext();
 
@@ -12,6 +14,10 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
+  const { t, i18n } = useTranslation();
+
+  const currentLang = i18n.language;
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -29,6 +35,16 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
+
+  // دالة لإظهار الإشعارات
+  const showToast = (message, type = 'success') => {
+    setToast({ isVisible: true, message, type });
+  };
+
+  // دالة لإخفاء الإشعارات
+  const hideToast = () => {
+    setToast({ ...toast, isVisible: false });
+  };
 
   // Add item to cart
   const addToCart = (product, options = {}) => {
@@ -75,11 +91,31 @@ export const CartProvider = ({ children }) => {
       };
       setCartItems([...cartItems, newCartItem]);
     }
+
+    // Show success toast message
+    const productName = product.name[currentLang] || product.name.ar || product.name.en;
+    const message = currentLang === 'ar' 
+      ? `تم إضافة ${productName} إلى السلة بنجاح!`
+      : `${productName} added to cart successfully!`;
+    
+    showToast(message, 'success');
   };
 
   // Remove item from cart
   const removeFromCart = (cartItemId) => {
+    // Find the item to get its name for the toast message
+    const itemToRemove = cartItems.find(item => item.cartItemId === cartItemId);
+    
     setCartItems(cartItems.filter(item => item.cartItemId !== cartItemId));
+    
+    if (itemToRemove) {
+      const productName = itemToRemove.name[currentLang] || itemToRemove.name.ar || itemToRemove.name.en;
+      const message = currentLang === 'ar' 
+        ? `تم حذف ${productName} من السلة 🗑️`
+        : `${productName} removed from cart 🗑️`;
+      
+      showToast(message, 'info');
+    }
   };
 
   // Update item quantity
@@ -100,6 +136,12 @@ export const CartProvider = ({ children }) => {
   // Clear entire cart
   const clearCart = () => {
     setCartItems([]);
+    
+    const message = currentLang === 'ar' 
+      ? 'تم إفراغ السلة بالكامل 🧹'
+      : 'Cart cleared successfully 🧹';
+    
+    showToast(message, 'info');
   };
 
   // Get cart totals
@@ -108,17 +150,16 @@ export const CartProvider = ({ children }) => {
       return total + (item.finalPrice * item.quantity);
     }, 0);
 
-    const itemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+    // Count unique products instead of total quantity
+    const itemsCount = cartItems.length;
 
-    // You can add shipping, tax, discount calculations here
+    // You can add shipping calculations here
     const shipping = subtotal > 100 ? 0 : 10; // Free shipping over $100
-    const tax = subtotal * 0.1; // 10% tax
-    const total = subtotal + shipping + tax;
+    const total = subtotal + shipping; // Removed tax calculation
 
     return {
       subtotal: parseFloat(subtotal.toFixed(2)),
       shipping: parseFloat(shipping.toFixed(2)),
-      tax: parseFloat(tax.toFixed(2)),
       total: parseFloat(total.toFixed(2)),
       itemsCount
     };
@@ -151,6 +192,12 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={value}>
       {children}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </CartContext.Provider>
   );
 };
