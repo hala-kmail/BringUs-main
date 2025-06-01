@@ -3,6 +3,18 @@ export const allProducts = [
   {
     "id": 1,
     "image": "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80",
+    "additionalImages": [
+      "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80",
+      "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80",
+      "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80"
+    ],
+    "videos": [
+      {
+        "url": "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+        "thumbnail": "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80",
+        "title": "How to choose the best apples"
+      }
+    ],
     "name": {
       "en": "Fresh Organic Apples",
       "ar": "تفاح عضوي طازج"
@@ -35,6 +47,17 @@ export const allProducts = [
   {
     "id": 14,
     "image": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "additionalImages": [
+      "https://images.unsplash.com/photo-1603833665858-e61d17a86224?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+    ],
+    "videos": [
+      {
+        "url": "https://file-examples.com/storage/fe9d8e2d1b2a0fd93d2dba1/2017/04/file_example_MP4_640_3MG.mp4",
+        "thumbnail": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+        "title": "Health benefits of bananas"
+      }
+    ],
     "name": {
       "en": "Fresh Bananas",
       "ar": "موز طازج"
@@ -159,6 +182,23 @@ export const allProducts = [
   {
     "id": 5,
     "image": "https://images.unsplash.com/photo-1506976785307-8732e854ad03?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "additionalImages": [
+      "https://images.unsplash.com/photo-1544943910-4c1dc44aab44?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+      "https://images.unsplash.com/photo-1574781330855-d0db3afe6c93?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+    ],
+    "videos": [
+      {
+        "url": "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+        "thumbnail": "https://images.unsplash.com/photo-1615485291939-5dc5de4e5b8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+        "title": "How to prepare salmon fillet"
+      },
+      {
+        "url": "https://file-examples.com/storage/fe9d8e2d1b2a0fd93d2dba1/2017/04/file_example_MP4_480_1_5MG.mp4",
+        "thumbnail": "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+        "title": "Nutritional benefits of salmon"
+      }
+    ],
     "name": {
       "en": "Premium Salmon Fillet",
       "ar": "فيليه سلمون فاخر"
@@ -190,6 +230,17 @@ export const allProducts = [
   {
     "id": 13,
     "image": "https://images.unsplash.com/photo-1574484284002-952d92456975?ixlib=rb-4.0.3&auto=format&fit=crop&w=2087&q=80",
+    "additionalImages": [
+      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2087&q=80",
+      "https://images.unsplash.com/photo-1532636320572-532d8fcf0645?ixlib=rb-4.0.3&auto=format&fit=crop&w=2087&q=80"
+    ],
+    "videos": [
+      {
+        "url": "https://file-examples.com/storage/fe9d8e2d1b2a0fd93d2dba1/2017/04/file_example_MP4_640_3MG.mp4",
+        "thumbnail": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2087&q=80",
+        "title": "How to cook the perfect steak"
+      }
+    ],
     "name": {
       "en": "Grass-Fed Beef Steak",
       "ar": "ستيك لحم بقري مرعى طبيعي"

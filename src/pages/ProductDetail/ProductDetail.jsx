@@ -20,12 +20,48 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [addToCartLoading, setAddToCartLoading] = useState(false);
+  const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
 
   const currentLang = i18n.language;
+
+  // Create combined media array with images and videos - moved before useEffect
+  const mediaItems = product ? [
+    // Add main image first
+    { type: 'image', url: product.image, thumbnail: product.image, title: product.name[currentLang] },
+    // Add additional images
+    ...(product.additionalImages || []).map(img => ({ 
+      type: 'image', 
+      url: img, 
+      thumbnail: img, 
+      title: product.name[currentLang] 
+    })),
+    // Add videos
+    ...(product.videos || []).map(video => ({ 
+      type: 'video', 
+      url: video.url, 
+      thumbnail: video.thumbnail, 
+      title: video.title || product.name[currentLang] 
+    }))
+  ] : [];
+
+  const getCurrentMedia = () => {
+    if (!mediaItems || mediaItems.length === 0) {
+      return { type: 'image', url: '', thumbnail: '', title: '' };
+    }
+    return mediaItems[selectedMediaIndex] || mediaItems[0];
+  };
+
+  // Reset selectedMediaIndex when mediaItems changes
+  useEffect(() => {
+    if (mediaItems.length > 0 && selectedMediaIndex >= mediaItems.length) {
+      setSelectedMediaIndex(0);
+    }
+  }, [mediaItems.length, selectedMediaIndex]);
 
   useEffect(() => {
     const fetchProduct = () => {
@@ -158,6 +194,38 @@ const ProductDetail = () => {
     }
   };
 
+  const handleZoomToggle = () => {
+    setIsZoomModalOpen(!isZoomModalOpen);
+  };
+
+  const handleZoomModalClose = (e) => {
+    if (e.target === e.currentTarget) {
+      setIsZoomModalOpen(false);
+    }
+  };
+
+  // Handle keyboard events for zoom modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isZoomModalOpen && mediaItems.length > 0) {
+        if (e.key === 'Escape') {
+          setIsZoomModalOpen(false);
+        } else if (e.key === 'ArrowLeft') {
+          setSelectedMediaIndex(prev => 
+            prev > 0 ? prev - 1 : mediaItems.length - 1
+          );
+        } else if (e.key === 'ArrowRight') {
+          setSelectedMediaIndex(prev => 
+            prev < mediaItems.length - 1 ? prev + 1 : 0
+          );
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isZoomModalOpen, mediaItems.length]);
+
   // Calculate price based on selected size
   const calculatePrice = () => {
     if (!product) return { originalPrice: 0, discountPrice: 0 };
@@ -226,9 +294,6 @@ const ProductDetail = () => {
   const subcategory = getSubcategoryById(product.subcategoryId);
   const feature = getFeatureById(product.featureId);
 
-  // Get all product images (main image + additional images if available)
-  const productImages = [product.image, ...(product.additionalImages || [])];
-
   return (
     <div className="product-detail">
       <TopBar />
@@ -259,27 +324,55 @@ const ProductDetail = () => {
           {/* Product Image Gallery */}
           <div className="product-image-gallery">
             <div className="product-main-image">
-              <img 
-                src={productImages[selectedImageIndex]} 
-                alt={product.name[currentLang]} 
-              />
-              <button className="product-zoom-btn" onClick={() => {}}>
+              {getCurrentMedia().type === 'video' ? (
+                <video 
+                  src={getCurrentMedia().url} 
+                  controls
+                  poster={getCurrentMedia().thumbnail}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                >
+                  {currentLang === 'ar' ? 'متصفحك لا يدعم تشغيل الفيديو.' : 'Your browser does not support the video tag.'}
+                </video>
+              ) : (
+                <img 
+                  src={getCurrentMedia().url} 
+                  alt={product.name[currentLang]} 
+                />
+              )}
+              <button className="product-zoom-btn" onClick={handleZoomToggle}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                 </svg>
               </button>
             </div>
             
-            {productImages.length > 1 && (
+            {/* Media Title */}
+            {getCurrentMedia().type === 'video' && getCurrentMedia().title && (
+              <div className="media-title">
+                <h4>{getCurrentMedia().title}</h4>
+              </div>
+            )}
+            
+            {mediaItems.length > 1 && (
               <div className="product-thumbnail-images">
-                {productImages.map((image, index) => (
-                  <img
+                {mediaItems.map((item, index) => (
+                  <div
                     key={index}
-                    src={image}
-                    alt={`${product.name[currentLang]} ${index + 1}`}
-                    className={selectedImageIndex === index ? 'thumbnail-active' : ''}
-                    onClick={() => setSelectedImageIndex(index)}
-                  />
+                    className={`thumbnail-container ${selectedMediaIndex === index ? 'thumbnail-active' : ''}`}
+                    onClick={() => setSelectedMediaIndex(index)}
+                  >
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                    />
+                    {item.type === 'video' && (
+                      <div className="video-play-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -477,6 +570,99 @@ const ProductDetail = () => {
         currentProductId={product.id} 
         currentCategoryId={product.categoryId} 
       />
+
+      {/* Zoom Modal */}
+      {isZoomModalOpen && mediaItems.length > 0 && (
+        <div className="zoom-modal-overlay" onClick={handleZoomModalClose}>
+          <div className="zoom-modal-content">
+            <button 
+              className="zoom-modal-close" 
+              onClick={() => setIsZoomModalOpen(false)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <div className="zoom-modal-media">
+              {getCurrentMedia().type === 'video' && getCurrentMedia().url ? (
+                <video 
+                  src={getCurrentMedia().url} 
+                  controls
+                  poster={getCurrentMedia().thumbnail}
+                  autoPlay
+                  className="zoom-modal-video"
+                >
+                  {currentLang === 'ar' ? 'متصفحك لا يدعم تشغيل الفيديو.' : 'Your browser does not support the video tag.'}
+                </video>
+              ) : (
+                <img 
+                  src={getCurrentMedia().url || ''} 
+                  alt={product.name[currentLang]}
+                  className="zoom-modal-image"
+                />
+              )}
+            </div>
+
+            {mediaItems.length > 1 && (
+              <>
+                <button 
+                  className="zoom-modal-nav zoom-modal-prev" 
+                  onClick={() => setSelectedMediaIndex(prev => 
+                    prev > 0 ? prev - 1 : mediaItems.length - 1
+                  )}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <button 
+                  className="zoom-modal-nav zoom-modal-next" 
+                  onClick={() => setSelectedMediaIndex(prev => 
+                    prev < mediaItems.length - 1 ? prev + 1 : 0
+                  )}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            <div className="zoom-modal-info">
+              <h3>{product.name[currentLang]}</h3>
+              {getCurrentMedia().type === 'video' && getCurrentMedia().title && (
+                <p>{getCurrentMedia().title}</p>
+              )}
+              <div className="zoom-modal-counter">
+                {selectedMediaIndex + 1} / {mediaItems.length}
+              </div>
+            </div>
+
+            {mediaItems.length > 1 && (
+              <div className="zoom-modal-thumbnails">
+                {mediaItems.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`zoom-thumbnail ${selectedMediaIndex === index ? 'zoom-thumbnail-active' : ''}`}
+                    onClick={() => setSelectedMediaIndex(index)}
+                  >
+                    <img src={item.thumbnail || ''} alt={item.title || ''} />
+                    {item.type === 'video' && (
+                      <div className="zoom-thumbnail-play-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,11 @@
+.product-detail * {
+  box-sizing: border-box;
+}
+
 .product-detail {
   min-height: 100vh;
   background-color: #ffffff;
+  overflow-x: hidden;
 }
 
 .product-detail-content {
@@ -46,19 +51,29 @@
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   align-items: start;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Product Image Gallery */
 .product-image-gallery {
+  order: -1;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .product-main-image {
+  height: 485px;
+  margin: 0 0.25rem;
+  width: calc(100% - 0.5rem);
+  max-width: calc(100% - 0.5rem);
+  box-sizing: border-box;
   position: relative;
-  width: 100%;
-  height: 400px;
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   overflow: hidden;
@@ -69,6 +84,13 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.product-main-image video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.5rem;
 }
 
 .product-zoom-btn {
@@ -103,32 +125,105 @@
   display: flex;
   gap: 0.75rem;
   overflow-x: auto;
+  overflow-y: hidden;
   padding: 0.25rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #634C9F #f3f4f6;
 }
 
-.product-thumbnail-images img {
+.product-thumbnail-images::-webkit-scrollbar {
+  height: 6px;
+}
+
+.product-thumbnail-images::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.product-thumbnail-images::-webkit-scrollbar-thumb {
+  background: #634C9F;
+  border-radius: 3px;
+}
+
+.product-thumbnail-images::-webkit-scrollbar-thumb:hover {
+  background: #5a4389;
+}
+
+.thumbnail-container {
+  position: relative;
   width: 80px;
   height: 80px;
-  object-fit: cover;
   border-radius: 0.5rem;
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
-.product-thumbnail-images img:hover {
+.thumbnail-container:hover {
   border-color: #634C9F;
 }
 
-.product-thumbnail-images img.thumbnail-active {
+.thumbnail-container.thumbnail-active {
   border-color: #634C9F;
   box-shadow: 0 0 0 2px rgba(99, 76, 159, 0.2);
 }
 
+.thumbnail-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
+.video-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  pointer-events: none;
+}
+
+.video-play-icon svg {
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+}
+
+/* Media Title */
+.media-title {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.media-title h4 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+  font-family: 'Tajawal', sans-serif;
+}
+
 /* Product Information Section */
 .product-detail-info {
-  padding: 1rem 0;
+  padding: 0 0.25rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .product-detail-badges {
@@ -733,6 +828,22 @@
     font-size: 0.6875rem;
   }
 
+  /* Mobile Video and Thumbnail Styles */
+  .video-play-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .video-play-icon svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .thumbnail-container {
+    width: 60px;
+    height: 60px;
+  }
+
   /* Color and Size Selection - Mobile */
   .product-color-selection,
   .product-size-selection {
@@ -1188,4 +1299,380 @@
 
 .size-option.selected .size-price-modifier {
   color: #065f46;
+}
+
+/* Zoom Modal Styles */
+.zoom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+  backdrop-filter: blur(5px);
+}
+
+.zoom-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.zoom-modal-close {
+  position: absolute;
+  top: -3rem;
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 10001;
+}
+
+.zoom-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.zoom-modal-close svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.zoom-modal-media {
+  position: relative;
+  max-width: 80vw;
+  max-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-modal-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.zoom-modal-video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.zoom-modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 10001;
+}
+
+.zoom-modal-nav:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.zoom-modal-nav svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.zoom-modal-prev {
+  left: -4rem;
+}
+
+.zoom-modal-next {
+  right: -4rem;
+}
+
+[dir="rtl"] .zoom-modal-prev {
+  left: auto;
+  right: -4rem;
+}
+
+[dir="rtl"] .zoom-modal-next {
+  right: auto;
+  left: -4rem;
+}
+
+.zoom-modal-info {
+  text-align: center;
+  color: white;
+  margin-top: 1rem;
+}
+
+.zoom-modal-info h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.zoom-modal-info p {
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Tajawal', sans-serif;
+}
+
+.zoom-modal-counter {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Tajawal', sans-serif;
+}
+
+.zoom-modal-thumbnails {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.5rem;
+  margin-top: 1rem;
+}
+
+.zoom-thumbnail {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 0.375rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.zoom-thumbnail:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.zoom-thumbnail.zoom-thumbnail-active {
+  border-color: white;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.zoom-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.zoom-thumbnail-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  pointer-events: none;
+}
+
+.zoom-thumbnail-play-icon svg {
+  width: 8px;
+  height: 8px;
+  margin-left: 1px;
+}
+
+/* Mobile Responsive for Zoom Modal */
+@media (max-width: 768px) {
+  .zoom-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .zoom-modal-content {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+
+  .zoom-modal-close {
+    top: -2.5rem;
+    right: 0;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .zoom-modal-close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .zoom-modal-media {
+    max-width: 90vw;
+    max-height: 60vh;
+  }
+
+  .zoom-modal-nav {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .zoom-modal-nav svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .zoom-modal-prev {
+    left: -3rem;
+  }
+
+  .zoom-modal-next {
+    right: -3rem;
+  }
+
+  [dir="rtl"] .zoom-modal-prev {
+    left: auto;
+    right: -3rem;
+  }
+
+  [dir="rtl"] .zoom-modal-next {
+    right: auto;
+    left: -3rem;
+  }
+
+  .zoom-modal-info h3 {
+    font-size: 1rem;
+  }
+
+  .zoom-modal-info p {
+    font-size: 0.75rem;
+  }
+
+  .zoom-modal-counter {
+    font-size: 0.6875rem;
+  }
+
+  .zoom-thumbnail {
+    width: 50px;
+    height: 50px;
+  }
+
+  .zoom-thumbnail-play-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .zoom-thumbnail-play-icon svg {
+    width: 7px;
+    height: 7px;
+  }
+}
+
+@media (max-width: 480px) {
+  .zoom-modal-media {
+    max-width: 95vw;
+    max-height: 50vh;
+  }
+
+  .zoom-modal-nav {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .zoom-modal-nav svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .zoom-modal-prev {
+    left: -2.5rem;
+  }
+
+  .zoom-modal-next {
+    right: -2.5rem;
+  }
+
+  [dir="rtl"] .zoom-modal-prev {
+    left: auto;
+    right: -2.5rem;
+  }
+
+  [dir="rtl"] .zoom-modal-next {
+    right: auto;
+    left: -2.5rem;
+  }
+
+  .zoom-modal-info h3 {
+    font-size: 0.875rem;
+  }
+
+  .zoom-modal-info p {
+    font-size: 0.6875rem;
+  }
+
+  .zoom-thumbnail {
+    width: 40px;
+    height: 40px;
+  }
+
+  .zoom-modal-thumbnails {
+    gap: 0.25rem;
+  }
+}
+
+/* Animation for zoom modal */
+.zoom-modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.zoom-modal-content {
+  animation: zoomIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 } 
