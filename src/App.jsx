@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { WishlistProvider } from './contexts/WishlistContext';
+import { CartProvider } from './contexts/CartContext';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Home from './pages/Home/Home';
@@ -44,11 +45,13 @@ function AppContent() {
 
 function App() {
   return (
-    <WishlistProvider>
-    <Router>
-      <AppContent />
-    </Router>
-    </WishlistProvider>
+    <CartProvider>
+      <WishlistProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </WishlistProvider>
+    </CartProvider>
   );
 }
 

@@ -364,6 +364,17 @@
   transform: translateY(-1px);
 }
 
+.product-add-to-cart-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.product-add-to-cart-btn:disabled:hover {
+  background: #9ca3af;
+  transform: none;
+}
+
 .product-add-to-cart-btn svg {
   width: 1.125rem;
   height: 1.125rem;

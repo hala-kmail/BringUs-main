@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
+import { useCart } from '../../contexts/CartContext';
 import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
@@ -14,6 +15,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +23,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [addToCartLoading, setAddToCartLoading] = useState(false);
 
   const currentLang = i18n.language;
 
@@ -45,15 +48,55 @@ const ProductDetail = () => {
     }
   }, [id, navigate]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product) {
-      console.log('Added to cart:', {
-        product,
-        quantity,
-        selectedColor,
-        selectedSize
-      });
-      // Add your cart logic here
+      // Validation: Check if color is required and selected
+      if (product.colors && product.colors.length > 0 && !selectedColor) {
+        alert(currentLang === 'ar' 
+          ? 'يرجى اختيار اللون أولاً'
+          : 'Please select a color first'
+        );
+        return;
+      }
+
+      // Validation: Check if size is required and selected
+      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+        alert(currentLang === 'ar' 
+          ? 'يرجى اختيار الحجم أولاً'
+          : 'Please select a size first'
+        );
+        return;
+      }
+
+      setAddToCartLoading(true);
+      
+      try {
+        // Add to cart with selected options
+        addToCart(product, {
+          selectedColor,
+          selectedSize,
+          quantity
+        });
+
+        console.log('Cart updated:', {
+          product: product.name[currentLang],
+          color: selectedColor,
+          size: selectedSize,
+          quantity
+        });
+
+        // Navigate to cart page
+        navigate('/cart');
+
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert(currentLang === 'ar' 
+          ? 'حدث خطأ أثناء إضافة المنتج إلى السلة'
+          : 'Error adding product to cart'
+        );
+      } finally {
+        setAddToCartLoading(false);
+      }
     }
   };
 
@@ -330,11 +373,20 @@ const ProductDetail = () => {
                 <button onClick={incrementQuantity}>+</button>
               </div>
               
-              <button className="product-add-to-cart-btn" onClick={handleAddToCart}>
+              <button 
+                className="product-add-to-cart-btn" 
+                onClick={handleAddToCart}
+                disabled={addToCartLoading}
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span className="button-text">{t('product_detail.add_to_cart')}</span>
+                <span className="button-text">
+                  {addToCartLoading 
+                    ? (currentLang === 'ar' ? 'جاري الإضافة...' : 'Adding...') 
+                    : t('product_detail.add_to_cart')
+                  }
+                </span>
               </button>
             </div>
 
