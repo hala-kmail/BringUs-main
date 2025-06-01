@@ -137,6 +137,7 @@
     "special_offer": "عرض خاص",
     "offer_text": "يتبقى حتى انتهاء العرض",
     "add_to_cart": "أضف للسلة",
+    "view_cart": "عرض السلة",
     "buy_now": "اشتري الآن",
     "add_to_wishlist": "أضف للمفضلة",
     "remove_from_wishlist": "إزالة من المفضلة",
@@ -336,5 +337,40 @@
     "results": "نتائج البحث",
     "no_results": "لم يتم العثور على نتائج",
     "suggestions": "اقتراحات"
+  },
+  "checkout": {
+    "title": "إكمال الطلب",
+    "delivery_info": "معلومات التوصيل",
+    "full_name": "الاسم الكامل",
+    "full_name_placeholder": "أدخل اسمك الكامل",
+    "phone": "رقم الهاتف",
+    "phone_placeholder": "+966 50 123 4567",
+    "email": "البريد الإلكتروني (اختياري)",
+    "email_placeholder": "name@example.com",
+    "city": "المدينة",
+    "city_placeholder": "الرياض",
+    "district": "الحي (اختياري)",
+    "district_placeholder": "الملز",
+    "address": "العنوان التفصيلي",
+    "address_placeholder": "اسم الشارع، رقم المبنى، رقم الشقة...",
+    "notes": "ملاحظات إضافية (اختياري)",
+    "notes_placeholder": "أي ملاحظات خاصة للتوصيل...",
+    "order_summary": "ملخص الطلب",
+    "subtotal": "المجموع الفرعي:",
+    "shipping": "الشحن:",
+    "free": "مجاني",
+    "total": "الإجمالي:",
+    "place_order": "تأكيد الطلب",
+    "processing": "جاري المعالجة...",
+    "security_note": "معلوماتك آمنة ومحمية",
+    "order_success": "تم إرسال طلبك بنجاح! سيتم التواصل معك قريباً",
+    "order_error": "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى",
+    "validation": {
+      "name_required": "الاسم مطلوب",
+      "phone_required": "رقم الهاتف مطلوب",
+      "phone_invalid": "رقم الهاتف غير صحيح",
+      "address_required": "العنوان مطلوب",
+      "city_required": "المدينة مطلوبة"
+    }
   }
 } 

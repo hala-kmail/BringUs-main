@@ -888,6 +888,24 @@
   .product-detail {
     padding-bottom: 80px; /* مساحة للـ bottom navigation */
   }
+
+  /* Mobile Cart Buttons */
+  .product-cart-buttons {
+    flex: 1;
+    gap: 0.5rem;
+  }
+
+  .product-view-cart-btn {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+    border-width: 1.5px;
+  }
+
+  .product-view-cart-btn svg {
+    width: 1rem;
+    height: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1675,4 +1693,47 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Product Cart Buttons Container */
+.product-cart-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+  align-items: stretch;
+}
+
+/* View Cart Button */
+.product-view-cart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #634C9F;
+  border: 2px solid #634C9F;
+  font-weight: 600;
+  font-family: 'Tajawal', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.product-view-cart-btn:hover {
+  background: #634C9F;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.product-view-cart-btn svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.product-view-cart-btn .button-text {
+  display: inline;
 } 

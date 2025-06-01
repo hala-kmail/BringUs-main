@@ -43,11 +43,8 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    // Navigate to checkout page (you can implement this later)
-    alert(currentLang === 'ar' 
-      ? 'سيتم توجيهك لصفحة الدفع قريباً' 
-      : 'Checkout functionality will be implemented soon'
-    );
+    // Navigate to checkout page
+    navigate('/checkout');
   };
 
   const handleProductClick = (productId) => {

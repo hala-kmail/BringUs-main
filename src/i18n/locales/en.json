@@ -137,6 +137,7 @@
     "special_offer": "Special Offer",
     "offer_text": "Until the offer ends",
     "add_to_cart": "Add to Cart",
+    "view_cart": "View Cart",
     "buy_now": "Buy Now",
     "add_to_wishlist": "Add to Wishlist",
     "remove_from_wishlist": "Remove from Wishlist",
@@ -331,5 +332,40 @@
     "results": "Search results",
     "no_results": "No results found",
     "suggestions": "Suggestions"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "delivery_info": "Delivery Information",
+    "full_name": "Full Name",
+    "full_name_placeholder": "Enter your full name",
+    "phone": "Phone Number",
+    "phone_placeholder": "+966 50 123 4567",
+    "email": "Email (Optional)",
+    "email_placeholder": "name@example.com",
+    "city": "City",
+    "city_placeholder": "Riyadh",
+    "district": "District (Optional)",
+    "district_placeholder": "Al-Malaz",
+    "address": "Detailed Address",
+    "address_placeholder": "Street name, building number, apartment number...",
+    "notes": "Additional Notes (Optional)",
+    "notes_placeholder": "Any special delivery instructions...",
+    "order_summary": "Order Summary",
+    "subtotal": "Subtotal:",
+    "shipping": "Shipping:",
+    "free": "Free",
+    "total": "Total:",
+    "place_order": "Place Order",
+    "processing": "Processing...",
+    "security_note": "Your information is secure and protected",
+    "order_success": "Order submitted successfully! We will contact you soon",
+    "order_error": "Error submitting order. Please try again",
+    "validation": {
+      "name_required": "Full name is required",
+      "phone_required": "Phone number is required",
+      "phone_invalid": "Invalid phone number",
+      "address_required": "Address is required",
+      "city_required": "City is required"
+    }
   }
 } 

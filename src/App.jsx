@@ -10,6 +10,7 @@ import Category from './pages/Category/Category';
 import MobileCategories from './pages/MobileCategories/MobileCategories';
 import ProductDetail from './pages/ProductDetail/ProductDetail';
 import Cart from './pages/Cart/Cart';
+import Checkout from './pages/Checkout/Checkout';
 import Wishlist from './pages/Wishlist/Wishlist';
 import AnnouncementBar from './components/AnnouncementBar/AnnouncementBar';
 import BottomNavigation from './components/BottomNavigation/BottomNavigation';
@@ -34,6 +35,7 @@ function AppContent() {
           <Route path="/mobile-categories" element={<MobileCategories />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
         </Routes>

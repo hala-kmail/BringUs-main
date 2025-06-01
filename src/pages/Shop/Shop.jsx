@@ -7,7 +7,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
-import { allProducts, categories, features } from '../../data/index';
+import { allProducts, categories, features, subcategories, getSubcategoriesByCategory } from '../../data/index';
 import './Shop.css';
 
 const Shop = () => {
@@ -26,6 +26,7 @@ const Shop = () => {
   const [filters, setFilters] = useState({
     priceRange: { min: 0, max: 100 },
     categories: [],
+    subcategories: [], // Add subcategories filter
     features: [],
     colors: [],
     status: [],
@@ -34,6 +35,9 @@ const Shop = () => {
 
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // grid or list
+  
+  // State for expanded categories (to show subcategories)
+  const [expandedCategories, setExpandedCategories] = useState({});
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,6 +85,13 @@ const Shop = () => {
       baseProducts = baseProducts.filter(product => {
         const category = categories.find(cat => cat.id === product.categoryId);
         return category && filters.categories.includes(category.id);
+      });
+    }
+
+    // Apply subcategory filter
+    if (filters.subcategories.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return filters.subcategories.includes(product.subcategoryId);
       });
     }
 
@@ -150,6 +161,13 @@ const Shop = () => {
       });
     }
 
+    // Apply subcategory filter
+    if (filters.subcategories.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return filters.subcategories.includes(product.subcategoryId);
+      });
+    }
+
     // Apply color filter
     if (filters.colors.length > 0) {
       baseProducts = baseProducts.filter(product => {
@@ -212,6 +230,13 @@ const Shop = () => {
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
+    // Apply subcategory filter
+    if (filters.subcategories.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return filters.subcategories.includes(product.subcategoryId);
+      });
+    }
+
     // Apply feature filter
     if (filters.features.length > 0) {
       baseProducts = baseProducts.filter(product => {
@@ -271,6 +296,91 @@ const Shop = () => {
     }).length;
   };
 
+  // Function to count products by subcategory from filtered products
+  const getSubcategoryCount = (subcategoryId) => {
+    // Get products that match current filters (excluding subcategory filter)
+    let baseProducts = [...allProducts];
+    
+    // Apply price filter
+    baseProducts = baseProducts.filter(product => {
+      const price = product.discountPrice || product.originalPrice;
+      return price >= filters.priceRange.min && price <= filters.priceRange.max;
+    });
+
+    // Apply category filter
+    if (filters.categories.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        const category = categories.find(cat => cat.id === product.categoryId);
+        return category && filters.categories.includes(category.id);
+      });
+    }
+
+    // Apply feature filter
+    if (filters.features.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return filters.features.includes(product.featureId);
+      });
+    }
+
+    // Apply color filter
+    if (filters.colors.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        // Check if product has colors array
+        if (product.colors && Array.isArray(product.colors)) {
+          return filters.colors.some(color => 
+            product.colors.includes(color)
+          );
+        }
+        
+        // Fallback: check product name for color keywords
+        const productName = product.name[currentLang].toLowerCase();
+        const colorKeywords = {
+          'Red': ['red', 'أحمر', 'tomato', 'طماطم', 'apple', 'تفاح'],
+          'Green': ['green', 'أخضر', 'spinach', 'سبانخ', 'lettuce', 'خس'],
+          'Yellow': ['yellow', 'أصفر', 'banana', 'موز', 'lemon', 'ليمون'],
+          'Orange': ['orange', 'برتقالي', 'carrot', 'جزر', 'pumpkin', 'يقطين'],
+          'Blue': ['blue', 'أزرق', 'blueberry', 'توت أزرق'],
+          'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
+        };
+        
+        return filters.colors.some(color => {
+          const keywords = colorKeywords[color] || [color.toLowerCase()];
+          return keywords.some(keyword => productName.includes(keyword));
+        });
+      });
+    }
+
+    // Apply status filter
+    if (filters.status.includes('on_sale')) {
+      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
+    }
+
+    if (filters.status.includes('in_stock')) {
+      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+    }
+
+    if (filters.status.includes('new')) {
+      baseProducts = baseProducts.filter(product => product.isNew === true);
+    }
+
+    if (filters.status.includes('featured')) {
+      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
+    }
+
+    // Now count products that match this subcategory
+    return baseProducts.filter(product => {
+      return product.subcategoryId === subcategoryId;
+    }).length;
+  };
+
+  // Function to toggle category expansion
+  const toggleCategoryExpansion = (categoryId) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -304,8 +414,13 @@ const Shop = () => {
     const counts = {};
     
     // Count categories
-    categoriesList.forEach(category => {
-      counts[`category_${category}`] = getCategoryCount(category);
+    categories.forEach(category => {
+      counts[`category_${category.name.en}`] = getCategoryCount(category.name.en);
+    });
+
+    // Count subcategories
+    subcategories.forEach(subcategory => {
+      counts[`subcategory_${subcategory.id}`] = getSubcategoryCount(subcategory.id);
     });
     
     // Count colors
@@ -324,72 +439,57 @@ const Shop = () => {
   const applyPagination = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginated = filteredProducts.slice(startIndex, endIndex);
-    setPaginatedProducts(paginated);
+    setPaginatedProducts(filteredProducts.slice(startIndex, endIndex));
   };
 
   const applyFilters = () => {
-    console.log('Applying filters:', filters, 'Search query:', searchQuery);
     let filtered = [...allProducts];
-
-    // Search filter - apply first
+    
+    // Apply search filter if there's a search query
     if (searchQuery.trim()) {
-      filtered = filtered.filter(product => {
-        const searchTerm = searchQuery.toLowerCase();
-        const productName = product.name[currentLang].toLowerCase();
-        const productDescription = product.description[currentLang].toLowerCase();
-        
-        return productName.includes(searchTerm) || productDescription.includes(searchTerm);
-      });
-      console.log('After search filter:', filtered.length);
+      const searchTerm = searchQuery.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name[currentLang].toLowerCase().includes(searchTerm) ||
+        product.description[currentLang].toLowerCase().includes(searchTerm)
+      );
     }
 
-    // Price filter
+    // Apply price filter
     filtered = filtered.filter(product => {
       const price = product.discountPrice || product.originalPrice;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
-    console.log('After price filter:', filtered.length);
 
-    // Category filter - using new structure
+    // Apply category filter
     if (filters.categories.length > 0) {
       filtered = filtered.filter(product => {
         const category = categories.find(cat => cat.id === product.categoryId);
         return category && filters.categories.includes(category.id);
       });
-      console.log('After category filter:', filtered.length);
     }
 
-    // Features filter - using new features structure
-    if (filters.features.length > 0) {
-      console.log('Selected features:', filters.features);
+    // Apply subcategory filter
+    if (filters.subcategories.length > 0) {
       filtered = filtered.filter(product => {
-        const feature = features.find(feat => feat.id === product.featureId);
-        if (feature) {
-          const matches = filters.features.includes(feature.id);
-          if (matches) {
-            console.log('Product matches feature filter:', product.name.en, 'Feature:', feature.name.en);
-          }
-          return matches;
-        }
-        return false;
+        return filters.subcategories.includes(product.subcategoryId);
       });
-      console.log('After features filter:', filtered.length);
     }
 
-    // Color filter (based on product colors array or name)
+    // Apply feature filter
+    if (filters.features.length > 0) {
+      filtered = filtered.filter(product => {
+        return filters.features.includes(product.featureId);
+      });
+    }
+
+    // Apply color filter
     if (filters.colors.length > 0) {
-      console.log('Selected colors:', filters.colors);
       filtered = filtered.filter(product => {
         // Check if product has colors array
         if (product.colors && Array.isArray(product.colors)) {
-          const matches = filters.colors.some(color => 
+          return filters.colors.some(color => 
             product.colors.includes(color)
           );
-          if (matches) {
-            console.log('Product matches color filter (colors array):', product.name.en);
-          }
-          return matches;
         }
         
         // Fallback: check product name for color keywords
@@ -403,53 +503,31 @@ const Shop = () => {
           'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
         };
         
-        const matches = filters.colors.some(color => {
+        return filters.colors.some(color => {
           const keywords = colorKeywords[color] || [color.toLowerCase()];
           return keywords.some(keyword => productName.includes(keyword));
         });
-        
-        if (matches) {
-          console.log('Product matches color filter (name):', product.name.en);
-        }
-        return matches;
       });
-      console.log('After color filter:', filtered.length);
     }
 
-    // Status filter - أستخدام نفس منطق استنتاج الحالة
-    if (filters.status.length > 0) {
-      console.log('Selected status filters:', filters.status);
-      
-      if (filters.status.includes('on_sale')) {
-        const beforeCount = filtered.length;
-        // عليه خصم - إذا كان له سعر خصم أو نسبة خصم
-        filtered = filtered.filter(product => product.discountPrice || product.discountPercentage);
-        console.log(`After 'on_sale' filter: ${filtered.length} (was ${beforeCount})`);
-      }
-
-      if (filters.status.includes('in_stock')) {
-        const beforeCount = filtered.length;
-        // متوفر - إذا كان المخزون أكبر من 0
-        filtered = filtered.filter(product => product.stock && product.stock > 0);
-        console.log(`After 'in_stock' filter: ${filtered.length} (was ${beforeCount})`);
-      }
-
-      if (filters.status.includes('new')) {
-        const beforeCount = filtered.length;
-        // جديد - إذا كان الحقل isNew = true
-        filtered = filtered.filter(product => product.isNew === true);
-        console.log(`After 'new' filter: ${filtered.length} (was ${beforeCount})`);
-      }
-
-      if (filters.status.includes('featured')) {
-        const beforeCount = filtered.length;
-        // مميز/الأكثر مبيعاً - إذا كان الحقل isBestSeller = true
-        filtered = filtered.filter(product => product.isBestSeller === true);
-        console.log(`After 'featured' filter: ${filtered.length} (was ${beforeCount})`);
-      }
+    // Apply status filter
+    if (filters.status.includes('on_sale')) {
+      filtered = filtered.filter(product => product.discountPrice || product.discountPercentage);
     }
 
-    // Sort
+    if (filters.status.includes('in_stock')) {
+      filtered = filtered.filter(product => product.stock && product.stock > 0);
+    }
+
+    if (filters.status.includes('new')) {
+      filtered = filtered.filter(product => product.isNew === true);
+    }
+
+    if (filters.status.includes('featured')) {
+      filtered = filtered.filter(product => product.isBestSeller === true);
+    }
+
+    // Apply sorting
     switch (filters.sortBy) {
       case 'price-low-high':
         filtered.sort((a, b) => (a.discountPrice || a.originalPrice) - (b.discountPrice || b.originalPrice));
@@ -464,78 +542,62 @@ const Shop = () => {
         filtered.sort((a, b) => b.name[currentLang].localeCompare(a.name[currentLang]));
         break;
       case 'newest':
-        // Sort by newest (assuming products with higher ID are newer)
-        filtered.sort((a, b) => b.id - a.id);
-        break;
-      case 'oldest':
-        // Sort by oldest
-        filtered.sort((a, b) => a.id - b.id);
-        break;
-      case 'latest':
-      case 'default':
-      default:
-        // keep original order or sort by featured/bestseller first
         filtered.sort((a, b) => {
-          if (a.isBestSeller && !b.isBestSeller) return -1;
-          if (!a.isBestSeller && b.isBestSeller) return 1;
           if (a.isNew && !b.isNew) return -1;
           if (!a.isNew && b.isNew) return 1;
-          return 0;
+          return b.id - a.id; // Assume higher ID means newer
         });
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => a.id - b.id);
+        break;
+      default:
+        // Default sorting - keep original order
         break;
     }
 
-    console.log('Final filtered products:', filtered.length);
     setFilteredProducts(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1); // Reset pagination when filters change
   };
 
-  const handleFilterChange = (filterType, value, checked) => {
-    setFilters(prev => {
-      const newFilters = { ...prev };
-      
-      if (filterType === 'priceRange') {
-        newFilters.priceRange = value;
-      } else if (Array.isArray(newFilters[filterType])) {
-        if (checked) {
-          newFilters[filterType] = [...newFilters[filterType], value];
-        } else {
-          newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
-        }
-      } else {
-        newFilters[filterType] = value;
-      }
-      
-      return newFilters;
-    });
+  const handleFilterChange = (filterType, value, checked = null) => {
+    if (filterType === 'priceRange') {
+      setFilters(prev => ({ ...prev, priceRange: value }));
+    } else if (checked !== null) {
+      setFilters(prev => ({
+        ...prev,
+        [filterType]: checked
+          ? [...prev[filterType], value]
+          : prev[filterType].filter(item => item !== value)
+      }));
+    } else {
+      setFilters(prev => ({ ...prev, [filterType]: value }));
+    }
   };
 
   const clearFilters = () => {
     setFilters({
       priceRange: { min: 0, max: 100 },
       categories: [],
+      subcategories: [], // Clear subcategories too
       features: [],
       colors: [],
       status: [],
       sortBy: 'default'
     });
+    setExpandedCategories({}); // Collapse all categories
   };
 
   const clearCategoryFilter = () => {
-    setFilters(prev => ({ ...prev, categories: [] }));
+    setFilters(prev => ({ ...prev, categories: [], subcategories: [] })); // Clear both categories and subcategories
+    setExpandedCategories({}); // Collapse all categories
   };
 
-  // Individual filter removal functions
   const removeFilter = (filterType, value) => {
-    console.log('Removing filter:', filterType, value);
-    setFilters(prev => {
-      const newFilters = { ...prev };
-      if (Array.isArray(newFilters[filterType])) {
-        newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
-      }
-      console.log('Updated filters:', newFilters);
-      return newFilters;
-    });
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: prev[filterType].filter(item => item !== value)
+    }));
   };
 
   const handleWishlistToggle = (product) => {
@@ -676,7 +738,7 @@ const Shop = () => {
             </div>
 
             {/* Active Filters */}
-            {(filters.categories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
+            {(filters.categories.length > 0 || filters.subcategories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
               <div className="active-filters">
                 {filters.categories.map(categoryId => {
                   const category = categories.find(cat => cat.id === categoryId);
@@ -688,6 +750,19 @@ const Shop = () => {
                       title={`Remove ${category?.name[currentLang] || categoryId} filter`}
                     >
                       <span className="filter-close">✕</span> {category?.name[currentLang] || categoryId}
+                    </span>
+                  );
+                })}
+                {filters.subcategories.map(subcategoryId => {
+                  const subcategory = subcategories.find(sub => sub.id === subcategoryId);
+                  return (
+                    <span 
+                      key={subcategoryId} 
+                      className="active-filter"
+                      onClick={() => removeFilter('subcategories', subcategoryId)}
+                      title={`Remove ${subcategory?.name[currentLang] || subcategoryId} filter`}
+                    >
+                      <span className="filter-close">✕</span> {subcategory?.name[currentLang] || subcategoryId}
                     </span>
                   );
                 })}
@@ -779,22 +854,59 @@ const Shop = () => {
               </div>
             </div>
 
-            {/* Product Categories */}
+            {/* Product Categories with Subcategories */}
             <div className="filter-section">
               <h4>{t('shop.product_categories')}</h4>
               <div className="category-list">
                 {categories.map(category => {
                   const count = filterCounts[`category_${category.name.en}`] || 0;
+                  const categorySubcategories = getSubcategoriesByCategory(category.id);
+                  const hasSubcategories = categorySubcategories.length > 0;
+                  const isExpanded = expandedCategories[category.id];
+                  
                   return count > 0 ? (
-                    <label key={category.id} className="filter-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={filters.categories.includes(category.id)}
-                        onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
-                      />
-                      <span className="checkmark">+</span>
-                      {category.name[currentLang]} ({count})
-                    </label>
+                    <div key={category.id} className="category-filter-item">
+                      <div className="category-main-filter">
+                        <label className="filter-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={filters.categories.includes(category.id)}
+                            onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
+                          />
+                          <span className="checkmark"></span>
+                          {category.name[currentLang]} ({count})
+                        </label>
+                        {hasSubcategories && (
+                          <button
+                            className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
+                            onClick={() => toggleCategoryExpansion(category.id)}
+                            type="button"
+                          >
+                            {isExpanded ? (currentLang === 'ar' ? '−' : '−') : (currentLang === 'ar' ? '+' : '+')}
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Subcategories - show when expanded */}
+                      {hasSubcategories && isExpanded && (
+                        <div className="subcategory-filters">
+                          {categorySubcategories.map(subcategory => {
+                            const subcategoryCount = filterCounts[`subcategory_${subcategory.id}`] || 0;
+                            return subcategoryCount > 0 ? (
+                              <label key={subcategory.id} className="filter-checkbox subcategory-filter">
+                                <input
+                                  type="checkbox"
+                                  checked={filters.subcategories.includes(subcategory.id)}
+                                  onChange={(e) => handleFilterChange('subcategories', subcategory.id, e.target.checked)}
+                                />
+                                <span className="checkmark"></span>
+                                {subcategory.name[currentLang]} ({subcategoryCount})
+                              </label>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
                   ) : null;
                 })}
               </div>
