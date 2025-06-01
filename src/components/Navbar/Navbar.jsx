@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { allProducts } from '../../data/products';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
 
 const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { count: wishlistCount } = useWishlist();
   const { getCartTotals } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const searchRef = useRef(null);
+  const dropdownRef = useRef(null);
   const placeholders = t('navbar.search_placeholders', { returnObjects: true });
+  const currentLang = i18n.language;
 
   // Update placeholder text every 4 seconds
   useEffect(() => {
@@ -22,6 +29,53 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
     return () => clearInterval(interval);
   }, [placeholders.length]);
+
+  // Handle search functionality
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      const filteredProducts = allProducts.filter(product => {
+        const productName = product.name[currentLang]?.toLowerCase() || '';
+        const productDesc = product.description[currentLang]?.toLowerCase() || '';
+        const query = searchQuery.toLowerCase();
+        
+        return productName.includes(query) || productDesc.includes(query);
+      }).slice(0, 8); // Limit to 8 results
+      
+      setSearchResults(filteredProducts);
+      setShowSearchDropdown(filteredProducts.length > 0);
+    } else {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+    }
+  }, [searchQuery, currentLang]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle product selection
+  const handleProductClick = (productId) => {
+    setSearchQuery('');
+    setShowSearchDropdown(false);
+    navigate(`/product/${productId}`);
+  };
+
+  // Handle search form submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+      setShowSearchDropdown(false);
+    }
+  };
 
   // Get real cart items count
   const cartTotals = getCartTotals();
@@ -37,20 +91,69 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
         </Link>
 
         {/* Desktop Search Bar */}
-        <div className="search-bar desktop-search">
-          <input
-            type="text"
-            className="search-input"
-            placeholder={placeholders[placeholderIndex]}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label={t('navbar.search_placeholder')}
-          />
-          <button className="search-button" aria-label={t('navbar.search')}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="search-icon">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
+        <div className="search-bar desktop-search" ref={searchRef}>
+          <form onSubmit={handleSearchSubmit} className="search-form">
+            <input
+              type="text"
+              className="search-input"
+              placeholder={placeholders[placeholderIndex]}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => searchQuery.trim() && setShowSearchDropdown(searchResults.length > 0)}
+              aria-label={t('navbar.search_placeholder')}
+            />
+            <button type="submit" className="search-button" aria-label={t('navbar.search')}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="search-icon">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </form>
+
+          {/* Search Dropdown */}
+          {showSearchDropdown && (
+            <div className="search-dropdown" ref={dropdownRef}>
+              <div className="search-results">
+                {searchResults.map((product) => (
+                  <div 
+                    key={product.id} 
+                    className="search-result-item"
+                    onClick={() => handleProductClick(product.id)}
+                  >
+                    <div className="result-image">
+                      <img src={product.image} alt={product.name[currentLang]} />
+                    </div>
+                    <div className="result-details">
+                      <h4 className="result-name">{product.name[currentLang]}</h4>
+                      <p className="result-description">{product.description[currentLang]}</p>
+                      <div className="result-price">
+                        {product.discountPrice ? (
+                          <>
+                            <span className="current-price">${product.discountPrice.toFixed(2)}</span>
+                            <span className="original-price">${product.originalPrice.toFixed(2)}</span>
+                          </>
+                        ) : (
+                          <span className="current-price">${product.originalPrice.toFixed(2)}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {searchResults.length > 0 && (
+                <div className="search-footer">
+                  <button 
+                    className="view-all-results"
+                    onClick={() => {
+                      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+                      setShowSearchDropdown(false);
+                    }}
+                  >
+                    {currentLang === 'ar' ? `عرض جميع النتائج (${searchResults.length})` : `View all results (${searchResults.length})`}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* User Actions */}

@@ -163,7 +163,8 @@ const Category = () => {
   };
 
   const handleAddToCart = (product) => {
-    console.log('Added to cart:', product);
+    // Navigate to product details page
+    navigate(`/product/${product.id}`);
   };
 
   const handleMobileSearchToggle = () => {

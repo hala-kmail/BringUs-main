@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
@@ -13,12 +13,14 @@ import './Shop.css';
 const Shop = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
+  // Search state - initialize from URL params
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
   // Filter states
   const [filters, setFilters] = useState({
@@ -278,6 +280,14 @@ const Shop = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Monitor URL search parameters
+  useEffect(() => {
+    const urlSearchQuery = searchParams.get('search') || '';
+    if (urlSearchQuery !== searchQuery) {
+      setSearchQuery(urlSearchQuery);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     applyFilters();
   }, [filters, searchQuery]);
@@ -533,7 +543,8 @@ const Shop = () => {
   };
 
   const handleAddToCart = (product) => {
-    console.log('Added to cart:', product);
+    // Navigate to product details page
+    navigate(`/product/${product.id}`);
   };
 
   const handleMobileSearchToggle = () => {
@@ -547,6 +558,12 @@ const Shop = () => {
   // Search function
   const handleSearch = (query) => {
     setSearchQuery(query);
+    // Update URL search parameters
+    if (query.trim()) {
+      setSearchParams({ search: query });
+    } else {
+      setSearchParams({});
+    }
   };
 
   // Pagination functions
@@ -1008,7 +1025,7 @@ const Shop = () => {
             </div>
 
             {/* Products Grid */}
-            <div className={`products-grid ${viewMode}`}>
+            <div className={`products-grid desktop-grid ${viewMode}`}>
               {paginatedProducts.map((product) => (
                 <div key={product.id} className="product-card">
                   {/* Product Image */}

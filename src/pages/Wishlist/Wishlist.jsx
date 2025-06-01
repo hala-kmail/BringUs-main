@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
@@ -11,6 +11,7 @@ import './Wishlist.css';
 const Wishlist = () => {
   const { t, i18n } = useTranslation();
   const { items: wishlistItems, removeFromWishlist } = useWishlist();
+  const navigate = useNavigate();
 
   const currentLang = i18n.language;
 
@@ -24,8 +25,8 @@ const Wishlist = () => {
   };
 
   const handleAddToCart = (product) => {
-    console.log('Added to cart:', product);
-    // إضافة منطق إضافة إلى السلة هنا
+    // Navigate to product details page
+    navigate(`/product/${product.id}`);
   };
 
   return (

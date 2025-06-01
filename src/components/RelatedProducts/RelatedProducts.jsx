@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { getProductsByCategory, getCategoryById, getFeatureById } from '../../data/index';
 import './RelatedProducts.css';
@@ -8,6 +8,7 @@ import './RelatedProducts.css';
 const RelatedProducts = ({ currentProductId, currentCategoryId }) => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const navigate = useNavigate();
 
   const currentLang = i18n.language;
 
@@ -20,8 +21,8 @@ const RelatedProducts = ({ currentProductId, currentCategoryId }) => {
     .slice(0, 4); // Show only 4 related products
 
   const handleAddToCart = (product) => {
-    console.log('Added to cart:', product);
-    // Add to cart logic here
+    // Navigate to product details page
+    navigate(`/product/${product.id}`);
   };
 
   const handleWishlistToggle = (product) => {

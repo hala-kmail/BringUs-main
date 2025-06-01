@@ -8,6 +8,113 @@
   display: initial;
 }
 
+/* Simple cart item image for desktop */
+.cart-item-image.desktop-only {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  margin-right: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cart-item-image.desktop-only:hover {
+  transform: scale(1.05);
+}
+
+.cart-item-image.desktop-only img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Simple cart item details for desktop */
+.cart-item-details.desktop-only {
+  flex: 1;
+  padding: 0;
+}
+
+/* Simple quantity controls for desktop */
+.cart-item-quantity.desktop-only {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cart-item-quantity.desktop-only .quantity-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f8fafc;
+  color: #374151;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.cart-item-quantity.desktop-only .quantity-btn:hover {
+  background: #634C9F;
+  color: white;
+}
+
+.cart-item-quantity.desktop-only .quantity-display {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  padding: 0 12px;
+  min-width: 40px;
+  text-align: center;
+  background: white;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Simple total price for desktop */
+.cart-item-total.desktop-only {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* Simple remove button for desktop */
+.remove-item-btn.desktop-only {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-item-btn.desktop-only:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.remove-item-btn.desktop-only svg {
+  width: 16px;
+  height: 16px;
+}
+
 .mobile-only {
   display: none;
 }
@@ -592,8 +699,8 @@
   }
 
   .mobile-checkout-btn:hover {
-    background: #5a4389;
-    transform: translateY(-1px);
+  background: #5a4389;
+  transform: translateY(-1px);
   }
 
   .cart-items {
@@ -859,4 +966,77 @@
     font-size: 0.9rem;
     min-width: 110px;
   }
+}
+
+/* RTL Support for Desktop Elements */
+[dir="rtl"] .cart-item-image.desktop-only {
+  margin-right: 0;
+  margin-left: 1.5rem;
+}
+
+[dir="rtl"] .cart-item-details.desktop-only:hover {
+  transform: translateX(-2px);
+}
+
+[dir="rtl"] .cart-item-details.desktop-only .cart-item-name,
+[dir="rtl"] .cart-item-details.desktop-only .cart-option,
+[dir="rtl"] .cart-item-details.desktop-only .current-price {
+  font-family: 'Tajawal', 'Arial', sans-serif;
+  font-weight: 700;
+}
+
+[dir="rtl"] .cart-item-quantity.desktop-only .quantity-display {
+  font-family: 'Tajawal', 'Arial', sans-serif;
+  font-weight: 800;
+}
+
+[dir="rtl"] .cart-item-total.desktop-only {
+  font-family: 'Tajawal', 'Arial', sans-serif;
+  font-weight: 800;
+}
+
+/* Additional enhancements for desktop-only cart items */
+.cart-item.desktop-only {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  border-radius: 20px;
+  padding: 1.5rem;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cart-item.desktop-only::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(99, 76, 159, 0.4) 20%, 
+    rgba(139, 92, 246, 0.6) 50%, 
+    rgba(99, 76, 159, 0.4) 80%, 
+    transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 20px 20px 0 0;
+}
+
+.cart-item.desktop-only:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 
+    0 16px 50px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: rgba(99, 76, 159, 0.3);
+}
+
+.cart-item.desktop-only:hover::before {
+  opacity: 1;
 } 

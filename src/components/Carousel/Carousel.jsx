@@ -130,8 +130,8 @@ const Carousel = () => {
                 <div className="slide-overlay"></div>
               </div>
               <div className="slide-content">
-                <h2 className="slide-title">{slide.title[currentLang]}</h2>
-                <p className="slide-subtitle">{slide.subtitle[currentLang]}</p>
+                {/* <h2 className="slide-title">{slide.title[currentLang]}</h2>
+                <p className="slide-subtitle">{slide.subtitle[currentLang]}</p> */}
                 <button className="slide-button">
                   {slide.buttonText[currentLang]}
                 </button>

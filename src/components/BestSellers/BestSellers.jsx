@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { getBestSellerProducts, getFeatureById } from '../../data/index';
 import './BestSellers.css';
@@ -8,6 +8,7 @@ import './BestSellers.css';
 const BestSellers = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   React.useEffect(() => {
@@ -25,8 +26,8 @@ const BestSellers = () => {
   const currentLang = i18n.language;
 
   const handleAddToCart = (product) => {
-    console.log('Added to cart:', product);
-    // Add to cart logic here
+    // Navigate to product details page
+    navigate(`/product/${product.id}`);
   };
 
   const handleWishlistToggle = (product) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { getNewProducts, getFeatureById } from '../../data/index';
 import './NewArrivals.css';
@@ -8,6 +8,7 @@ import './NewArrivals.css';
 const NewArrivals = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -25,9 +26,8 @@ const NewArrivals = () => {
   const currentLang = i18n.language;
 
   const handleAddToCart = (product) => {
-    // Add to cart logic here
-    console.log('Added to cart:', product);
-    // You can implement actual cart functionality later
+    // Navigate to product details page
+    navigate(`/product/${product.id}`);
   };
 
   const handleWishlistToggle = (product) => {
