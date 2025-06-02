@@ -6,6 +6,7 @@ import { useCart } from '../../contexts/CartContext';
 import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
+import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
 import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 import { getProductById, getCategoryById, getSubcategoryById, getFeatureById } from '../../data/index';
@@ -27,6 +28,7 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [addToCartLoading, setAddToCartLoading] = useState(false);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const currentLang = i18n.language;
 
@@ -279,12 +281,28 @@ const ProductDetail = () => {
     setQuantity(prev => Math.max(prev - 1, 1));
   };
 
+  // Mobile search handlers
+  const handleMobileSearchToggle = () => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
+  };
+
+  const handleMobileSearchClose = () => {
+    setIsMobileSearchOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="product-detail">
         <TopBar />
-        <Navbar />
+        <Navbar 
+          onMobileSearchToggle={handleMobileSearchToggle}
+          isMobileSearchOpen={isMobileSearchOpen}
+        />
         <SecondaryNavbar />
+        <MobileSearch
+          isOpen={isMobileSearchOpen}
+          onClose={handleMobileSearchClose}
+        />
         <div className="product-detail-content">
           <div style={{ textAlign: 'center', padding: '2rem' }}>
             {t('common.loading')}...
@@ -298,8 +316,15 @@ const ProductDetail = () => {
     return (
       <div className="product-detail">
         <TopBar />
-        <Navbar />
+        <Navbar 
+          onMobileSearchToggle={handleMobileSearchToggle}
+          isMobileSearchOpen={isMobileSearchOpen}
+        />
         <SecondaryNavbar />
+        <MobileSearch
+          isOpen={isMobileSearchOpen}
+          onClose={handleMobileSearchClose}
+        />
         <div className="product-detail-content">
           <div style={{ textAlign: 'center', padding: '2rem' }}>
             المنتج غير موجود
@@ -316,8 +341,15 @@ const ProductDetail = () => {
   return (
     <div className="product-detail">
       <TopBar />
-      <Navbar />
+      <Navbar 
+        onMobileSearchToggle={handleMobileSearchToggle}
+        isMobileSearchOpen={isMobileSearchOpen}
+      />
       <SecondaryNavbar />
+      <MobileSearch
+        isOpen={isMobileSearchOpen}
+        onClose={handleMobileSearchClose}
+      />
       
       <div className="product-detail-content">
         {/* Breadcrumb Navigation */}

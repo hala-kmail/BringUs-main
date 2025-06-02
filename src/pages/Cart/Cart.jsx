@@ -6,6 +6,7 @@ import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
+import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import './Cart.css';
 
 const Cart = () => {
@@ -14,6 +15,7 @@ const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotals } = useCart();
   const currentLang = i18n.language;
   const [showClearModal, setShowClearModal] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const cartTotals = getCartTotals();
 
@@ -55,11 +57,27 @@ const Cart = () => {
     }
   };
 
+  // Mobile search handlers
+  const handleMobileSearchToggle = () => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
+  };
+
+  const handleMobileSearchClose = () => {
+    setIsMobileSearchOpen(false);
+  };
+
   return (
     <div className="cart-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
       <TopBar />
-      <Navbar />
+      <Navbar 
+        onMobileSearchToggle={handleMobileSearchToggle}
+        isMobileSearchOpen={isMobileSearchOpen}
+      />
       <SecondaryNavbar />
+      <MobileSearch
+        isOpen={isMobileSearchOpen}
+        onClose={handleMobileSearchClose}
+      />
       
       <div className="cart-content">
         {/* Breadcrumb Navigation */}
