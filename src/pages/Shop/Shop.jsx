@@ -39,6 +39,15 @@ const Shop = () => {
   // State for expanded categories (to show subcategories)
   const [expandedCategories, setExpandedCategories] = useState({});
   
+  // State for collapsed filter sections on desktop
+  const [collapsedSections, setCollapsedSections] = useState({
+    price: false,
+    categories: false,
+    colors: false,
+    features: false,
+    status: false
+  });
+  
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -378,6 +387,14 @@ const Shop = () => {
     setExpandedCategories(prev => ({
       ...prev,
       [categoryId]: !prev[categoryId]
+    }));
+  };
+
+  // Function to toggle filter section collapse
+  const toggleSectionCollapse = (sectionName) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [sectionName]: !prev[sectionName]
     }));
   };
 
@@ -804,172 +821,207 @@ const Shop = () => {
 
             {/* Price Filter */}
             <div className="filter-section">
-              <h4>{t('shop.price_filter')}</h4>
-              <div className="price-range">
-                <div className="price-inputs">
-                  <input
-                    type="number"
-                    placeholder={t('shop.min_price')}
-                    value={filters.priceRange.min}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, min: Number(e.target.value) }
-                    )}
-                  />
-                  <span>-</span>
-                  <input
-                    type="number"
-                    placeholder={t('shop.max_price')}
-                    value={filters.priceRange.max}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, max: Number(e.target.value) }
-                    )}
-                  />
-                </div>
-                <div className="price-range-slider">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={filters.priceRange.min}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, min: Number(e.target.value) }
-                    )}
-                    className="range-min"
-                  />
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={filters.priceRange.max}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, max: Number(e.target.value) }
-                    )}
-                    className="range-max"
-                  />
-                </div>
-                <div className="price-display">
-                  {t('shop.price')}: ${filters.priceRange.min} — ${filters.priceRange.max}
-                </div>
-                <button className="filter-btn">{t('shop.filter')}</button>
+              <div className="filter-section-header" onClick={() => toggleSectionCollapse('price')}>
+                <h4>{t('shop.price_filter')}</h4>
+                <button className={`section-collapse-btn ${collapsedSections.price ? 'collapsed' : 'expanded'}`}>
+                  {collapsedSections.price ? '+' : '−'}
+                </button>
               </div>
+              {!collapsedSections.price && (
+                <div className="price-range">
+                  <div className="price-inputs">
+                    <input
+                      type="number"
+                      placeholder={t('shop.min_price')}
+                      value={filters.priceRange.min}
+                      onChange={(e) => handleFilterChange('priceRange', 
+                        { ...filters.priceRange, min: Number(e.target.value) }
+                      )}
+                    />
+                    <span>-</span>
+                    <input
+                      type="number"
+                      placeholder={t('shop.max_price')}
+                      value={filters.priceRange.max}
+                      onChange={(e) => handleFilterChange('priceRange', 
+                        { ...filters.priceRange, max: Number(e.target.value) }
+                      )}
+                    />
+                  </div>
+                  <div className="price-range-slider">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={filters.priceRange.min}
+                      onChange={(e) => handleFilterChange('priceRange', 
+                        { ...filters.priceRange, min: Number(e.target.value) }
+                      )}
+                      className="range-min"
+                    />
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={filters.priceRange.max}
+                      onChange={(e) => handleFilterChange('priceRange', 
+                        { ...filters.priceRange, max: Number(e.target.value) }
+                      )}
+                      className="range-max"
+                    />
+                  </div>
+                  <div className="price-display">
+                    {t('shop.price')}: ${filters.priceRange.min} — ${filters.priceRange.max}
+                  </div>
+                  <button className="filter-btn">{t('shop.filter')}</button>
+                </div>
+              )}
             </div>
 
             {/* Product Categories with Subcategories */}
             <div className="filter-section">
-              <h4>{t('shop.product_categories')}</h4>
-              <div className="category-list">
-                {categories.map(category => {
-                  const count = filterCounts[`category_${category.name.en}`] || 0;
-                  const categorySubcategories = getSubcategoriesByCategory(category.id);
-                  const hasSubcategories = categorySubcategories.length > 0;
-                  const isExpanded = expandedCategories[category.id];
-                  
-                  return count > 0 ? (
-                    <div key={category.id} className="category-filter-item">
-                      <div className="category-main-filter">
-                        <label className="filter-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={filters.categories.includes(category.id)}
-                            onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
-                          />
-                          <span className="checkmark"></span>
-                          {category.name[currentLang]} ({count})
-                        </label>
-                        {hasSubcategories && (
-                          <button
-                            className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
-                            onClick={() => toggleCategoryExpansion(category.id)}
-                            type="button"
-                          >
-                            {isExpanded ? (currentLang === 'ar' ? '−' : '−') : (currentLang === 'ar' ? '+' : '+')}
-                          </button>
+              <div className="filter-section-header" onClick={() => toggleSectionCollapse('categories')}>
+                <h4>{t('shop.product_categories')}</h4>
+                <button className={`section-collapse-btn ${collapsedSections.categories ? 'collapsed' : 'expanded'}`}>
+                  {collapsedSections.categories ? '+' : '−'}
+                </button>
+              </div>
+              {!collapsedSections.categories && (
+                <div className="category-list">
+                  {categories.map(category => {
+                    const count = filterCounts[`category_${category.name.en}`] || 0;
+                    const categorySubcategories = getSubcategoriesByCategory(category.id);
+                    const hasSubcategories = categorySubcategories.length > 0;
+                    const isExpanded = expandedCategories[category.id];
+                    
+                    return count > 0 ? (
+                      <div key={category.id} className="category-filter-item">
+                        <div className="category-main-filter">
+                          <label className="filter-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={filters.categories.includes(category.id)}
+                              onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
+                            />
+                            <span className="checkmark"></span>
+                            {category.name[currentLang]} ({count})
+                          </label>
+                          {hasSubcategories && (
+                            <button
+                              className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
+                              onClick={() => toggleCategoryExpansion(category.id)}
+                              type="button"
+                            >
+                              {isExpanded ? (currentLang === 'ar' ? '−' : '−') : (currentLang === 'ar' ? '+' : '+')}
+                            </button>
+                          )}
+                        </div>
+                        
+                        {/* Subcategories - show when expanded */}
+                        {hasSubcategories && isExpanded && (
+                          <div className="subcategory-filters">
+                            {categorySubcategories.map(subcategory => {
+                              const subcategoryCount = filterCounts[`subcategory_${subcategory.id}`] || 0;
+                              return subcategoryCount > 0 ? (
+                                <label key={subcategory.id} className="filter-checkbox subcategory-filter">
+                                  <input
+                                    type="checkbox"
+                                    checked={filters.subcategories.includes(subcategory.id)}
+                                    onChange={(e) => handleFilterChange('subcategories', subcategory.id, e.target.checked)}
+                                  />
+                                  <span className="checkmark"></span>
+                                  {subcategory.name[currentLang]} ({subcategoryCount})
+                                </label>
+                              ) : null;
+                            })}
+                          </div>
                         )}
                       </div>
-                      
-                      {/* Subcategories - show when expanded */}
-                      {hasSubcategories && isExpanded && (
-                        <div className="subcategory-filters">
-                          {categorySubcategories.map(subcategory => {
-                            const subcategoryCount = filterCounts[`subcategory_${subcategory.id}`] || 0;
-                            return subcategoryCount > 0 ? (
-                              <label key={subcategory.id} className="filter-checkbox subcategory-filter">
-                                <input
-                                  type="checkbox"
-                                  checked={filters.subcategories.includes(subcategory.id)}
-                                  onChange={(e) => handleFilterChange('subcategories', subcategory.id, e.target.checked)}
-                                />
-                                <span className="checkmark"></span>
-                                {subcategory.name[currentLang]} ({subcategoryCount})
-                              </label>
-                            ) : null;
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ) : null;
-                })}
-              </div>
+                    ) : null;
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Filter by Color */}
             <div className="filter-section">
-              <h4>{t('shop.filter_by_color')}</h4>
-              <div className="color-filters">
-                {colors.map(color => {
-                  const count = filterCounts[`color_${color}`] || 0;
-                  return count > 0 ? (
-                    <label key={color} className="color-filter">
-                      <input
-                        type="checkbox"
-                        checked={filters.colors.includes(color)}
-                        onChange={(e) => handleFilterChange('colors', color, e.target.checked)}
-                      />
-                      <span className={`color-swatch color-${color.toLowerCase()}`}></span>
-                      {t(`shop.colors.${color.toLowerCase()}`)} ({count})
-                    </label>
-                  ) : null;
-                })}
+              <div className="filter-section-header" onClick={() => toggleSectionCollapse('colors')}>
+                <h4>{t('shop.filter_by_color')}</h4>
+                <button className={`section-collapse-btn ${collapsedSections.colors ? 'collapsed' : 'expanded'}`}>
+                  {collapsedSections.colors ? '+' : '−'}
+                </button>
               </div>
+              {!collapsedSections.colors && (
+                <div className="color-filters">
+                  {colors.map(color => {
+                    const count = filterCounts[`color_${color}`] || 0;
+                    return count > 0 ? (
+                      <label key={color} className="color-filter">
+                        <input
+                          type="checkbox"
+                          checked={filters.colors.includes(color)}
+                          onChange={(e) => handleFilterChange('colors', color, e.target.checked)}
+                        />
+                        <span className={`color-swatch color-${color.toLowerCase()}`}></span>
+                        {t(`shop.colors.${color.toLowerCase()}`)} ({count})
+                      </label>
+                    ) : null;
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Filter by Features */}
             <div className="filter-section">
-              <h4>{t('shop.filter_by_features')}</h4>
-              <div className="feature-filters">
-                {features.map(feature => {
-                  const count = filterCounts[`feature_${feature.id}`] || 0;
-                  return count > 0 ? (
-                    <label key={feature.id} className="filter-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={filters.features.includes(feature.id)}
-                        onChange={(e) => handleFilterChange('features', feature.id, e.target.checked)}
-                      />
-                      <span className="checkmark"></span>
-                      {feature.name[currentLang]} ({count})
-                    </label>
-                  ) : null;
-                })}
+              <div className="filter-section-header" onClick={() => toggleSectionCollapse('features')}>
+                <h4>{t('shop.filter_by_features')}</h4>
+                <button className={`section-collapse-btn ${collapsedSections.features ? 'collapsed' : 'expanded'}`}>
+                  {collapsedSections.features ? '+' : '−'}
+                </button>
               </div>
+              {!collapsedSections.features && (
+                <div className="feature-filters">
+                  {features.map(feature => {
+                    const count = filterCounts[`feature_${feature.id}`] || 0;
+                    return count > 0 ? (
+                      <label key={feature.id} className="filter-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={filters.features.includes(feature.id)}
+                          onChange={(e) => handleFilterChange('features', feature.id, e.target.checked)}
+                        />
+                        <span className="checkmark"></span>
+                        {feature.name[currentLang]} ({count})
+                      </label>
+                    ) : null;
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Product Status */}
             <div className="filter-section">
-              <h4>{t('shop.product_status')}</h4>
-              <div className="status-filters">
-                {statusOptions.map(status => (
-                  <label key={status} className="filter-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={filters.status.includes(status)}
-                      onChange={(e) => handleFilterChange('status', status, e.target.checked)}
-                    />
-                    <span className="checkmark"></span>
-                    {t(`filters.status_names.${status}`)}
-                  </label>
-                ))}
+              <div className="filter-section-header" onClick={() => toggleSectionCollapse('status')}>
+                <h4>{t('shop.product_status')}</h4>
+                <button className={`section-collapse-btn ${collapsedSections.status ? 'collapsed' : 'expanded'}`}>
+                  {collapsedSections.status ? '+' : '−'}
+                </button>
               </div>
+              {!collapsedSections.status && (
+                <div className="status-filters">
+                  {statusOptions.map(status => (
+                    <label key={status} className="filter-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={filters.status.includes(status)}
+                        onChange={(e) => handleFilterChange('status', status, e.target.checked)}
+                      />
+                      <span className="checkmark"></span>
+                      {t(`filters.status_names.${status}`)}
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           </aside>
 

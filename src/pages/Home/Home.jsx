@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import Carousel from '../../components/Carousel/Carousel';
+import CategoriesGrid from '../../components/CategoriesGrid/CategoriesGrid';
 import Features from '../../components/Features/Features';
 import NewArrivals from '../../components/NewArrivals/NewArrivals';
 import BestSellers from '../../components/BestSellers/BestSellers';
@@ -34,6 +35,7 @@ const Home = () => {
       />
       <main className="home-content">
         <Carousel />
+        <CategoriesGrid />
         <Features />
         <NewArrivals />
         <BestSellers />

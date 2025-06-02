@@ -122,6 +122,40 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  animation: pulseShake 2s infinite;
+  transform-origin: center;
+}
+
+/* Animation keyframes for sale badge */
+@keyframes pulseShake {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  }
+  10% {
+    transform: scale(1.05) rotate(-1deg);
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+  }
+  20% {
+    transform: scale(1.1) rotate(1deg);
+    box-shadow: 0 6px 12px rgba(220, 38, 38, 0.5);
+  }
+  30% {
+    transform: scale(1.05) rotate(-0.5deg);
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+  }
+  40% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    transform: scale(1.02) rotate(0.5deg);
+    box-shadow: 0 3px 6px rgba(220, 38, 38, 0.35);
+  }
+  60% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  }
 }
 
 /* Responsive Design */

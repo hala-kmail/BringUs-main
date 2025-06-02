@@ -59,7 +59,7 @@
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: var(--announcement-bar-height);
+    padding-top: 0;
   }
 }
 

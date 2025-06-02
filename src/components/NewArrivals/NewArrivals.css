@@ -187,6 +187,45 @@
 .product-discount-badge {
   background: #ef4444;
   color: white;
+  animation: discountSpin 2.5s infinite ease-in-out;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.product-discount-badge:hover {
+  animation-play-state: paused;
+  transform: scale(1.12);
+}
+
+/* Discount badge spin animation for new arrivals */
+@keyframes discountSpin {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  }
+  12% {
+    transform: rotate(-5deg) scale(1.04);
+    box-shadow: 0 3px 8px rgba(239, 68, 68, 0.5);
+  }
+  25% {
+    transform: rotate(5deg) scale(1.08);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+  }
+  37% {
+    transform: rotate(-3deg) scale(1.04);
+    box-shadow: 0 3px 8px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    transform: rotate(0deg) scale(1);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  }
+  62% {
+    transform: rotate(2deg) scale(1.02);
+    box-shadow: 0 2.5px 7px rgba(239, 68, 68, 0.45);
+  }
+  75% {
+    transform: rotate(0deg) scale(1);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  }
 }
 
 /* Feature Badge */
@@ -255,27 +294,50 @@
 /* Add to Cart Button */
 .add-to-cart-btn {
   width: 100%;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #d1fae5;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  font-family: 'Tajawal', sans-serif;
-  cursor: pointer;
+  gap: 8px;
   transition: all 0.3s ease;
-  font-size: 0.875rem;
   margin-top: auto;
+  font-family: 'Tajawal', sans-serif;
+  position: relative;
+}
+
+.add-to-cart-btn::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background: #16a34a;
+  border-radius: 4px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'/%3E%3C/svg%3E");
+  background-size: 14px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+[dir="rtl"] .add-to-cart-btn::before {
+  left: auto;
+  right: 8px;
 }
 
 .add-to-cart-btn:hover {
-  background: #e5e7eb;
-  border-color: #9ca3af;
+  background: #dcfce7;
+  border-color: #bbf7d0;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
 }
 
 .add-to-cart-btn:active {
@@ -283,8 +345,16 @@
 }
 
 .add-to-cart-btn svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  display: none; /* Hide the original SVG since we're using ::before */
+}
+
+.add-to-cart-btn .button-text {
+  margin-left: 24px;
+}
+
+[dir="rtl"] .add-to-cart-btn .button-text {
+  margin-left: 0;
+  margin-right: 24px;
 }
 
 /* Desktop - ensure button text is visible */

@@ -181,6 +181,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .top-bar {
+    top: -1px;
     padding: 0.25rem 0;
   }
 

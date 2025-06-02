@@ -366,7 +366,7 @@
   .navbar {
     padding: 0.5rem 0;
     position: sticky;
-    top: calc(var(--announcement-bar-height) + var(--top-bar-height));
+    top: 50px;
   }
 
   .navbar-container {

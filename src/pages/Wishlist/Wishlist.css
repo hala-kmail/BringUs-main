@@ -232,6 +232,41 @@
 .product-discount-badge {
   background: #ef4444;
   color: white;
+  animation: discountHeartbeat 2s infinite ease-in-out;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.product-discount-badge:hover {
+  animation-play-state: paused;
+  transform: scale(1.15);
+}
+
+/* Discount badge heartbeat animation for wishlist */
+@keyframes discountHeartbeat {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  }
+  14% {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+  }
+  28% {
+    transform: scale(0.95);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+  }
+  42% {
+    transform: scale(1.15);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.7);
+  }
+  56% {
+    transform: scale(0.9);
+    box-shadow: 0 1px 4px rgba(239, 68, 68, 0.2);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  }
 }
 
 [dir="rtl"] .product-badges {

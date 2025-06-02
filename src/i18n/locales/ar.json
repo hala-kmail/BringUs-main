@@ -372,5 +372,37 @@
       "address_required": "العنوان مطلوب",
       "city_required": "المدينة مطلوبة"
     }
+  },
+  "almostFinished": {
+    "heroLabel": "عرض على وشك الانتهاء!",
+    "heroTitle": "فرص أخيرة للحصول على عروض رائعة",
+    "heroSubtitle": "لا تفوت هذه المنتجات المذهلة - كمية محدودة متبقية!",
+    "productsLeft": "منتجات على وشك النفاد",
+    "discountedItems": "منتجات مخفضة",
+    "almostFinished": "على وشك الانتهاء",
+    "discountedProducts": "منتجات مخفضة",
+    "resultsFound": "تم العثور على {{count}} منتج",
+    "sortBy": "ترتيب حسب:",
+    "sortOptions": {
+      "stockLowToHigh": "الكمية: من الأقل للأعلى",
+      "stockHighToLow": "الكمية: من الأعلى للأقل",
+      "discountHighToLow": "الخصم: من الأعلى للأقل",
+      "priceLowToHigh": "السعر: من الأقل للأعلى",
+      "priceHighToLow": "السعر: من الأعلى للأقل"
+    },
+    "left": "متبقي",
+    "hurry": "أسرع!",
+    "addToCart": "أضف للسلة",
+    "onlyLeft": "{{count}} فقط متبقي!",
+    "noProducts": "لا توجد منتجات",
+    "noProductsDesc": "جميع المنتجات في هذا القسم متوفرة حالياً أو نفدت.",
+    "youSave": "توفر:",
+    "off": "خصم"
+  },
+  "stock": {
+    "critical": "كمية حرجة",
+    "low": "كمية قليلة",
+    "limited": "كمية محدودة",
+    "available": "متوفر"
   }
 } 

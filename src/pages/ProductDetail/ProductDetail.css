@@ -218,7 +218,7 @@
 
 /* Product Information Section */
 .product-detail-info {
-  padding: 0 0.25rem;
+  padding: 10px 0.25rem;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -244,6 +244,50 @@
 .product-sale-badge {
   background: #ef4444;
   color: white;
+  animation: saleBadgeBounce 1.5s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-sale-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 3s infinite;
+}
+
+/* Sale badge bounce animation */
+@keyframes saleBadgeBounce {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  }
+  25% {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.1) translateY(-4px);
+    box-shadow: 0 6px 12px rgba(239, 68, 68, 0.5);
+  }
+  75% {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+  }
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .product-organic-badge {
@@ -456,39 +500,79 @@
   padding: 0.75rem 1rem;
   font-size: 0.85rem;
   border-radius: 0.5rem;
-  background: #634C9F;
-  color: white;
-  border: none;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #d1fae5;
   font-weight: 600;
   font-family: 'Tajawal', sans-serif;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.product-add-to-cart-btn::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background: #16a34a;
+  border-radius: 4px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'/%3E%3C/svg%3E");
+  background-size: 14px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+[dir="rtl"] .product-add-to-cart-btn::before {
+  left: auto;
+  right: 12px;
 }
 
 .product-add-to-cart-btn:hover {
-  background: #5a4389;
+  background: #dcfce7;
+  border-color: #bbf7d0;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
 }
 
 .product-add-to-cart-btn:disabled {
-  background: #9ca3af;
+  background: #f9fafb;
+  color: #9ca3af;
+  border-color: #e5e7eb;
   cursor: not-allowed;
   transform: none;
 }
 
-.product-add-to-cart-btn:disabled:hover {
+.product-add-to-cart-btn:disabled::before {
   background: #9ca3af;
+}
+
+.product-add-to-cart-btn:disabled:hover {
+  background: #f9fafb;
   transform: none;
+  box-shadow: none;
 }
 
 .product-add-to-cart-btn svg {
-  width: 1.125rem;
-  height: 1.125rem;
+  display: none; /* Hide the original SVG since we're using ::before */
 }
 
 .product-add-to-cart-btn .button-text {
   display: inline;
+  margin-left: 28px;
+}
+
+[dir="rtl"] .product-add-to-cart-btn .button-text {
+  margin-left: 0;
+  margin-right: 28px;
 }
 
 .product-buy-now-btn {

@@ -12,15 +12,16 @@ import ProductDetail from './pages/ProductDetail/ProductDetail';
 import Cart from './pages/Cart/Cart';
 import Checkout from './pages/Checkout/Checkout';
 import Wishlist from './pages/Wishlist/Wishlist';
+import AlmostFinishedSale from './pages/AlmostFinishedSale/AlmostFinishedSale';
 import AnnouncementBar from './components/AnnouncementBar/AnnouncementBar';
 import BottomNavigation from './components/BottomNavigation/BottomNavigation';
 import './App.css';
 
-// Wrapper component to handle conditional rendering of AnnouncementBar
-function AppContent() {
+// Component to manage conditional rendering
+const AppContent = () => {
   const location = useLocation();
   const isAuthPage = ['/login', '/register'].includes(location.pathname);
-
+  
   return (
     <div className="App">
       {!isAuthPage && <AnnouncementBar />}
@@ -28,6 +29,7 @@ function AppContent() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/category/:categorySlug" element={<Category />} />
@@ -37,13 +39,13 @@ function AppContent() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/almost-finished-sale" element={<AlmostFinishedSale />} />
         </Routes>
       </div>
       {!isAuthPage && <BottomNavigation />}
     </div>
   );
-}
+};
 
 function App() {
   return (

@@ -367,5 +367,37 @@
       "address_required": "Address is required",
       "city_required": "City is required"
     }
+  },
+  "almostFinished": {
+    "heroLabel": "Almost Finished Sale!",
+    "heroTitle": "Last Chance Deals",
+    "heroSubtitle": "Don't miss out on these amazing products - limited stock remaining!",
+    "productsLeft": "Products Running Out",
+    "discountedItems": "Discounted Items",
+    "almostFinished": "Almost Finished",
+    "discountedProducts": "Discounted Products",
+    "resultsFound": "{{count}} products found",
+    "sortBy": "Sort by:",
+    "sortOptions": {
+      "stockLowToHigh": "Stock: Low to High",
+      "stockHighToLow": "Stock: High to Low",
+      "discountHighToLow": "Discount: High to Low",
+      "priceLowToHigh": "Price: Low to High",
+      "priceHighToLow": "Price: High to Low"
+    },
+    "left": "left",
+    "hurry": "Hurry!",
+    "addToCart": "Add to Cart",
+    "onlyLeft": "Only {{count}} left!",
+    "noProducts": "No products found",
+    "noProductsDesc": "All products in this section are currently available or have been sold out.",
+    "youSave": "You Save:",
+    "off": "OFF"
+  },
+  "stock": {
+    "critical": "Critical",
+    "low": "Low Stock",
+    "limited": "Limited",
+    "available": "Available"
   }
 } 
