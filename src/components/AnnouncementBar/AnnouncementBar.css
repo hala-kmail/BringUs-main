@@ -64,7 +64,6 @@
 .countdown-unit {
   font-size: 0.75rem;
   opacity: 0.9;
-  margin-top: 0.25rem;
 }
 
 @media (max-width: 768px) {

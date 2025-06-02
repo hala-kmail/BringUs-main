@@ -198,6 +198,10 @@
   height: 1rem;
 }
 
+.wishlist-add-to-cart-btn span {
+  display: none !important;
+}
+
 /* Product Badges */
 .product-badges {
   position: absolute;
@@ -370,7 +374,7 @@
 @media (max-width: 768px) {
   .wishlist-container {
     max-width: 100%;
-    padding: 0.75rem;
+    padding: 1rem;
   }
 
   .wishlist-title {
@@ -483,7 +487,7 @@
 
 @media (max-width: 480px) {
   .wishlist-container {
-    padding: 0.5rem;
+    padding: 1rem;
   }
 
   .wishlist-title {
@@ -491,6 +495,7 @@
   }
 
   .wishlist-grid {
+    padding-bottom: 3rem;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.4rem;
   }

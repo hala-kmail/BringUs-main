@@ -404,5 +404,13 @@
     "low": "كمية قليلة",
     "limited": "كمية محدودة",
     "available": "متوفر"
+  },
+  "countdown": {
+    "days": "أيام",
+    "hours": "ساعات",
+    "minutes": "دقائق",
+    "seconds": "ثواني",
+    "expired": "انتهى العرض",
+    "remainsUntilEnd": "متبقي حتى انتهاء العرض"
   }
 } 

@@ -127,3 +127,67 @@ button:focus-visible {
     min-width: 300px;
   }
 }
+
+/* Global Mobile Styles for Add to Cart Buttons */
+@media (max-width: 768px) {
+  /* إخفاء نص زر أضف للسلة على الموبايل - نمط عام (عدا صفحة تفاصيل المنتج) */
+  .add-to-cart-btn .button-text:not(.product-detail .add-to-cart-btn .button-text),
+  .add-to-cart-btn span:not(.loading-spinner):not(.product-detail .add-to-cart-btn span),
+  .product-add-to-cart-btn .button-text,
+  .product-add-to-cart-btn span:not(.loading-spinner),
+  .wishlist-add-to-cart-btn span:not(.loading-spinner),
+  .related-add-to-cart-btn .button-text,
+  .related-add-to-cart-btn span:not(.loading-spinner) {
+    display: none !important;
+  }
+
+  /* التأكد من أن الأيقونة ظاهرة */
+  .add-to-cart-btn svg,
+  .product-add-to-cart-btn svg,
+  .wishlist-add-to-cart-btn svg,
+  .related-add-to-cart-btn svg {
+    display: block !important;
+  }
+
+  /* تحويل الأزرار إلى دائرية على الموبايل (عدا صفحة تفاصيل المنتج) */
+  .add-to-cart-btn:not(.product-detail .add-to-cart-btn),
+  .wishlist-add-to-cart-btn,
+  .related-add-to-cart-btn {
+    width: 35px !important;
+    height: 35px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+
+  /* إبقاء زر صفحة تفاصيل المنتج كما هو */
+  .product-detail .add-to-cart-btn {
+    width: auto !important;
+    height: auto !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-to-cart-btn:not(.product-detail .add-to-cart-btn),
+  .wishlist-add-to-cart-btn,
+  .related-add-to-cart-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .add-to-cart-btn svg:not(.product-detail .add-to-cart-btn svg),
+  .wishlist-add-to-cart-btn svg,
+  .related-add-to-cart-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* إبقاء زر صفحة تفاصيل المنتج كما هو في الشاشات الصغيرة */
+  .product-detail .add-to-cart-btn {
+    width: auto !important;
+    height: auto !important;
+    padding: 0.75rem 1rem !important;
+  }
+}

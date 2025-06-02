@@ -1,0 +1,155 @@
+/* Countdown Timer Styles */
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0.5rem 0;
+}
+
+.countdown-timer.large {
+  gap: 12px;
+  margin: 1rem 0;
+}
+
+.countdown-timer.small {
+  gap: 6px;
+  margin: 0.25rem 0;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  padding: 8px 6px;
+  min-width: 40px;
+}
+
+.countdown-timer.large .countdown-unit {
+  padding: 12px 8px;
+  min-width: 50px;
+  border-radius: 10px;
+}
+
+.countdown-timer.small .countdown-unit {
+  padding: 6px 4px;
+  min-width: 32px;
+  border-radius: 6px;
+}
+
+.countdown-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: #212529;
+  line-height: 1;
+  margin-bottom: 2px;
+  font-feature-settings: "tnum";
+}
+
+.countdown-timer.large .countdown-number {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.countdown-timer.small .countdown-number {
+  font-size: 14px;
+  margin-bottom: 1px;
+}
+
+.countdown-label {
+  font-size: 10px;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.countdown-timer.large .countdown-label {
+  font-size: 11px;
+}
+
+.countdown-timer.small .countdown-label {
+  font-size: 8px;
+}
+
+.countdown-separator {
+  font-size: 18px;
+  font-weight: 700;
+  color: #6c757d;
+  margin: 0 2px;
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.countdown-timer.large .countdown-separator {
+  font-size: 24px;
+  margin: 0 4px;
+  margin-top: 12px;
+}
+
+.countdown-timer.small .countdown-separator {
+  font-size: 14px;
+  margin: 0 1px;
+  margin-top: 6px;
+}
+
+.countdown-message {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.countdown-timer.large .countdown-message {
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.countdown-timer.small .countdown-message {
+  font-size: 10px;
+  margin-top: 6px;
+}
+
+/* Expired state */
+.countdown-timer.expired {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.expired-text {
+  font-size: 0.7em;
+  color: #dc2626;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* RTL Support */
+[dir="rtl"] .countdown-timer {
+  direction: ltr; /* Keep numbers LTR even in RTL layout */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .countdown-unit {
+    min-width: 35px;
+    padding: 6px 4px;
+  }
+  
+  .countdown-number {
+    font-size: 16px;
+  }
+  
+  .countdown-label {
+    font-size: 9px;
+  }
+  
+  .countdown-separator {
+    font-size: 16px;
+    margin-top: 6px;
+  }
+} 

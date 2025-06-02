@@ -7,6 +7,7 @@ import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
+import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 import { getProductById, getCategoryById, getSubcategoryById, getFeatureById } from '../../data/index';
 import './ProductDetail.css';
 
@@ -28,6 +29,24 @@ const ProductDetail = () => {
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
 
   const currentLang = i18n.language;
+
+  // Helper function to check if discount is active
+  const isDiscountActive = (product) => {
+    if (!product.discountEndTime) return false;
+    const now = new Date();
+    const endTime = new Date(product.discountEndTime);
+    return now < endTime;
+  };
+
+  // Helper function to get effective price
+  const getEffectivePrice = (product) => {
+    const basePrice = product.basePrice || product.price;
+    if (product.discountPercentage && isDiscountActive(product)) {
+      const discountAmount = (basePrice * product.discountPercentage) / 100;
+      return basePrice - discountAmount;
+    }
+    return basePrice;
+  };
 
   // Create combined media array with images and videos - moved before useEffect
   const mediaItems = product ? [
@@ -376,6 +395,21 @@ const ProductDetail = () => {
                 ))}
               </div>
             )}
+
+            {/* Countdown Timer for Discounted Products */}
+            {product.discountPercentage && product.discountEndTime && isDiscountActive(product) && (
+              <div className="product-countdown-section">
+                <div className="countdown-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="countdown-icon">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="countdown-title">
+                    {currentLang === 'ar' ? 'ينتهي العرض خلال' : 'Offer ends in'}
+                  </span>
+                </div>
+                <CountdownTimer endTime={product.discountEndTime} size="small" />
+              </div>
+            )}
           </div>
 
           {/* Product Information */}
@@ -486,7 +520,7 @@ const ProductDetail = () => {
               
               <div className="product-cart-buttons">
                 <button 
-                  className="product-add-to-cart-btn" 
+                  className="add-to-cart-btn" 
                   onClick={handleAddToCart}
                   disabled={addToCartLoading}
                 >

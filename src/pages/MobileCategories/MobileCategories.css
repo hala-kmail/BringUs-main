@@ -344,7 +344,7 @@
   }
 
   .categories-sidebar {
-    width: 80px;
+    width: 100px;
   }
 
   .category-item {
@@ -360,6 +360,7 @@
   }
 
   .section-title {
+    margin: 0;
     font-size: 12px;
   }
 
@@ -382,7 +383,7 @@
     display: none;
   }
 
-  .products-grid {
+  .products-grid.desktop-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.4rem;
   }

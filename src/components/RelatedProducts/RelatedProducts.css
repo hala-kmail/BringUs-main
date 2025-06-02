@@ -326,7 +326,7 @@
   }
 
   .related-products-container {
-    padding: 0 0.5rem;
+    padding: 1rem;
   }
 
   .related-section-header {
@@ -395,7 +395,7 @@
   /* إخفاء النص على الموبايل */
   .related-add-to-cart-btn span,
   .related-add-to-cart-btn .button-text {
-    display: none;
+    display: none !important;
   }
 
   /* تصغير زر المفضلة على الموبايل */

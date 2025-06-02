@@ -6,6 +6,7 @@ import { allProducts } from '../../data/products';
 import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
+import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 import './AlmostFinishedSale.css';
 
 const AlmostFinishedSale = () => {
@@ -14,6 +15,32 @@ const AlmostFinishedSale = () => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [currentSection, setCurrentSection] = useState('almost-finished');
   const [sortBy, setSortBy] = useState('stockLowToHigh');
+
+  // Helper function to check if discount is active
+  const isDiscountActive = (product) => {
+    if (!product.discountPrice || !product.discountPercentage) return false;
+    if (!product.discountEndTime) return true; // If no end time, consider it active
+    
+    const now = new Date();
+    const endTime = new Date(product.discountEndTime);
+    return now < endTime;
+  };
+
+  // Helper function to get effective price (considering expired discounts)
+  const getEffectivePrice = (product) => {
+    if (isDiscountActive(product)) {
+      return product.discountPrice;
+    }
+    return product.originalPrice;
+  };
+
+  // Helper function to get discount percentage (only if active)
+  const getActiveDiscountPercentage = (product) => {
+    if (isDiscountActive(product)) {
+      return product.discountPercentage;
+    }
+    return null;
+  };
 
   // Filter products by type - only show products with stock 10 or less
   const almostFinishedProducts = allProducts
@@ -25,19 +52,19 @@ const AlmostFinishedSale = () => {
         case 'stockHighToLow':
           return b.stock - a.stock;
         case 'discountHighToLow':
-          return (b.discountPercentage || 0) - (a.discountPercentage || 0);
+          return (getActiveDiscountPercentage(b) || 0) - (getActiveDiscountPercentage(a) || 0);
         case 'priceLowToHigh':
-          return (a.discountPrice || a.originalPrice) - (b.discountPrice || b.originalPrice);
+          return getEffectivePrice(a) - getEffectivePrice(b);
         case 'priceHighToLow':
-          return (b.discountPrice || b.originalPrice) - (a.discountPrice || a.originalPrice);
+          return getEffectivePrice(b) - getEffectivePrice(a);
         default:
           return a.stock - b.stock;
       }
     });
 
-  // Show all discounted products regardless of stock level
+  // Show only products with active discounts
   const discountedProducts = allProducts
-    .filter(product => product.discountPrice && product.discountPercentage && product.stock > 0)
+    .filter(product => isDiscountActive(product) && product.stock > 0)
     .sort((a, b) => {
       switch (sortBy) {
         case 'stockLowToHigh':
@@ -45,13 +72,13 @@ const AlmostFinishedSale = () => {
         case 'stockHighToLow':
           return b.stock - a.stock;
         case 'discountHighToLow':
-          return (b.discountPercentage || 0) - (a.discountPercentage || 0);
+          return (getActiveDiscountPercentage(b) || 0) - (getActiveDiscountPercentage(a) || 0);
         case 'priceLowToHigh':
-          return (a.discountPrice || a.originalPrice) - (b.discountPrice || b.originalPrice);
+          return getEffectivePrice(a) - getEffectivePrice(b);
         case 'priceHighToLow':
-          return (b.discountPrice || b.originalPrice) - (a.discountPrice || a.originalPrice);
+          return getEffectivePrice(b) - getEffectivePrice(a);
         default:
-          return (b.discountPercentage || 0) - (a.discountPercentage || 0);
+          return (getActiveDiscountPercentage(b) || 0) - (getActiveDiscountPercentage(a) || 0);
       }
     });
 
@@ -160,9 +187,9 @@ const AlmostFinishedSale = () => {
                   </div>
                   
                   {/* Discount Badge */}
-                  {product.discountPercentage && (
+                  {getActiveDiscountPercentage(product) && (
                     <div className="discount-badge">
-                      -{product.discountPercentage}%
+                      -{getActiveDiscountPercentage(product)}%
                     </div>
                   )}
 
@@ -201,7 +228,7 @@ const AlmostFinishedSale = () => {
                     </h3>
                     
                     <div className="product-pricing">
-                      {product.discountPrice ? (
+                      {isDiscountActive(product) ? (
                         <>
                           <span className="current-price">
                             {product.discountPrice.toFixed(2)} {t('shop.currency')}
@@ -236,19 +263,28 @@ const AlmostFinishedSale = () => {
                       </div>
                     )}
 
-                    {/* Discount Info - Only show for discounted products */}
-                    {currentSection === 'discounted' && product.discountPrice && (
-                      <div className="discount-info">
-                        <div className="savings-amount">
-                          <span className="savings-label">{t('almostFinished.youSave')}</span>
-                          <span className="savings-value">
-                            {(product.originalPrice - product.discountPrice).toFixed(2)} {t('shop.currency')}
-                          </span>
+                    {/* Discount Info - Only show for discounted products with active discounts */}
+                    {currentSection === 'discounted' && isDiscountActive(product) && (
+                      <>
+                        <div className="discount-info">
+                          <div className="savings-amount">
+                            <span className="savings-label">{t('almostFinished.youSave')}</span>
+                            <span className="savings-value">
+                              {(product.originalPrice - product.discountPrice).toFixed(2)} {t('shop.currency')}
+                            </span>
+                          </div>
+                          <div className="discount-percentage-large">
+                            <span className="discount-text">{getActiveDiscountPercentage(product)}% {t('almostFinished.off')}</span>
+                          </div>
                         </div>
-                        <div className="discount-percentage-large">
-                          <span className="discount-text">{product.discountPercentage}% {t('almostFinished.off')}</span>
-                        </div>
-                      </div>
+                        
+                        {/* Countdown Timer for discount end time - Only in discounted section */}
+                        {product.discountEndTime && (
+                          <div style={{ marginBottom: '1rem' }}>
+                            <CountdownTimer endTime={product.discountEndTime} size="small" />
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 

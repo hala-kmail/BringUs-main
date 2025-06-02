@@ -26,6 +26,7 @@ export const allProducts = [
     "originalPrice": 25.99,
     "discountPrice": 19.99,
     "discountPercentage": 23,
+    "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 1,
     "colors": [
       "Red",
@@ -69,6 +70,7 @@ export const allProducts = [
     "originalPrice": 8.99,
     "discountPrice": 6.99,
     "discountPercentage": 22,
+    "discountEndTime": "2025-06-12T15:30:00Z",
     "featureId": 2,
     "colors": [
       "Yellow"
@@ -100,6 +102,7 @@ export const allProducts = [
     "originalPrice": 12.99,
     "discountPrice": 8.99,
     "discountPercentage": 31,
+    "discountEndTime": "2025-06-14T18:45:00Z",
     "featureId": 1,
     "colors": [
       "Green"
@@ -131,6 +134,7 @@ export const allProducts = [
     "originalPrice": 15.99,
     "discountPrice": 12.99,
     "discountPercentage": 19,
+    "discountEndTime": "2025-06-16T21:15:00Z",
     "featureId": 2,
     "colors": [
       "Red"
@@ -162,6 +166,7 @@ export const allProducts = [
     "originalPrice": 9.99,
     "discountPrice": 7.99,
     "discountPercentage": 20,
+    "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 1,
     "colors": [
       "Orange"
@@ -174,6 +179,38 @@ export const allProducts = [
     "categoryId": 1,
     "subcategoryId": 2,
     "stock": 18,
+    "isBestSeller": false,
+    "isNew": false,
+    "createdAt": "2025-05-28T00:00:00Z",
+    "updatedAt": "2025-05-28T00:00:00Z"
+  },
+  {
+    "id": 47,
+    "image": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "name": {
+      "en": "Expired Discount Product",
+      "ar": "منتج خصمه منتهي"
+    },
+    "description": {
+      "en": "Product with expired discount for testing.",
+      "ar": "منتج بخصم منتهي للاختبار."
+    },
+    "originalPrice": 15.99,
+    "discountPrice": 10.99,
+    "discountPercentage": 31,
+    "discountEndTime": "2025-06-22T17:00:00Z",
+    "featureId": 1,
+    "colors": [
+      "Red"
+    ],
+    "sizes": [
+      { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
+      { "name": "500g", "ar": "500 جرام", "priceModifier": 8 },
+      { "name": "1kg", "ar": "1 كيلو", "priceModifier": 15 }
+    ],
+    "categoryId": 1,
+    "subcategoryId": 1,
+    "stock": 8,
     "isBestSeller": false,
     "isNew": false,
     "createdAt": "2025-05-28T00:00:00Z",
@@ -252,6 +289,7 @@ export const allProducts = [
     "originalPrice": 45.99,
     "discountPrice": 35.99,
     "discountPercentage": 22,
+    "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 3,
     "colors": [
       "Red"
@@ -283,6 +321,7 @@ export const allProducts = [
     "originalPrice": 32.99,
     "discountPrice": 28.99,
     "discountPercentage": 12,
+    "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 2,
     "colors": [
       "White"
@@ -345,6 +384,7 @@ export const allProducts = [
     "originalPrice": 18.99,
     "discountPrice": 15.99,
     "discountPercentage": 16,
+    "discountEndTime": "2025-06-30T23:59:59Z",
     "featureId": 2,
     "colors": [
       "White"
@@ -407,6 +447,7 @@ export const allProducts = [
     "originalPrice": 16.99,
     "discountPrice": 13.99,
     "discountPercentage": 18,
+    "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 1,
     "colors": [
       "Brown"
@@ -469,6 +510,7 @@ export const allProducts = [
     "originalPrice": 12.99,
     "discountPrice": 9.99,
     "discountPercentage": 15,
+    "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 5,
     "colors": [
       "Brown"
@@ -500,6 +542,7 @@ export const allProducts = [
     "originalPrice": 18.99,
     "discountPrice": 14.99,
     "discountPercentage": 21,
+    "discountEndTime": "2025-06-12T15:30:00Z",
     "featureId": 2,
     "colors": [
       "Golden"
@@ -557,6 +600,7 @@ export const allProducts = [
     "originalPrice": 24.99,
     "discountPrice": 19.99,
     "discountPercentage": 20,
+    "discountEndTime": "2025-06-14T18:45:00Z",
     "featureId": 2,
     "colors": [
       "Brown"
@@ -600,6 +644,7 @@ export const allProducts = [
     "originalPrice": 15.99,
     "discountPrice": 12.99,
     "discountPercentage": 19,
+    "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 2,
     "colors": [
       "Orange"
@@ -686,6 +731,7 @@ export const allProducts = [
     "originalPrice": 19.99,
     "discountPrice": 16.99,
     "discountPercentage": 15,
+    "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 1,
     "colors": [
       "Green"
@@ -772,6 +818,7 @@ export const allProducts = [
     "originalPrice": 16.99,
     "discountPrice": 13.99,
     "discountPercentage": 18,
+    "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 6,
     "colors": [
       "Mixed"
@@ -815,6 +862,7 @@ export const allProducts = [
     "originalPrice": 28.99,
     "discountPrice": 22.99,
     "discountPercentage": 21,
+    "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 7,
     "colors": [
       "Mixed"
@@ -889,178 +937,6 @@ export const allProducts = [
   },
   {
     "id": 32,
-    "image": "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-4.0.3&auto=format&fit=crop&w=2065&q=80",
-    "name": {
-      "en": "Chocolate Chip Cookies",
-      "ar": "كوكيز رقائق الشوكولاتة"
-    },
-    "description": {
-      "en": "Chocolate chip cookies, fresh baked.",
-      "ar": "كوكيز رقائق الشوكولاتة، مخبوز طازج."
-    },
-    "originalPrice": 19.99,
-    "discountPrice": 15.99,
-    "discountPercentage": 20,
-    "featureId": 2,
-    "colors": [
-      "Brown"
-    ],
-    "sizes":     [
-      {
-        "name": "Small",
-        "ar": "صغير",
-        "priceModifier": 0
-      },
-      {
-        "name": "Medium",
-        "ar": "متوسط",
-        "priceModifier": 8
-      },
-      {
-        "name": "Large",
-        "ar": "كبير",
-        "priceModifier": 15
-      }
-    ],
-    "categoryId": 7,
-    "subcategoryId": 13,
-    "stock": 125,
-    "isBestSeller": false,
-    "isNew": false,
-    "createdAt": "2025-05-28T00:00:00Z",
-    "updatedAt": "2025-05-28T00:00:00Z"
-  },
-  {
-    "id": 33,
-    "image": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "name": {
-      "en": "Mixed Nuts",
-      "ar": "مكسرات مشكلة"
-    },
-    "description": {
-      "en": "Mixed nuts, natural and healthy snack.",
-      "ar": "مكسرات مشكلة، وجبة خفيفة طبيعية وصحية."
-    },
-    "originalPrice": 32.99,
-    "discountPrice": null,
-    "discountPercentage": null,
-    "featureId": 4,
-    "colors": [
-      "Mixed"
-    ],
-    "sizes":     [
-      {
-        "name": "Small",
-        "ar": "صغير",
-        "priceModifier": 0
-      },
-      {
-        "name": "Medium",
-        "ar": "متوسط",
-        "priceModifier": 8
-      },
-      {
-        "name": "Large",
-        "ar": "كبير",
-        "priceModifier": 15
-      }
-    ],
-    "categoryId": 7,
-    "subcategoryId": 14,
-    "stock": 95,
-    "isBestSeller": true,
-    "isNew": false,
-    "createdAt": "2025-05-28T00:00:00Z",
-    "updatedAt": "2025-05-28T00:00:00Z"
-  },
-  {
-    "id": 34,
-    "image": "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "name": {
-      "en": "Potato Chips",
-      "ar": "رقائق البطاطس"
-    },
-    "description": {
-      "en": "Potato chips, crispy and flavorful.",
-      "ar": "رقائق البطاطس، مقرمشة ولذيذة."
-    },
-    "originalPrice": 12.99,
-    "discountPrice": 9.99,
-    "discountPercentage": 23,
-    "featureId": 8,
-    "colors": [
-      "Yellow"
-    ],
-    "sizes":     [
-      {
-        "name": "Small",
-        "ar": "صغير",
-        "priceModifier": 0
-      },
-      {
-        "name": "Medium",
-        "ar": "متوسط",
-        "priceModifier": 8
-      },
-      {
-        "name": "Large",
-        "ar": "كبير",
-        "priceModifier": 15
-      }
-    ],
-    "categoryId": 7,
-    "subcategoryId": 14,
-    "stock": 140,
-    "isBestSeller": false,
-    "isNew": true,
-    "createdAt": "2025-05-28T00:00:00Z",
-    "updatedAt": "2025-05-28T00:00:00Z"
-  },
-  {
-    "id": 10,
-    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "name": {
-      "en": "Pure Honey",
-      "ar": "عسل نقي"
-    },
-    "description": {
-      "en": "Pure honey, natural sweetener.",
-      "ar": "عسل نقي، محلي طبيعي."
-    },
-    "originalPrice": 28.99,
-    "discountPrice": null,
-    "discountPercentage": null,
-    "featureId": 4,
-    "colors": [
-      "Golden"
-    ],
-    "sizes":     [
-      {
-        "name": "Small",
-        "ar": "صغير",
-        "priceModifier": 0
-      },
-      {
-        "name": "Medium",
-        "ar": "متوسط",
-        "priceModifier": 8
-      },
-      {
-        "name": "Large",
-        "ar": "كبير",
-        "priceModifier": 15
-      }
-    ],
-    "categoryId": 8,
-    "subcategoryId": 15,
-    "stock": 75,
-    "isBestSeller": true,
-    "isNew": false,
-    "createdAt": "2025-05-28T00:00:00Z",
-    "updatedAt": "2025-05-28T00:00:00Z"
-  },
-  {
-    "id": 35,
     "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "name": {
       "en": "Basmati Rice",
@@ -1073,6 +949,7 @@ export const allProducts = [
     "originalPrice": 45.99,
     "discountPrice": 38.99,
     "discountPercentage": 15,
+    "discountEndTime": "2025-06-30T23:59:59Z",
     "featureId": 3,
     "colors": [
       "White"
@@ -1103,7 +980,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 36,
+    "id": 33,
     "image": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80",
     "name": {
       "en": "Olive Oil",
@@ -1146,7 +1023,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 37,
+    "id": 34,
     "image": "https://images.unsplash.com/photo-1583947215259-38e31be8751f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "name": {
       "en": "Laundry Detergent",
@@ -1159,6 +1036,7 @@ export const allProducts = [
     "originalPrice": 35.99,
     "discountPrice": 28.99,
     "discountPercentage": 19,
+    "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 10,
     "colors": [
       "Blue"
@@ -1189,7 +1067,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 38,
+    "id": 35,
     "image": "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80",
     "name": {
       "en": "Toilet Paper",
@@ -1232,7 +1110,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 39,
+    "id": 36,
     "image": "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "name": {
       "en": "Dish Soap",
@@ -1245,6 +1123,7 @@ export const allProducts = [
     "originalPrice": 18.99,
     "discountPrice": 14.99,
     "discountPercentage": 21,
+    "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 12,
     "colors": [
       "Green"
@@ -1275,7 +1154,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 40,
+    "id": 37,
     "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80",
     "name": {
       "en": "Vitamin C Tablets",
@@ -1288,6 +1167,7 @@ export const allProducts = [
     "originalPrice": 29.99,
     "discountPrice": 24.99,
     "discountPercentage": 17,
+    "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 4,
     "colors": [
       "Orange"
@@ -1318,7 +1198,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 41,
+    "id": 38,
     "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "name": {
       "en": "Hand Sanitizer",
@@ -1361,7 +1241,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 42,
+    "id": 39,
     "image": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "name": {
       "en": "First Aid Kit",
@@ -1374,6 +1254,7 @@ export const allProducts = [
     "originalPrice": 45.99,
     "discountPrice": 38.99,
     "discountPercentage": 15,
+    "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 13,
     "colors": [
       "Red"
@@ -1404,7 +1285,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 43,
+    "id": 40,
     "image": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2073&q=80",
     "name": {
       "en": "Baby Diapers",
@@ -1417,6 +1298,7 @@ export const allProducts = [
     "originalPrice": 42.99,
     "discountPrice": 35.99,
     "discountPercentage": 16,
+    "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 14,
     "colors": [
       "White"
@@ -1447,7 +1329,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 44,
+    "id": 41,
     "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "name": {
       "en": "Baby Formula",
@@ -1490,7 +1372,7 @@ export const allProducts = [
     "updatedAt": "2025-05-28T00:00:00Z"
   },
   {
-    "id": 45,
+    "id": 42,
     "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2020&q=80",
     "name": {
       "en": "Baby Wipes",
@@ -1503,6 +1385,7 @@ export const allProducts = [
     "originalPrice": 22.99,
     "discountPrice": 18.99,
     "discountPercentage": 17,
+    "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 16,
     "colors": [
       "White"

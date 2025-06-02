@@ -399,5 +399,13 @@
     "low": "Low Stock",
     "limited": "Limited",
     "available": "Available"
+  },
+  "countdown": {
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "expired": "Offer Expired",
+    "remainsUntilEnd": "Remains until the end of the offer"
   }
 } 
