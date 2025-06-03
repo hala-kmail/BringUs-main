@@ -1,0 +1,29 @@
+:root {
+  /* الألوان الأساسية */
+  --primary-color: #1976d2;
+  --primary-light: #4791db;
+  --primary-dark: #115293;
+  
+  /* الألوان الثانوية */
+  --secondary-color: #dc004e;
+  --secondary-light: #e33371;
+  --secondary-dark: #9a0036;
+  
+  /* الألوان المحايدة */
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --background: #ffffff;
+  --surface: #f5f5f5;
+  
+  /* المسافات */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* الحدود */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+} 

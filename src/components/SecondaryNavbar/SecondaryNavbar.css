@@ -59,12 +59,12 @@
 }
 
 .nav-link:hover {
-  color: #634C9F;
+  color: var(--primary-color);
   background-color: rgba(99, 76, 159, 0.05);
 }
 
 .nav-link.active {
-  color: #634C9F;
+  color: var(--primary-color);
   background-color: rgba(99, 76, 159, 0.1);
 }
 
@@ -95,7 +95,7 @@
 }
 
 .offer-link.trending:hover {
-  color: #634C9F;
+  color: var(--primary-color);
   background-color: rgba(99, 76, 159, 0.05);
 }
 

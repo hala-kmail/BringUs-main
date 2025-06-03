@@ -58,7 +58,7 @@
 }
 
 .selector-button:hover {
-  color: #634C9F;
+  color: var(--primary-color);
   background-color: rgba(99, 76, 159, 0.05);
 }
 
@@ -118,11 +118,11 @@
 
 .dropdown-item:hover {
   background-color: #f3f4f6;
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .dropdown-item.active {
-  background-color: #634C9F;
+  background-color: var(--primary-color);
   color: white;
 }
 
@@ -152,14 +152,14 @@
 }
 
 .user-menu-topbar .user-button-topbar:hover {
-  color: #634C9F;
+  color: var(--primary-color);
   background-color: rgba(99, 76, 159, 0.05);
 }
 
 .user-avatar-topbar {
   width: 1.5rem;
   height: 1.5rem;
-  background-color: #634C9F;
+  background-color: var(--primary-color);
   color: white;
   border-radius: 999px;
   display: flex;

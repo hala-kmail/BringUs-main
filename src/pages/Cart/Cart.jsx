@@ -8,6 +8,7 @@ import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import './Cart.css';
+import namer from 'color-namer';
 
 const Cart = () => {
   const { t, i18n } = useTranslation();
@@ -66,6 +67,26 @@ const Cart = () => {
     setIsMobileSearchOpen(false);
   };
 
+  function getColorKey(hex) {
+    if (!hex) return '';
+    if (hex === 'mixed') return 'mixed';
+    try {
+      return namer(hex).ntc[0].name.toLowerCase();
+    } catch {
+      return hex;
+    }
+  }
+
+  function getColorLabel(hex, t) {
+    const colorKey = getColorKey(hex);
+    const translation = t(`filters.color_names.${colorKey}`);
+    if (!translation || translation === `filters.color_names.${colorKey}`) {
+      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+      return hex;
+    }
+    return translation;
+  }
+
   return (
     <div className="cart-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
       <TopBar />
@@ -95,8 +116,8 @@ const Cart = () => {
           </span>
         </nav>
 
-        {/* Header */}
-        <div className="cart-header">
+      {/* Header */}
+      <div className="cart-header">
           <h1 className="page-title">
             {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
           </h1>
@@ -183,7 +204,7 @@ const Cart = () => {
                       <div className="cart-item-options">
                         {item.selectedColor && (
                           <span className="cart-option">
-                            {currentLang === 'ar' ? 'اللون' : 'Color'}: {item.selectedColor}
+                            {currentLang === 'ar' ? 'اللون' : 'Color'}: {getColorLabel(item.selectedColor, t)}
                           </span>
                         )}
                         {item.selectedSize && (
@@ -241,15 +262,15 @@ const Cart = () => {
                   {/* Mobile Layout (hidden on desktop) */}
                   <div className="mobile-only mobile-cart-item">
                     {/* Remove Button - corner button */}
-                    <button 
+        <button 
                       className="remove-item-btn mobile-remove-btn"
                       onClick={() => handleRemoveItem(item.cartItemId)}
                       title={currentLang === 'ar' ? 'حذف المنتج' : 'Remove item'}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+          </svg>
+        </button>
 
                     {/* Product Main Info */}
                     <div className="cart-item-main">
@@ -275,7 +296,7 @@ const Cart = () => {
                           <div className="cart-item-options">
                             {item.selectedColor && (
                               <span className="cart-option">
-                                {currentLang === 'ar' ? 'اللون' : 'Color'}: {item.selectedColor}
+                                {currentLang === 'ar' ? 'اللون' : 'Color'}: {getColorLabel(item.selectedColor, t)}
                               </span>
                             )}
                             {item.selectedSize && (

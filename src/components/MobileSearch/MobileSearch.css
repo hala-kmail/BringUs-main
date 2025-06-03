@@ -46,7 +46,7 @@
 }
 
 .mobile-search-back:hover {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .mobile-search-back svg {
@@ -91,7 +91,7 @@
 
 .mobile-search-input:focus {
   outline: none;
-  border-color: #634C9F;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(99, 76, 159, 0.1);
 }
 
@@ -109,7 +109,7 @@
 }
 
 .mobile-search-clear:hover {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .mobile-search-clear svg {
@@ -165,7 +165,7 @@
 
 .suggestion-item:hover {
   background-color: #f3f4f6;
-  border-color: #634C9F;
+  border-color: var(--primary-color);
 }
 
 .suggestion-item svg {
@@ -197,7 +197,7 @@
 .suggestion-price .current-price {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .suggestion-price .original-price {
@@ -210,19 +210,19 @@
   background-color: #f8f9ff;
   border: 1px solid #e2e8f0;
   margin-top: 0.5rem;
-  color: #634C9F;
+  color: var(--primary-color);
   font-weight: 500;
 }
 
 .search-all:hover {
-  background-color: #634C9F;
+  background-color: var(--primary-color);
   color: white;
 }
 
 .search-icon-wrapper {
   width: 32px;
   height: 32px;
-  background-color: #634C9F;
+  background-color: var(--primary-color);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -241,7 +241,7 @@
 }
 
 .search-all:hover .search-icon-wrapper svg {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 [dir="rtl"] .suggestion-item img {

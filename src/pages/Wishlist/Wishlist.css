@@ -140,7 +140,7 @@
 }
 
 .wishlist-item-link:hover .wishlist-item-name {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 /* Price */
@@ -171,35 +171,41 @@
 /* Add to Cart Button */
 .wishlist-add-to-cart-btn {
   width: 100%;
+  background: var(--primary-color, #987811);
+  color: #fff;
+  border: 1px solid var(--primary-dark, #6d5c0a);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  background: #634C9F;
-  color: white;
-  border: none;
-  padding: 0.875rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-family: 'Tajawal', sans-serif;
-  cursor: pointer;
+  gap: 8px;
   transition: all 0.3s ease;
-  font-size: 0.875rem;
   margin-top: auto;
+  position: relative;
 }
 
 .wishlist-add-to-cart-btn:hover {
-  background: #5a4389;
+  background: var(--primary-light, #bfa93a);
+  border-color: var(--primary-color, #987811);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(152, 120, 17, 0.15);
 }
 
 .wishlist-add-to-cart-btn svg {
-  width: 1rem;
-  height: 1rem;
+  display: block !important;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
-.wishlist-add-to-cart-btn span {
-  display: none !important;
+.wishlist-add-to-cart-btn .button-text {
+  display: inline !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 /* Product Badges */
@@ -356,7 +362,7 @@
 
 .continue-shopping-btn {
   display: inline-block;
-  background: #634C9F;
+  background: var(--primary-color);
   color: white;
   padding: 0.875rem 2rem;
   border-radius: 8px;
@@ -367,7 +373,7 @@
 }
 
 .continue-shopping-btn:hover {
-  background: #5a4389;
+  background: var(--primary-dark);
 }
 
 /* Responsive Design */

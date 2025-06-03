@@ -8,6 +8,7 @@ import CategoriesGrid from '../../components/CategoriesGrid/CategoriesGrid';
 import Features from '../../components/Features/Features';
 import NewArrivals from '../../components/NewArrivals/NewArrivals';
 import BestSellers from '../../components/BestSellers/BestSellers';
+import AlmostFinishedCard from '../../components/AlmostFinishedCard/AlmostFinishedCard';
 import './Home.css';
 
 const Home = () => {
@@ -36,6 +37,7 @@ const Home = () => {
       <main className="home-content">
         <Carousel />
         <CategoriesGrid />
+        <AlmostFinishedCard />
         <Features />
         <NewArrivals />
         <BestSellers />

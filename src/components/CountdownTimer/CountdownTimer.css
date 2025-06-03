@@ -60,7 +60,7 @@
 
 .countdown-label {
   font-size: 10px;
-  color: #6c757d;
+  color: white;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -129,9 +129,7 @@
 }
 
 /* RTL Support */
-[dir="rtl"] .countdown-timer {
-  direction: ltr; /* Keep numbers LTR even in RTL layout */
-}
+
 
 /* Responsive */
 @media (max-width: 768px) {

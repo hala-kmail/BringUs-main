@@ -22,8 +22,8 @@ export function LanguageSwitcher() {
       onClick={toggleLanguage}
       className="language-switcher fixed top-4 bg-white px-4 py-2 rounded-md shadow-md hover:shadow-lg transition-shadow"
       style={{
-        color: '#634C9F',
-        border: '2px solid #634C9F',
+        color: 'var(--primary-color)',
+        border: '2px solid var(--primary-color)',
         fontWeight: '500',
         [i18n.language === 'ar' ? 'left' : 'right']: '1rem'
       }}

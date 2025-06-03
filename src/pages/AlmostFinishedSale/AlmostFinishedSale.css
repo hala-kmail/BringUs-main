@@ -539,9 +539,9 @@
 /* Add to Cart Button - Updated to match home page BestSellers */
 .almost-finished-sale-page .add-to-cart-btn {
   width: 100%;
-  background: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #d1fae5;
+  background: var(--primary-color, #987811);
+  color: #fff;
+  border: 1px solid var(--primary-dark, #6d5c0a);
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;
@@ -552,25 +552,21 @@
   justify-content: center;
   gap: 8px;
   transition: all 0.3s ease;
-  position: relative;
   margin-top: auto;
+  position: relative;
   font-family: 'Tajawal', sans-serif;
+}
+
+.almost-finished-sale-page .add-to-cart-btn:hover {
+  background: var(--primary-light, #bfa93a);
+  border-color: var(--primary-color, #987811);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(152, 120, 17, 0.15);
 }
 
 .almost-finished-sale-page .add-to-cart-btn::before {
   display: none !important;
   content: none !important;
-}
-
-.almost-finished-sale-page .add-to-cart-btn:hover {
-  background: #dcfce7;
-  border-color: #bbf7d0;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
-}
-
-.almost-finished-sale-page .add-to-cart-btn:active {
-  transform: translateY(0);
 }
 
 .almost-finished-sale-page .add-to-cart-btn svg {
@@ -687,7 +683,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .almost-finished-container {
-    padding: 0 0.5rem;
+    padding: 1rem;
   }
   
   .almost-finished-hero {
@@ -714,12 +710,14 @@
   }
   
   .section-tabs {
-    flex-direction: column;
+    font-size: 12px;
+   flex-wrap: nowrap;
     align-items: center;
   }
   
   .tab-button {
     width: 100%;
+    padding: 2px;
     max-width: 300px;
   }
   
@@ -756,13 +754,16 @@
   }
 
   .almost-finished-sale-page .add-to-cart-btn {
-    padding: 0.5rem;
-    font-size: 0.7rem;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
     padding: 0;
-    justify-content: center;
+    width: 35px !important;
+    height: 35px !important;
+    border-radius: 50% !important;
+    justify-content: center !important;
+    font-size: 0.7rem;
+  }
+
+  .almost-finished-sale-page .add-to-cart-btn .button-text {
+    display: none !important;
   }
 
   .almost-finished-sale-page .add-to-cart-btn svg {
@@ -785,6 +786,35 @@
   /* إخفاء معلومات المخزون والخصم على الموبايل لتوفير المساحة */
   .almost-finished-sale-page .stock-info,
   .almost-finished-sale-page .discount-info {
+    display: none;
+  }
+
+  .floating-almost-finished-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    z-index: 9999;
+    background: var(--primary-color, #987811);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    font-size: 2rem;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    outline: none;
+    animation: floating-btn-pop 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+  }
+  .floating-almost-finished-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  .floating-almost-finished-btn .floating-btn-label {
     display: none;
   }
 }
@@ -837,15 +867,21 @@
   }
 
   .almost-finished-sale-page .add-to-cart-btn {
-    padding: 0.4rem;
-    font-size: 0.65rem;
-    width: 32px;
-    height: 32px;
+    width: 32px !important;
+    height: 32px !important;
   }
 
   .almost-finished-sale-page .add-to-cart-btn svg {
     width: 0.8rem;
     height: 0.8rem;
+  }
+
+  .floating-almost-finished-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+    right: 12px;
+    bottom: 16px;
   }
 }
 
@@ -879,4 +915,49 @@
   .almost-finished-sale-page .product-card {
     max-width: none;
   }
+}
+
+@keyframes floating-btn-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  80% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+} 
+  
+
+@media (max-width: 360px) {
+  .almost-finished-sale-page .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+
+  .almost-finished-sale-page .product-image-container {
+    height: 90px;
+  }
+
+  .almost-finished-sale-page .product-info {
+    padding: 0.3rem;
+  }
+
+  .almost-finished-sale-page .product-name {
+    font-size: 0.6rem;
+  }
+
+  .almost-finished-sale-page .current-price {
+    font-size: 0.7rem;
+  }
+
+  .almost-finished-sale-page .add-to-cart-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .almost-finished-sale-page .product-card {
+    max-width: none;
+  }
+}
+
+@keyframes floating-btn-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  80% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 } 

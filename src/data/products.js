@@ -29,8 +29,8 @@ export const allProducts = [
     "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 1,
     "colors": [
-      "Red",
-      "Green"
+      "#ef4444",
+      "#22c55e"
     ],
     "sizes": [
       { "name": "1 kg", "ar": "1 كيلو", "priceModifier": 0 },
@@ -73,7 +73,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-12T15:30:00Z",
     "featureId": 2,
     "colors": [
-      "Yellow"
+      "#eab308"
     ],
     "sizes": [
       { "name": "1 dozen", "ar": "دزينة", "priceModifier": 0 },
@@ -105,7 +105,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-14T18:45:00Z",
     "featureId": 1,
     "colors": [
-      "Green"
+      "#22c55e"
     ],
     "sizes": [
       { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
@@ -137,7 +137,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-16T21:15:00Z",
     "featureId": 2,
     "colors": [
-      "Red"
+      "#ef4444"
     ],
     "sizes": [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 0 },
@@ -169,7 +169,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 1,
     "colors": [
-      "Orange"
+      "#f97316"
     ],
     "sizes": [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 0 },
@@ -201,7 +201,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 1,
     "colors": [
-      "Red"
+      "#ef4444"
     ],
     "sizes": [
       { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
@@ -249,7 +249,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 2,
     "colors": [
-      "Pink"
+      "#ffd700"
     ],
     "sizes": [
       { "name": "300g", "ar": "300 جرام", "priceModifier": 0 },
@@ -292,7 +292,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 3,
     "colors": [
-      "Red"
+      "#a0522d"
     ],
     "sizes": [
       { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
@@ -324,7 +324,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 2,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes": [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 0 },
@@ -355,7 +355,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
-      "Pink"
+      "#ffd700"
     ],
     "sizes": [
       { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },
@@ -387,7 +387,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-30T23:59:59Z",
     "featureId": 2,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes": [
       { "name": "500ml", "ar": "500 مل", "priceModifier": 0 },
@@ -418,7 +418,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 4,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes": [
       { "name": "150g", "ar": "150 جرام", "priceModifier": 0 },
@@ -450,7 +450,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 1,
     "colors": [
-      "Brown"
+      "#a0522d"
     ],
     "sizes": [
       { "name": "6 pieces", "ar": "6 قطع", "priceModifier": 0 },
@@ -481,7 +481,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
-      "Yellow"
+      "#eab308"
     ],
     "sizes": [
       { "name": "200g", "ar": "200 جرام", "priceModifier": 0 },
@@ -513,7 +513,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 5,
     "colors": [
-      "Brown"
+      "#a0522d"
     ],
     "sizes": [
       { "name": "Small", "ar": "صغير", "priceModifier": 0 },
@@ -545,7 +545,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-12T15:30:00Z",
     "featureId": 2,
     "colors": [
-      "Golden"
+      "#ffd700"
     ],
     "sizes": [
       { "name": "2 pieces", "ar": "قطعتان", "priceModifier": 0 },
@@ -576,7 +576,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 6,
     "colors": [
-      "Brown"
+      "#a0522d"
     ],
     "categoryId": 4,
     "subcategoryId": 7,
@@ -603,7 +603,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-14T18:45:00Z",
     "featureId": 2,
     "colors": [
-      "Brown"
+      "#a0522d"
     ],
     "sizes":     [
       {
@@ -647,7 +647,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 2,
     "colors": [
-      "Orange"
+      "#f97316"
     ],
     "sizes":     [
       {
@@ -690,7 +690,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 4,
     "colors": [
-      "Clear"
+      "#fff"
     ],
     "sizes":     [
       {
@@ -734,7 +734,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 1,
     "colors": [
-      "Green"
+      "#22c55e"
     ],
     "sizes":     [
       {
@@ -777,7 +777,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
-      "Brown"
+      "#a0522d"
     ],
     "sizes":     [
       {
@@ -821,7 +821,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 6,
     "colors": [
-      "Mixed"
+      "mixed"
     ],
     "sizes":     [
       {
@@ -865,7 +865,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 7,
     "colors": [
-      "Mixed"
+      "#f97316"
     ],
     "sizes":     [
       {
@@ -908,7 +908,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes":     [
       {
@@ -952,7 +952,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-30T23:59:59Z",
     "featureId": 3,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes":     [
       {
@@ -995,7 +995,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 9,
     "colors": [
-      "Green"
+      "#22c55e"
     ],
     "sizes":     [
       {
@@ -1039,7 +1039,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 10,
     "colors": [
-      "Blue"
+      "#3b82f6"
     ],
     "sizes":     [
       {
@@ -1082,7 +1082,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 11,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes":     [
       {
@@ -1126,7 +1126,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 12,
     "colors": [
-      "Green"
+      "#22c55e"
     ],
     "sizes":     [
       {
@@ -1170,7 +1170,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 4,
     "colors": [
-      "Orange"
+      "#22c55e"
     ],
     "sizes":     [
       {
@@ -1213,7 +1213,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 12,
     "colors": [
-      "Clear"
+      "#fff"
     ],
     "sizes":     [
       {
@@ -1257,7 +1257,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 13,
     "colors": [
-      "Red"
+      "#ef4444"
     ],
     "sizes":     [
       {
@@ -1301,7 +1301,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 14,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes":     [
       {
@@ -1344,7 +1344,7 @@ export const allProducts = [
     "discountPercentage": null,
     "featureId": 15,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes":     [
       {
@@ -1388,7 +1388,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 16,
     "colors": [
-      "White"
+      "#fff"
     ],
     "sizes":     [
       {

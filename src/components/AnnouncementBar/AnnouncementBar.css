@@ -1,5 +1,5 @@
 .announcement-bar {
-  background-color: #634C9F;
+  background-color: var(--primary-color);
   color: white;
   padding: 0.5rem 0;
   position: fixed;
@@ -63,6 +63,7 @@
 
 .countdown-unit {
   font-size: 0.75rem;
+  font-family: 'Tajawal';
   opacity: 0.9;
 }
 

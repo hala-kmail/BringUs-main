@@ -93,20 +93,20 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
         {/* Desktop Search Bar */}
         <div className="search-bar desktop-search" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="search-form">
-            <input
-              type="text"
-              className="search-input"
-              placeholder={placeholders[placeholderIndex]}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+          <input
+            type="text"
+            className="search-input"
+            placeholder={placeholders[placeholderIndex]}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.trim() && setShowSearchDropdown(searchResults.length > 0)}
-              aria-label={t('navbar.search_placeholder')}
-            />
+            aria-label={t('navbar.search_placeholder')}
+          />
             <button type="submit" className="search-button" aria-label={t('navbar.search')}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="search-icon">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="search-icon">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
           </form>
 
           {/* Search Dropdown */}

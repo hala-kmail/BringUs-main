@@ -1,18 +1,27 @@
-import React from 'react';
+import React , { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
+import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import BottomNavigation from '../../components/BottomNavigation/BottomNavigation';
 import './Wishlist.css';
 
+
 const Wishlist = () => {
+
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const { items: wishlistItems, removeFromWishlist } = useWishlist();
   const navigate = useNavigate();
-
+  const handleMobileSearchToggle = () => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
+    };
+    const handleMobileSearchClose = () => {
+      setIsMobileSearchOpen(false);
+      };
   const currentLang = i18n.language;
 
   // Helper function to convert category name to translation key
@@ -29,12 +38,19 @@ const Wishlist = () => {
     navigate(`/product/${product.id}`);
   };
 
+ 
   return (
     <div className="wishlist-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
       <TopBar />
-      <Navbar />
+      <Navbar 
+        onMobileSearchToggle={handleMobileSearchToggle}
+        isMobileSearchOpen={isMobileSearchOpen}
+      />
       <SecondaryNavbar />
-
+      <MobileSearch
+        isOpen={isMobileSearchOpen}
+        onClose={handleMobileSearchClose}
+      />
       <div className="wishlist-container">
         {/* Header */}
         <div className="wishlist-header">

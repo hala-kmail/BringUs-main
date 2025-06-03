@@ -1,0 +1,83 @@
+.almost-finished-card {
+  display: none; /* Hidden by default */
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 1rem;
+  margin: 1rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.almost-finished-card:hover {
+  transform: translateY(-2px);
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.icon-container {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+.text-container {
+  flex: 1;
+}
+
+.text-container h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.text-container p {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #b45309;
+}
+
+.arrow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-container svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #92400e;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Show only on mobile */
+@media (max-width: 768px) {
+  .almost-finished-card {
+    display: block;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .arrow-container svg {
+  transform: rotate(180deg);
+} 

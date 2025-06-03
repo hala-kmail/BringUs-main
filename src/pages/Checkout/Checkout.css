@@ -27,7 +27,7 @@
 }
 
 .checkout-breadcrumb a:hover {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .breadcrumb-separator {
@@ -75,7 +75,7 @@
   color: #1f2937;
   margin: 0 0 1.5rem 0;
   
-  border-bottom: 2px solid #634C9F;
+  border-bottom: 2px solid var(--primary-color);
 }
 
 .checkout-form {
@@ -116,7 +116,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #634C9F;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(99, 76, 159, 0.1);
 }
 
@@ -175,7 +175,7 @@
 }
 
 .order-items::-webkit-scrollbar-thumb {
-  background: #634C9F;
+  background: var(--primary-color);
   border-radius: 3px;
 }
 
@@ -208,7 +208,7 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background: #634C9F;
+  background: var(--primary-color);
   color: white;
   font-size: 0.75rem;
   font-weight: 600;
@@ -298,13 +298,13 @@
 }
 
 .total-final span {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 /* Place Order Button */
 .place-order-btn {
   width: 100%;
-  background: #634C9F;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 1rem 1.5rem;
@@ -322,7 +322,7 @@
 }
 
 .place-order-btn:hover:not(:disabled) {
-  background: #5a4389;
+  background: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 8px 12px -1px rgba(99, 76, 159, 0.4);
 }

@@ -9,6 +9,7 @@ import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
 import { allProducts, categories, features, subcategories, getSubcategoriesByCategory } from '../../data/index';
 import './Shop.css';
+import namer from 'color-namer';
 
 const Shop = () => {
   const { t, i18n } = useTranslation();
@@ -68,7 +69,18 @@ const Shop = () => {
     return category.toLowerCase().replace(/\s*&\s*/g, '_').replace(/\s+/g, '_');
   };
 
-  const colors = ['Green', 'Red', 'Yellow', 'Orange', 'Blue', 'Purple'];
+  // استخرج جميع الألوان الفريدة من المنتجات
+  const getAllColors = () => {
+    const colorSet = new Set();
+    allProducts.forEach(product => {
+      if (product.colors && Array.isArray(product.colors)) {
+        product.colors.forEach(color => colorSet.add(color));
+      }
+    });
+    return Array.from(colorSet);
+  };
+
+  const colors = getAllColors();
   
   // Get all unique brands from the new features structure
   const getAllBrands = () => {
@@ -461,10 +473,10 @@ const Shop = () => {
 
   const applyFilters = () => {
     let filtered = [...allProducts];
-    
+
     // Apply search filter if there's a search query
     if (searchQuery.trim()) {
-      const searchTerm = searchQuery.toLowerCase();
+        const searchTerm = searchQuery.toLowerCase();
       filtered = filtered.filter(product => 
         product.name[currentLang].toLowerCase().includes(searchTerm) ||
         product.description[currentLang].toLowerCase().includes(searchTerm)
@@ -528,20 +540,20 @@ const Shop = () => {
     }
 
     // Apply status filter
-    if (filters.status.includes('on_sale')) {
-      filtered = filtered.filter(product => product.discountPrice || product.discountPercentage);
-    }
+      if (filters.status.includes('on_sale')) {
+        filtered = filtered.filter(product => product.discountPrice || product.discountPercentage);
+      }
 
-    if (filters.status.includes('in_stock')) {
-      filtered = filtered.filter(product => product.stock && product.stock > 0);
-    }
+      if (filters.status.includes('in_stock')) {
+        filtered = filtered.filter(product => product.stock && product.stock > 0);
+      }
 
-    if (filters.status.includes('new')) {
-      filtered = filtered.filter(product => product.isNew === true);
-    }
+      if (filters.status.includes('new')) {
+        filtered = filtered.filter(product => product.isNew === true);
+      }
 
-    if (filters.status.includes('featured')) {
-      filtered = filtered.filter(product => product.isBestSeller === true);
+      if (filters.status.includes('featured')) {
+        filtered = filtered.filter(product => product.isBestSeller === true);
     }
 
     // Apply sorting
@@ -578,7 +590,7 @@ const Shop = () => {
   };
 
   const handleFilterChange = (filterType, value, checked = null) => {
-    if (filterType === 'priceRange') {
+      if (filterType === 'priceRange') {
       setFilters(prev => ({ ...prev, priceRange: value }));
     } else if (checked !== null) {
       setFilters(prev => ({
@@ -587,9 +599,9 @@ const Shop = () => {
           ? [...prev[filterType], value]
           : prev[filterType].filter(item => item !== value)
       }));
-    } else {
+        } else {
       setFilters(prev => ({ ...prev, [filterType]: value }));
-    }
+      }
   };
 
   const clearFilters = () => {
@@ -689,6 +701,27 @@ const Shop = () => {
   const handleSortChange = (newSortBy) => {
     setFilters(prev => ({ ...prev, sortBy: newSortBy }));
   };
+
+  function getColorKey(hex) {
+    if (!hex) return '';
+    if (hex === 'mixed') return 'mixed';
+    try {
+      return namer(hex).ntc[0].name.toLowerCase();
+    } catch {
+      return hex;
+    }
+  }
+
+  function getColorLabel(hex, t) {
+    const colorKey = getColorKey(hex);
+    const translation = t(`filters.color_names.${colorKey}`);
+    // إذا لم توجد ترجمة (أو الترجمة نفسها هي المفتاح)، أظهر الاسم الإنجليزي أو الكود
+    if (!translation || translation === `filters.color_names.${colorKey}`) {
+      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+      return hex;
+    }
+    return translation;
+  }
 
   return (
     <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
@@ -800,7 +833,7 @@ const Shop = () => {
                     onClick={() => removeFilter('colors', color)}
                     title={`Remove ${color} filter`}
                   >
-                    <span className="filter-close">✕</span> {t(`shop.colors.${color.toLowerCase()}`)}
+                    <span className="filter-close">✕</span> {getColorLabel(color, t)}
                   </span>
                 ))}
                 {filters.status.map(status => (
@@ -822,89 +855,89 @@ const Shop = () => {
             {/* Price Filter */}
             <div className="filter-section">
               <div className="filter-section-header" onClick={() => toggleSectionCollapse('price')}>
-                <h4>{t('shop.price_filter')}</h4>
+              <h4>{t('shop.price_filter')}</h4>
                 <button className={`section-collapse-btn ${collapsedSections.price ? 'collapsed' : 'expanded'}`}>
                   {collapsedSections.price ? '+' : '−'}
                 </button>
               </div>
               {!collapsedSections.price && (
-                <div className="price-range">
-                  <div className="price-inputs">
-                    <input
-                      type="number"
-                      placeholder={t('shop.min_price')}
-                      value={filters.priceRange.min}
-                      onChange={(e) => handleFilterChange('priceRange', 
-                        { ...filters.priceRange, min: Number(e.target.value) }
-                      )}
-                    />
-                    <span>-</span>
-                    <input
-                      type="number"
-                      placeholder={t('shop.max_price')}
-                      value={filters.priceRange.max}
-                      onChange={(e) => handleFilterChange('priceRange', 
-                        { ...filters.priceRange, max: Number(e.target.value) }
-                      )}
-                    />
-                  </div>
-                  <div className="price-range-slider">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={filters.priceRange.min}
-                      onChange={(e) => handleFilterChange('priceRange', 
-                        { ...filters.priceRange, min: Number(e.target.value) }
-                      )}
-                      className="range-min"
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={filters.priceRange.max}
-                      onChange={(e) => handleFilterChange('priceRange', 
-                        { ...filters.priceRange, max: Number(e.target.value) }
-                      )}
-                      className="range-max"
-                    />
-                  </div>
-                  <div className="price-display">
-                    {t('shop.price')}: ${filters.priceRange.min} — ${filters.priceRange.max}
-                  </div>
-                  <button className="filter-btn">{t('shop.filter')}</button>
+              <div className="price-range">
+                <div className="price-inputs">
+                  <input
+                    type="number"
+                    placeholder={t('shop.min_price')}
+                    value={filters.priceRange.min}
+                    onChange={(e) => handleFilterChange('priceRange', 
+                      { ...filters.priceRange, min: Number(e.target.value) }
+                    )}
+                  />
+                  <span>-</span>
+                  <input
+                    type="number"
+                    placeholder={t('shop.max_price')}
+                    value={filters.priceRange.max}
+                    onChange={(e) => handleFilterChange('priceRange', 
+                      { ...filters.priceRange, max: Number(e.target.value) }
+                    )}
+                  />
                 </div>
+                <div className="price-range-slider">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={filters.priceRange.min}
+                    onChange={(e) => handleFilterChange('priceRange', 
+                      { ...filters.priceRange, min: Number(e.target.value) }
+                    )}
+                    className="range-min"
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={filters.priceRange.max}
+                    onChange={(e) => handleFilterChange('priceRange', 
+                      { ...filters.priceRange, max: Number(e.target.value) }
+                    )}
+                    className="range-max"
+                  />
+                </div>
+                <div className="price-display">
+                  {t('shop.price')}: ${filters.priceRange.min} — ${filters.priceRange.max}
+                </div>
+                <button className="filter-btn">{t('shop.filter')}</button>
+              </div>
               )}
             </div>
 
             {/* Product Categories with Subcategories */}
             <div className="filter-section">
               <div className="filter-section-header" onClick={() => toggleSectionCollapse('categories')}>
-                <h4>{t('shop.product_categories')}</h4>
+              <h4>{t('shop.product_categories')}</h4>
                 <button className={`section-collapse-btn ${collapsedSections.categories ? 'collapsed' : 'expanded'}`}>
                   {collapsedSections.categories ? '+' : '−'}
                 </button>
               </div>
               {!collapsedSections.categories && (
-                <div className="category-list">
-                  {categories.map(category => {
-                    const count = filterCounts[`category_${category.name.en}`] || 0;
+              <div className="category-list">
+                {categories.map(category => {
+                  const count = filterCounts[`category_${category.name.en}`] || 0;
                     const categorySubcategories = getSubcategoriesByCategory(category.id);
                     const hasSubcategories = categorySubcategories.length > 0;
                     const isExpanded = expandedCategories[category.id];
                     
-                    return count > 0 ? (
+                  return count > 0 ? (
                       <div key={category.id} className="category-filter-item">
                         <div className="category-main-filter">
                           <label className="filter-checkbox">
-                            <input
-                              type="checkbox"
-                              checked={filters.categories.includes(category.id)}
-                              onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
-                            />
+                      <input
+                        type="checkbox"
+                        checked={filters.categories.includes(category.id)}
+                        onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
+                      />
                             <span className="checkmark"></span>
-                            {category.name[currentLang]} ({count})
+                      {category.name[currentLang]} ({count})
                           </label>
                           {hasSubcategories && (
                             <button
@@ -931,10 +964,10 @@ const Shop = () => {
                                   />
                                   <span className="checkmark"></span>
                                   {subcategory.name[currentLang]} ({subcategoryCount})
-                                </label>
-                              ) : null;
-                            })}
-                          </div>
+                    </label>
+                  ) : null;
+                })}
+              </div>
                         )}
                       </div>
                     ) : null;
@@ -955,17 +988,32 @@ const Shop = () => {
                 <div className="color-filters">
                   {colors.map(color => {
                     const count = filterCounts[`color_${color}`] || 0;
-                    return count > 0 ? (
-                      <label key={color} className="color-filter">
+                    return (
+                      <label key={color} className="color-filter" style={{ opacity: count === 0 ? 0.5 : 1 }}>
                         <input
                           type="checkbox"
                           checked={filters.colors.includes(color)}
-                          onChange={(e) => handleFilterChange('colors', color, e.target.checked)}
+                          onChange={e => handleFilterChange('colors', color, e.target.checked)}
+                          disabled={count === 0 && !filters.colors.includes(color)}
                         />
-                        <span className={`color-swatch color-${color.toLowerCase()}`}></span>
-                        {t(`shop.colors.${color.toLowerCase()}`)} ({count})
+                        <span
+                          className="color-swatch"
+                          style={
+                            color === "mixed"
+                              ? { background: "linear-gradient(90deg, #eab308 0%, #ef4444 50%, #3b82f6 100%)" }
+                              : color && color.startsWith('#')
+                                ? { background: color, border: color === "#fff" ? "2px solid #e2e8f0" : undefined }
+                                : { background: '#e5e7eb', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }
+                          }
+                        >
+                          {(!color.startsWith('#') && color !== 'mixed') && '?'}
+                        </span>
+                        <span className="color-name">{getColorLabel(color, t)}</span> ({count})
+                        {count === 0 && !filters.colors.includes(color) && (
+                          <span style={{ fontSize: '10px', color: '#aaa', marginLeft: 4 }}>{t('filters.not_available')}</span>
+                        )}
                       </label>
-                    ) : null;
+                    );
                   })}
                 </div>
               )}
@@ -974,28 +1022,28 @@ const Shop = () => {
             {/* Filter by Features */}
             <div className="filter-section">
               <div className="filter-section-header" onClick={() => toggleSectionCollapse('features')}>
-                <h4>{t('shop.filter_by_features')}</h4>
+              <h4>{t('shop.filter_by_features')}</h4>
                 <button className={`section-collapse-btn ${collapsedSections.features ? 'collapsed' : 'expanded'}`}>
                   {collapsedSections.features ? '+' : '−'}
                 </button>
               </div>
               {!collapsedSections.features && (
-                <div className="feature-filters">
-                  {features.map(feature => {
-                    const count = filterCounts[`feature_${feature.id}`] || 0;
-                    return count > 0 ? (
-                      <label key={feature.id} className="filter-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={filters.features.includes(feature.id)}
-                          onChange={(e) => handleFilterChange('features', feature.id, e.target.checked)}
-                        />
-                        <span className="checkmark"></span>
-                        {feature.name[currentLang]} ({count})
-                      </label>
-                    ) : null;
-                  })}
-                </div>
+              <div className="feature-filters">
+                {features.map(feature => {
+                  const count = filterCounts[`feature_${feature.id}`] || 0;
+                  return count > 0 ? (
+                    <label key={feature.id} className="filter-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={filters.features.includes(feature.id)}
+                        onChange={(e) => handleFilterChange('features', feature.id, e.target.checked)}
+                      />
+                      <span className="checkmark"></span>
+                      {feature.name[currentLang]} ({count})
+                    </label>
+                  ) : null;
+                })}
+              </div>
               )}
             </div>
 
@@ -1009,17 +1057,32 @@ const Shop = () => {
               </div>
               {!collapsedSections.status && (
                 <div className="status-filters">
-                  {statusOptions.map(status => (
-                    <label key={status} className="filter-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={filters.status.includes(status)}
-                        onChange={(e) => handleFilterChange('status', status, e.target.checked)}
-                      />
-                      <span className="checkmark"></span>
-                      {t(`filters.status_names.${status}`)}
-                    </label>
-                  ))}
+                  {statusOptions.map(status => {
+                    const count = filterCounts[`status_${status}`] || filteredProducts.filter(product => {
+                      switch (status) {
+                        case 'on_sale': return product.discountPrice || product.discountPercentage;
+                        case 'in_stock': return product.stock && product.stock > 0;
+                        case 'new': return product.isNew === true;
+                        case 'featured': return product.isBestSeller === true;
+                        default: return false;
+                      }
+                    }).length;
+                    return (
+                      <label key={status} className="filter-checkbox" style={{ opacity: count === 0 ? 0.5 : 1 }}>
+                        <input
+                          type="checkbox"
+                          checked={filters.status.includes(status)}
+                          onChange={e => handleFilterChange('status', status, e.target.checked)}
+                          disabled={count === 0 && !filters.status.includes(status)}
+                        />
+                        <span className="checkmark"></span>
+                        {t(`filters.status_names.${status}`)} ({count})
+                        {count === 0 && !filters.status.includes(status) && (
+                          <span style={{ fontSize: '10px', color: '#aaa', marginLeft: 4 }}>{t('filters.not_available')}</span>
+                        )}
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>

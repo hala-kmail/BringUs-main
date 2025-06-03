@@ -113,7 +113,7 @@
 }
 
 .category-grid-item:hover .category-name {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 /* Responsive Design */

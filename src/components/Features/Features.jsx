@@ -15,7 +15,7 @@ const Features = () => {
       ),
       title: t('features.payment_online.title'),
       description: t('features.payment_online.description'),
-      color: '#634C9F'
+      color: 'var(--primary-color)'
     },
     {
       id: 2,

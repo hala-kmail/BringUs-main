@@ -62,7 +62,7 @@
 }
 
 .cart-item-quantity.desktop-only .quantity-btn:hover {
-  background: #634C9F;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -138,13 +138,13 @@
 }
 
 .cart-breadcrumb a {
-  color: #634C9F;
+  color: var(--primary-color);
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .cart-breadcrumb a:hover {
-  color: #5a4389;
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 
@@ -227,7 +227,7 @@
 .dot {
   width: 8px;
   height: 8px;
-  background: #634C9F;
+  background: var(--primary-color);
   border-radius: 50%;
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -312,7 +312,7 @@
 }
 
 .start-shopping-btn {
-  background: linear-gradient(135deg, #634C9F, #5a4389);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
   border: none;
   padding: 1rem 2.5rem;
@@ -329,9 +329,9 @@
 }
 
 .start-shopping-btn:hover {
-  background: linear-gradient(135deg, #5a4389, #4f3a78);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 76, 159, 0.4);
+  box-shadow: 0 6px 20px rgba(152, 120, 17, 0.4);
 }
 
 .btn-icon {
@@ -393,7 +393,7 @@
 }
 
 .cart-item-name:hover {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .cart-item-image {
@@ -586,8 +586,8 @@
 .continue-shopping-btn {
   width: 100%;
   background: transparent;
-  color: #634C9F;
-  border: 1px solid #634C9F;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
   padding: 0.875rem;
   border-radius: 0.5rem;
   font-weight: 600;
@@ -598,7 +598,7 @@
 }
 
 .continue-shopping-btn:hover {
-  background: #634C9F;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -685,7 +685,7 @@
   }
 
   .mobile-checkout-btn {
-    background: #634C9F;
+    background: var(--primary-color);
     color: white;
     border: none;
     padding: 0.875rem 1.5rem;
@@ -699,7 +699,7 @@
   }
 
   .mobile-checkout-btn:hover {
-  background: #5a4389;
+  background: var(--primary-dark);
   transform: translateY(-1px);
   }
 
@@ -766,7 +766,7 @@
   }
 
   .mobile-cart-item .cart-item-name:hover {
-    color: #634C9F;
+    color: var(--primary-color);
   }
 
   .mobile-cart-item .cart-item-image {
@@ -803,7 +803,7 @@
   .mobile-cart-item .current-price {
     font-size: 1.125rem;
     font-weight: 700;
-    color: #634C9F;
+    color: var(--primary-color);
   }
 
   .mobile-cart-item .original-price {

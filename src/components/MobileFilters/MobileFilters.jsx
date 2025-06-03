@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { allProducts, categories, features } from '../../data/index';
 import './MobileFilters.css';
+import namer from 'color-namer';
 
 const MobileFilters = ({ 
   isOpen, 
@@ -187,6 +188,16 @@ const MobileFilters = ({
     });
   }, [onFiltersChange]);
 
+  function getColorKey(hex) {
+    if (!hex) return '';
+    if (hex === 'mixed') return 'mixed';
+    try {
+      return namer(hex).ntc[0].name.toLowerCase();
+    } catch {
+      return hex;
+    }
+  }
+
   // Filter sections configuration
   const filterSections = useMemo(() => [
     {
@@ -235,7 +246,7 @@ const MobileFilters = ({
       ),
       items: Array.from(filterData.uniqueValues.colors).map(color => ({
         id: color,
-        name: t(`filters.color_names.${color.toLowerCase()}`),
+        name: t(`filters.color_names.${getColorKey(color)}`),
         count: filterData.counts.colors[color] || 0,
         isSelected: filters.colors?.includes(color) || false,
         color: color.toLowerCase()
@@ -427,7 +438,18 @@ const MobileFilters = ({
                         }
                       >
                         {section.id === 'colors' && (
-                          <span className={`mobile-color-dot color-${item.color}`} />
+                          <span
+                            className="mobile-color-dot"
+                            style={
+                              item.id === "mixed"
+                                ? { background: "linear-gradient(90deg, #eab308 0%, #ef4444 50%, #3b82f6 100%)" }
+                                : item.id && item.id.startsWith('#')
+                                  ? { background: item.id, border: item.id === "#fff" ? "2px solid #e2e8f0" : undefined }
+                                  : { background: '#e5e7eb', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }
+                            }
+                          >
+                            {(item.id && !item.id.startsWith('#') && item.id !== 'mixed') && '?'}
+                          </span>
                         )}
                         <span className="mobile-item-name">{item.name}</span>
                         <span className={`mobile-item-count ${item.count === 0 ? 'zero-count' : ''}`}>

@@ -11,6 +11,7 @@ import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
 import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 import { getProductById, getCategoryById, getSubcategoryById, getFeatureById } from '../../data/index';
 import './ProductDetail.css';
+import namer from 'color-namer';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -31,6 +32,72 @@ const ProductDetail = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const currentLang = i18n.language;
+
+  // قاموس ترجمة الألوان الشائعة
+  const colorNameTranslations = {
+    "red": { ar: "أحمر", en: "Red" },
+    "green": { ar: "أخضر", en: "Green" },
+    "yellow": { ar: "أصفر", en: "Yellow" },
+    "blue": { ar: "أزرق", en: "Blue" },
+    "purple": { ar: "بنفسجي", en: "Purple" },
+    "orange": { ar: "برتقالي", en: "Orange" },
+    "pink": { ar: "وردي", en: "Pink" },
+    "brown": { ar: "بني", en: "Brown" },
+    "white": { ar: "أبيض", en: "White" },
+    "black": { ar: "أسود", en: "Black" },
+    "grey": { ar: "رمادي", en: "Grey" },
+    "gray": { ar: "رمادي", en: "Gray" },
+    "gold": { ar: "ذهبي", en: "Gold" },
+    "golden": { ar: "ذهبي", en: "Golden" },
+    "silver": { ar: "فضي", en: "Silver" },
+    "beige": { ar: "بيج", en: "Beige" },
+    "cyan": { ar: "سماوي", en: "Cyan" },
+    "teal": { ar: "تركوازي", en: "Teal" },
+    "olive": { ar: "زيتي", en: "Olive" },
+    "navy": { ar: "كحلي", en: "Navy" },
+    "maroon": { ar: "خمري", en: "Maroon" },
+    "lime": { ar: "ليموني", en: "Lime" },
+    "coral": { ar: "مرجاني", en: "Coral" },
+    "indigo": { ar: "نيلي", en: "Indigo" },
+    "amber": { ar: "كهرماني", en: "Amber" },
+  };
+
+  // دالة لإرجاع اسم اللون المترجم من hex
+  function getColorName(hex, lang = 'ar') {
+    if (!hex) return '';
+    if (hex === 'mixed') return lang === 'ar' ? 'ألوان متدرجة' : 'Mixed Colors';
+    try {
+      const nameObj = namer(hex).ntc[0];
+      const name = nameObj.name.toLowerCase();
+      if (colorNameTranslations[name]) {
+        return colorNameTranslations[name][lang] || nameObj.name;
+      }
+      // إذا لم يوجد ترجمة، أعد الاسم الإنجليزي
+      return nameObj.name;
+    } catch {
+      return hex;
+    }
+  }
+
+  function getColorKey(hex) {
+    if (!hex) return '';
+    if (hex === 'mixed') return 'mixed';
+    try {
+      return namer(hex).ntc[0].name.toLowerCase();
+    } catch {
+      return hex;
+    }
+  }
+
+  function getColorLabel(hex, t) {
+    const colorKey = getColorKey(hex);
+    const translation = t(`filters.color_names.${colorKey}`);
+    if (!translation || translation === `filters.color_names.${colorKey}`) {
+      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+      return hex;
+    }
+    return translation;
+  }
 
   // Helper function to check if discount is active
   const isDiscountActive = (product) => {
@@ -500,16 +567,20 @@ const ProductDetail = () => {
             {product.colors && product.colors.length > 0 && (
               <div className="product-color-selection">
                 <h3 className="selection-title">
-                  {currentLang === 'ar' ? 'اللون' : 'Color'}: <span className="selected-option">{selectedColor}</span>
+                  {currentLang === 'ar' ? 'اللون' : 'Color'}: <span className="selected-option">{getColorLabel(selectedColor, t)}</span>
                 </h3>
                 <div className="color-options">
                   {product.colors.map((color) => (
                     <div
                       key={color}
                       className={`color-option ${selectedColor === color ? 'selected' : ''}`}
-                      style={{ backgroundColor: color.toLowerCase() }}
+                      style={
+                        color === "mixed"
+                          ? { background: "linear-gradient(90deg, #eab308 0%, #ef4444 50%, #3b82f6 100%)" }
+                          : { background: color, border: color === "#fff" ? "2px solid #e2e8f0" : undefined }
+                      }
                       onClick={() => setSelectedColor(color)}
-                      title={color}
+                      title={getColorLabel(color, t)}
                     />
                   ))}
                 </div>

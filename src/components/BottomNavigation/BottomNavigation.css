@@ -38,12 +38,12 @@
 }
 
 .bottom-nav-item.active {
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 /* Shop Button Styles */
 .bottom-nav-item.shop-button {
-  background-color: #634C9F;
+  background-color: var(--primary-color);
   color: white;
   width: 56px;
   height: 56px;
@@ -67,13 +67,13 @@
 
 .bottom-nav-item.shop-button:hover,
 .bottom-nav-item.shop-button:focus {
-  background-color: #533c89;
+  background-color: var(--primary-dark);
   transform: translateY(-10px);
   box-shadow: 0 6px 20px rgba(99, 76, 159, 0.4);
 }
 
 .bottom-nav-item.shop-button.active {
-  background-color: #533c89;
+  background-color: var(--primary-dark);
 }
 
 .bottom-nav-item.shop-button .bottom-nav-label {
@@ -98,7 +98,7 @@
 .bottom-nav-item:hover .bottom-nav-icon svg,
 .bottom-nav-item:focus .bottom-nav-icon svg {
   transform: scale(1.15);
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .bottom-nav-item.active .bottom-nav-icon svg {
@@ -114,7 +114,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  background-color: #634C9F;
+  background-color: var(--primary-color);
   color: white;
   font-size: 0.65rem;
   min-width: 18px;

@@ -112,7 +112,7 @@
 
 .category-item:first-child .category-name {
   font-weight: 700;
-  color: #634C9F;
+  color: var(--primary-color);
 }
 
 .category-item.active::before {
@@ -122,7 +122,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--category-color, #634C9F);
+  background: var(--category-color, var(--primary-color));
 }
 
 [dir="rtl"] .category-item.active::before {
@@ -141,7 +141,7 @@
 }
 
 .category-item.active .category-name {
-  color: #634C9F;
+  color: var(--primary-color);
   font-weight: 600;
 }
 
@@ -174,7 +174,7 @@
   gap: 0.25rem;
   background: none;
   border: none;
-  color: #634C9F;
+  color: var(--primary-color);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -183,7 +183,7 @@
 }
 
 .view-all-btn:hover {
-  color: #5a4389;
+  color: var(--primary-dark);
 }
 
 .view-all-btn svg {
@@ -215,7 +215,7 @@
 .subcategory-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(99, 76, 159, 0.15);
-  border-color: #634C9F;
+  border-color: var(--primary-color);
 }
 
 .subcategory-image {
@@ -228,7 +228,7 @@
 }
 
 .subcategory-item:hover .subcategory-image {
-  border-color: #634C9F;
+  border-color: var(--primary-color);
 }
 
 .subcategory-img {
@@ -260,7 +260,7 @@
 
 .subcategory-arrow {
   font-size: 1rem;
-  color: #634C9F;
+  color: var(--primary-color);
   transition: transform 0.3s ease;
 }
 
