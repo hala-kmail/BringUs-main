@@ -71,7 +71,7 @@
     "view_all": "عرض الكل",
     "new": "جديد",
     "bestseller": "الأكثر مبيعاً",
-    "currency": "ر.س",
+    "currency": "₪",
     "add_to_cart": "أضف للسلة"
   },
   "best_sellers": {
@@ -80,7 +80,7 @@
     "view_all": "عرض الكل",
     "bestseller": "الأكثر مبيعاً",
     "new": "جديد",
-    "currency": "ر.س",
+    "currency": "₪",
     "add_to_cart": "أضف للسلة",
     "add_to_wishlist": "أضف للمفضلة",
     "remove_from_wishlist": "إزالة من المفضلة"
@@ -163,7 +163,7 @@
     "natural": "طبيعي",
     "pure": "نقي",
     "healthy": "صحي",
-    "currency": "ر.س",
+    "currency": "₪",
     "zoom_image": "تكبير الصورة",
     "decrease_quantity": "تقليل الكمية",
     "increase_quantity": "زيادة الكمية",
@@ -174,7 +174,7 @@
     "subtitle": "اكتشف المزيد من المنتجات من نفس الفئة",
     "view_all": "عرض الكل",
     "add_to_cart": "أضف للسلة",
-    "currency": "ر.س"
+    "currency": "₪"
   },
   "shop": {
     "only_this_week": "هذا الأسبوع فقط",
@@ -216,7 +216,7 @@
     "quick_view": "عرض سريع",
     "compare": "مقارنة",
     "add_to_cart": "أضف للسلة",
-    "currency": "ر.س",
+    "currency": "₪",
     "sort": {
       "default": "الترتيب الافتراضي",
       "latest": "الأحدث",

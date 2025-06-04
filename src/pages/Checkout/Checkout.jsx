@@ -165,7 +165,7 @@ const Checkout = () => {
 
   return (
     <div className="checkout-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      <TopBar />
+      {/* <TopBar /> */}
       <Navbar />
       <SecondaryNavbar />
       

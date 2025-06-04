@@ -53,7 +53,7 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: var(--announcement-bar-height);
+    padding-top: 0;
   }
 }
 

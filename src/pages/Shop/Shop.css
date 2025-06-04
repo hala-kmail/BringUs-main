@@ -401,7 +401,7 @@
 
 .shop-sidebar .filter-btn {
   width: 100%;
-  background: var(--primary-color);
+  background: #1f1f1f;
   color: white;
   border: none;
   padding: 12px;
@@ -418,7 +418,7 @@
 }
 
 .shop-sidebar .filter-btn:hover {
-  background: var(--primary-dark);
+  background: #000000;
   transform: translateY(-1px);
 }
 
@@ -1122,8 +1122,8 @@
 
 .add-to-cart-btn svg {
   display: block !important;
-  width: 16px;
-  height: 16px;
+  width: 25px;
+  height: 25px;
   flex-shrink: 0;
 }
 

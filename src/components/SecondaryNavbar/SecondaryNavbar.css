@@ -3,12 +3,25 @@
   border-bottom: 1px solid #e2e8f0;
   padding: 0.75rem 0;
   position: sticky;
-  top: calc(var(--announcement-bar-height) + var(--top-bar-height) + var(--navbar-height));
+  top: calc(var(--announcement-bar-height) + var(--navbar-height));
   z-index: 997;
   width: 100%;
   display: flex;
   align-items: center;
+  transition: transform 0.3s ease-in-out;
+  will-change: transform;
 }
+
+/* Show navbar */
+.secondary-navbar.show {
+  transform: translateY(0);
+}
+
+/* Hide navbar when scrolling down */
+.secondary-navbar.hide {
+  transform: translateY(-100%);
+}
+
 
 .secondary-navbar-container {
   width: 100%;
@@ -35,12 +48,13 @@
 /* Navigation Section - Center */
 .navigation-section {
   flex: 1;
-  justify-content: center;
+  
   order: 2;
 }
 
 .navigation-links {
   display: flex;
+  gap: 10px;
   align-items: center;
   justify-content: center;
   
@@ -204,7 +218,7 @@
   .navigation-section {
     order: 1;
     flex: 1;
-    justify-content: center;
+    
     width: 100%;
   }
 

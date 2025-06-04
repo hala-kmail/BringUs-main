@@ -71,7 +71,7 @@
     "view_all": "View All",
     "new": "New",
     "bestseller": "Best Seller",
-    "currency": "SAR",
+    "currency": "₪",
     "add_to_cart": "Add to Cart"
   },
   "best_sellers": {
@@ -80,7 +80,7 @@
     "view_all": "View All",
     "bestseller": "Best Seller",
     "new": "New",
-    "currency": "SAR",
+    "currency": "₪",
     "add_to_cart": "Add to Cart",
     "add_to_wishlist": "Add to Wishlist",
     "remove_from_wishlist": "Remove from Wishlist"
@@ -163,7 +163,7 @@
     "natural": "Natural",
     "pure": "Pure",
     "healthy": "Healthy",
-    "currency": "SAR",
+    "currency": "₪",
     "zoom_image": "Zoom Image",
     "decrease_quantity": "Decrease Quantity",
     "increase_quantity": "Increase Quantity",
@@ -174,7 +174,7 @@
     "subtitle": "Discover more products from the same category",
     "view_all": "View All",
     "add_to_cart": "Add to Cart",
-    "currency": "SAR"
+    "currency": "₪"
   },
   "shop": {
     "only_this_week": "Only This Week",
@@ -214,7 +214,7 @@
     "showing_results": "Showing {{start}}–{{end}} of {{total}} results",
     "showing_products": "Showing {{count}} products",
     "search_results": "Found {{count}} results for \"{{query}}\"",
-    "currency": "SAR",
+    "currency": "₪",
     "sort": {
       "default": "Default Sorting",
       "latest": "Latest",

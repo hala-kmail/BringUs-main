@@ -360,7 +360,7 @@ const ProductDetail = () => {
   if (loading) {
     return (
       <div className="product-detail">
-        <TopBar />
+        {/* <TopBar /> */}
         <Navbar 
           onMobileSearchToggle={handleMobileSearchToggle}
           isMobileSearchOpen={isMobileSearchOpen}
@@ -382,7 +382,7 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="product-detail">
-        <TopBar />
+        {/* <TopBar /> */}
         <Navbar 
           onMobileSearchToggle={handleMobileSearchToggle}
           isMobileSearchOpen={isMobileSearchOpen}
@@ -407,7 +407,7 @@ const ProductDetail = () => {
 
   return (
     <div className="product-detail">
-      <TopBar />
+      {/* <TopBar /> */}
       <Navbar 
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}

@@ -136,47 +136,11 @@
   color: #e5e7eb;
 }
 
-/* User Menu in TopBar */
-.user-menu-topbar .user-button-topbar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  background: transparent;
-  border: none;
-  border-radius: 0.375rem;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.875rem;
-}
-
-.user-menu-topbar .user-button-topbar:hover {
-  color: var(--primary-color);
-  background-color: rgba(99, 76, 159, 0.05);
-}
-
-.user-avatar-topbar {
-  width: 1.5rem;
-  height: 1.5rem;
-  background-color: var(--primary-color);
-  color: white;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.75rem;
-}
-
-.user-name-topbar {
-  font-size: 0.875rem;
-  font-weight: 500;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* User Menu styles removed from TopBar.css as they are moved to Navbar.css */
+/* .user-menu-topbar .user-button-topbar { ... } */
+/* .user-menu-topbar .user-button-topbar:hover { ... } */
+/* .user-avatar-topbar { ... } */
+/* .user-name-topbar { ... } */
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -225,20 +189,10 @@
     font-size: 0.875rem;
   }
 
-  /* Hide user name on mobile */
-  .user-name-topbar {
-    display: none;
-  }
-
-  .user-menu-topbar .user-button-topbar {
-    padding: 0.25rem 0.5rem;
-  }
-
-  .user-avatar-topbar {
-    width: 1.25rem;
-    height: 1.25rem;
-    font-size: 0.7rem;
-  }
+  /* Removed user name and avatar styles for topbar mobile */
+  /* .user-name-topbar { display: none; } */
+  /* .user-menu-topbar .user-button-topbar { padding: 0.25rem 0.5rem; } */
+  /* .user-avatar-topbar { width: 1.25rem; height: 1.25rem; font-size: 0.7rem; } */
 
   .dropdown-menu {
     min-width: 120px;

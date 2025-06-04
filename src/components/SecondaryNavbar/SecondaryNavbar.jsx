@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Categories from '../Categories/Categories';
@@ -7,6 +7,28 @@ import './SecondaryNavbar.css';
 const SecondaryNavbar = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(window.scrollY);
+
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      // Scrolling down
+      setIsVisible(false);
+    } else {
+      // Scrolling up
+      setIsVisible(true);
+    }
+
+    setLastScrollY(currentScrollY);
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const navigationLinks = [
     { id: 'home', name: t('secondary_nav.home'), path: '/home' },
@@ -14,7 +36,7 @@ const SecondaryNavbar = () => {
   ];
 
   return (
-    <div className="secondary-navbar">
+    <div className={`secondary-navbar ${isVisible ? 'show' : 'hide'}`}>
       <div className="secondary-navbar-container">
         {/* Categories Section */}
         <div className="secondary-nav-section categories-section">
@@ -58,4 +80,4 @@ const SecondaryNavbar = () => {
   );
 };
 
-export default SecondaryNavbar; 
+export default SecondaryNavbar;

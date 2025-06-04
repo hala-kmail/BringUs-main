@@ -170,6 +170,97 @@ export const searchProducts = (query, language = 'en') => {
   );
 };
 
+
+// Slug mappings
+const categorySlugMapping = {
+  1: 'fruits-vegetables',
+  2: 'meats-seafood',
+  3: 'breakfast-dairy',
+  4: 'breads-bakery',
+  5: 'beverages',
+  6: 'frozen-foods',
+  7: 'biscuits-snacks',
+  8: 'grocery-staples',
+  9: 'household-needs',
+  10: 'healthcare',
+  11: 'baby-pregnancy'
+};
+
+const subcategorySlugMapping = {
+  1: 'fresh-fruits',
+  2: 'fresh-vegetables',
+  3: 'fresh-meat',
+  4: 'seafood',
+  5: 'dairy-products',
+  6: 'breakfast-items',
+  7: 'fresh-bread',
+  8: 'pastries',
+  9: 'hot-beverages',
+  10: 'cold-beverages',
+  11: 'frozen-meals',
+  12: 'frozen-desserts',
+  13: 'cookies-biscuits',
+  14: 'nuts-snacks',
+  15: 'cooking-essentials',
+  16: 'grains-rice',
+  17: 'cleaning-supplies',
+  18: 'paper-products',
+  19: 'vitamins-supplements',
+  20: 'personal-care',
+  21: 'baby-care',
+  22: 'baby-food'
+};
+
+const slugToCategoryId = Object.fromEntries(
+  Object.entries(categorySlugMapping).map(([id, slug]) => [slug, parseInt(id)])
+);
+
+const slugToSubcategoryId = Object.fromEntries(
+  Object.entries(subcategorySlugMapping).map(([id, slug]) => [slug, parseInt(id)])
+);
+
+/**
+ * Get category slug by ID
+ * @param {number} categoryId
+ * @returns {string|null}
+ */
+export const getCategorySlug = (categoryId) => {
+  return categorySlugMapping[categoryId] || null;
+};
+
+/**
+ * Get category ID by slug
+ * @param {string} slug
+ * @returns {number|null}
+ */
+export const getCategoryIdBySlug = (slug) => {
+  return slugToCategoryId[slug] || null;
+};
+
+/**
+ * Get subcategory slug by ID
+ * @param {number} subcategoryId
+ * @returns {string|null}
+ */
+export const getSubcategorySlug = (subcategoryId) => {
+  return subcategorySlugMapping[subcategoryId] || null;
+};
+
+/**
+ * Get subcategory ID by slug
+ * @param {string} slug
+ * @returns {number|null}
+ */
+export const getSubcategoryIdBySlug = (slug) => {
+  return slugToSubcategoryId[slug] || null;
+};
+
+
+
+
+
+
+
 /**
  * Filter products by multiple criteria
  * @param {Object} filters - Filter criteria
@@ -299,5 +390,10 @@ export default {
   getEnrichedProducts,
   searchProducts,
   filterProducts,
-  getProductStatistics
+  getProductStatistics,
+
+  getCategorySlug,
+  getCategoryIdBySlug,
+  getSubcategorySlug,
+  getSubcategoryIdBySlug,
 }; 

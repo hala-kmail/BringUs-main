@@ -1,4 +1,5 @@
-import React , { useState } from 'react';
+
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -7,42 +8,37 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import BottomNavigation from '../../components/BottomNavigation/BottomNavigation';
+import ProductCard from '../../components/ProductCard/ProductCard';
+import { getFeatureById, getCategoryById } from '../../data/index';
 import './Wishlist.css';
 
-
 const Wishlist = () => {
-
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const { items: wishlistItems, removeFromWishlist } = useWishlist();
   const navigate = useNavigate();
-  const handleMobileSearchToggle = () => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
-    };
-    const handleMobileSearchClose = () => {
-      setIsMobileSearchOpen(false);
-      };
   const currentLang = i18n.language;
 
-  // Helper function to convert category name to translation key
-  const getCategoryTranslationKey = (category) => {
-    return category.toLowerCase().replace(/\s+/g, '_').replace(/\s*&\s*/g, '_');
+  const handleMobileSearchToggle = () => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
   };
 
-  const handleRemoveFromWishlist = (productId) => {
-    removeFromWishlist(productId);
+  const handleMobileSearchClose = () => {
+    setIsMobileSearchOpen(false);
+  };
+
+  const handleWishlistToggle = (product) => {
+    removeFromWishlist(product.id);
   };
 
   const handleAddToCart = (product) => {
-    // Navigate to product details page
     navigate(`/product/${product.id}`);
   };
 
- 
   return (
     <div className="wishlist-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      <TopBar />
-      <Navbar 
+      {/* <TopBar /> */}
+      <Navbar
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}
       />
@@ -63,85 +59,19 @@ const Wishlist = () => {
         {/* Wishlist Content */}
         {wishlistItems.length > 0 ? (
           <div className="wishlist-content">
-            <div className="wishlist-grid">
+            <div className="products-grid">
               {wishlistItems.map((item) => (
-                <div key={item.id} className="wishlist-item">
-                  {/* Product Image */}
-                  <div className="wishlist-item-image">
-                    <Link to={`/product/${item.id}`}>
-                      <img src={item.image} alt={item.name[currentLang]} />
-                    </Link>
-                    
-                    {/* Remove Button */}
-                    <button 
-                      className="remove-wishlist-btn"
-                      onClick={() => handleRemoveFromWishlist(item.id)}
-                      title={t('wishlist.remove')}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-
-                    {/* Badges */}
-                    <div className="product-badges">
-                      {item.isBestSeller && (
-                        <span className="product-badge bestseller-badge">{t('best_sellers.bestseller')}</span>
-                      )}
-                      {item.isNew && (
-                        <span className="product-badge product-new-badge">{t('best_sellers.new')}</span>
-                      )}
-                    {item.discountPercentage && (
-                        <span className="product-badge product-discount-badge">
-                        -{item.discountPercentage}%
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Feature Badge */}
-                    {item.feature && (
-                      <div className="feature-badge">
-                        {item.feature[currentLang]}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="wishlist-item-info">
-                    <Link to={`/product/${item.id}`} className="wishlist-item-link">
-                      <h3 className="wishlist-item-name">{item.name[currentLang]}</h3>
-                    </Link>
-                    
-                    {/* Price */}
-                    <div className="wishlist-item-price">
-                      {item.discountPrice ? (
-                        <>
-                          <span className="current-price">
-                            {item.discountPrice.toFixed(2)} {t('shop.currency')}
-                          </span>
-                          <span className="original-price">
-                            {item.originalPrice.toFixed(2)} {t('shop.currency')}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="current-price">
-                          {item.originalPrice.toFixed(2)} {t('shop.currency')}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Add to Cart Button */}
-                    <button 
-                      className="wishlist-add-to-cart-btn"
-                      onClick={() => handleAddToCart(item)}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <span>{t('shop.add_to_cart')}</span>
-                    </button>
-                  </div>
-                </div>
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  currentLang={currentLang}
+                  t={t}
+                  isInWishlist={() => true} // Always true since item is in wishlist
+                  handleWishlistToggle={handleWishlistToggle}
+                  handleAddToCart={handleAddToCart}
+                  getFeatureById={getFeatureById}
+                  getCategoryById={getCategoryById}
+                />
               ))}
             </div>
           </div>
@@ -166,4 +96,4 @@ const Wishlist = () => {
   );
 };
 
-export default Wishlist; 
+export default Wishlist;

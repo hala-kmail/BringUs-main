@@ -89,7 +89,7 @@ const Cart = () => {
 
   return (
     <div className="cart-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      <TopBar />
+      {/* <TopBar /> */}
       <Navbar 
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}

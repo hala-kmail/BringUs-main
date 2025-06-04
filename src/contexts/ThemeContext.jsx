@@ -7,7 +7,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [primaryColor, setPrimaryColor] = useState('#325471'); // لون افتراضي
+  const [primaryColor, setPrimaryColor] = useState('#257b4e'); // لون افتراضي
 
   // تحديث متغيرات CSS عند تغيير اللون الأساسي
   useEffect(() => {
@@ -17,8 +17,9 @@ export const ThemeProvider = ({ children }) => {
     // حساب الألوان المشتقة (يمكنك تعديل هذه الحسابات حسب احتياجاتك)
     const lighterColor = adjustColor(primaryColor, 20); // أفتح بنسبة 20%
     const darkerColor = adjustColor(primaryColor, -20); // أغمق بنسبة 20%
-    
+    const morelighterColor = adjustColor(primaryColor, 85);
     root.style.setProperty('--primary-light', lighterColor);
+    root.style.setProperty('--primary-more-light', morelighterColor);
     root.style.setProperty('--primary-dark', darkerColor);
   }, [primaryColor]);
 

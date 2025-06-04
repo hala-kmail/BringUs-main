@@ -4,7 +4,7 @@
 }
 
 .category-container {
-  max-width: 70%;
+  max-width: 85%;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
@@ -503,8 +503,8 @@
 
 .add-to-cart-btn svg {
   display: block !important;
-  width: 16px;
-  height: 16px;
+  width: 25px;
+  height: 25px;
   flex-shrink: 0;
 }
 

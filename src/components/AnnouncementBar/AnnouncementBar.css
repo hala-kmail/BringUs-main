@@ -1,7 +1,6 @@
 .announcement-bar {
   background-color: var(--primary-color);
   color: white;
-  padding: 0.5rem 0;
   position: fixed;
   top: 0;
   left: 0;
@@ -20,7 +19,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 1rem;
   text-align: center;
 }
@@ -34,7 +33,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
 }
 

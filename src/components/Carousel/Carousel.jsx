@@ -20,10 +20,7 @@ const Carousel = () => {
         en: 'Get the freshest products delivered to your doorstep',
         ar: 'احصل على أطازج المنتجات موصلة إلى باب منزلك'
       },
-      buttonText: {
-        en: 'Shop Now',
-        ar: 'تسوق الآن'
-      }
+      link: '#'
     },
     {
       id: 2,
@@ -36,10 +33,7 @@ const Carousel = () => {
         en: 'Premium quality organic produce for healthy living',
         ar: 'منتجات عضوية عالية الجودة للحياة الصحية'
       },
-      buttonText: {
-        en: 'Explore',
-        ar: 'استكشف'
-      }
+      link: '#'
     },
     {
       id: 3,
@@ -52,10 +46,7 @@ const Carousel = () => {
         en: 'Save up to 40% on your favorite products',
         ar: 'وفر حتى 40% على منتجاتك المفضلة'
       },
-      buttonText: {
-        en: 'View Offers',
-        ar: 'عرض العروض'
-      }
+      link: '#'
     },
     {
       id: 4,
@@ -68,10 +59,7 @@ const Carousel = () => {
         en: 'Same day delivery available from 7:00 to 23:00',
         ar: 'توصيل في نفس اليوم متاح من 7:00 إلى 23:00'
       },
-      buttonText: {
-        en: 'Order Now',
-        ar: 'اطلب الآن'
-      }
+      link: '#'
     }
   ];
 
@@ -87,13 +75,12 @@ const Carousel = () => {
     setCurrentSlide(index);
   };
 
-  // Auto-play functionality
   useEffect(() => {
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
       nextSlide();
-    }, 5000); // Change slide every 5 seconds
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [currentSlide, isAutoPlaying]);
@@ -118,23 +105,19 @@ const Carousel = () => {
         <div 
           className="carousel-slides"
           style={{ 
-            transform: i18n.language === 'ar' 
+            transform: currentLang === 'ar' 
               ? `translateX(${currentSlide * 100}%)` 
               : `translateX(-${currentSlide * 100}%)` 
           }}
         >
-          {slides.map((slide, index) => (
+          {slides.map((slide) => (
             <div key={slide.id} className="carousel-slide">
-              <div className="slide-image">
+              <a href={slide.link} className="slide-image">
                 <img src={slide.image} alt={slide.title[currentLang]} />
                 <div className="slide-overlay"></div>
-              </div>
+              </a>
               <div className="slide-content">
-                {/* <h2 className="slide-title">{slide.title[currentLang]}</h2>
-                <p className="slide-subtitle">{slide.subtitle[currentLang]}</p> */}
-                <button className="slide-button">
-                  {slide.buttonText[currentLang]}
-                </button>
+                {/* يمكنك إرجاع العنوان هنا إذا أردت */}
               </div>
             </div>
           ))}
@@ -173,4 +156,4 @@ const Carousel = () => {
   );
 };
 
-export default Carousel; 
+export default Carousel;

@@ -107,7 +107,7 @@ const AlmostFinishedSale = () => {
 
   return (
     <div className="almost-finished-sale-page" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-      <TopBar />
+      {/* <TopBar /> */}
       <Navbar />
       <SecondaryNavbar />
       

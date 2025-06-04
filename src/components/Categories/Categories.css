@@ -16,7 +16,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: var(--primary-color);
+  background:#2e2e2e;
   color: white;
   border: none;
   border-radius: 8px;
@@ -29,7 +29,7 @@
 }
 
 .categories-btn:hover {
-  background: var(--primary-dark);
+  background: #212121;
   transform: translateY(-1px);
 }
 
@@ -181,10 +181,6 @@
   transition: all 0.3s ease;
 }
 
-/* انعكاس السهم في اللغة العربية */
-[dir="rtl"] .category-arrow {
-  /* transform: scaleX(-1); */
-}
 
 .category-btn:hover .category-arrow {
   color: var(--primary-color);

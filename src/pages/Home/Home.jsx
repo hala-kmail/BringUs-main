@@ -24,7 +24,7 @@ const Home = () => {
 
   return (
     <div className="home">
-      <TopBar />
+      {/* <TopBar /> */}
       <Navbar 
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}

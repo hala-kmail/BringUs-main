@@ -3,7 +3,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0.75rem 0;
   position: sticky;
-  top: calc(var(--announcement-bar-height) + var(--top-bar-height));
+  top: calc(var(--announcement-bar-height) );
   z-index: 998;
   width: 100%;
   min-height: var(--navbar-height);
@@ -366,7 +366,7 @@
   .navbar {
     padding: 0.5rem 0;
     position: sticky;
-    top: 50px;
+    top: 0px;
   }
 
   .navbar-container {
@@ -397,8 +397,11 @@
 
   /* Show mobile search trigger */
   .mobile-search-trigger {
-    display: block;
-  }
+    display: flex;
+    min-height: unset;
+    min-width: unset;
+    /* display: block; */
+}
 
   .mobile-search-trigger svg {
     width: 1.25rem;
@@ -408,7 +411,7 @@
   /* Hide wishlist text on mobile, only show icons */
   .action-item[href="/wishlist"],
   .action-item[href="/cart"] {
-    min-width: auto;
+   display: none;
   }
 
   .action-label {
@@ -493,10 +496,8 @@
   }
 
   .user-actions {
-    gap: 0.375rem;
+    gap: 0.5rem;
   }
-
-
 
   .mobile-search-trigger svg {
     width: 1.25rem;
@@ -504,15 +505,207 @@
   }
 
   .icon-container {
-    padding: 0.25rem;
+    padding: 0.3rem;
   }
 
   .icon-container svg {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.3rem;
+    height: 1.3rem;
   }
 
   .mobile-search-trigger {
     padding: 0.4rem;
   }
+
+  /* Styles for new dropdowns on mobile, if different from desktop */
+  .selector-button {
+    padding: 0.25rem 0.3rem;
+    font-size: 0.75rem;
+  }
+  .selector-button span:not(.flag) {
+     /* display: none; /* Optionally hide text to save space, showing only flag/avatar */
+  }
+  .user-avatar {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.7rem;
+  }
+   .user-name {
+    display: none; /* Hide user name on small mobile to save space */
+  }
+  .flag {
+    font-size: 0.875rem;
+  }
+  .dropdown-menu {
+    min-width: 130px;
+  }
+}
+
+/* Styles for Language and User Selectors in Navbar */
+/* Adapted from TopBar.css generic styles */
+
+.user-actions .selector-dropdown {
+  position: relative;
+}
+
+.user-actions .selector-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.user-actions .selector-button:hover {
+  color: var(--primary-color);
+  background-color: rgba(99, 76, 159, 0.05);
+}
+
+.user-actions .flag {
+  font-size: 1.1rem;
+}
+
+.user-actions .dropdown-arrow {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.3s ease;
+  color: #6B7280;
+}
+
+.user-actions .selector-button:hover .dropdown-arrow {
+  color: var(--primary-color);
+}
+
+.user-actions .dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.user-actions .dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  padding: 0.5rem;
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.user-actions .selector-dropdown:hover .dropdown-menu,
+.user-actions .selector-button:focus + .dropdown-menu,
+.user-actions .dropdown-menu:hover,
+.user-actions .selector-dropdown .dropdown-menu.open-programmatically {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+[dir="rtl"] .user-actions .dropdown-menu {
+  right: auto;
+  left: 0;
+}
+
+.user-actions .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  color: #374151;
+  background: none;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: start;
+  font-size: 0.875rem;
+}
+
+.user-actions .dropdown-item svg {
+  width: 1rem;
+  height: 1rem;
+  color: #6B7280;
+  transition: color 0.2s ease;
+}
+
+.user-actions .dropdown-item:hover {
+  background-color: rgba(99, 76, 159, 0.05);
+  color: var(--primary-color);
+}
+
+.user-actions .dropdown-item:hover svg {
+  color: var(--primary-color);
+}
+
+.user-actions .dropdown-item.active {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 500;
+}
+
+.user-actions .dropdown-item.active svg {
+  color: white;
+}
+
+/* Specific User Menu Styles for Navbar */
+.user-actions .user-menu .selector-button {
+  /* any specific styles for the user button itself, if different from generic selector-button */
+}
+
+.user-actions .user-avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
+.user-actions .selector-button:hover .user-avatar {
+  transform: scale(1.1);
+}
+
+.user-actions .user-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-actions .selector-button:hover .user-name {
+  color: var(--primary-color);
+}
+
+/* Ensure user-actions items are vertically centered */
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Add specific class for dropdown-menu if controlled by JS state */
+.user-actions .dropdown-menu.open-programmatically {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }

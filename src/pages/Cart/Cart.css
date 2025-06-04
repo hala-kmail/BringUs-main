@@ -565,7 +565,7 @@
 
 .checkout-btn {
   width: 100%;
-  background: #22c55e;
+  background: #2e2e2e;
   color: white;
   border: none;
   padding: 0.875rem;
@@ -579,7 +579,7 @@
 }
 
 .checkout-btn:hover {
-  background: #16a34a;
+  background: #212121;
   transform: translateY(-1px);
 }
 
@@ -726,7 +726,7 @@
   }
 
   .mobile-cart-item {
-    
+    padding: 1rem;
     position: relative;
     display: flex;
     flex-direction: column;
