@@ -36,6 +36,9 @@
 .countdown-timer.small .countdown-unit {
   padding: 6px 4px;
   min-width: 32px;
+  
+    background-color: #e5e7eb70;
+ 
   border-radius: 6px;
 }
 
@@ -60,7 +63,7 @@
 
 .countdown-label {
   font-size: 10px;
-  color: white;
+  /* color: white; */
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -98,8 +101,8 @@
 
 .countdown-message {
   text-align: center;
-  margin-top: 8px;
-  font-size: 12px;
+  /* margin-top: 8px; */
+  font-size: 10px;
   color: #6c757d;
   font-weight: 500;
 }

@@ -107,7 +107,7 @@ export const subcategories = [
       en: "Frozen Meals",
       ar: "الوجبات المجمدة"
     },
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+    image: "https://www.dari.sa/wp-content/uploads/2022/10/DARI-Chicken-Tomato-Pasta.webp",
     categoryId: 6
   },
   {
@@ -167,7 +167,7 @@ export const subcategories = [
       en: "Cleaning Supplies",
       ar: "مستلزمات التنظيف"
     },
-    image: "https://images.unsplash.com/photo-1563453392212-326d32d890d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+    image: "https://mysyria.ca/wp-content/uploads/2020/08/%D9%85%D9%86%D8%B8%D9%81%D8%A7%D8%AA.jpg",
     categoryId: 9
   },
   {

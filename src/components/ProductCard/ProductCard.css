@@ -39,3 +39,18 @@ h3.product-top-name{
     font-weight: 500 !important;
     color: var(--primary-color) !important;
 }
+.low-stock .stock-text {
+    color: #d97706;
+    font-weight: 700;
+    font-size: 12px;
+}
+.in_stock .stock-text {
+    color: #21722c;
+    font-weight: 700;
+    font-size: 12px;
+}
+.sold_out .stock-text {
+    color: #912222;
+    font-weight: 700;
+    font-size: 12px;
+}

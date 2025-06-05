@@ -72,13 +72,8 @@
   transform: translateX(2px);
 }
 
-[dir="rtl"] .view-all-btn svg {
-  transform: scaleX(-1);
-}
 
-[dir="rtl"] .view-all-btn:hover svg {
-  transform: scaleX(-1) translateX(2px);
-}
+
 
 /* Products Grid */
 .products-grid {

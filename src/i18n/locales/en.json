@@ -194,6 +194,7 @@
     "filter_by_features": "Filter by Features",
     "product_status": "Product Status",
     "in_stock": "In Stock",
+    "sold_out": "Sold Out",
     "on_sale": "On Sale",
     "sorting": "Sort by",
     "sort_by_latest": "Latest",

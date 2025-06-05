@@ -811,7 +811,11 @@
     color: #9ca3af;
     text-decoration: line-through;
   }
-
+  [dir="rtl"] .mobile-remove-btn {
+    
+    right: auto;
+    left: 0.75rem;
+  }
   /* Remove button - simple corner button */
   .mobile-remove-btn {
     position: absolute !important;

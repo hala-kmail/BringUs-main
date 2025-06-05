@@ -15,7 +15,9 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [displayedText, setDisplayedText] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
   const placeholders = t('navbar.search_placeholders', { returnObjects: true });
@@ -23,7 +25,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
-  const userName = "محمد أحمد"; // Temporary mock data
+  const userName = "محمد أحمد";
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -38,14 +40,39 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
-  // Update placeholder text every 4 seconds
+  // Typewriter effect for placeholder
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
-    }, 4000);
+    let interval;
+    const currentPlaceholder = placeholders[placeholderIndex];
+    const typingSpeed = 100; // سرعة الكتابة (ميلي ثانية لكل حرف)
+    const deletingSpeed = 50; // سرعة المحو (ميلي ثانية لكل حرف)
+    const pauseDuration = 2000; // مدة التوقف بعد اكتمال النص وقبل المحو
+
+    if (isTyping) {
+      // مرحلة الكتابة
+      if (displayedText.length < currentPlaceholder.length) {
+        interval = setInterval(() => {
+          setDisplayedText(currentPlaceholder.slice(0, displayedText.length + 1));
+        }, typingSpeed);
+      } else {
+        // التوقف بعد اكتمال الكتابة
+        setTimeout(() => setIsTyping(false), pauseDuration);
+      }
+    } else {
+      // مرحلة المحو
+      if (displayedText.length > 0) {
+        interval = setInterval(() => {
+          setDisplayedText(displayedText.slice(0, -1));
+        }, deletingSpeed);
+      } else {
+        // الانتقال إلى النص التالي
+        setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
+        setIsTyping(true);
+      }
+    }
 
     return () => clearInterval(interval);
-  }, [placeholders.length]);
+  }, [displayedText, isTyping, placeholderIndex, placeholders]);
 
   // Handle search functionality
   useEffect(() => {
@@ -54,10 +81,8 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
         const productName = product.name[currentLang]?.toLowerCase() || '';
         const productDesc = product.description[currentLang]?.toLowerCase() || '';
         const query = searchQuery.toLowerCase();
-        
         return productName.includes(query) || productDesc.includes(query);
-      }).slice(0, 8); // Limit to 8 results
-      
+      }).slice(0, 8);
       setSearchResults(filteredProducts);
       setShowSearchDropdown(filteredProducts.length > 0);
     } else {
@@ -73,7 +98,6 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
         setShowSearchDropdown(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -110,20 +134,20 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
         {/* Desktop Search Bar */}
         <div className="search-bar desktop-search" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="search-form">
-          <input
-            type="text"
-            className="search-input"
-            placeholder={placeholders[placeholderIndex]}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            <input
+              type="text"
+              className="search-input"
+              placeholder={displayedText}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.trim() && setShowSearchDropdown(searchResults.length > 0)}
-            aria-label={t('navbar.search_placeholder')}
-          />
+              aria-label={t('navbar.search_placeholder')}
+            />
             <button type="submit" className="search-button" aria-label={t('navbar.search')}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="search-icon">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="search-icon">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
           </form>
 
           {/* Search Dropdown */}
@@ -173,7 +197,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
           )}
         </div>
 
-        {/* User Actions - Rearranged Order: Language, User, Wishlist, Cart */}
+        {/* User Actions */}
         <div className="user-actions">
           {/* Mobile Search Button */}
           <button className="mobile-search-trigger" onClick={onMobileSearchToggle}>
@@ -196,7 +220,6 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            {/* Apply open-programmatically class when isLanguageDropdownOpen is true */}
             <div id="language-menu" className={`dropdown-menu ${isLanguageDropdownOpen ? 'open-programmatically' : ''}`}>
               {languages.map((language) => (
                 <button
@@ -227,7 +250,6 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            {/* Apply open-programmatically class when isUserDropdownOpen is true */}
             <div id="user-menu-items" className={`dropdown-menu ${isUserDropdownOpen ? 'open-programmatically' : ''}`}>
               <Link to="/profile" className="dropdown-item">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
@@ -282,4 +304,4 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   );
 };
 
-export default Navbar; 
+export default Navbar;

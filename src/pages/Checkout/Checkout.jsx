@@ -346,11 +346,11 @@ const Checkout = () => {
                         </div>
                       )}
                       <div className="item-price">
-                        ${item.finalPrice.toFixed(2)} × {item.quantity}
+                      ₪{item.finalPrice.toFixed(2)} × {item.quantity}
                       </div>
                     </div>
                     <div className="item-total">
-                      ${(item.finalPrice * item.quantity).toFixed(2)}
+                    ₪{(item.finalPrice * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -360,7 +360,7 @@ const Checkout = () => {
               <div className="order-totals">
                 <div className="total-row">
                   <span>{currentLang === 'ar' ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
-                  <span>${cartTotals.subtotal}</span>
+                  <span>₪{cartTotals.subtotal}</span>
                 </div>
                 
                 <div className="total-row">
@@ -368,7 +368,7 @@ const Checkout = () => {
                   <span>
                     {cartTotals.shipping === 0 
                       ? (currentLang === 'ar' ? 'مجاني' : 'Free') 
-                      : `$${cartTotals.shipping}`
+                      : `₪${cartTotals.shipping}`
                     }
                   </span>
                 </div>
@@ -377,7 +377,7 @@ const Checkout = () => {
                 
                 <div className="total-row total-final">
                   <span>{currentLang === 'ar' ? 'الإجمالي:' : 'Total:'}</span>
-                  <span>${cartTotals.total}</span>
+                  <span>₪{cartTotals.total}</span>
                 </div>
               </div>
 

@@ -2,7 +2,7 @@
 export const allProducts = [
   {
     "id": 1,
-    "image": "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80",
+    "image": "https://worldofplants.ai/wp-content/uploads/2024/02/%D8%B5%D9%86%D9%81-%D8%A7%D9%84%D8%B3%D9%83%D8%B1%D8%AC%D9%8A.png",
     "additionalImages": [
       "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80",
       "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1926&q=80",
@@ -47,7 +47,7 @@ export const allProducts = [
   },
   {
     "id": 14,
-    "image": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "image": "https://cdn.salla.sa/oqYdG/oRmrqd7wVcsLhyO3J33HBHO3B54FwF5KKuaTjuFE.png",
     "additionalImages": [
       "https://images.unsplash.com/photo-1603833665858-e61d17a86224?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
       "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
@@ -154,7 +154,7 @@ export const allProducts = [
   },
   {
     "id": 46,
-    "image": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "image": "https://cdn.salla.sa/onpYdv/301aed1a-49fc-4650-a437-824d81edfc20-1000x768.4098185699-WdJHOSkqHByvocMpQKXMCZqxXLsu5HUr8LtgBwAX.png",
     "name": {
       "en": "Fresh Carrots",
       "ar": "جزر طازج"
@@ -188,12 +188,12 @@ export const allProducts = [
     "id": 47,
     "image": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "name": {
-      "en": "Expired Discount Product",
-      "ar": "منتج خصمه منتهي"
+      "en": "Botato",
+      "ar": "بطاطا طازجة"
     },
     "description": {
       "en": "Product with expired discount for testing.",
-      "ar": "منتج بخصم منتهي للاختبار."
+      "ar": "بطاطا طازجة"
     },
     "originalPrice": 15.99,
     "discountPrice": 10.99,

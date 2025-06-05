@@ -549,6 +549,7 @@
 /* Additional Product Actions */
 .product-additional-actions {
   display: flex;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 2rem;
   order: 12;
@@ -857,10 +858,6 @@
 
   .product-original-price {
     font-size: 1.25rem;
-  }
-
-  .product-detail-price {
-  
   }
 
   .product-special-offer {
@@ -1217,9 +1214,7 @@
     font-size: 1.25rem;
   }
 
-  .product-detail-price {
-  
-  }
+
 
   .product-special-offer {
     margin: 1.5rem 0;
@@ -1398,10 +1393,7 @@
   }
 }
 
-/* Product Features */
-.product-detail-features {
-  
-}
+
 
 .product-feature-item {
   display: flex;

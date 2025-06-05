@@ -1210,10 +1210,6 @@
   order: 2;
 }
 
-[dir="rtl"] .shop-sidebar-header {
-  /* flex-direction: row-reverse; */
-}
-
 [dir="rtl"] .shop-toolbar {
   flex-direction: row-reverse;
 }
@@ -1458,9 +1454,6 @@
     gap: 0.5rem;
   }
 
-  [dir="rtl"] .price-inputs {
-    /* flex-direction: column; */
-  }
 
   .price-inputs input {
     width: 100%;

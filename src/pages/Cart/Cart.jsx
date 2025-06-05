@@ -217,9 +217,9 @@ const Cart = () => {
 
                     {/* Price */}
                     <div className="cart-item-price">
-                      <span className="current-price">${item.finalPrice.toFixed(2)}</span>
+                      <span className="current-price">₪{item.finalPrice.toFixed(2)}</span>
                       {item.discountPrice && item.originalPrice !== item.finalPrice && (
-                        <span className="original-price">${item.originalPrice.toFixed(2)}</span>
+                        <span className="original-price">₪{item.originalPrice.toFixed(2)}</span>
                       )}
                     </div>
                   </div>
@@ -245,7 +245,7 @@ const Cart = () => {
 
                   {/* Total Price */}
                   <div className="cart-item-total desktop-only">
-                    ${(item.finalPrice * item.quantity).toFixed(2)}
+                  ₪{(item.finalPrice * item.quantity).toFixed(2)}
                   </div>
 
                   {/* Remove Button */}
@@ -309,9 +309,9 @@ const Cart = () => {
 
                         {/* Price */}
                         <div className="cart-item-price">
-                          <span className="current-price">${item.finalPrice.toFixed(2)}</span>
+                          <span className="current-price">₪{item.finalPrice.toFixed(2)}</span>
                           {item.discountPrice && item.originalPrice !== item.finalPrice && (
-                            <span className="original-price">${item.originalPrice.toFixed(2)}</span>
+                            <span className="original-price">₪{item.originalPrice.toFixed(2)}</span>
                           )}
                         </div>
                       </div>
@@ -344,7 +344,7 @@ const Cart = () => {
                           {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
                         </span>
                         <div className="cart-item-total-price">
-                          ${(item.finalPrice * item.quantity).toFixed(2)}
+                        ₪{(item.finalPrice * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -359,7 +359,7 @@ const Cart = () => {
               
               <div className="summary-row">
                 <span>{currentLang === 'ar' ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
-                <span>${cartTotals.subtotal}</span>
+                <span>₪{cartTotals.subtotal}</span>
               </div>
               
               <div className="summary-row">
@@ -367,7 +367,7 @@ const Cart = () => {
                 <span>
                   {cartTotals.shipping === 0 
                     ? (currentLang === 'ar' ? 'مجاني' : 'Free') 
-                    : `$${cartTotals.shipping}`
+                    : `₪${cartTotals.shipping}`
                   }
                 </span>
               </div>
@@ -376,7 +376,7 @@ const Cart = () => {
               
               <div className="summary-row summary-total">
                 <span>{currentLang === 'ar' ? 'الإجمالي:' : 'Total:'}</span>
-                <span>${cartTotals.total}</span>
+                <span>₪{cartTotals.total}</span>
               </div>
 
               <button 

@@ -16,6 +16,7 @@ import Wishlist from './pages/Wishlist/Wishlist';
 import AlmostFinishedSale from './pages/AlmostFinishedSale/AlmostFinishedSale';
 import AnnouncementBar from './components/AnnouncementBar/AnnouncementBar';
 import BottomNavigation from './components/BottomNavigation/BottomNavigation';
+import Footer from './components/Footer';
 
 import './App.css';
 
@@ -45,6 +46,7 @@ const AppContent = () => {
         </Routes>
       </div>
       {!isAuthPage && <BottomNavigation />}
+      <Footer />
     </div>
   );
 };

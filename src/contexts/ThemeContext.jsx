@@ -7,7 +7,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [primaryColor, setPrimaryColor] = useState('#257b4e'); // لون افتراضي
+  const [primaryColor, setPrimaryColor] = useState('#18754e'); // لون افتراضي
 
   // تحديث متغيرات CSS عند تغيير اللون الأساسي
   useEffect(() => {

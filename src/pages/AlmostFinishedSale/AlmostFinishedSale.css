@@ -15,7 +15,7 @@
 }
 
 .almost-finished-container {
-  max-width: 1200px;
+  max-width: 85%;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -210,7 +210,7 @@
 /* Products Grid */
 .almost-finished-sale-page .products-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   margin-bottom: 3rem;
 }
@@ -236,7 +236,7 @@
 .almost-finished-sale-page .product-image-container {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 250px;
   overflow: hidden;
   background: #f8f9fa;
   flex-shrink: 0;
@@ -452,6 +452,7 @@
 .almost-finished-sale-page .discount-info {
   margin-bottom: 1rem;
   padding: 0.5rem;
+  border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
@@ -504,18 +505,15 @@
 }
 
 /* Countdown Timer in Product Card */
-.almost-finished-sale-page .countdown-timer {
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-  padding: 0.3rem;
-  font-size: 0.7rem;
-  border-radius: 4px;
-  background: #fefce8;
-  border: 1px solid #fde047;
+.countdown-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .almost-finished-sale-page .countdown-timer.small {
   padding: 0.25rem;
+
   font-size: 0.65rem;
 }
 
@@ -523,8 +521,10 @@
   gap: 0.15rem;
 }
 
+
 .almost-finished-sale-page .countdown-timer .timer-unit {
   min-width: 18px;
+  
 }
 
 .almost-finished-sale-page .countdown-timer .separator {
@@ -761,7 +761,12 @@
     justify-content: center !important;
     font-size: 0.7rem;
   }
-
+  .countdown-timer.small .countdown-unit {
+    background-color: #e5e7eb70;
+    padding: 6px 4px;
+    min-width: 32px;
+    border-radius: 6px;
+}
   .almost-finished-sale-page .add-to-cart-btn .button-text {
     display: none !important;
   }

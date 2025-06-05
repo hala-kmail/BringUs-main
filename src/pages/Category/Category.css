@@ -392,10 +392,7 @@
   }
 }
 
-[dir="rtl"] .discount-badge {
-  left: auto;
-  right: 15px;
-}
+
 
 .feature-badge {
   position: absolute;

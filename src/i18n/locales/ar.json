@@ -194,6 +194,7 @@
     "filter_by_features": "فلتر حسب الميزات",
     "product_status": "حالة المنتج",
     "in_stock": "متوفر",
+    "sold_out": "بيعت كلها",
     "on_sale": "في التخفيضات",
     "showing_results": "عرض {{start}}-{{end}} من {{total}} نتيجة",
     "showing_products": "عرض {{count}} منتج",
@@ -432,5 +433,31 @@
     "seconds": "ثواني",
     "expired": "انتهى العرض",
     "remainsUntilEnd": "متبقي حتى انتهاء العرض"
+  },
+  "almostFinished": {
+    "heroLabel": "تخفيضات أوشكت على النفاد!",
+    "heroTitle": "فرصتك الأخيرة",
+    "heroSubtitle": "لا تفوت هذه المنتجات الرائعة - الكمية محدودة!",
+    "productsLeft": "منتجات على وشك النفاد",
+    "discountedItems": "عناصر مخفضة",
+    "almostFinished": "أوشك على النفاد",
+    "discountedProducts": "منتجات مخفضة",
+    "resultsFound": "تم العثور على {{count}} منتج",
+    "sortBy": "ترتيب حسب:",
+    "sortOptions": {
+      "stockLowToHigh": "المخزون: الأقل للأكثر",
+      "stockHighToLow": "المخزون: الأكثر للأقل",
+      "discountHighToLow": "الخصم: الأعلى للأقل",
+      "priceLowToHigh": "السعر: الأقل للأكثر",
+      "priceHighToLow": "السعر: الأكثر للأقل"
+    },
+    "left": "متبقي",
+    "hurry": "سارع!",
+    "addToCart": "أضف إلى السلة",
+    "onlyLeft": "متبقي {{count}} فقط!",
+    "noProducts": "لا توجد منتجات",
+    "noProductsDesc": "جميع المنتجات في هذا القسم متوفرة حالياً أو تم بيعها.",
+    "youSave": "وفرّت:",
+    "off": "خصم"
   }
 } 

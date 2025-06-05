@@ -196,7 +196,7 @@
   right: 30px;
 }
 
-[dir="rtl"] .carousel-arrow-prev {
+/* [dir="rtl"] .carousel-arrow-prev {
   right: 30px;
   left: auto;
 }
@@ -204,7 +204,7 @@
 [dir="rtl"] .carousel-arrow-next {
   left: 30px;
   right: auto;
-}
+} */
 
 /* Dots Indicator */
 .carousel-dots {
