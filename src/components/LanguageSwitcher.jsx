@@ -15,6 +15,7 @@ export function LanguageSwitcher() {
     i18n.changeLanguage(newLang);
     document.dir = newLang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = newLang;
+    localStorage.setItem('i18nextLng', newLang);
   };
 
   return (

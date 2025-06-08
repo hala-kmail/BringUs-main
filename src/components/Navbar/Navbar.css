@@ -163,7 +163,7 @@
 .user-actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  
 }
 
 .action-item {
@@ -387,7 +387,7 @@
   }
 
   .user-actions {
-    gap: 1rem;
+    
   }
 
   /* Hide desktop search on mobile */
@@ -496,7 +496,7 @@
   }
 
   .user-actions {
-    gap: 0.5rem;
+    gap: 0rem !important;
   }
 
   .mobile-search-trigger svg {

@@ -206,7 +206,7 @@
 
 .item-quantity {
   position: absolute;
-  top: -8px;
+  top: 3px;
   right: -8px;
   background: var(--primary-color);
   color: white;
@@ -391,7 +391,7 @@
 
 [dir="rtl"] .item-quantity {
   right: auto;
-  left: -8px;
+  left: 2px;
 }
 
 [dir="rtl"] .order-items {

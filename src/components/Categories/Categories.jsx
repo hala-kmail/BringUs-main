@@ -19,52 +19,6 @@ const Categories = () => {
 
   const currentLang = i18n.language;
 
-  // خريطة ربط معرفات الفئات بأسمائها للتوافق مع الروابط الموجودة
-  const categorySlugMapping = {
-    1: 'fruits-vegetables',
-    2: 'meats-seafood',
-    3: 'breakfast-dairy',
-    4: 'breads-bakery',
-    5: 'beverages',
-    6: 'frozen-foods',
-    7: 'biscuits-snacks',
-    8: 'grocery-staples',
-    9: 'household-needs',
-    10: 'healthcare',
-    11: 'baby-pregnancy'
-  };
-
-  // خريطة عكسية للحصول على ID من slug
-  const slugToCategoryId = Object.fromEntries(
-    Object.entries(categorySlugMapping).map(([id, slug]) => [slug, parseInt(id)])
-  );
-
-  // خريطة ربط الفئات الفرعية بـ slugs
-  const subcategorySlugMapping = {
-    1: 'fresh-fruits',
-    2: 'fresh-vegetables', 
-    3: 'fresh-meat',
-    4: 'seafood',
-    5: 'dairy-products',
-    6: 'breakfast-items',
-    7: 'fresh-bread',
-    8: 'pastries',
-    9: 'hot-beverages',
-    10: 'cold-beverages',
-    11: 'frozen-meals',
-    12: 'frozen-desserts',
-    13: 'cookies-biscuits',
-    14: 'nuts-snacks',
-    15: 'cooking-essentials',
-    16: 'grains-rice',
-    17: 'cleaning-supplies',
-    18: 'paper-products',
-    19: 'vitamins-supplements',
-    20: 'personal-care',
-    21: 'baby-care',
-    22: 'baby-food'
-  };
-
   // دالة للتحقق من وجود منتجات في فئة فرعية معينة
   const hasProductsInSubcategory = (subcategoryId) => {
     const products = getProductsBySubcategory(subcategoryId);
@@ -113,24 +67,21 @@ const Categories = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const handleCategoryClick = (categoryId) => {
+  const handleCategoryClick = (category) => {
     setIsDropdownOpen(false);
-    const categorySlug = categorySlugMapping[categoryId];
-    navigate(`/category/${categorySlug}`);
+    navigate(`/category/${category.slug['en']}`);
   };
 
-  const handleSubcategoryClick = (categoryId, subcategoryId) => {
+  const handleSubcategoryClick = (category, subcategory) => {
     setIsDropdownOpen(false);
-    const categorySlug = categorySlugMapping[categoryId];
-    const subcategorySlug = subcategorySlugMapping[subcategoryId];
-    navigate(`/category/${categorySlug}/${subcategorySlug}`);
+    navigate(`/category/${category.slug['en']}/${subcategory.slug['en']}`);
   };
 
   const handleCategoryMouseEnter = (event, categoryId) => {
     // التحقق من وجود فئات فرعية قبل المتابعة
     const filteredSubcategories = getFilteredSubcategories(categoryId);
     if (filteredSubcategories.length === 0) {
-      return; // لا تفعل شيئاً إذا لم تكن هناك فئات فرعية
+      return; // لا تفعل شيئًا إذا لم تكن هناك فئات فرعية
     }
 
     // إلغاء أي timeout موجود
@@ -306,7 +257,7 @@ const Categories = () => {
                   >
                     <button
                       className={`category-btn ${filteredSubcategories.length === 0 ? 'no-subcategories' : ''}`}
-                      onClick={() => handleCategoryClick(category.id)}
+                      onClick={() => handleCategoryClick(category)}
                     >
                       <div className="category-icon">{getCategoryIcon(category.id)}</div>
                       <span className="category-text">{category.name[currentLang]}</span>
@@ -350,7 +301,7 @@ const Categories = () => {
                             <button
                               key={subcategory.id}
                               className="subcategory-btn"
-                              onClick={() => handleSubcategoryClick(category.id, subcategory.id)}
+                              onClick={() => handleSubcategoryClick(category, subcategory)}
                             >
                               {subcategory.name[currentLang]}
                             </button>
@@ -369,4 +320,4 @@ const Categories = () => {
   );
 };
 
-export default Categories; 
+export default Categories;

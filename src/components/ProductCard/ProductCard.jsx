@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { getCategorySlug } from '../../data/index';
 import './ProductCard.css';
 
 const ProductCard = ({
@@ -16,7 +15,6 @@ const ProductCard = ({
 }) => {
   const feature = getFeatureById ? getFeatureById(product.featureId) : null;
   const category = getCategoryById ? getCategoryById(product.categoryId) : null;
-  const slug = category && getCategorySlug ? getCategorySlug(product.categoryId) : null;
 
   // دالة لتحديد حالة المخزون
   const getStockStatus = (stock) => {
@@ -84,9 +82,9 @@ const ProductCard = ({
           >
             <h3 className="product-top-name">{product.name[currentLang]}</h3>
           </Link>
-          {category && slug && (
+          {category && (
             <Link
-              to={`/category/${slug}`}
+              to={`/category/${category.slug['en']}`}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <h4
@@ -102,17 +100,15 @@ const ProductCard = ({
               </h4>
             </Link>
           )}
-           {/* Stock Info */}
           {/* Stock Info */}
           {showStockInfo && product.stock !== undefined && (
             <div className="stock-info">
               <div className={`stock-level ${getStockStatus(product.stock)}`}>
-              <span className="stock-text">
-  {getStockStatus(product.stock) === 'low-stock'
-    ? t('almostFinished.onlyLeft', { count: product.stock }) 
-    : t(`shop.${getStockStatus(product.stock)}`)}  
-</span>
-
+                <span className="stock-text">
+                  {getStockStatus(product.stock) === 'low-stock'
+                    ? t('almostFinished.onlyLeft', { count: product.stock }) 
+                    : t(`shop.${getStockStatus(product.stock)}`)}  
+                </span>
                 <div className="stock-bar">
                   <div 
                     className="stock-fill" 
@@ -126,8 +122,6 @@ const ProductCard = ({
           )}
         </div>
         <div className="product-info-bottom">
-         
-
           {/* Price */}
           <div className="product-price-container">
             {product.discountPrice ? (

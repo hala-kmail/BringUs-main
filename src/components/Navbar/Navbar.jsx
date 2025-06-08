@@ -7,6 +7,26 @@ import { allProducts } from '../../data/products';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
 
+
+const searchPlaceholders = [
+  {
+    en: "Search for fresh fruits...",
+    ar: "ابحث عن الملابس"
+  },
+  {
+    en: "Shop organic vegetables...",
+    ar: "تصفح المنتجات الصحية..."
+  },
+  {
+    en: "Find daily deals...",
+    ar: "اكتشف منتجات الألبان..."
+  },
+  {
+    en: "Discover household care...",
+    ar: "تسوق الخضروات العضوية..."
+  }
+];
+
 const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -20,7 +40,9 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const [isTyping, setIsTyping] = useState(true);
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
-  const placeholders = t('navbar.search_placeholders', { returnObjects: true });
+  const langRef = useRef(null);
+  const userRef = useRef(null);
+  const [placeholders, setPlaceholders] = useState([]);
   const currentLang = i18n.language;
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -35,37 +57,55 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const changeLanguage = (langCode) => {
     i18n.changeLanguage(langCode);
     document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
+    localStorage.setItem('i18nextLng', langCode); // حفظ اللغة المختارة
     setIsLanguageDropdownOpen(false);
   };
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
+ /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  useEffect(() => {
+    const fetchPlaceholders = async () => {
+      try {
+       
+        // مثال: const response = await fetch('https://api.example.com/placeholders');
+        // const data = await response.json();
+        const data = searchPlaceholders; 
+        const formattedPlaceholders = data.map(item => item[currentLang] || item.en);
+        setPlaceholders(formattedPlaceholders);
+      } catch (error) {
+        console.error('Error fetching placeholders:', error);
+        // الرجوع إلى نصوص افتراضية في حالة الخطأ
+        setPlaceholders(searchPlaceholders.map(item => item.en));
+      }
+    };
+
+    fetchPlaceholders();
+  }, [currentLang]);
+
+
   // Typewriter effect for placeholder
   useEffect(() => {
     let interval;
-    const currentPlaceholder = placeholders[placeholderIndex];
-    const typingSpeed = 100; // سرعة الكتابة (ميلي ثانية لكل حرف)
-    const deletingSpeed = 50; // سرعة المحو (ميلي ثانية لكل حرف)
-    const pauseDuration = 2000; // مدة التوقف بعد اكتمال النص وقبل المحو
+    const currentPlaceholder = placeholders[placeholderIndex] || '';
+    const typingSpeed = 100;
+    const deletingSpeed = 50;
+    const pauseDuration = 2000;
 
     if (isTyping) {
-      // مرحلة الكتابة
       if (displayedText.length < currentPlaceholder.length) {
         interval = setInterval(() => {
           setDisplayedText(currentPlaceholder.slice(0, displayedText.length + 1));
         }, typingSpeed);
       } else {
-        // التوقف بعد اكتمال الكتابة
         setTimeout(() => setIsTyping(false), pauseDuration);
       }
     } else {
-      // مرحلة المحو
       if (displayedText.length > 0) {
         interval = setInterval(() => {
           setDisplayedText(displayedText.slice(0, -1));
         }, deletingSpeed);
       } else {
-        // الانتقال إلى النص التالي
         setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
         setIsTyping(true);
       }
@@ -73,7 +113,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
     return () => clearInterval(interval);
   }, [displayedText, isTyping, placeholderIndex, placeholders]);
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Handle search functionality
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
@@ -83,20 +123,29 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
         const query = searchQuery.toLowerCase();
         return productName.includes(query) || productDesc.includes(query);
       }).slice(0, 8);
+
       setSearchResults(filteredProducts);
-      setShowSearchDropdown(filteredProducts.length > 0);
+      
+      setShowSearchDropdown(true);
     } else {
       setSearchResults([]);
       setShowSearchDropdown(false);
     }
   }, [searchQuery, currentLang]);
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+    
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSearchDropdown(false);
       }
+      if (userRef.current && !userRef.current.contains(event.target)) {
+       setIsUserDropdownOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(event.target)) {
+        setIsLanguageDropdownOpen(false);
+       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -117,7 +166,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
       setShowSearchDropdown(false);
     }
   };
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Get real cart items count
   const cartTotals = getCartTotals();
   const cartItemsCount = cartTotals.itemsCount;
@@ -169,11 +218,11 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                       <div className="result-price">
                         {product.discountPrice ? (
                           <>
-                            <span className="current-price">${product.discountPrice.toFixed(2)}</span>
-                            <span className="original-price">${product.originalPrice.toFixed(2)}</span>
+                            <span className="current-price">₪{product.discountPrice.toFixed(2)}</span>
+                            <span className="original-price">₪{product.originalPrice.toFixed(2)}</span>
                           </>
                         ) : (
-                          <span className="current-price">${product.originalPrice.toFixed(2)}</span>
+                          <span className="current-price">₪{product.originalPrice.toFixed(2)}</span>
                         )}
                       </div>
                     </div>
@@ -207,7 +256,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
           </button>
 
           {/* Language Selector */}
-          <div className="selector-dropdown">
+          <div className="selector-dropdown"ref={langRef}>
             <button
               className="selector-button"
               onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
@@ -220,7 +269,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            <div id="language-menu" className={`dropdown-menu ${isLanguageDropdownOpen ? 'open-programmatically' : ''}`}>
+            {isLanguageDropdownOpen && <div  id="language-menu" className={`dropdown-menu ${isLanguageDropdownOpen ? 'open-programmatically' : ''}`}>
               {languages.map((language) => (
                 <button
                   key={language.code}
@@ -231,11 +280,11 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                   <span>{language.name}</span>
                 </button>
               ))}
-            </div>
+            </div>}
           </div>
 
           {/* User Menu */}
-          <div className="selector-dropdown user-menu">
+          <div className="selector-dropdown user-menu" ref={userRef}>
             <button
               className="selector-button user-button"
               onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
@@ -250,7 +299,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            <div id="user-menu-items" className={`dropdown-menu ${isUserDropdownOpen ? 'open-programmatically' : ''}`}>
+            {isUserDropdownOpen && <div  id="user-menu-items" className={`dropdown-menu ${isUserDropdownOpen ? 'open-programmatically' : ''}`}>
               <Link to="/profile" className="dropdown-item">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -276,7 +325,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                 </svg>
                 {t('navbar.logout')}
               </button>
-            </div>
+            </div>}
           </div>
 
           {/* Wishlist */}

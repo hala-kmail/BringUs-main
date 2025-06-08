@@ -1,4 +1,6 @@
-// Data access layer for the improved relational data structure
+/**
+ * Data access layer for the improved relational data structure
+ */
 import { allProducts } from './products.js';
 import { categories } from './categories.js';
 import { subcategories } from './subcategories.js';
@@ -170,96 +172,27 @@ export const searchProducts = (query, language = 'en') => {
   );
 };
 
-
-// Slug mappings
-const categorySlugMapping = {
-  1: 'fruits-vegetables',
-  2: 'meats-seafood',
-  3: 'breakfast-dairy',
-  4: 'breads-bakery',
-  5: 'beverages',
-  6: 'frozen-foods',
-  7: 'biscuits-snacks',
-  8: 'grocery-staples',
-  9: 'household-needs',
-  10: 'healthcare',
-  11: 'baby-pregnancy'
-};
-
-const subcategorySlugMapping = {
-  1: 'fresh-fruits',
-  2: 'fresh-vegetables',
-  3: 'fresh-meat',
-  4: 'seafood',
-  5: 'dairy-products',
-  6: 'breakfast-items',
-  7: 'fresh-bread',
-  8: 'pastries',
-  9: 'hot-beverages',
-  10: 'cold-beverages',
-  11: 'frozen-meals',
-  12: 'frozen-desserts',
-  13: 'cookies-biscuits',
-  14: 'nuts-snacks',
-  15: 'cooking-essentials',
-  16: 'grains-rice',
-  17: 'cleaning-supplies',
-  18: 'paper-products',
-  19: 'vitamins-supplements',
-  20: 'personal-care',
-  21: 'baby-care',
-  22: 'baby-food'
-};
-
-const slugToCategoryId = Object.fromEntries(
-  Object.entries(categorySlugMapping).map(([id, slug]) => [slug, parseInt(id)])
-);
-
-const slugToSubcategoryId = Object.fromEntries(
-  Object.entries(subcategorySlugMapping).map(([id, slug]) => [slug, parseInt(id)])
-);
-
-/**
- * Get category slug by ID
- * @param {number} categoryId
- * @returns {string|null}
- */
-export const getCategorySlug = (categoryId) => {
-  return categorySlugMapping[categoryId] || null;
-};
-
 /**
  * Get category ID by slug
- * @param {string} slug
- * @returns {number|null}
+ * @param {string} slug - The category slug
+ * @param {string} language - Language code ('en' or 'ar')
+ * @returns {number|null} Category ID or null if not found
  */
-export const getCategoryIdBySlug = (slug) => {
-  return slugToCategoryId[slug] || null;
-};
-
-/**
- * Get subcategory slug by ID
- * @param {number} subcategoryId
- * @returns {string|null}
- */
-export const getSubcategorySlug = (subcategoryId) => {
-  return subcategorySlugMapping[subcategoryId] || null;
+export const getCategoryIdBySlug = (slug, language = 'en') => {
+  const category = categories.find(cat => cat.slug[language] === slug);
+  return category ? category.id : null;
 };
 
 /**
  * Get subcategory ID by slug
- * @param {string} slug
- * @returns {number|null}
+ * @param {string} slug - The subcategory slug
+ * @param {string} language - Language code ('en' or 'ar')
+ * @returns {number|null} Subcategory ID or null if not found
  */
-export const getSubcategoryIdBySlug = (slug) => {
-  return slugToSubcategoryId[slug] || null;
+export const getSubcategoryIdBySlug = (slug, language = 'en') => {
+  const subcategory = subcategories.find(sub => sub.slug[language] === slug);
+  return subcategory ? subcategory.id : null;
 };
-
-
-
-
-
-
 
 /**
  * Filter products by multiple criteria
@@ -360,40 +293,28 @@ export const getProductStatistics = () => {
 
 // Default export for convenience
 export default {
-  // Data
   allProducts,
   categories,
   subcategories,
   features,
-  
-  // Single entity getters
   getCategoryById,
   getSubcategoryById,
   getFeatureById,
   getProductById,
-  
-  // Relationship queries
   getProductsByCategory,
   getProductsBySubcategory,
   getProductsByFeature,
   getSubcategoriesByCategory,
-  
-  // Special queries
   getBestSellerProducts,
   getNewProducts,
   getDiscountedProducts,
   getProductsInStock,
   getLowStockProducts,
-  
-  // Enhanced queries
   getEnrichedProduct,
   getEnrichedProducts,
   searchProducts,
   filterProducts,
   getProductStatistics,
-
-  getCategorySlug,
   getCategoryIdBySlug,
-  getSubcategorySlug,
-  getSubcategoryIdBySlug,
-}; 
+  getSubcategoryIdBySlug
+};

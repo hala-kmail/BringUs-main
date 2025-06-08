@@ -1,10 +1,14 @@
-// Categories data with multilingual support
+
 export const categories = [
   {
     id: 1,
     name: {
       en: "Fruits & Vegetables",
       ar: "الفواكه والخضروات"
+    },
+    slug: {
+      en: "fruits-vegetables",
+      ar: "الفواكه-والخضروات"
     },
     image: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=200&h=200&fit=crop&crop=center",
     color: "#22c55e",
@@ -19,6 +23,10 @@ export const categories = [
       en: "Meats & Seafood",
       ar: "اللحوم والمأكولات البحرية"
     },
+    slug: {
+      en: "meats-seafood",
+      ar: "اللحوم-والمأكولات-البحرية"
+    },
     image: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=200&h=200&fit=crop&crop=center",
     color: "#ef4444",
     description: {
@@ -31,6 +39,10 @@ export const categories = [
     name: {
       en: "Breakfast & Dairy",
       ar: "الإفطار ومنتجات الألبان"
+    },
+    slug: {
+      en: "breakfast-dairy",
+      ar: "الإفطار-ومنتجات-الألبان"
     },
     image: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?w=200&h=200&fit=crop&crop=center",
     color: "#3b82f6",
@@ -45,6 +57,10 @@ export const categories = [
       en: "Breads & Bakery",
       ar: "الخبز والمخبوزات"
     },
+    slug: {
+      en: "breads-bakery",
+      ar: "الخبز-والمخبوزات"
+    },
     image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=200&fit=crop&crop=center",
     color: "#f59e0b",
     description: {
@@ -56,6 +72,10 @@ export const categories = [
     id: 5,
     name: {
       en: "Beverages",
+      ar: "المشروبات"
+    },
+    slug: {
+      en: "beverages",
       ar: "المشروبات"
     },
     image: "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop&crop=center",
@@ -71,6 +91,10 @@ export const categories = [
       en: "Frozen Foods",
       ar: "الأطعمة المجمدة"
     },
+    slug: {
+      en: "frozen-foods",
+      ar: "الأطعمة-المجمدة"
+    },
     image: "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=200&h=200&fit=crop&crop=center",
     color: "#8b5cf6",
     description: {
@@ -83,6 +107,10 @@ export const categories = [
     name: {
       en: "Biscuits & Snacks",
       ar: "البسكويت والوجبات الخفيفة"
+    },
+    slug: {
+      en: "biscuits-snacks",
+      ar: "البسكويت-والوجبات-الخفيفة"
     },
     image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=200&h=200&fit=crop&crop=center",
     color: "#f97316",
@@ -97,6 +125,10 @@ export const categories = [
       en: "Grocery & Staples",
       ar: "البقالة والأساسيات"
     },
+    slug: {
+      en: "grocery-staples",
+      ar: "البقالة-والأساسيات"
+    },
     image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop&crop=center",
     color: "#84cc16",
     description: {
@@ -107,8 +139,12 @@ export const categories = [
   {
     id: 9,
     name: {
-      en: "Household Needs",
+      en: "Household Ascending order Household Needs",
       ar: "احتياجات المنزل"
+    },
+    slug: {
+      en: "household-needs",
+      ar: "احتياجات-المنزل"
     },
     image: "https://images.unsplash.com/photo-1585421514738-01798e348b17?w=200&h=200&fit=crop&crop=center",
     color: "#14b8a6",
@@ -123,6 +159,10 @@ export const categories = [
       en: "Healthcare",
       ar: "الرعاية الصحية"
     },
+    slug: {
+      en: "healthcare",
+      ar: "الرعاية-الصحية"
+    },
     image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=200&h=200&fit=crop&crop=center",
     color: "#ec4899",
     description: {
@@ -136,6 +176,10 @@ export const categories = [
       en: "Baby & Pregnancy",
       ar: "الطفل والحمل"
     },
+    slug: {
+      en: "baby-pregnancy",
+      ar: "الطفل-والحمل"
+    },
     image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=200&h=200&fit=crop&crop=center",
     color: "#a855f7",
     description: {
@@ -145,4 +189,4 @@ export const categories = [
   }
 ];
 
-export default categories; 
+export default categories;

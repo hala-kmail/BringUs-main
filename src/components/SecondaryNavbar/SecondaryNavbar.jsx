@@ -9,11 +9,11 @@ const SecondaryNavbar = () => {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(window.scrollY);
-
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
-
-    if (currentScrollY > lastScrollY && currentScrollY > 100) {
+   
+    if (currentScrollY > lastScrollY && currentScrollY > 60) {
+      
       // Scrolling down
       setIsVisible(false);
     } else {

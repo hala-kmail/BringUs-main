@@ -454,5 +454,7 @@
   "almost_finished": {
     "title": "Almost Sold Out!",
     "description": "Shop now before they're gone"
-  }
+  },
+  "error_add": "Failed to add product to wishlist!",
+  "error_remove": "Failed to remove product from wishlist!"
 } 

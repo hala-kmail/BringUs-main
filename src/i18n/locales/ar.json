@@ -268,7 +268,9 @@
     "add_to_wishlist": "أضف للمفضلة",
     "remove_from_wishlist": "إزالة من المفضلة",
     "added_to_wishlist": "تم إضافته للمفضلة!",
-    "removed_from_wishlist": "تم إزالته من المفضلة!"
+    "removed_from_wishlist": "تم إزالته من المفضلة!",
+    "error_add": "تعذر إضافة المنتج للمفضلة!",
+    "error_remove": "تعذر حذف المنتج من المفضلة!"
   },
   "filters": {
     "title": "الفلاتر",
