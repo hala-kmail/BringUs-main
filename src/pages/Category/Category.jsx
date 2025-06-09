@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import Navbar from '../../components/Navbar/Navbar';
@@ -18,76 +18,83 @@ import './Category.css';
 import ProductCard from '../../components/ProductCard/ProductCard';
 
 const Category = () => {
-  const { categorySlug, subcategorySlug } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(null);
-  const [currentSubcategory, setCurrentSubcategory] = useState(null);
   const [categorySubcategories, setCategorySubcategories] = useState([]);
+  const [breadcrumbPath, setBreadcrumbPath] = useState([]);
   const [sortBy, setSortBy] = useState('latest');
   const [viewMode, setViewMode] = useState('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
-
   const currentLang = i18n.language;
 
+  // استخراج الـ slugs من المسار
+  const pathAfterCategory = location.pathname.split('/category/')[1] || '';
+  const slugs = pathAfterCategory.split('/').filter(Boolean);
+
   useEffect(() => {
-    if (categorySlug) {
-      const categoryId = getCategoryIdBySlug(categorySlug);
-      console.log(categoryId);
-      if (categoryId) {
-        const category = getCategoryById(categoryId);
-        if (category) {
-          setCurrentCategory(category);
-          const subCategories = getSubCategories(categoryId);
-          setCategorySubcategories(subCategories);
-          
-          if (subcategorySlug) {
-            const subcategoryId = getCategoryIdBySlug(subcategorySlug);
-            if (subcategoryId) {
-              const subcategory = getCategoryById(subcategoryId);
-              setCurrentSubcategory(subcategory);
-              filterProducts(categoryId, subcategoryId);
-            } else {
-              filterProducts(categoryId);
-            }
-          } else {
-            setCurrentSubcategory(null);
-            filterProducts(categoryId);
-            console.log(filteredProducts);
+    if (!slugs.length) {
+      navigate('/shop');
+      return;
+    }
+
+    // العثور على الفئة الحالية باستخدام آخر slug
+    const currentSlug = slugs[slugs.length - 1];
+    const categoryId = getCategoryIdBySlug(currentSlug);
+
+    if (categoryId) {
+      const category = getCategoryById(categoryId);
+      if (category) {
+        setCurrentCategory(category);
+        const subCategories = getSubCategories(categoryId);
+        setCategorySubcategories(subCategories);
+
+        // بناء مسار Breadcrumb
+        const breadcrumb = [];
+        let currentPath = '';
+        slugs.forEach((slug, index) => {
+          const slugId = getCategoryIdBySlug(slug);
+          if (slugId) {
+            const slugCategory = getCategoryById(slugId);
+            currentPath = index === 0 ? slug : `${currentPath}/${slug}`;
+            breadcrumb.push({
+              name: slugCategory.name[currentLang],
+              slug: currentPath,
+            });
           }
-        } else {
-          navigate('/shop');
-        }
+        });
+        setBreadcrumbPath(breadcrumb);
+
+        // تصفية المنتجات بناءً على الفئة الحالية
+        filterProducts(categoryId);
       } else {
         navigate('/shop');
       }
+    } else {
+      navigate('/shop');
     }
-  }, [categorySlug, subcategorySlug, navigate]);
+  }, [pathAfterCategory, navigate, currentLang]);
 
   useEffect(() => {
     if (currentCategory) {
-      const categoryId = currentCategory.id;
-      const subcategoryId = currentSubcategory?.id;
-      filterProducts(categoryId, subcategoryId);
+      filterProducts(currentCategory.id);
     }
-  }, [sortBy]);
+  }, [sortBy, currentCategory]);
 
-  const filterProducts = (categoryId, subcategoryId = null) => {
-    let filtered;
-    
-    if (subcategoryId) {
-      filtered = getProductsBySubcategory(subcategoryId);
-      console.log(filtered);
-    } else {
+  const filterProducts = (categoryId) => {
+    let filtered = getProductsBySubcategory(categoryId) || getProductsByCategory(categoryId);
+
+    // إذا لم تكن هناك منتجات مباشرة، جرب استرجاع المنتجات من الفئات الفرعية
+    if (filtered.length === 0) {
       filtered = getProductsByParentCategory(categoryId);
-      console.log(filtered);
     }
 
-    // Apply sorting
+    // تطبيق الفرز
     switch (sortBy) {
       case 'price-low':
         filtered.sort((a, b) => (a.discountPrice || a.originalPrice) - (b.discountPrice || b.originalPrice));
@@ -99,7 +106,6 @@ const Category = () => {
         filtered.sort((a, b) => a.name[currentLang].localeCompare(b.name[currentLang]));
         break;
       default:
-        // latest - keep original order
         break;
     }
 
@@ -107,16 +113,14 @@ const Category = () => {
     setCurrentPage(1);
   };
 
-  // دالة للتحقق من وجود منتجات في فئة فرعية معينة
   const hasProductsInSubcategory = (subcategoryId) => {
     const products = getProductsBySubcategory(subcategoryId);
     return products.length > 0;
   };
 
-  // تصفية الفئات الفرعية لإظهار فقط التي تحتوي على منتجات
   const getFilteredSubcategories = () => {
     return categorySubcategories.filter(subcategory => 
-      hasProductsInSubcategory(subcategory.id)
+      hasProductsInSubcategory(subcategory.id) || getSubCategories(subcategory.id).length > 0
     );
   };
 
@@ -125,7 +129,6 @@ const Category = () => {
   };
 
   const handleAddToCart = (product) => {
-    // Navigate to product details page
     navigate(`/product/${product.id}`);
   };
 
@@ -142,13 +145,10 @@ const Category = () => {
   };
 
   const handleSubcategoryClick = (subcategorySlug) => {
-  console.log(subcategorySlug);
-    if (subcategorySlug) {
-    navigate(`/category/${categorySlug}/${subcategorySlug}`);
-    }
+    const newPath = pathAfterCategory ? `${pathAfterCategory}/${subcategorySlug}` : subcategorySlug;
+    navigate(`/category/${newPath}`);
   };
 
-  // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
@@ -159,11 +159,8 @@ const Category = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
- 
-
   return (
     <div className="category-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      {/* <TopBar /> */}
       <Navbar 
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}
@@ -180,46 +177,25 @@ const Category = () => {
           <Link to="/">{t('product_detail.home')}</Link>
           <span className="breadcrumb-separator">{currentLang === 'ar' ? '‹' : '›'}</span>
           <Link to="/shop">{t('secondary_nav.shop')}</Link>
-          <span className="breadcrumb-separator">{currentLang === 'ar' ? '‹' : '›'}</span>
-          {subcategorySlug ? (
-            <>
-              <Link to={`/category/${categorySlug}`} className="breadcrumb-link">
-          
-                {currentCategory && currentCategory.name[currentLang]}
-              </Link>
+          {breadcrumbPath.map((item, index) => (
+            <React.Fragment key={index}>
               <span className="breadcrumb-separator">{currentLang === 'ar' ? '‹' : '›'}</span>
-              <span className="breadcrumb-current">
-                {currentSubcategory && currentSubcategory.name[currentLang]}
-              </span>
-            </>
-          ) : (
-            <span className="breadcrumb-current">
-              {currentCategory && currentCategory.name[currentLang]}
-            </span>
-          )}
+              {index === breadcrumbPath.length - 1 ? (
+                <span className="breadcrumb-current">{item.name}</span>
+              ) : (
+                <Link to={`/category/${item.slug}`} className="breadcrumb-link">{item.name}</Link>
+              )}
+            </React.Fragment>
+          ))}
         </div>
 
         {/* Category Header */}
         <div className="category-header">
-          <h1 className="category-title">
-            {currentCategory && currentCategory.name[currentLang]}
-            {currentSubcategory && (
-              <span className="subcategory-title">
-                - {currentSubcategory.name[currentLang]}
-              </span>
-            )}
-          </h1>
-          {/* <p className="category-description">
-            {t('shop.showing_results', { 
-              start: startIndex + 1,
-              end: Math.min(endIndex, filteredProducts.length),
-              total: filteredProducts.length 
-            })}
-          </p> */}
+          <h1 className="category-title">{currentCategory && currentCategory.name[currentLang]}</h1>
         </div>
 
         {/* Subcategories */}
-        {getFilteredSubcategories().length > 0 && !subcategorySlug && (
+        {getFilteredSubcategories().length > 0 && (
           <div className="subcategories">
             <h3 className="subcategories-title">{t('shop.product_categories')}</h3>
             <div className="subcategories-grid">
@@ -238,7 +214,7 @@ const Category = () => {
                   </div>
                   <div className="subcategory-content">
                     <h4>{subcategory.name[currentLang]}</h4>
-                  <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
+                    <span className="subcategory-arrow">{currentLang === 'ar' ? '←' : '→'}</span>
                   </div>
                 </button>
               ))}
@@ -247,67 +223,69 @@ const Category = () => {
         )}
 
         {/* Toolbar */}
-        <div className="category-toolbar">
-          <div className="toolbar-left">
-            <span className="results-count">
-              {t('shop.showing_results', { 
-                start: startIndex + 1,
-                end: Math.min(endIndex, filteredProducts.length),
-                total: filteredProducts.length 
-              })}
-            </span>
-          </div>
-          
-          <div className="toolbar-right">
-            <div className="sort-controls">
-              <label>{t('shop.sorting')}:</label>
-              <select 
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-              >
-                <option value="latest">{t('shop.sort_by_latest')}</option>
-                <option value="price-low">{t('shop.sort_by_price_low')}</option>
-                <option value="price-high">{t('shop.sort_by_price_high')}</option>
-                <option value="name">{t('shop.sort_by_name')}</option>
-              </select>
+        {filteredProducts.length > 0 && (
+          <div className="category-toolbar">
+            <div className="toolbar-left">
+              <span className="results-count">
+                {t('shop.showing_results', { 
+                  start: startIndex + 1,
+                  end: Math.min(endIndex, filteredProducts.length),
+                  total: filteredProducts.length 
+                })}
+              </span>
             </div>
-
-            <div className="view-controls">
-              <button 
-                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-              >
-                ⊞
-              </button>
-              <button 
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-              >
-                ☰
-              </button>
+            <div className="toolbar-right">
+              <div className="sort-controls">
+                <label>{t('shop.sorting')}:</label>
+                <select 
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                >
+                  <option value="latest">{t('shop.sort_by_latest')}</option>
+                  <option value="price-low">{t('shop.sort_by_price_low')}</option>
+                  <option value="price-high">{t('shop.sort_by_price_high')}</option>
+                  <option value="name">{t('shop.sort_by_name')}</option>
+                </select>
+              </div>
+              <div className="view-controls">
+                <button 
+                  className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                >
+                  ⊞
+                </button>
+                <button 
+                  className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                  onClick={() => setViewMode('list')}
+                >
+                  ☰
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Products Grid */}
-        <div className={`products-grid ${viewMode}`}>
-          {paginatedProducts.map((product) => (
-             <ProductCard
-             key={product.id}
-             product={product}
-             currentLang={currentLang}
-             t={t}
-             isInWishlist={isInWishlist}
-             handleWishlistToggle={handleWishlistToggle}
-             handleAddToCart={handleAddToCart}
-             getFeatureById={getFeatureById}
-             getCategoryById={null}
-           />
-          ))}
-        </div>
+        {filteredProducts.length > 0 && (
+          <div className={`products-grid ${viewMode}`}>
+            {paginatedProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                currentLang={currentLang}
+                t={t}
+                isInWishlist={isInWishlist}
+                handleWishlistToggle={handleWishlistToggle}
+                handleAddToCart={handleAddToCart}
+                getFeatureById={getFeatureById}
+                getCategoryById={null}
+              />
+            ))}
+          </div>
+        )}
 
-        {/* No Products Message */}
-        {filteredProducts.length === 0 && (
+        {/* No Products or Subcategories Message */}
+        {filteredProducts.length === 0 && getFilteredSubcategories().length === 0 && (
           <div className="no-products">
             <h3>{t('shop.no_products_title')}</h3>
             <p>{t('shop.no_products_description')}</p>
@@ -325,7 +303,6 @@ const Category = () => {
             >
               {currentLang === 'ar' ? '›' : '‹'}
             </button>
-            
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
@@ -335,7 +312,6 @@ const Category = () => {
                 {page}
               </button>
             ))}
-            
             <button 
               className="page-btn next"
               onClick={() => handlePageChange(currentPage + 1)}
@@ -350,4 +326,4 @@ const Category = () => {
   );
 };
 
-export default Category; 
+export default Category;

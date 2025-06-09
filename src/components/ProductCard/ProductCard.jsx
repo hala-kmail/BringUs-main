@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
 
+
+
 const ProductCard = ({
   product,
   currentLang,
@@ -22,7 +24,7 @@ const ProductCard = ({
     if (stock <= 10) return 'low-stock';
     return 'in_stock';
   };
-
+  
   return (
     <div className="product-card">
       {/* Product Image */}

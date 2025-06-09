@@ -20,7 +20,7 @@ const ProductDetail = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   
-  const [product, setProduct] = useState(null);
+  const [ product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
@@ -157,7 +157,7 @@ const ProductDetail = () => {
       const productData = getProductById(parseInt(id));
       
       if (productData) {
-        setProduct(productData);
+          setProduct(productData);
         setSelectedColor(productData.colors?.[0] || '');
         setSelectedSize(productData.sizes?.[0]?.name || '');
       } else {

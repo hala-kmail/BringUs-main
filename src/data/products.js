@@ -758,16 +758,16 @@ export const allProducts = [
   },
   {
     "id": 28,
-    "image": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80",
+    "image": "https://alarz.ps/ar/img/products/takehome/Arz-cream-(Strawberry-Cheesecake)-Small.png",
     "name": {
-      "en": "Fresh Coffee Beans",
-      "ar": "حبوب قهوة طازجة"
+      "en": "Strawberry Cheesecake",
+      "ar": "بوظة تشيز كيك جوز الهند"
     },
     "description": {
-      "en": "Fresh coffee beans, premium quality.",
-      "ar": "حبوب قهوة طازجة، جودة فاخرة."
+      "en": "Strawberry cheesecake, premium quality.",
+      "ar": "بوظة تشيز كيك، جودة فاخرة."
     },
-    "originalPrice": 42.99,
+    "originalPrice": 12.99,
     "discountPrice": null,
     "discountPercentage": null,
     "featureId": 3,
@@ -791,7 +791,7 @@ export const allProducts = [
         "priceModifier": 25
       }
     ],
-    "categoryId": 203,
+    "categoryId": 204,
     
     "stock": 65,
     "isBestSeller": false,
@@ -885,7 +885,9 @@ export const allProducts = [
     "isNew": false,
     "createdAt": "2025-05-28T00:00:00Z",
     "updatedAt": "2025-05-28T00:00:00Z"
-  },
+  }
+  
+  ,
   {
     "id": 31,
     "image": "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2087&q=80",
@@ -921,7 +923,92 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 23,
+    "categoryId": 204,
+    "stock": 85,
+    "isBestSeller": false,
+    "isNew": true,
+    "createdAt": "2025-05-28T00:00:00Z",
+    "updatedAt": "2025-05-28T00:00:00Z"
+  },
+  {
+    "id": 301,
+      "image": "https://m.media-amazon.com/images/I/51JLJ+hIk6L._AC_UF894,1000_QL80_.jpg",
+      "name": {
+      "en": "Frozen Apple",
+      "ar": "تفاح مجمد"
+    },
+    "description": {
+      "en": "Premium frozen apple, creamy and delicious.",
+      "ar": "تفاح مجمد فاخر، كريمي ولذيذ."
+    },
+    "originalPrice": 24.99,
+    "discountPrice": null,
+    "discountPercentage": null,
+    "featureId": 3,
+    "colors": [
+      "#fff"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
+    "categoryId": 205,
+    "stock": 85,
+    "isBestSeller": false,
+    "isNew": true,
+    "createdAt": "2025-05-28T00:00:00Z",
+    "updatedAt": "2025-05-28T00:00:00Z"
+  },
+  
+  {
+    "id": 302,
+      "image": "https://www.xsdfoods.com/uploads/202318522/peeling-frozen-orangec387de94-eeec-4dad-b35c-ba1182c2e357.jpg",
+      "name": {
+      "en": "Frozen Orange",
+      "ar": "برتقال مجمد"
+    },
+    "description": {
+      "en": "Premium frozen orange, creamy and delicious.",
+      "ar": "برتقال مجمد فاخر، كريمي ولذيذ."
+    },
+    "originalPrice": 24.99,
+    "discountPrice": null,
+    "discountPercentage": null,
+    "featureId": 3,
+    "colors": [
+      "#fff"
+    ],
+    "sizes":     [
+      {
+        "name": "Small",
+        "ar": "صغير",
+        "priceModifier": 0
+      },
+      {
+        "name": "Medium",
+        "ar": "متوسط",
+        "priceModifier": 8
+      },
+      {
+        "name": "Large",
+        "ar": "كبير",
+        "priceModifier": 15
+      }
+    ],
+    "categoryId": 206,
     "stock": 85,
     "isBestSeller": false,
     "isNew": true,

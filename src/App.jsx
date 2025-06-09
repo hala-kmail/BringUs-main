@@ -35,8 +35,8 @@ const AppContent = () => {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
-          <Route path="/category/:categorySlug" element={<Category />} />
-          <Route path="/category/:categorySlug/:subcategorySlug" element={<Category />} />
+          <Route path="/category/*" element={<Category />} />
+      
           <Route path="/mobile-categories" element={<MobileCategories />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />

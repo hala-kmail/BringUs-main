@@ -720,6 +720,7 @@
   }
 
   .countdown-header {
+    display: none;
     margin-bottom: 0;
     gap: 0.25rem;
     align-items: center;
