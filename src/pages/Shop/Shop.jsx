@@ -869,20 +869,7 @@ const Shop = () => {
             </button>
           </div>
           
-          {/* Hero Banner */}
-          <div className="shop-hero">
-            <div className="shop-hero-content">
-              <span className="shop-hero-badge">{t('shop.only_this_week')}</span>
-              <h1 className="shop-hero-title">{t('shop.hero_title')}</h1>
-              <p className="shop-hero-subtitle">{t('shop.hero_subtitle')}</p>
-              <button className="shop-hero-btn">
-                {t('shop.shop_now')} {currentLang === 'ar' ? '←' : '→'}
-              </button>
-            </div>
-            <div className="shop-hero-image">
-              <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80" alt="Grocery" />
-            </div>
-          </div>
+        
         </div>
 
         <div className="shop-main">
@@ -986,9 +973,7 @@ const Shop = () => {
                     <span className="filter-close">✕</span> {t(`filters.status_names.${status}`)}
                   </span>
                 ))}
-                <button className="clear-category-btn" onClick={clearFilters}>
-                  ✕ {t('shop.clear_filters')}
-                </button>
+              
               </div>
             )}
 

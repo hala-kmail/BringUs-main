@@ -1300,7 +1300,7 @@
 /* Glassmorphism effects for desktop-only */
 @supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
   .desktop-only {
-    background: rgba(255, 255, 255, 0.85);
+   
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -1314,7 +1314,7 @@
   
   .desktop-only .toolbar-left,
   .desktop-only .toolbar-right {
-    background: rgba(248, 250, 252, 0.6);
+    
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
@@ -2012,17 +2012,16 @@
 
 /* Simple and clean shop toolbar exactly like the image */
 .shop-toolbar.desktop-only {
-  background: #f8f9fa;
+  background: #ffffff;
   padding: 16px 20px;
-  border-radius: 0;
+  border-radius: 15px;
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border: none;
-  box-shadow: none;
   gap: 20px;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family:tajawal;
 }
 
 /* Clean toolbar sections */
