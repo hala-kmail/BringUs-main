@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
-import { allProducts, categories, features, subcategories, getSubcategoriesByCategory , getFeatureById, getCategoryById } from '../../data/index';
+import { allProducts, categories, features, subcategories, getSubCategories, getFeatureById, getCategoryById } from '../../data/index';
 import './Shop.css';
 import namer from 'color-namer';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -23,9 +23,18 @@ const Shop = () => {
   // Search state - initialize from URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
+  // احسب أعلى سعر من المنتجات
+  const getMaxProductPrice = () => {
+    return Math.max(
+      ...allProducts.map(p => p.discountPrice || p.originalPrice || 0)
+    );
+  };
+
+  const initialMaxPrice = getMaxProductPrice();
+
   // Filter states
   const [filters, setFilters] = useState({
-    priceRange: { min: 0, max: 100 },
+    priceRange: { min: 0, max: initialMaxPrice },
     categories: [],
     subcategories: [], // Add subcategories filter
     features: [],
@@ -92,21 +101,22 @@ const Shop = () => {
 
   // Function to count products by color from filtered products
   const getColorCount = (color) => {
-    // Get products that match current filters (excluding color filter)
     let baseProducts = [...allProducts];
-    
+
     // Apply price filter
     baseProducts = baseProducts.filter(product => {
       const price = product.discountPrice || product.originalPrice;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
-    // Apply category filter
+    // Apply category filter (شامل كل الفروع المتداخلة)
     if (filters.categories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.id);
+      let allCategoryIds = [];
+      filters.categories.forEach(catId => {
+        allCategoryIds = allCategoryIds.concat(getAllDescendantCategoryIds(catId));
       });
+      allCategoryIds = Array.from(new Set(allCategoryIds));
+      baseProducts = baseProducts.filter(product => allCategoryIds.includes(product.categoryId));
     }
 
     // Apply subcategory filter
@@ -127,26 +137,21 @@ const Shop = () => {
     if (filters.status.includes('on_sale')) {
       baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
     }
-
     if (filters.status.includes('in_stock')) {
       baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
     }
-
     if (filters.status.includes('new')) {
       baseProducts = baseProducts.filter(product => product.isNew === true);
     }
-
     if (filters.status.includes('featured')) {
       baseProducts = baseProducts.filter(product => product.isBestSeller === true);
     }
 
     // Now count products that match this color
     return baseProducts.filter(product => {
-      // Check if product has colors array
       if (product.colors && Array.isArray(product.colors)) {
         return product.colors.includes(color);
       }
-      
       // Fallback: check product name for color keywords
       const productName = product.name[currentLang].toLowerCase();
       const colorKeywords = {
@@ -157,7 +162,6 @@ const Shop = () => {
         'Blue': ['blue', 'أزرق', 'blueberry', 'توت أزرق'],
         'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
       };
-      
       const keywords = colorKeywords[color] || [color.toLowerCase()];
       return keywords.some(keyword => productName.includes(keyword));
     }).length;
@@ -439,6 +443,18 @@ const Shop = () => {
     updateFilterCounts();
   }, [filters, currentLang]);
 
+  useEffect(() => {
+    const maxPrice = getMaxProductPrice();
+    setFilters(prev => ({
+      ...prev,
+      priceRange: {
+        ...prev.priceRange,
+        max: maxPrice
+      }
+    }));
+    // eslint-disable-next-line
+  }, [allProducts.length]);
+
   const updateFilterCounts = () => {
     const counts = {};
     
@@ -491,10 +507,13 @@ const Shop = () => {
 
     // Apply category filter
     if (filters.categories.length > 0) {
-      filtered = filtered.filter(product => {
-        const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.id);
+      // اجمع كل الآيدي المتداخلة لكل قسم مختار
+      let allCategoryIds = [];
+      filters.categories.forEach(catId => {
+        allCategoryIds = allCategoryIds.concat(getAllDescendantCategoryIds(catId));
       });
+      allCategoryIds = Array.from(new Set(allCategoryIds));
+      filtered = filtered.filter(product => allCategoryIds.includes(product.categoryId));
     }
 
     // Apply subcategory filter
@@ -589,8 +608,51 @@ const Shop = () => {
     setCurrentPage(1); // Reset pagination when filters change
   };
 
+  // Helper: جلب كل معرفات الفروع المتداخلة لقسم معين (recursive)
+  const getAllDescendantCategoryIds = (categoryId) => {
+    const directSubs = getSubCategories(categoryId);
+    let ids = [categoryId];
+    directSubs.forEach(sub => {
+      ids = ids.concat(getAllDescendantCategoryIds(sub.id));
+    });
+    return ids;
+  };
+
+  // عداد المنتجات لكل كاتيجوري (يشمل كل الفروع المتداخلة)
+  const getCategoryProductCount = (categoryId) => {
+    const allIds = getAllDescendantCategoryIds(categoryId);
+    return allProducts.filter(product => allIds.includes(product.categoryId)).length;
+  };
+
+  // عند تغيير فلتر الكاتيجوري أو السب كاتيجوري
   const handleFilterChange = (filterType, value, checked = null) => {
-      if (filterType === 'priceRange') {
+    if (filterType === 'categories') {
+      if (checked) {
+        setFilters(prev => ({
+          ...prev,
+          categories: Array.from(new Set([...prev.categories, value]))
+        }));
+      } else {
+        setFilters(prev => ({
+          ...prev,
+          categories: prev.categories.filter(id => id !== value)
+        }));
+      }
+    } else if (filterType === 'subcategories') {
+      if (checked) {
+        setFilters(prev => ({
+          ...prev,
+          subcategories: Array.from(new Set([...prev.subcategories, value])),
+          // إذا أضفت سب كاتيجوري، أزل الكاتيجوري الرئيسي له من الفلتر (حتى لا يكون مكرر)
+          categories: prev.categories.filter(id => id !== value)
+        }));
+      } else {
+        setFilters(prev => ({
+          ...prev,
+          subcategories: prev.subcategories.filter(id => id !== value)
+        }));
+      }
+    } else if (filterType === 'priceRange') {
       setFilters(prev => ({ ...prev, priceRange: value }));
     } else if (checked !== null) {
       setFilters(prev => ({
@@ -599,14 +661,14 @@ const Shop = () => {
           ? [...prev[filterType], value]
           : prev[filterType].filter(item => item !== value)
       }));
-        } else {
+    } else {
       setFilters(prev => ({ ...prev, [filterType]: value }));
-      }
+    }
   };
 
   const clearFilters = () => {
     setFilters({
-      priceRange: { min: 0, max: 100 },
+      priceRange: { min: 0, max: initialMaxPrice },
       categories: [],
       subcategories: [], // Clear subcategories too
       features: [],
@@ -615,6 +677,7 @@ const Shop = () => {
       sortBy: 'default'
     });
     setExpandedCategories({}); // Collapse all categories
+    setSearchQuery(''); // امسح نص البحث أيضاً
   };
 
   const clearCategoryFilter = () => {
@@ -723,6 +786,51 @@ const Shop = () => {
     return translation;
   }
 
+  // Helper: عرض شجرة الأقسام بشكل متداخل (recursive)
+  const renderCategoryTree = (parentId = null, level = 0) => {
+    const cats = parentId === null ? categories.filter(cat => cat.parentCategoryId === null) : getSubCategories(parentId);
+    if (!cats.length) return null;
+    return (
+      <div className={`category-tree level-${level}`}> 
+        {cats.map(category => {
+          const count = getCategoryProductCount(category.id);
+          const hasChildren = getSubCategories(category.id).length > 0;
+          const isExpanded = expandedCategories[category.id];
+          return count > 0 ? (
+            <div key={category.id} className="category-filter-item" style={{ marginLeft: level * 16 }}>
+              <div className="category-main-filter">
+                <label className="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={filters.categories.includes(category.id)}
+                    onChange={e => handleFilterChange('categories', category.id, e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  {category.name[currentLang]} ({count})
+                </label>
+                {hasChildren && (
+                  <button
+                    className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
+                    onClick={() => toggleCategoryExpansion(category.id)}
+                    type="button"
+                  >
+                    {isExpanded ? (currentLang === 'ar' ? '−' : '−') : (currentLang === 'ar' ? '+' : '+')}
+                  </button>
+                )}
+              </div>
+              {/* الفروع - شجري */}
+              {hasChildren && isExpanded && (
+                <div className="subcategory-filters">
+                  {renderCategoryTree(category.id, level + 1)}
+                </div>
+              )}
+            </div>
+          ) : null;
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
       {/* <TopBar /> */}
@@ -780,10 +888,42 @@ const Shop = () => {
         <div className="shop-main">
           {/* Sidebar Filters */}
           <aside className={`shop-sidebar ${showFilters ? 'show' : ''}`}>
-            <div className="shop-sidebar-header">
+            <div className="shop-sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h3>{t('shop.filters')}</h3>
-              <button className="clear-filters-btn" onClick={clearFilters}>
-                ✕ {t('shop.clear_filters')}
+              {/* زر مسح الكل يظهر فقط عند وجود فلاتر نشطة */}
+              {(filters.categories.length > 0 || filters.subcategories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice || searchQuery) && (
+                <button className="clear-filters-btn" onClick={clearFilters} style={{ marginRight: currentLang === 'ar' ? 0 : 8, marginLeft: currentLang === 'ar' ? 8 : 0, background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '4px 12px', fontSize: 13, color: '#ef4444', cursor: 'pointer' }}>
+                  {t('filters.clearAll') || 'مسح الكل'}
+                </button>
+              )}
+            </div>
+
+            {/* مربع البحث داخل الفلاتر الجانبية */}
+            <div className="sidebar-search-box" style={{ position: 'relative', marginBottom: 16 }}>
+              <input
+                type="text"
+                className="sidebar-search-input"
+                placeholder={t('search.placeholder') || 'ابحث عن منتج...'}
+                value={searchQuery}
+                onChange={e => handleSearch(e.target.value)}
+                style={{ width: '100%', padding: '8px 32px 8px 8px', borderRadius: 6, border: '1px solid #e5e7eb', marginBottom: 0 }}
+              />
+              <button
+                className="sidebar-search-clear"
+                onClick={() => searchQuery ? handleSearch('') : null}
+                style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: searchQuery ? 'pointer' : 'default', fontSize: 18, color: '#aaa', padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                title={searchQuery ? t('search.clear') : t('search.search')}
+                tabIndex={-1}
+                type="button"
+              >
+                {searchQuery ? (
+                  '✕'
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="9" cy="9" r="7" stroke="#aaa" strokeWidth="2" />
+                    <line x1="14.1213" y1="14.1213" x2="18" y2="18" stroke="#aaa" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                )}
               </button>
             </div>
 
@@ -804,7 +944,7 @@ const Shop = () => {
                   );
                 })}
                 {filters.subcategories.map(subcategoryId => {
-                  const subcategory = subcategories.find(sub => sub.id === subcategoryId);
+                  const subcategory =  getSubCategories(subcategoryId);
                   return (
                     <span 
                       key={subcategoryId} 
@@ -904,9 +1044,9 @@ const Shop = () => {
                   />
                 </div>
                 <div className="price-display">
-                  {t('shop.price')}: ${filters.priceRange.min} — ${filters.priceRange.max}
+                  {t('shop.price')}: ₪{filters.priceRange.min} — ₪{filters.priceRange.max}
                 </div>
-                <button className="filter-btn">{t('shop.filter')}</button>
+               
               </div>
               )}
             </div>
@@ -921,58 +1061,8 @@ const Shop = () => {
               </div>
               {!collapsedSections.categories && (
               <div className="category-list">
-                {categories.map(category => {
-                  const count = filterCounts[`category_${category.name.en}`] || 0;
-                    const categorySubcategories = getSubcategoriesByCategory(category.id);
-                    const hasSubcategories = categorySubcategories.length > 0;
-                    const isExpanded = expandedCategories[category.id];
-                    
-                  return count > 0 ? (
-                      <div key={category.id} className="category-filter-item">
-                        <div className="category-main-filter">
-                          <label className="filter-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={filters.categories.includes(category.id)}
-                        onChange={(e) => handleFilterChange('categories', category.id, e.target.checked)}
-                      />
-                            <span className="checkmark"></span>
-                      {category.name[currentLang]} ({count})
-                          </label>
-                          {hasSubcategories && (
-                            <button
-                              className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
-                              onClick={() => toggleCategoryExpansion(category.id)}
-                              type="button"
-                            >
-                              {isExpanded ? (currentLang === 'ar' ? '−' : '−') : (currentLang === 'ar' ? '+' : '+')}
-                            </button>
-                          )}
-                        </div>
-                        
-                        {/* Subcategories - show when expanded */}
-                        {hasSubcategories && isExpanded && (
-                          <div className="subcategory-filters">
-                            {categorySubcategories.map(subcategory => {
-                              const subcategoryCount = filterCounts[`subcategory_${subcategory.id}`] || 0;
-                              return subcategoryCount > 0 ? (
-                                <label key={subcategory.id} className="filter-checkbox subcategory-filter">
-                                  <input
-                                    type="checkbox"
-                                    checked={filters.subcategories.includes(subcategory.id)}
-                                    onChange={(e) => handleFilterChange('subcategories', subcategory.id, e.target.checked)}
-                                  />
-                                  <span className="checkmark"></span>
-                                  {subcategory.name[currentLang]} ({subcategoryCount})
-                    </label>
-                  ) : null;
-                })}
+                {renderCategoryTree()}
               </div>
-                        )}
-                      </div>
-                    ) : null;
-                  })}
-                </div>
               )}
             </div>
 

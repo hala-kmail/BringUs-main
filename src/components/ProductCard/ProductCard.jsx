@@ -42,10 +42,10 @@ const ProductCard = ({
   return (
     <div className="product-card">
       {/* Product Image */}
-      <div className="product-image"  onClick={() => handleAddToCart(product)}>
-        <Link to={`/product/${product.id}`}>
-          <img src={product.image} alt={product.name[currentLang]} />
-        </Link>
+      <div className="product-image"  >
+       
+          <img className='product-image-img' src={product.image} alt={product.name[currentLang]} onClick={() => handleAddToCart(product)}/>
+        
 
         {/* Wishlist Heart Icon */}
         <div

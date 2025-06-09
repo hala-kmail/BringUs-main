@@ -6,7 +6,7 @@ import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import './Checkout.css';
-
+import namer from 'color-namer';
 const Checkout = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -29,6 +29,25 @@ const Checkout = () => {
 
   const cartTotals = getCartTotals();
 
+  function getColorKey(hex) {
+    if (!hex) return '';
+    if (hex === 'mixed') return 'mixed';
+    try {
+      return namer(hex).ntc[0].name.toLowerCase();
+    } catch {
+      return hex;
+    }
+  }
+
+  function getColorLabel(hex, t) {
+    const colorKey = getColorKey(hex);
+    const translation = t(`filters.color_names.${colorKey}`);
+    if (!translation || translation === `filters.color_names.${colorKey}`) {
+      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+      return hex;
+    }
+    return translation;
+  }
   // Redirect to cart if no items
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -338,7 +357,7 @@ const Checkout = () => {
                       {(item.selectedColor || item.selectedSize) && (
                         <div className="item-options">
                           {item.selectedColor && (
-                            <span>{currentLang === 'ar' ? 'اللون' : 'Color'}: {item.selectedColor}</span>
+                            <span>{currentLang === 'ar' ? 'اللون' : 'Color'}: {getColorLabel(item.selectedColor, t)}</span>
                           )}
                           {item.selectedSize && (
                             <span>{currentLang === 'ar' ? 'الحجم' : 'Size'}: {item.selectedSize}</span>
