@@ -9,7 +9,7 @@ import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
 import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
-import { getProductById, getCategoryById, getSubcategoryById, getFeatureById } from '../../data/index';
+import { getProductById, getCategoryById, getFeatureById } from '../../data/index';
 import './ProductDetail.css';
 import namer from 'color-namer';
 
@@ -402,7 +402,6 @@ const ProductDetail = () => {
   }
 
   const category = getCategoryById(product.categoryId);
-  const subcategory = getSubcategoryById(product.subcategoryId);
   const feature = getFeatureById(product.featureId);
 
   return (

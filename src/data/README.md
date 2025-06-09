@@ -108,7 +108,7 @@ import dataLayer from './data/index.js';
 
 // Get entities by ID
 const category = dataLayer.getCategoryById(1);
-const subcategory = dataLayer.getSubcategoryById(1);
+
 const feature = dataLayer.getFeatureById(1);
 const product = dataLayer.getProductById(1);
 ```

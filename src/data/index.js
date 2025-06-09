@@ -10,24 +10,54 @@ import { features } from './features.js';
 export { allProducts, categories, subcategories, features };
 
 // Helper functions for data relationships and queries
+export const getMainCategories = () => {
+  return categories.filter(category => category.parentCategoryId === null);
+};
+
+
+export const getSubCategories = (parentCategoryId) => {
+  return categories.filter(category => category.parentCategoryId === parentCategoryId);
+};
+
+export const getProductsByParentCategory = (parentCategoryId) => {
+  // Helper function to recursively get all subcategory IDs
+  const getAllSubcategoryIds = (categoryId) => {
+    const subcategories = getSubCategories(categoryId);
+    let subcategoryIds = subcategories.map(sub => sub.id);
+    
+    // Recursively get IDs of subcategories' descendants
+    subcategories.forEach(sub => {
+      subcategoryIds = subcategoryIds.concat(getAllSubcategoryIds(sub.id));
+    });
+    
+    return subcategoryIds;
+  };
+
+  // Get all subcategory IDs under the parentCategoryId
+  const allSubcategoryIds = getAllSubcategoryIds(parentCategoryId);
+
+  // Filter products whose categoryId is in the list of subcategory IDs
+  return allProducts.filter(product => allSubcategoryIds.includes(product.categoryId));
+};
+
+
+export const getSubCategoriesByCategoryParentId = (parentCategoryId) => {
+  
+  const subCategories = getSubCategories(parentCategoryId);
+  
+  const subCategoryIds = subCategories.map(subCategory => subCategory.id);
+
+  return allProducts.filter(product => subCategoryIds.includes(product.categoryId));
+};
+
 
 /**
  * Get category by ID
- * @param {number} categoryId - The category ID
- * @returns {Object|null} Category object or null if not found
  */
 export const getCategoryById = (categoryId) => {
   return categories.find(category => category.id === categoryId) || null;
 };
 
-/**
- * Get subcategory by ID
- * @param {number} subcategoryId - The subcategory ID
- * @returns {Object|null} Subcategory object or null if not found
- */
-export const getSubcategoryById = (subcategoryId) => {
-  return subcategories.find(subcategory => subcategory.id === subcategoryId) || null;
-};
 
 /**
  * Get feature by ID
@@ -62,7 +92,7 @@ export const getProductsByCategory = (categoryId) => {
  * @returns {Array} Array of products in the subcategory
  */
 export const getProductsBySubcategory = (subcategoryId) => {
-  return allProducts.filter(product => product.subcategoryId === subcategoryId);
+  return allProducts.filter(product => product.categoryId === subcategoryId);
 };
 
 /**
@@ -189,10 +219,10 @@ export const getCategoryIdBySlug = (slug, language = 'en') => {
  * @param {string} language - Language code ('en' or 'ar')
  * @returns {number|null} Subcategory ID or null if not found
  */
-export const getSubcategoryIdBySlug = (slug, language = 'en') => {
-  const subcategory = subcategories.find(sub => sub.slug[language] === slug);
-  return subcategory ? subcategory.id : null;
-};
+// export const getSubcategoryIdBySlug = (slug, language = 'en') => {
+//   const subcategory = categories.find(sub => sub.slug[language] === slug);
+//   return subcategory ? subcategory.id : null;
+// };
 
 /**
  * Filter products by multiple criteria
@@ -297,8 +327,10 @@ export default {
   categories,
   subcategories,
   features,
+  getMainCategories,
+  getSubCategories,
+  getSubCategoriesByCategoryParentId,
   getCategoryById,
-  getSubcategoryById,
   getFeatureById,
   getProductById,
   getProductsByCategory,
@@ -316,5 +348,5 @@ export default {
   filterProducts,
   getProductStatistics,
   getCategoryIdBySlug,
-  getSubcategoryIdBySlug
+  getProductsByParentCategory
 };

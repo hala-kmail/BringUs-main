@@ -37,8 +37,7 @@ export const allProducts = [
       { "name": "2 kg", "ar": "2 كيلو", "priceModifier": 15 },
       { "name": "5 kg", "ar": "5 كيلو", "priceModifier": 35 }
     ],
-    "categoryId": 1,
-    "subcategoryId": 1,
+    "categoryId": 12,
     "stock": 3,
     "isBestSeller": true,
     "isNew": false,
@@ -80,8 +79,8 @@ export const allProducts = [
       { "name": "2 dozen", "ar": "دزينتان", "priceModifier": 7 },
       { "name": "3 dozen", "ar": "3 دزينات", "priceModifier": 12 }
     ],
-    "categoryId": 1,
-    "subcategoryId": 1,
+    "categoryId": 12,
+    
     "stock": 7,
     "isBestSeller": false,
     "isNew": true,
@@ -112,8 +111,7 @@ export const allProducts = [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 8 },
       { "name": "1kg", "ar": "1 كيلو", "priceModifier": 15 }
     ],
-    "categoryId": 1,
-    "subcategoryId": 2,
+    "categoryId": 13,
     "stock": 12,
     "isBestSeller": false,
     "isNew": false,
@@ -144,8 +142,8 @@ export const allProducts = [
       { "name": "1kg", "ar": "1 كيلو", "priceModifier": 10 },
       { "name": "2kg", "ar": "2 كيلو", "priceModifier": 18 }
     ],
-    "categoryId": 1,
-    "subcategoryId": 2,
+    "categoryId": 13,
+   
     "stock": 5,
     "isBestSeller": false,
     "isNew": true,
@@ -176,8 +174,8 @@ export const allProducts = [
       { "name": "1kg", "ar": "1 كيلو", "priceModifier": 6 },
       { "name": "2kg", "ar": "2 كيلو", "priceModifier": 11 }
     ],
-    "categoryId": 1,
-    "subcategoryId": 2,
+    "categoryId": 13,
+   
     "stock": 18,
     "isBestSeller": false,
     "isNew": false,
@@ -208,8 +206,8 @@ export const allProducts = [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 8 },
       { "name": "1kg", "ar": "1 كيلو", "priceModifier": 15 }
     ],
-    "categoryId": 1,
-    "subcategoryId": 1,
+    "categoryId": 13,
+    
     "stock": 8,
     "isBestSeller": false,
     "isNew": false,
@@ -256,8 +254,7 @@ export const allProducts = [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 25 },
       { "name": "1kg", "ar": "1 كيلو", "priceModifier": 45 }
     ],
-    "categoryId": 2,
-    "subcategoryId": 4,
+    "categoryId": 15,
     "stock": 25,
     "isBestSeller": true,
     "isNew": false,
@@ -299,8 +296,7 @@ export const allProducts = [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 20 },
       { "name": "750g", "ar": "750 جرام", "priceModifier": 35 }
     ],
-    "categoryId": 2,
-    "subcategoryId": 3,
+    "categoryId": 14,
     "stock": 30,
     "isBestSeller": true,
     "isNew": false,
@@ -331,8 +327,8 @@ export const allProducts = [
       { "name": "1kg", "ar": "1 كيلو", "priceModifier": 15 },
       { "name": "2kg", "ar": "2 كيلو", "priceModifier": 28 }
     ],
-    "categoryId": 2,
-    "subcategoryId": 3,
+    "categoryId": 14,
+
     "stock": 45,
     "isBestSeller": false,
     "isNew": false,
@@ -362,8 +358,8 @@ export const allProducts = [
       { "name": "500g", "ar": "500 جرام", "priceModifier": 30 },
       { "name": "1kg", "ar": "1 كيلو", "priceModifier": 55 }
     ],
-    "categoryId": 2,
-    "subcategoryId": 4,
+    "categoryId":15,
+   
     "stock": 20,
     "isBestSeller": false,
     "isNew": true,
@@ -394,8 +390,7 @@ export const allProducts = [
       { "name": "1L", "ar": "1 لتر", "priceModifier": 8 },
       { "name": "2L", "ar": "2 لتر", "priceModifier": 15 }
     ],
-    "categoryId": 3,
-    "subcategoryId": 5,
+    "categoryId": 16,
     "stock": 200,
     "isBestSeller": true,
     "isNew": false,
@@ -425,8 +420,8 @@ export const allProducts = [
       { "name": "300g", "ar": "300 جرام", "priceModifier": 12 },
       { "name": "500g", "ar": "500 جرام", "priceModifier": 20 }
     ],
-    "categoryId": 3,
-    "subcategoryId": 5,
+    "categoryId": 16,
+    
     "stock": 75,
     "isBestSeller": false,
     "isNew": false,
@@ -457,8 +452,8 @@ export const allProducts = [
       { "name": "12 pieces", "ar": "12 قطعة", "priceModifier": 8 },
       { "name": "24 pieces", "ar": "24 قطعة", "priceModifier": 15 }
     ],
-    "categoryId": 3,
-    "subcategoryId": 6,
+    "categoryId":17,
+   
     "stock": 90,
     "isBestSeller": true,
     "isNew": false,
@@ -488,8 +483,8 @@ export const allProducts = [
       { "name": "400g", "ar": "400 جرام", "priceModifier": 18 },
       { "name": "800g", "ar": "800 جرام", "priceModifier": 32 }
     ],
-    "categoryId": 3,
-    "subcategoryId": 5,
+    "categoryId":17,
+    
     "stock": 40,
     "isBestSeller": false,
     "isNew": true,
@@ -520,8 +515,8 @@ export const allProducts = [
       { "name": "Medium", "ar": "متوسط", "priceModifier": 5 },
       { "name": "Large", "ar": "كبير", "priceModifier": 8 }
     ],
-    "categoryId": 4,
-    "subcategoryId": 7,
+    "categoryId": 18,
+    
     "stock": 60,
     "isBestSeller": true,
     "isNew": false,
@@ -552,8 +547,8 @@ export const allProducts = [
       { "name": "4 pieces", "ar": "4 قطع", "priceModifier": 8 },
       { "name": "6 pieces", "ar": "6 قطع", "priceModifier": 12 }
     ],
-    "categoryId": 4,
-    "subcategoryId": 8,
+    "categoryId": 19,
+    
     "stock": 35,
     "isBestSeller": false,
     "isNew": false,
@@ -578,8 +573,8 @@ export const allProducts = [
     "colors": [
       "#a0522d"
     ],
-    "categoryId": 4,
-    "subcategoryId": 7,
+    "categoryId": 18,
+    
     "stock": 55,
     "isBestSeller": false,
     "isNew": false,
@@ -622,8 +617,8 @@ export const allProducts = [
         "priceModifier": 12
       }
     ],
-    "categoryId": 4,
-    "subcategoryId": 8,
+    "categoryId": 24,
+    
     "stock": 42,
     "isBestSeller": true,
     "isNew": true,
@@ -666,8 +661,8 @@ export const allProducts = [
         "priceModifier": 10
       }
     ],
-    "categoryId": 5,
-    "subcategoryId": 10,
+    "categoryId": 21,
+    
     "stock": 85,
     "isBestSeller": false,
     "isNew": false,
@@ -709,8 +704,8 @@ export const allProducts = [
         "priceModifier": 5
       }
     ],
-    "categoryId": 5,
-    "subcategoryId": 10,
+    "categoryId": 21,
+    
     "stock": 180,
     "isBestSeller": false,
     "isNew": false,
@@ -753,8 +748,8 @@ export const allProducts = [
         "priceModifier": 25
       }
     ],
-    "categoryId": 5,
-    "subcategoryId": 9,
+    "categoryId": 20,
+    
     "stock": 95,
     "isBestSeller": true,
     "isNew": false,
@@ -796,8 +791,8 @@ export const allProducts = [
         "priceModifier": 25
       }
     ],
-    "categoryId": 5,
-    "subcategoryId": 9,
+    "categoryId": 203,
+    
     "stock": 65,
     "isBestSeller": false,
     "isNew": true,
@@ -840,8 +835,8 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 6,
-    "subcategoryId": 11,
+    "categoryId":22,
+  
     "stock": 110,
     "isBestSeller": true,
     "isNew": false,
@@ -884,8 +879,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 6,
-    "subcategoryId": 11,
+    "categoryId": 22,
     "stock": 70,
     "isBestSeller": false,
     "isNew": false,
@@ -927,8 +921,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 6,
-    "subcategoryId": 12,
+    "categoryId": 23,
     "stock": 85,
     "isBestSeller": false,
     "isNew": true,
@@ -971,8 +964,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 8,
-    "subcategoryId": 16,
+    "categoryId": 27,
     "stock": 60,
     "isBestSeller": true,
     "isNew": false,
@@ -1014,8 +1006,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 8,
-    "subcategoryId": 15,
+    "categoryId": 26,
     "stock": 45,
     "isBestSeller": false,
     "isNew": true,
@@ -1058,8 +1049,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 9,
-    "subcategoryId": 17,
+    "categoryId": 28,
     "stock": 90,
     "isBestSeller": true,
     "isNew": false,
@@ -1101,8 +1091,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 9,
-    "subcategoryId": 18,
+    "categoryId": 29,
     "stock": 200,
     "isBestSeller": false,
     "isNew": false,
@@ -1145,8 +1134,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 9,
-    "subcategoryId": 17,
+    "categoryId": 28,
     "stock": 115,
     "isBestSeller": false,
     "isNew": true,
@@ -1189,8 +1177,8 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 10,
-    "subcategoryId": 19,
+    "categoryId": 30,
+   
     "stock": 80,
     "isBestSeller": true,
     "isNew": false,
@@ -1232,8 +1220,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 10,
-    "subcategoryId": 20,
+    "categoryId": 31,
     "stock": 150,
     "isBestSeller": false,
     "isNew": false,
@@ -1276,8 +1263,8 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 10,
-    "subcategoryId": 20,
+    "categoryId": 31,
+  
     "stock": 35,
     "isBestSeller": false,
     "isNew": true,
@@ -1320,8 +1307,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 11,
-    "subcategoryId": 21,
+    "categoryId": 32,
     "stock": 120,
     "isBestSeller": true,
     "isNew": false,
@@ -1363,8 +1349,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 11,
-    "subcategoryId": 22,
+    "categoryId": 32,
     "stock": 55,
     "isBestSeller": false,
     "isNew": false,
@@ -1407,8 +1392,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 11,
-    "subcategoryId": 21,
+    "categoryId": 32,
     "stock": 180,
     "isBestSeller": false,
     "isNew": true,

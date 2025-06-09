@@ -264,10 +264,7 @@
   transition: transform 0.3s ease;
 }
 
-/* انعكاس السهم في اللغة العربية */
-[dir="rtl"] .subcategory-arrow {
-  transform: scaleX(-1);
-}
+
 
 .subcategory-item:hover .subcategory-arrow {
   transform: translateX(4px);

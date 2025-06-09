@@ -9,9 +9,10 @@ import {
   getProductsByCategory, 
   getProductsBySubcategory,
   getCategoryById,
-  getSubcategoryById,
-  getSubcategoriesByCategory,
+  getSubCategories,
+  getCategoryIdBySlug,
   getFeatureById,
+  getProductsByParentCategory
 } from '../../data/index';
 import './Category.css';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -33,61 +34,21 @@ const Category = () => {
 
   const currentLang = i18n.language;
 
-  // Category mapping for URL slugs to IDs
-  const categorySlugMapping = {
-    'fruits-vegetables': 1,
-    'meats-seafood': 2,
-    'breakfast-dairy': 3,
-    'breads-bakery': 4,
-    'beverages': 5,
-    'frozen-foods': 6,
-    'biscuits-snacks': 7,
-    'grocery-staples': 8,
-    'household-needs': 9,
-    'healthcare': 10,
-    'baby-pregnancy': 11
-  };
-
-  // Subcategory mapping for URL slugs to IDs
-  const subcategorySlugMapping = {
-    'fresh-fruits': 1,
-    'fresh-vegetables': 2,
-    'fresh-meat': 3,
-    'seafood': 4,
-    'dairy-products': 5,
-    'breakfast-items': 6,
-    'fresh-bread': 7,
-    'pastries': 8,
-    'hot-beverages': 9,
-    'cold-beverages': 10,
-    'frozen-meals': 11,
-    'frozen-desserts': 12,
-    'cookies-biscuits': 13,
-    'nuts-snacks': 14,
-    'cooking-essentials': 15,
-    'grains-rice': 16,
-    'cleaning-supplies': 17,
-    'paper-products': 18,
-    'vitamins-supplements': 19,
-    'personal-care': 20,
-    'baby-care': 21,
-    'baby-food': 22
-  };
-
   useEffect(() => {
     if (categorySlug) {
-      const categoryId = categorySlugMapping[categorySlug];
+      const categoryId = getCategoryIdBySlug(categorySlug);
+      console.log(categoryId);
       if (categoryId) {
         const category = getCategoryById(categoryId);
         if (category) {
           setCurrentCategory(category);
-          const subCategories = getSubcategoriesByCategory(categoryId);
+          const subCategories = getSubCategories(categoryId);
           setCategorySubcategories(subCategories);
           
           if (subcategorySlug) {
-            const subcategoryId = subcategorySlugMapping[subcategorySlug];
+            const subcategoryId = getCategoryIdBySlug(subcategorySlug);
             if (subcategoryId) {
-              const subcategory = getSubcategoryById(subcategoryId);
+              const subcategory = getCategoryById(subcategoryId);
               setCurrentSubcategory(subcategory);
               filterProducts(categoryId, subcategoryId);
             } else {
@@ -96,6 +57,7 @@ const Category = () => {
           } else {
             setCurrentSubcategory(null);
             filterProducts(categoryId);
+            console.log(filteredProducts);
           }
         } else {
           navigate('/shop');
@@ -119,8 +81,10 @@ const Category = () => {
     
     if (subcategoryId) {
       filtered = getProductsBySubcategory(subcategoryId);
+      console.log(filtered);
     } else {
-      filtered = getProductsByCategory(categoryId);
+      filtered = getProductsByParentCategory(categoryId);
+      console.log(filtered);
     }
 
     // Apply sorting
@@ -177,35 +141,8 @@ const Category = () => {
     setSortBy(newSortBy);
   };
 
-  const handleSubcategoryClick = (subcategoryId) => {
-    // Find the subcategory slug from the mapping - using the same mapping as defined above
-    const subcategorySlugMappingReverse = {
-      1: 'fresh-fruits', // Fruits
-      2: 'fresh-vegetables', // Vegetables
-      3: 'fresh-meat', // Fresh Meat
-      4: 'seafood', // Seafood
-      5: 'dairy-products', // Dairy Products
-      6: 'breakfast-items', // Breakfast Items
-      7: 'fresh-bread', // Fresh Bread
-      8: 'pastries', // Pastries
-      9: 'hot-beverages', // Hot Beverages
-      10: 'cold-beverages', // Cold Beverages
-      11: 'frozen-meals', // Frozen Meals
-      12: 'frozen-desserts', // Frozen Desserts
-      13: 'cookies-biscuits', // Cookies & Biscuits
-      14: 'nuts-snacks', // Nuts & Snacks
-      15: 'cooking-essentials', // Cooking Essentials
-      16: 'grains-rice', // Grains & Rice
-      17: 'cleaning-supplies', // Cleaning Supplies
-      18: 'paper-products', // Paper Products
-      19: 'vitamins-supplements', // Vitamins & Supplements
-      20: 'personal-care', // Personal Care
-      21: 'baby-care', // Baby Care
-      22: 'baby-food' // Baby Food
-    };
-    
-    const subcategorySlug = subcategorySlugMappingReverse[subcategoryId];
-    
+  const handleSubcategoryClick = (subcategorySlug) => {
+  console.log(subcategorySlug);
     if (subcategorySlug) {
     navigate(`/category/${categorySlug}/${subcategorySlug}`);
     }
@@ -222,24 +159,7 @@ const Category = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const getCategoryTranslationKey = (category) => {
-    // Use the category name from the new structure
-    const categoryName = category.name ? category.name.en : category;
-    const mapping = {
-      'Fruits & Vegetables': 'fruits_vegetables',
-      'Meats & Seafood': 'meats_seafood',
-      'Breakfast & Dairy': 'breakfast_dairy',
-      'Breads & Bakery': 'breads_bakery',
-      'Beverages': 'beverages',
-      'Frozen Foods': 'frozen_foods',
-      'Biscuits & Snacks': 'biscuits_snacks',
-      'Grocery & Staples': 'grocery_staples',
-      'Household Needs': 'household_needs',
-      'Healthcare': 'healthcare',
-      'Baby & Pregnancy': 'baby_pregnancy'
-    };
-    return mapping[categoryName] || categoryName.toLowerCase().replace(/\s+/g, '_').replace(/\s*&\s*/g, '_');
-  };
+ 
 
   return (
     <div className="category-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
@@ -264,7 +184,8 @@ const Category = () => {
           {subcategorySlug ? (
             <>
               <Link to={`/category/${categorySlug}`} className="breadcrumb-link">
-                {currentCategory && t(`categories.${getCategoryTranslationKey(currentCategory)}`)}
+          
+                {currentCategory && currentCategory.name[currentLang]}
               </Link>
               <span className="breadcrumb-separator">{currentLang === 'ar' ? '‹' : '›'}</span>
               <span className="breadcrumb-current">
@@ -273,7 +194,7 @@ const Category = () => {
             </>
           ) : (
             <span className="breadcrumb-current">
-              {currentCategory && t(`categories.${getCategoryTranslationKey(currentCategory)}`)}
+              {currentCategory && currentCategory.name[currentLang]}
             </span>
           )}
         </div>
@@ -281,7 +202,7 @@ const Category = () => {
         {/* Category Header */}
         <div className="category-header">
           <h1 className="category-title">
-            {currentCategory && t(`categories.${getCategoryTranslationKey(currentCategory)}`)}
+            {currentCategory && currentCategory.name[currentLang]}
             {currentSubcategory && (
               <span className="subcategory-title">
                 - {currentSubcategory.name[currentLang]}
@@ -306,7 +227,7 @@ const Category = () => {
                 <button
                   key={subcategory.id}
                   className="subcategory-card"
-                  onClick={() => handleSubcategoryClick(subcategory.id)}
+                  onClick={() => handleSubcategoryClick(subcategory.slug['en'])}
                 >
                   <div className="subcategory-image">
                     <img 
