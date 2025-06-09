@@ -111,8 +111,8 @@ export const CartProvider = ({ children }) => {
     if (itemToRemove) {
       const productName = itemToRemove.name[currentLang] || itemToRemove.name.ar || itemToRemove.name.en;
       const message = currentLang === 'ar' 
-        ? `تم حذف ${productName} من السلة 🗑️`
-        : `${productName} removed from cart 🗑️`;
+        ? `تم حذف ${productName} من السلة `
+        : `${productName} removed from cart `;
       
       showToast(message, 'info');
     }

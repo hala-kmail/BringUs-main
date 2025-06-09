@@ -17,6 +17,20 @@ const ProductCard = ({
 }) => {
   const feature = getFeatureById ? getFeatureById(product.featureId) : null;
   const category = getCategoryById ? getCategoryById(product.categoryId) : null;
+  const isDiscountActive = (product) => {
+    if (!product.discountEndTime) return false;
+    const now = new Date();
+    const endTime = new Date(product.discountEndTime);
+    return now < endTime;
+  };
+  const getEffectivePrice = (product) => {
+    const basePrice = product.originalPrice;
+    if (product.discountPercentage && isDiscountActive(product)) {
+      const discountAmount = (basePrice * product.discountPercentage) / 100;
+      return basePrice - discountAmount;
+    }
+    return basePrice;
+  };
 
   // دالة لتحديد حالة المخزون
   const getStockStatus = (stock) => {
@@ -28,7 +42,7 @@ const ProductCard = ({
   return (
     <div className="product-card">
       {/* Product Image */}
-      <div className="product-image">
+      <div className="product-image"  onClick={() => handleAddToCart(product)}>
         <Link to={`/product/${product.id}`}>
           <img src={product.image} alt={product.name[currentLang]} />
         </Link>
@@ -126,10 +140,11 @@ const ProductCard = ({
         <div className="product-info-bottom">
           {/* Price */}
           <div className="product-price-container">
-            {product.discountPrice ? (
+            {isDiscountActive(product) ? (
+
               <>
                 <span className="current-price">
-                  {product.discountPrice.toFixed(2)} {t('new_arrivals.currency')}
+                  {getEffectivePrice(product).toFixed(2)} {t('new_arrivals.currency')}
                 </span>
                 <span className="original-price">
                   {product.originalPrice.toFixed(2)} {t('new_arrivals.currency')}

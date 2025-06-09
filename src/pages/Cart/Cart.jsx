@@ -17,19 +17,35 @@ const Cart = () => {
   const currentLang = i18n.language;
   const [showClearModal, setShowClearModal] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [pendingDeleteItemId, setPendingDeleteItemId] = useState(null);
 
   const cartTotals = getCartTotals();
 
   const handleQuantityChange = (cartItemId, newQuantity) => {
     if (newQuantity < 1) {
-      removeFromCart(cartItemId);
+      handleRemoveItem(cartItemId);
     } else {
       updateQuantity(cartItemId, newQuantity);
     }
   };
 
   const handleRemoveItem = (cartItemId) => {
-    removeFromCart(cartItemId);
+    setPendingDeleteItemId(cartItemId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDeleteItem = () => {
+    if (pendingDeleteItemId) {
+      removeFromCart(pendingDeleteItemId);
+      setPendingDeleteItemId(null);
+    }
+    setShowDeleteModal(false);
+  };
+
+  const handleCancelDeleteItem = () => {
+    setPendingDeleteItemId(null);
+    setShowDeleteModal(false);
   };
 
   const handleClearCartClick = () => {
@@ -106,11 +122,11 @@ const Cart = () => {
           <Link to="/">
             <span>{currentLang === 'ar' ? 'الرئيسية' : 'Home'}</span>
           </Link>
-          <span className="breadcrumb-separator">›</span>
+          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           <Link to="/shop">
             <span>{currentLang === 'ar' ? 'المتجر' : 'Shop'}</span>
           </Link>
-          <span className="breadcrumb-separator">›</span>
+          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           <span className="breadcrumb-current">
             {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
           </span>
@@ -428,6 +444,20 @@ const Cart = () => {
         type="danger"
         onConfirm={handleConfirmClearCart}
         onClose={handleCancelClearCart}
+      />
+      {/* Confirmation Modal for deleting item */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title={currentLang === 'ar' ? 'حذف المنتج' : 'Remove Item'}
+        message={currentLang === 'ar' 
+          ? 'هل أنت متأكد من حذف هذا المنتج من السلة؟' 
+          : 'Are you sure you want to remove this item from your cart?'
+        }
+        confirmText={currentLang === 'ar' ? 'نعم، حذف المنتج' : 'Yes, Remove Item'}
+        cancelText={currentLang === 'ar' ? 'إلغاء' : 'Cancel'}
+        type="danger"
+        onConfirm={handleConfirmDeleteItem}
+        onClose={handleCancelDeleteItem}
       />
     </div>
   );

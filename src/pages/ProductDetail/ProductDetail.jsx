@@ -78,7 +78,7 @@ const ProductDetail = () => {
       return hex;
     }
   }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function getColorKey(hex) {
     if (!hex) return '';
     if (hex === 'mixed') return 'mixed';
@@ -88,7 +88,7 @@ const ProductDetail = () => {
       return hex;
     }
   }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function getColorLabel(hex, t) {
     const colorKey = getColorKey(hex);
     const translation = t(`filters.color_names.${colorKey}`);
@@ -98,7 +98,7 @@ const ProductDetail = () => {
     }
     return translation;
   }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Helper function to check if discount is active
   const isDiscountActive = (product) => {
     if (!product.discountEndTime) return false;
@@ -106,7 +106,7 @@ const ProductDetail = () => {
     const endTime = new Date(product.discountEndTime);
     return now < endTime;
   };
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Helper function to get effective price
   const getEffectivePrice = (product) => {
     const basePrice = product.basePrice || product.price;
@@ -117,18 +117,18 @@ const ProductDetail = () => {
     return basePrice;
   };
 
-  // Create combined media array with images and videos - moved before useEffect
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const mediaItems = product ? [
-    // Add main image first
+    
     { type: 'image', url: product.image, thumbnail: product.image, title: product.name[currentLang] },
-    // Add additional images
+   
     ...(product.additionalImages || []).map(img => ({ 
       type: 'image', 
       url: img, 
       thumbnail: img, 
       title: product.name[currentLang] 
     })),
-    // Add videos
+    
     ...(product.videos || []).map(video => ({ 
       type: 'video', 
       url: video.url, 
@@ -136,7 +136,7 @@ const ProductDetail = () => {
       title: video.title || product.name[currentLang] 
     }))
   ] : [];
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const getCurrentMedia = () => {
     if (!mediaItems || mediaItems.length === 0) {
       return { type: 'image', url: '', thumbnail: '', title: '' };
@@ -144,13 +144,13 @@ const ProductDetail = () => {
     return mediaItems[selectedMediaIndex] || mediaItems[0];
   };
 
-  // Reset selectedMediaIndex when mediaItems changes
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   useEffect(() => {
     if (mediaItems.length > 0 && selectedMediaIndex >= mediaItems.length) {
       setSelectedMediaIndex(0);
     }
   }, [mediaItems.length, selectedMediaIndex]);
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   useEffect(() => {
     const fetchProduct = () => {
       setLoading(true);
@@ -171,7 +171,7 @@ const ProductDetail = () => {
       fetchProduct();
     }
   }, [id, navigate]);
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleAddToCart = async () => {
     if (product) {
       // Validation: Check if color is required and selected
@@ -228,7 +228,7 @@ const ProductDetail = () => {
       toggleWishlist(product);
     }
   };
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleWhatsAppOrder = () => {
     if (product) {
       const finalPrice = discountPrice || originalPrice;
@@ -236,17 +236,17 @@ const ProductDetail = () => {
       
       let message = `مرحباً، أريد أن أطلب ${product.name[currentLang]}`;
       message += `\nالكمية: ${quantity}`;
-      message += `\nالسعر الإجمالي: $${totalPrice}`;
+      message += `\nالسعر الإجمالي: ₪${totalPrice}`;
       
       if (selectedColor) {
-        message += `\nاللون: ${selectedColor}`;
+        message += `\nاللون: ${getColorLabel(selectedColor, t)}`;
       }
       
       if (selectedSize) {
         message += `\nالحجم: ${selectedSize}`;
       }
       
-      const phoneNumber = "+1234567890"; // Replace with actual WhatsApp number
+      const phoneNumber = "+970594056090"; // Replace with actual WhatsApp number
       const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
     }
@@ -281,7 +281,7 @@ const ProductDetail = () => {
       }
     }
   };
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleZoomToggle = () => {
     setIsZoomModalOpen(!isZoomModalOpen);
   };
@@ -423,15 +423,15 @@ const ProductDetail = () => {
           <Link to="/">
             <span>{t('secondary_navbar.home')}</span>
           </Link>
-          <span className="breadcrumb-separator">›</span>
+          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           <Link to="/shop">
             <span>{t('secondary_navbar.shop')}</span>
           </Link>
-          <span className="breadcrumb-separator">›</span>
+          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           {category && (
             <>
               <span>{category.name[currentLang]}</span>
-              <span className="breadcrumb-separator">›</span>
+              <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
             </>
           )}
           <span className="breadcrumb-current">{product.name[currentLang]}</span>
@@ -497,14 +497,7 @@ const ProductDetail = () => {
             {/* Countdown Timer for Discounted Products */}
             {product.discountPercentage && product.discountEndTime && isDiscountActive(product) && (
               <div className="product-countdown-section">
-                <div className="countdown-header">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="countdown-icon">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="countdown-title">
-                    {currentLang === 'ar' ? 'ينتهي العرض خلال' : 'Offer ends in'}
-                  </span>
-                </div>
+                
                 <CountdownTimer endTime={product.discountEndTime} size="small" />
               </div>
             )}
@@ -549,15 +542,15 @@ const ProductDetail = () => {
               {discountPrice ? (
                 <>
                   <span className="product-current-price">
-                    ${discountPrice.toFixed(2)}
+                   ₪{discountPrice.toFixed(2)}
                   </span>
                   <span className="product-original-price">
-                    ${originalPrice.toFixed(2)}
+                   ₪{originalPrice.toFixed(2)}
                   </span>
                 </>
               ) : (
                 <span className="product-current-price">
-                  ${originalPrice.toFixed(2)}
+                 ₪{originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
@@ -603,7 +596,7 @@ const ProductDetail = () => {
                       <span className="size-name-ar">{size.nameAr}</span>
                       {size.priceModifier && (
                         <span className="size-price-modifier">
-                          +${size.priceModifier.toFixed(2)}
+                          +₪{size.priceModifier.toFixed(2)}
                         </span>
                       )}
                     </div>

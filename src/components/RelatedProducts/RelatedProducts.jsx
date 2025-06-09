@@ -43,26 +43,9 @@ const RelatedProducts = ({ currentProductId, currentCategoryId }) => {
     return null;
   }
 
-  // Create category slug for navigation - using the same mapping as Category page
-  const getCategorySlug = (category) => {
-    const categoryName = category.name.en;
-    const mapping = {
-      'Fruits & Vegetables': 'fruits-vegetables',
-      'Meats & Seafood': 'meats-seafood', 
-      'Breakfast & Dairy': 'breakfast-dairy',
-      'Breads & Bakery': 'breads-bakery',
-      'Beverages': 'beverages',
-      'Frozen Foods': 'frozen-foods',
-      'Biscuits & Snacks': 'biscuits-snacks',
-      'Grocery & Staples': 'grocery-staples',
-      'Household Needs': 'household-needs',
-      'Healthcare': 'healthcare',
-      'Baby & Pregnancy': 'baby-pregnancy'
-    };
-    return mapping[categoryName] || categoryName.toLowerCase().replace(/\s+/g, '-').replace(/\s*&\s*/g, '-');
-  };
 
-  const categorySlug = getCategorySlug(currentCategory);
+
+  const categorySlug = currentCategory.slug['en'];
 
   return (
     <section className="related-products">
