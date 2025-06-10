@@ -223,7 +223,10 @@
   justify-content: center;
   border: 2px solid white;
 }
-
+[dir="ltr"] .item-quantity {
+  right: auto;
+  left: 2px;
+}
 .item-details {
   flex: 1;
   display: flex;
@@ -583,4 +586,24 @@
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* لون الراديو والتشيك بوكس عند التفعيل */
+.checkout-form input[type="checkbox"],
+.checkout-form input[type="radio"] {
+  accent-color: var(--primary-color);
+}
+
+/* دعم مظهر مخصص للمتصفحات التي لا تدعم accent-color (اختياري) */
+.checkout-form input[type="checkbox"]:checked,
+.checkout-form input[type="radio"]:checked {
+  /* fallback border color */
+  border-color: var(--primary-color);
+}
+
+/* تكبير حجم الراديو والتشيك بوكس قليلاً لمظهر عصري */
+.checkout-form input[type="checkbox"],
+.checkout-form input[type="radio"] {
+
+  cursor: pointer;
 } 

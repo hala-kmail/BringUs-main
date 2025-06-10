@@ -317,7 +317,7 @@ const Checkout = () => {
                   </span>
                   <button
                     type="button"
-                    style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary-color)', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
                     onClick={() => setShowPrivacyPopup(true)}
                   >
                     {currentLang === 'ar' ? 'عرض' : 'View'}
@@ -334,7 +334,7 @@ const Checkout = () => {
                       style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}
                       aria-label="Close"
                     >×</button>
-                    <h3 style={{ marginTop: 0, marginBottom: 16, color: '#007bff' }}>Privacy Policy</h3>
+                    <h3 style={{ marginTop: 0, marginBottom: 16, color: 'var(--primary-color)' }}>Privacy Policy</h3>
                     <div style={{ fontSize: 15, color: '#333', whiteSpace: 'pre-line' }}>
 
              Privacy Policy
@@ -343,7 +343,6 @@ const Checkout = () => {
  This privacy policy explains how we collect,
   use, share, 
   and protect the information we obtain from users when they use our website or our Google Play / App Store applications .
-te to contact us via the following email/phone info@yourdomain.com / +1 1122222111( your number) and we will respond to your inquiry as soon as possible.
                     </div>
                   </div>
                 </div>
