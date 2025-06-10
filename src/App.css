@@ -48,6 +48,8 @@
 .main-content {
   padding-top: var(--announcement-bar-height);
   min-height: 100vh;
+  padding-bottom: 100px;
+  background-color: #ffffff;
 }
 
 /* Mobile Responsive */

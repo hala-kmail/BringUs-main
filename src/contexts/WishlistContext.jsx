@@ -60,7 +60,7 @@ export const WishlistProvider = ({ children }) => {
   const [state, dispatch] = useReducer(wishlistReducer, initialState);
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
   const { t } = useTranslation();
-
+  const currentLang = localStorage.getItem('i18nextLng'); 
   // تحميل المفضلة من localStorage عند بدء التطبيق
   useEffect(() => {
     const savedWishlist = localStorage.getItem('wishlist');
@@ -92,16 +92,28 @@ export const WishlistProvider = ({ children }) => {
   // إضافة منتج للمفضلة
   const addToWishlist = (product) => {
     const isAlreadyInWishlist = state.items.some(item => item.id === product.id);
+    const productName = product.name[currentLang] || product.name.ar || product.name.en;
+    console.log(productName);
     if (!isAlreadyInWishlist) {
     dispatch({ type: 'ADD_TO_WISHLIST', payload: product });
-      showToast(t('wishlist.added_to_wishlist'), 'success');
+    const message = currentLang === 'ar' 
+    ? `تم إضافة ${productName} إلى المفضلة بنجاح!`
+    : `${productName} added to wishlist successfully!`;
+  
+  showToast(message, 'success');
     }
   };
 
   // إزالة منتج من المفضلة
   const removeFromWishlist = (productId) => {
     dispatch({ type: 'REMOVE_FROM_WISHLIST', payload: productId });
-    showToast(t('wishlist.removed_from_wishlist'), 'success');
+    const product = state.items.find(item => item.id === productId);
+    const productName = product.name[currentLang] || product.name.ar || product.name.en;
+    const message = currentLang === 'ar' 
+    ? `تم إزالة ${productName} من المفضلة بنجاح!`
+    : `${productName} removed from wishlist successfully!`;
+  
+  showToast(message, 'success');
   };
 
   // التحقق من وجود منتج في المفضلة

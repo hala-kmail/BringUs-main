@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
-import { allProducts, categories, features, subcategories, getSubCategories, getFeatureById, getCategoryById } from '../../data/index';
+import { allProducts, categories, features, subcategories, getSubCategories, getFeatureById, getCategoryById, getMainCategories } from '../../data/index';
 import './Shop.css';
 import namer from 'color-namer';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -788,7 +788,7 @@ const Shop = () => {
 
   // Helper: عرض شجرة الأقسام بشكل متداخل (recursive)
   const renderCategoryTree = (parentId = null, level = 0) => {
-    const cats = parentId === null ? categories.filter(cat => cat.parentCategoryId === null) : getSubCategories(parentId);
+    const cats = parentId === null ? getMainCategories() : getSubCategories(parentId);
     if (!cats.length) return null;
     return (
       <div className={`category-tree level-${level}`}> 
@@ -814,7 +814,7 @@ const Shop = () => {
                     onClick={() => toggleCategoryExpansion(category.id)}
                     type="button"
                   >
-                    {isExpanded ? (currentLang === 'ar' ? '−' : '−') : (currentLang === 'ar' ? '+' : '+')}
+                    {isExpanded ?  '−' : '+'}
                   </button>
                 )}
               </div>

@@ -191,6 +191,10 @@
   height: 16px;
 }
 
+[dir="rtl"] .view-all-btn svg {
+  transform: scaleX(-1);
+}
+
 /* Subcategories Grid */
 .subcategories-grid {
   display: grid;
