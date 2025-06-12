@@ -118,7 +118,7 @@ body, html {
 }
 
 .submit-button:hover {
-  background-color: #523c85;
+  background-color: var(--primary-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(99, 76, 159, 0.2);
 }
@@ -145,7 +145,7 @@ body, html {
 }
 
 .auth-link:hover {
-  color: #523c85;
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 

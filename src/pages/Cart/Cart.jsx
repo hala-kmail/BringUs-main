@@ -120,29 +120,29 @@ const Cart = () => {
         {/* Breadcrumb Navigation */}
         <nav className="cart-breadcrumb">
           <Link to="/">
-            <span>{currentLang === 'ar' ? 'الرئيسية' : 'Home'}</span>
+            <span>{t('secondary_navbar.home')}</span>
           </Link>
           <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           <Link to="/shop">
-            <span>{currentLang === 'ar' ? 'المتجر' : 'Shop'}</span>
-          </Link>
+              <span>{t('secondary_navbar.shop')}</span>
+            </Link>
           <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           <span className="breadcrumb-current">
-            {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
+            {t('secondary_navbar.cart')}
           </span>
         </nav>
 
       {/* Header */}
       <div className="cart-header">
           <h1 className="page-title">
-            {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
+            {t('secondary_navbar.cart')}
           </h1>
           {cartItems.length > 0 && (
             <button 
               className="clear-cart-btn"
               onClick={handleClearCartClick}
             >
-              {currentLang === 'ar' ? 'إفراغ السلة' : 'Clear Cart'}
+              {t('checkout.clear_cart')}
             </button>
           )}
         </div>
@@ -187,7 +187,7 @@ const Cart = () => {
               className="start-shopping-btn"
               onClick={() => navigate('/shop')}
             >
-              <span className="btn-icon">🛍️</span>
+              
               {currentLang === 'ar' ? 'ابدأ التسوق الآن' : 'Start Shopping Now'}
             </button>
           </div>

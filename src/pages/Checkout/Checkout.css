@@ -223,6 +223,11 @@
   justify-content: center;
   border: 2px solid white;
 }
+.payment-method-img{
+  border-radius: 10px;
+  width: fit-content;
+  height: 50px;
+}
 [dir="ltr"] .item-quantity {
   right: auto;
   left: 2px;

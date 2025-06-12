@@ -54,7 +54,8 @@
     "contact": "Contact Us",
     "trending_products": "Trending Products",
     "almost_finished": "Almost Finished",
-    "sale": "Sale"
+    "sale": "Sale",
+    "cart": "Cart"
   },
   "secondary_nav": {
     "home": "Home",
@@ -63,7 +64,8 @@
     "contact": "Contact Us",
     "trending_products": "Trending Products",
     "almost_finished": "Almost Finished",
-    "sale": "Sale"
+      "sale": "Sale",
+    "cart": "Shopping Cart"
   },
   "new_arrivals": {
     "title": "New Arrivals",
@@ -404,10 +406,15 @@
     "email": "Email (Optional)",
     "email_placeholder": "name@example.com",
     "city": "City",
+    "delivery_area": "Delivery Area",
     "city_placeholder": "Riyadh",
     "district": "District (Optional)",
     "district_placeholder": "Al-Malaz",
     "address": "Detailed Address",
+    "delivery_method": "Delivery Method", 
+      "delivery_method_placeholder": "Delivery to Address",
+    "pickup_from_store": "Pickup from Store",
+    "delivery": "Delivery",
     "address_placeholder": "Street name, building number, apartment number...",
     "notes": "Additional Notes (Optional)",
     "notes_placeholder": "Any special delivery instructions...",
@@ -427,7 +434,18 @@
       "phone_invalid": "Invalid phone number",
       "address_required": "Address is required",
       "city_required": "City is required"
-    }
+    },
+    "agree_privacy": "I agree to the Privacy Policy and Terms of Use",
+    "view": "View",
+    "payment_methods": "Payment Methods",
+    "payment_confirmation": "Payment Confirmation",
+    "payment_successful": "Payment Successful!",
+    "pay_later": "Pay Later",
+    "clear_cart": "Clear Cart",
+    "i_have_paid": "I have paid",
+    "send_whatsapp": "Send via WhatsApp",
+    "privacy_policy_title": "Privacy Policy",
+    "privacy_policy_text": "Privacy Policy\nWe at the Your Store Name website and maybe application, provided by BringUs are committed to protecting your privacy and ensuring the security of your personal data. This privacy policy explains how we collect, use, share, and protect the information we obtain from users when they use our website or our Google Play / App Store applications.\n\n1- Data collection and confidentiality:\nOur website and/or application collects data from the user for the purpose of delivery service. This data includes name, phone number, and address. We do not share your data with any other party. We store and process this data on our website only. The purpose of collecting this data is to be able to communicate with you after completing your order, and also to be able to deliver your order in the best and fastest way possible, through the most reliable and fastest delivery companies in the country by your integration choose.\n\n2- Data security:\nWe use reasonable technical and administrative security measures to protect personal data from unauthorized access, disclosure or alteration secured by BringUs.\n\n3- Cookies and browsing data:\nOur store stores cookies (temporary data) in order to save the contents of your shopping cart, in addition to the possibility of saving your information for future purchases and not having to enter it by you every time you want to buy from store to facilitate and speed up the purchase process to the maximum extent possible. You can delete temporary data at any time through your browser settings. Temporary data is saved on your devices and we do not keep it on our site or share it with any third party, to preserve the privacy of your data.\n\nInquiries and contact us\nIf you have any questions, please do not hesitate to contact us via the following email/phone info@yourdomain.com / +1 1122222111( your number) and we will respond to your inquiry as soon as possible."
   },
   "almostFinished": {
     "heroLabel": "Almost Finished Sale!",
