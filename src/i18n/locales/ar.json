@@ -129,7 +129,28 @@
       "confirm_password_placeholder": "أعد إدخال كلمة المرور",
       "submit": "إنشاء حساب",
       "have_account": "لديك حساب بالفعل؟",
-      "signin": "تسجيل الدخول"
+      "signin": "تسجيل الدخول",
+      "phone": "رقم الهاتف",
+"phone_placeholder": "أدخل رقم هاتفك",
+"area": "المنطقة",
+"area_placeholder": "أدخل اسم المنطقة",
+"address": "العنوان",
+"address_placeholder": "أدخل عنوانك الكامل",
+"district": "الحي (اختياري)",
+"district_placeholder": "اسم الحي (اختياري)",
+"validation": {
+  "name_required": "الاسم مطلوب",
+  "phone_required": "رقم الهاتف مطلوب",
+  "phone_invalid": "رقم الهاتف غير صحيح",
+  "area_required": "المنطقة مطلوبة",
+  "address_required": "العنوان مطلوب",
+  "email_required": "البريد الإلكتروني مطلوب",
+  "email_invalid": "البريد الإلكتروني غير صحيح",
+  "password_required": "كلمة المرور مطلوبة",
+  "password_short": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+  "confirm_password_required": "تأكيد كلمة المرور مطلوب",
+  "passwords_not_match": "كلمتا المرور غير متطابقتين"
+}
     }
   },
   "footer": {

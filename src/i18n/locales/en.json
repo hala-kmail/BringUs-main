@@ -116,7 +116,7 @@
       "submit": "Sign In",
       "no_account": "Don't have an account?",
       "signup": "Sign Up"
-    },
+       },
     "register": {
       "title": "Create Account",
       "subtitle": "Create your account to access all features",
@@ -130,7 +130,27 @@
       "confirm_password_placeholder": "Re-enter your password",
       "submit": "Create Account",
       "have_account": "Already have an account?",
-      "signin": "Sign In"
+      "signin": "Sign In",
+      "phone": "Phone",
+      "phone_placeholder": "Enter your phone number",
+      "area": "Area",
+      "area_placeholder": "Enter your area",
+      "address": "Address",
+      "address_placeholder": "Enter your address",
+      "district": "District",
+      "district_placeholder": "Enter your district",
+      "validation": {
+        "name_required": "Full name is required",
+        "phone_required": "Phone number is required",
+        "phone_invalid": "Invalid phone number",
+        "area_required": "Area is required",
+        "address_required": "Address is required",  
+        "email_required": "Email is required",
+        "email_invalid": "Invalid email",
+        "password_required": "Password is required",
+        "password_short": "Password must be at least 6 characters",
+        "confirm_password_required": "Confirm password is required",
+        "passwords_not_match": "Passwords do not match"
     }
   },
   "footer": {
@@ -493,4 +513,4 @@
   },
   "error_add": "Failed to add product to wishlist!",
   "error_remove": "Failed to remove product from wishlist!"
-} 
+} }
