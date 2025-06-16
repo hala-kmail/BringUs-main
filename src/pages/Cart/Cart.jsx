@@ -9,6 +9,7 @@ import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationMo
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import './Cart.css';
 import namer from 'color-namer';
+import { getEffectivePrice, isDiscountActive } from '../../components/ProductCard/ProductCard';
 
 const Cart = () => {
   const { t, i18n } = useTranslation();
@@ -62,7 +63,6 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    // Navigate to checkout page
     navigate('/checkout');
   };
 
@@ -115,38 +115,35 @@ const Cart = () => {
         isOpen={isMobileSearchOpen}
         onClose={handleMobileSearchClose}
       />
-      
       <div className="cart-content">
         {/* Breadcrumb Navigation */}
         <nav className="cart-breadcrumb">
           <Link to="/">
-            <span>{t('secondary_navbar.home')}</span>
+            <span>{currentLang === 'ar' ? 'الرئيسية' : 'Home'}</span>
           </Link>
           <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           <Link to="/shop">
-              <span>{t('secondary_navbar.shop')}</span>
-            </Link>
+            <span>{currentLang === 'ar' ? 'المتجر' : 'Shop'}</span>
+          </Link>
           <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
           <span className="breadcrumb-current">
-            {t('secondary_navbar.cart')}
+            {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
           </span>
         </nav>
-
-      {/* Header */}
-      <div className="cart-header">
+        {/* Header */}
+        <div className="cart-header">
           <h1 className="page-title">
-            {t('secondary_navbar.cart')}
+            {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
           </h1>
           {cartItems.length > 0 && (
             <button 
               className="clear-cart-btn"
               onClick={handleClearCartClick}
             >
-              {t('checkout.clear_cart')}
+              {currentLang === 'ar' ? 'إفراغ السلة' : 'Clear Cart'}
             </button>
           )}
         </div>
-
         {cartItems.length === 0 ? (
           /* Empty Cart */
           <div className="empty-cart">
@@ -187,7 +184,7 @@ const Cart = () => {
               className="start-shopping-btn"
               onClick={() => navigate('/shop')}
             >
-              
+              <span className="btn-icon">🛍️</span>
               {currentLang === 'ar' ? 'ابدأ التسوق الآن' : 'Start Shopping Now'}
             </button>
           </div>
@@ -205,7 +202,6 @@ const Cart = () => {
                   >
                     <img src={item.image} alt={item.name[currentLang]} />
                   </div>
-                  
                   <div className="cart-item-details desktop-only">
                     <h3 
                       className="cart-item-name"
@@ -214,7 +210,6 @@ const Cart = () => {
                     >
                       {item.name[currentLang]}
                     </h3>
-                    
                     {/* Selected Options */}
                     {(item.selectedColor || item.selectedSize) && (
                       <div className="cart-item-options">
@@ -230,16 +225,14 @@ const Cart = () => {
                         )}
                       </div>
                     )}
-
                     {/* Price */}
                     <div className="cart-item-price">
                       <span className="current-price">₪{item.finalPrice.toFixed(2)}</span>
-                      {item.discountPrice && item.originalPrice !== item.finalPrice && (
+                      {(item.originalPrice !== item.finalPrice) && (
                         <span className="original-price">₪{item.originalPrice.toFixed(2)}</span>
-                      )}
+                       )} 
                     </div>
                   </div>
-
                   {/* Quantity Controls */}
                   <div className="cart-item-quantity desktop-only">
                     <button 
@@ -258,12 +251,10 @@ const Cart = () => {
                       +
                     </button>
                   </div>
-
                   {/* Total Price */}
                   <div className="cart-item-total desktop-only">
-                  ₪{(item.finalPrice * item.quantity).toFixed(2)}
+                    ₪{(item.finalPrice * item.quantity).toFixed(2)}
                   </div>
-
                   {/* Remove Button */}
                   <button 
                     className="remove-item-btn desktop-only"
@@ -274,20 +265,18 @@ const Cart = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
-
                   {/* Mobile Layout (hidden on desktop) */}
                   <div className="mobile-only mobile-cart-item">
                     {/* Remove Button - corner button */}
-        <button 
+                    <button 
                       className="remove-item-btn mobile-remove-btn"
                       onClick={() => handleRemoveItem(item.cartItemId)}
                       title={currentLang === 'ar' ? 'حذف المنتج' : 'Remove item'}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-
+                      </svg>
+                    </button>
                     {/* Product Main Info */}
                     <div className="cart-item-main">
                       <div 
@@ -297,7 +286,6 @@ const Cart = () => {
                       >
                         <img src={item.image} alt={item.name[currentLang]} />
                       </div>
-                      
                       <div className="cart-item-details">
                         <h3 
                           className="cart-item-name"
@@ -306,7 +294,6 @@ const Cart = () => {
                         >
                           {item.name[currentLang]}
                         </h3>
-                        
                         {/* Selected Options */}
                         {(item.selectedColor || item.selectedSize) && (
                           <div className="cart-item-options">
@@ -322,17 +309,15 @@ const Cart = () => {
                             )}
                           </div>
                         )}
-
                         {/* Price */}
                         <div className="cart-item-price">
                           <span className="current-price">₪{item.finalPrice.toFixed(2)}</span>
-                          {item.discountPrice && item.originalPrice !== item.finalPrice && (
+                          {isDiscountActive(item) && (
                             <span className="original-price">₪{item.originalPrice.toFixed(2)}</span>
                           )}
                         </div>
                       </div>
                     </div>
-
                     {/* Controls Section */}
                     <div className="cart-item-controls">
                       {/* Quantity Controls */}
@@ -353,14 +338,13 @@ const Cart = () => {
                           +
                         </button>
                       </div>
-
                       {/* Total Price */}
                       <div className="cart-item-total">
                         <span className="cart-item-total-label">
                           {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
                         </span>
                         <div className="cart-item-total-price">
-                        ₪{(item.finalPrice * item.quantity).toFixed(2)}
+                          ₪{(getEffectivePrice(item) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -368,16 +352,13 @@ const Cart = () => {
                 </div>
               ))}
             </div>
-
             {/* Cart Summary */}
             <div className="cart-summary">
               <h3>{currentLang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h3>
-              
               <div className="summary-row">
                 <span>{currentLang === 'ar' ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
                 <span>₪{cartTotals.subtotal}</span>
               </div>
-              
               <div className="summary-row">
                 <span>{currentLang === 'ar' ? 'الشحن:' : 'Shipping:'}</span>
                 <span>
@@ -387,21 +368,17 @@ const Cart = () => {
                   }
                 </span>
               </div>
-              
               <hr className="summary-divider" />
-              
               <div className="summary-row summary-total">
                 <span>{currentLang === 'ar' ? 'الإجمالي:' : 'Total:'}</span>
                 <span>₪{cartTotals.total}</span>
               </div>
-
               <button 
                 className="checkout-btn"
                 onClick={handleCheckout}
               >
                 {currentLang === 'ar' ? 'متابعة للدفع' : 'Proceed to Checkout'}
               </button>
-
               <button 
                 className="continue-shopping-btn"
                 onClick={() => navigate('/shop')}
@@ -412,7 +389,6 @@ const Cart = () => {
           </div>
         )}
       </div>
-
       {/* Mobile Fixed Bottom Checkout Bar */}
       {cartItems.length > 0 && (
         <div className="mobile-checkout-bar" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
@@ -420,7 +396,7 @@ const Cart = () => {
             <span className="mobile-total-label">
               {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
             </span>
-            <span className="mobile-total-amount">${cartTotals.total}</span>
+            <span className="mobile-total-amount">₪{cartTotals.total}</span>
           </div>
           <button 
             className="mobile-checkout-btn"
@@ -430,7 +406,6 @@ const Cart = () => {
           </button>
         </div>
       )}
-
       {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={showClearModal}

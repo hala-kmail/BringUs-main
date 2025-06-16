@@ -12,7 +12,7 @@ import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 import { getProductById, getCategoryById, getFeatureById } from '../../data/index';
 import './ProductDetail.css';
 import namer from 'color-namer';
-
+import { getEffectivePrice, isDiscountActive } from '../../components/ProductCard/ProductCard';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,50 +34,10 @@ const ProductDetail = () => {
   const currentLang = i18n.language;
 
   // قاموس ترجمة الألوان الشائعة
-  const colorNameTranslations = {
-    "red": { ar: "أحمر", en: "Red" },
-    "green": { ar: "أخضر", en: "Green" },
-    "yellow": { ar: "أصفر", en: "Yellow" },
-    "blue": { ar: "أزرق", en: "Blue" },
-    "purple": { ar: "بنفسجي", en: "Purple" },
-    "orange": { ar: "برتقالي", en: "Orange" },
-    "pink": { ar: "وردي", en: "Pink" },
-    "brown": { ar: "بني", en: "Brown" },
-    "white": { ar: "أبيض", en: "White" },
-    "black": { ar: "أسود", en: "Black" },
-    "grey": { ar: "رمادي", en: "Grey" },
-    "gray": { ar: "رمادي", en: "Gray" },
-    "gold": { ar: "ذهبي", en: "Gold" },
-    "golden": { ar: "ذهبي", en: "Golden" },
-    "silver": { ar: "فضي", en: "Silver" },
-    "beige": { ar: "بيج", en: "Beige" },
-    "cyan": { ar: "سماوي", en: "Cyan" },
-    "teal": { ar: "تركوازي", en: "Teal" },
-    "olive": { ar: "زيتي", en: "Olive" },
-    "navy": { ar: "كحلي", en: "Navy" },
-    "maroon": { ar: "خمري", en: "Maroon" },
-    "lime": { ar: "ليموني", en: "Lime" },
-    "coral": { ar: "مرجاني", en: "Coral" },
-    "indigo": { ar: "نيلي", en: "Indigo" },
-    "amber": { ar: "كهرماني", en: "Amber" },
-  };
+ 
 
   // دالة لإرجاع اسم اللون المترجم من hex
-  function getColorName(hex, lang = 'ar') {
-    if (!hex) return '';
-    if (hex === 'mixed') return lang === 'ar' ? 'ألوان متدرجة' : 'Mixed Colors';
-    try {
-      const nameObj = namer(hex).ntc[0];
-      const name = nameObj.name.toLowerCase();
-      if (colorNameTranslations[name]) {
-        return colorNameTranslations[name][lang] || nameObj.name;
-      }
-      // إذا لم يوجد ترجمة، أعد الاسم الإنجليزي
-      return nameObj.name;
-    } catch {
-      return hex;
-    }
-  }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function getColorKey(hex) {
     if (!hex) return '';
@@ -100,22 +60,22 @@ const ProductDetail = () => {
   }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Helper function to check if discount is active
-  const isDiscountActive = (product) => {
-    if (!product.discountEndTime) return false;
-    const now = new Date();
-    const endTime = new Date(product.discountEndTime);
-    return now < endTime;
-  };
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Helper function to get effective price
-  const getEffectivePrice = (product) => {
-    const basePrice = product.basePrice || product.price;
-    if (product.discountPercentage && isDiscountActive(product)) {
-      const discountAmount = (basePrice * product.discountPercentage) / 100;
-      return basePrice - discountAmount;
-    }
-    return basePrice;
-  };
+//   const isDiscountActive = (product) => {
+//     if (!product.discountEndTime) return false;
+//     const now = new Date();
+//     const endTime = new Date(product.discountEndTime);
+//     return now < endTime;
+//   };
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//   // Helper function to get effective price
+//   const getEffectivePrice = (product) => {
+//     const basePrice = product.basePrice || product.price;
+//     if (product.discountPercentage && isDiscountActive(product)) {
+//       const discountAmount = (basePrice * product.discountPercentage) / 100;
+//       return basePrice - discountAmount;
+//     }
+//     return basePrice;
+//   };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const mediaItems = product ? [
@@ -440,7 +400,34 @@ const ProductDetail = () => {
         <div className="product-detail-container">
           {/* Product Image Gallery */}
           <div className="product-image-gallery">
-            <div className="product-main-image">
+           <div className="product-main-image" style={{ position: 'relative' }}>
+           {mediaItems.length > 1 && (
+             <>
+               <button
+                 className="zoom-modal-nav-btn-prev"
+                 onClick={() => setSelectedMediaIndex((selectedMediaIndex - 1 + mediaItems.length) % mediaItems.length)}
+                 aria-label="Previous"
+                 onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                 onMouseLeave={e => e.currentTarget.style.opacity = 0.5}
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                 </svg>
+               </button>
+               <button
+                 className="zoom-modal-nav-btn-next"
+                 onClick={() => setSelectedMediaIndex((selectedMediaIndex + 1) % mediaItems.length)}
+                 aria-label="Next"
+                 onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                 onMouseLeave={e => e.currentTarget.style.opacity = 0.5}
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                 </svg>
+               </button>
+             </>
+           )}
+             
               {getCurrentMedia().type === 'video' ? (
                 <video 
                   src={getCurrentMedia().url} 
@@ -451,16 +438,19 @@ const ProductDetail = () => {
                   {currentLang === 'ar' ? 'متصفحك لا يدعم تشغيل الفيديو.' : 'Your browser does not support the video tag.'}
                 </video>
               ) : (
-                <img 
+              <> <img 
                   src={getCurrentMedia().url} 
                   alt={product.name[currentLang]} 
-                />
+                /> 
+              </> 
               )}
+             
               <button className="product-zoom-btn" onClick={handleZoomToggle}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                 </svg>
               </button>
+              
             </div>
             
             {/* Media Title */}
@@ -539,18 +529,18 @@ const ProductDetail = () => {
 
             {/* Product Price */}
             <div className="product-detail-price">
-              {discountPrice ? (
+              { (isDiscountActive(product)) ? (
                 <>
                   <span className="product-current-price">
-                   ₪{discountPrice.toFixed(2)}
+                    ₪ {getEffectivePrice(product).toFixed(2)}
                   </span>
                   <span className="product-original-price">
-                   ₪{originalPrice.toFixed(2)}
+                    ₪{originalPrice.toFixed(2)}
                   </span>
                 </>
               ) : (
                 <span className="product-current-price">
-                 ₪{originalPrice.toFixed(2)}
+                  ₪{originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
@@ -740,24 +730,24 @@ const ProductDetail = () => {
             {mediaItems.length > 1 && (
               <>
                 <button 
-                  className="zoom-modal-nav zoom-modal-prev" 
-                  onClick={() => setSelectedMediaIndex(prev => 
-                    prev > 0 ? prev - 1 : mediaItems.length - 1
-                  )}
+                  className="zoom-modal-nav-btn-prev" 
+                  onClick={() => setSelectedMediaIndex((selectedMediaIndex - 1 + mediaItems.length) % mediaItems.length)}
+                  style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0, margin: 0, cursor: 'pointer' }}
+                  aria-label="Previous"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
                 
                 <button 
-                  className="zoom-modal-nav zoom-modal-next" 
-                  onClick={() => setSelectedMediaIndex(prev => 
-                    prev < mediaItems.length - 1 ? prev + 1 : 0
-                  )}
+                  className="zoom-modal-nav-btn-next" 
+                  onClick={() => setSelectedMediaIndex((selectedMediaIndex + 1) % mediaItems.length)}
+                  style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0, margin: 0, cursor: 'pointer' }}
+                  aria-label="Next"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </>

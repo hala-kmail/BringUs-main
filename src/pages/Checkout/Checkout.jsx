@@ -11,6 +11,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import './Checkout.css';
 import namer from 'color-namer';
+import deliveryAreas, { getShippingPriceByAreaId, getAreaLabelById, getDefaultAreaIdFromLocalStorage } from '../../data/deliveryAreas';
 
 const Checkout = () => {
   const { t, i18n } = useTranslation();
@@ -22,7 +23,7 @@ const Checkout = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    email: '',
+    deliveryArea: getDefaultAreaIdFromLocalStorage(),
     address: '',
     city: '',
     district: '',
@@ -36,12 +37,7 @@ const Checkout = () => {
 
   // أضف حالة لطريقة الاستلام والمنطقة
   const [deliveryMethod, setDeliveryMethod] = useState('delivery'); // 'delivery' or 'store'
-  const [deliveryArea, setDeliveryArea] = useState('الصفة'); // default area
-  const deliveryAreas = [
-    { value: 'الضفة', label: currentLang === 'ar' ? 'الضفة (20₪)' : 'West Bank (20₪)', price: 20 },
-    { value: 'الداخل', label: currentLang === 'ar' ? 'الداخل (70₪)' : 'the occupied interior (70₪)', price: 70 },
-    { value: 'القدس', label: currentLang === 'ar' ? 'القدس (30₪)' : 'Jerusalem (30₪)', price: 30 },
-  ];
+  const [deliveryArea, setDeliveryArea] = useState(localStorage.getItem('register_area') || 1); // default area
 
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
@@ -85,6 +81,20 @@ const Checkout = () => {
       navigate('/cart');
     }
   }, [cartItems.length, navigate]);
+  // تعبئة الحقول تلقائياً من localStorage إذا توفرت
+useEffect(() => {
+  setFormData(prev => ({
+    ...prev,
+    fullName: localStorage.getItem('register_name') || '',
+    phone: localStorage.getItem('register_phone') || '',
+    address: localStorage.getItem('register_address') || '',
+    district: localStorage.getItem('register_district') || '',
+    city: localStorage.getItem('register_city') || prev.city || '',
+    deliveryArea: localStorage.getItem('register_area') || '',
+
+  }));
+  
+}, []);
 ////////////////////////////////////////////////////////////////////////////////////////
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -127,16 +137,14 @@ const Checkout = () => {
   // عدل حساب الشحن حسب طريقة الاستلام
   const getShippingPrice = () => {
     if (deliveryMethod === 'store') return 0;
-    const area = deliveryAreas.find(a => a.value === deliveryArea);
-    return area ? area.price : 0;
+    return getShippingPriceByAreaId(Number(formData.deliveryArea));
   };
 //////////////////////////////////////////////////////////////////////////////////////
-// زر تأكيد الطلب: يظهر popup الدفع
+// عدل زر تأكيد الطلب ليظهر popup الدفع بدلاً من الإرسال المباشر
 const handlePlaceOrderClick = (e) => {
   e.preventDefault();
   if (!validateForm()) return;
   setShowPaymentPopup(true);
-
 };
 
  // عند اختيار طريقة دفع
@@ -284,9 +292,9 @@ const handleSendWhatsApp = () => {
                   {/* منطقة التوصيل */}
                   <div className="form-group">
                     <label htmlFor="deliveryArea">{t('checkout.delivery_area')} *</label>
-                    <select id="deliveryArea" name="deliveryArea" value={deliveryArea} onChange={e => setDeliveryArea(e.target.value)}>
+                        <select id="deliveryArea" name="deliveryArea" value={formData.deliveryArea} onChange={handleInputChange}>
                       {deliveryAreas.map(area => (
-                        <option key={area.value} value={area.value}>{area.label}</option>
+                        <option key={area.id} value={area.id}>{area.label[currentLang]}</option>
                       ))}
                     </select>
                   </div>

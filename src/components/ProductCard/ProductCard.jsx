@@ -2,7 +2,23 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
 
+// دوال utility للتصدير
+export const isDiscountActive = (product) => {
+  if (!product.discountEndTime) return false;
+  const now = new Date();
+  const endTime = new Date(product.discountEndTime);
+  return now < endTime;
+};
 
+export const getEffectivePrice = (product) => { 
+  const basePrice = product.originalPrice;
+  if ( isDiscountActive(product)) {
+    const discountAmount = (basePrice * product.discountPercentage) / 100;
+   
+    return basePrice - discountAmount;
+  }
+  return basePrice;
+};
 
 const ProductCard = ({
   product,
@@ -17,21 +33,7 @@ const ProductCard = ({
 }) => {
   const feature = getFeatureById ? getFeatureById(product.featureId) : null;
   const category = getCategoryById ? getCategoryById(product.categoryId) : null;
-  const isDiscountActive = (product) => {
-    if (!product.discountEndTime) return false;
-    const now = new Date();
-    const endTime = new Date(product.discountEndTime);
-    return now < endTime;
-  };
-  const getEffectivePrice = (product) => {
-    const basePrice = product.originalPrice;
-    if (product.discountPercentage && isDiscountActive(product)) {
-      const discountAmount = (basePrice * product.discountPercentage) / 100;
-      return basePrice - discountAmount;
-    }
-    return basePrice;
-  };
-
+  
   // دالة لتحديد حالة المخزون
   const getStockStatus = (stock) => {
     if (stock === 0) return 'sold_out';

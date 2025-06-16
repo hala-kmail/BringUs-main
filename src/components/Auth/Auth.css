@@ -313,7 +313,9 @@ body, html {
   box-shadow: 0 4px 12px rgba(99, 76, 159, 0.2);
   border-color: var(--primary-color);
 }
-
+.required{
+  color: #ef4444;
+}
 .language-switcher img {
   width: 20px;
   height: 20px;

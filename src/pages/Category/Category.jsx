@@ -301,7 +301,7 @@ const Category = () => {
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              {currentLang === 'ar' ? '›' : '‹'}
+               ‹
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
@@ -317,7 +317,7 @@ const Category = () => {
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
-              {currentLang === 'ar' ? '‹' : '›'}
+             ›
             </button>
           </div>
         )}

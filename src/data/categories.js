@@ -74,25 +74,25 @@ export const categories = [
     parentCategoryId: 23
   },
   
-  {
-    id: 205,
-      name: { en: "Frozen Apple", ar: "تفاح مجمد" },
-    slug: { en: "frozen-apple", ar: "تفاح-مجمد" },
-    image: "https://m.media-amazon.com/images/I/51JLJ+hIk6L._AC_UF894,1000_QL80_.jpg",
-    color: "#8b5cf6",
-    description: { en: "Ice cream and frozen desserts", ar: "تفاح مجمد" },
-    parentCategoryId: 203
-  },
+  // {
+  //   id: 205,
+  //     name: { en: "Frozen Apple", ar: "تفاح مجمد" },
+  //   slug: { en: "frozen-apple", ar: "تفاح-مجمد" },
+  //   image: "https://m.media-amazon.com/images/I/51JLJ+hIk6L._AC_UF894,1000_QL80_.jpg",
+  //   color: "#8b5cf6",
+  //   description: { en: "Ice cream and frozen desserts", ar: "تفاح مجمد" },
+  //   parentCategoryId: 203
+  // },
   
-  {
-    id: 206,
-      name: { en: "Frozen Orange", ar: "برتقال مجمد" },
-    slug: { en: "frozen-orange", ar: "برتقال-مجمد" },
-    image: "https://www.xsdfoods.com/uploads/202318522/peeling-frozen-orangec387de94-eeec-4dad-b35c-ba1182c2e357.jpg",
-    color: "#8b5cf6",
-    description: { en: "Ice cream and frozen desserts", ar: "برتقال مجمد" },
-    parentCategoryId: 203
-  },
+  // {
+  //   id: 206,
+  //     name: { en: "Frozen Orange", ar: "برتقال مجمد" },
+  //   slug: { en: "frozen-orange", ar: "برتقال-مجمد" },
+  //   image: "https://www.xsdfoods.com/uploads/202318522/peeling-frozen-orangec387de94-eeec-4dad-b35c-ba1182c2e357.jpg",
+  //   color: "#8b5cf6",
+  //   description: { en: "Ice cream and frozen desserts", ar: "برتقال مجمد" },
+  //   parentCategoryId: 203
+  // },
   {
     id: 204,
     name: { en: "Ice Cream", ar: "بوظة" },

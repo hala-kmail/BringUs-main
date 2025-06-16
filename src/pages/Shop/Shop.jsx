@@ -1352,7 +1352,7 @@ const Shop = () => {
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
-                  {currentLang === 'ar' ? '›' : '‹'}
+                 ‹
                 </button>
                 
                 {getVisiblePages().map((page, index) => (
@@ -1374,7 +1374,7 @@ const Shop = () => {
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                 >
-                  {currentLang === 'ar' ? '‹' : '›'}
+                 ›
                 </button>
               </div>
             )}

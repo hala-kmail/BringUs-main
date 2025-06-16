@@ -69,7 +69,7 @@ export const allProducts = [
     "originalPrice": 8.99,
     "discountPrice": 6.99,
     "discountPercentage": 22,
-    "discountEndTime": "2025-06-12T15:30:00Z",
+    "discountEndTime": "2025-06-22T15:30:00Z",
     "featureId": 2,
     "colors": [
       "#eab308"
@@ -965,7 +965,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 205,
+    "categoryId": 203,
     "stock": 85,
     "isBestSeller": false,
     "isNew": true,
@@ -1008,7 +1008,7 @@ export const allProducts = [
         "priceModifier": 15
       }
     ],
-    "categoryId": 206,
+    "categoryId": 203,
     "stock": 85,
     "isBestSeller": false,
     "isNew": true,

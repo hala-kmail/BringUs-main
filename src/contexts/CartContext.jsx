@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast/Toast';
-
+import { getDefaultAreaIdFromLocalStorage, getShippingPriceByAreaId } from '../data/deliveryAreas';
+import { getEffectivePrice } from '../components/ProductCard/ProductCard';
 const CartContext = createContext();
 
 export const useCart = () => {
@@ -54,16 +55,10 @@ export const CartProvider = ({ children }) => {
       quantity = 1 
     } = options;
 
-    // Calculate price based on selected size
-    let finalPrice = product.discountPrice || product.originalPrice;
-    if (product.sizes && selectedSize) {
-      const size = product.sizes.find(s => s.name === selectedSize);
-      if (size && size.priceModifier) {
-        finalPrice += size.priceModifier;
-      }
-    }
+    // Calculate price based on selected size and discount logic
+    let finalPrice = getEffectivePrice({ ...product });
 
-    // Create unique ID for cart item based on product, color, and size
+
     const cartItemId = `${product.id}_${selectedColor}_${selectedSize}`;
 
     // Check if item already exists in cart
@@ -83,7 +78,7 @@ export const CartProvider = ({ children }) => {
         image: product.image,
         originalPrice: product.originalPrice,
         discountPrice: product.discountPrice,
-        finalPrice,
+        finalPrice: getEffectivePrice(product),
         selectedColor,
         selectedSize,
         quantity,
@@ -138,8 +133,8 @@ export const CartProvider = ({ children }) => {
     setCartItems([]);
     
     const message = currentLang === 'ar' 
-      ? 'تم إفراغ السلة بالكامل 🧹'
-      : 'Cart cleared successfully 🧹';
+      ? 'تم إفراغ السلة بالكامل '
+      : 'Cart cleared successfully ';
     
     showToast(message, 'info');
   };
@@ -147,15 +142,16 @@ export const CartProvider = ({ children }) => {
   // Get cart totals
   const getCartTotals = () => {
     const subtotal = cartItems.reduce((total, item) => {
-      return total + (item.finalPrice * item.quantity);
+      // استخدم getEffectivePrice دائماً
+      return total + (getEffectivePrice({ ...item.product}) * item.quantity);
     }, 0);
 
     // Count unique products instead of total quantity
     const itemsCount = cartItems.length;
 
-    // You can add shipping calculations here
-    const shipping = subtotal > 100 ? 0 : 10; // Free shipping over $100
-    const total = subtotal + shipping; // Removed tax calculation
+    // الشحن: يمكنك تعديله حسب الحاجة
+    const shipping =getShippingPriceByAreaId(getDefaultAreaIdFromLocalStorage());
+    const total = subtotal + shipping;
 
     return {
       subtotal: parseFloat(subtotal.toFixed(2)),

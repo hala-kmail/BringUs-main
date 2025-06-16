@@ -79,11 +79,7 @@
   background: #c0392b;
 }
 
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
+
 
 .product-card {
   background: white;
@@ -264,10 +260,7 @@
     padding: 0.75rem;
   }
   
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
+ 
   
   .product-card {
     max-width: 100%;
@@ -319,9 +312,7 @@
     padding: 0.5rem;
   }
   
-  .products-grid {
-    gap: 0.4rem;
-  }
+ 
 
   .product-image {
     height: 135px;

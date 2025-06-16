@@ -129,6 +129,10 @@
       "confirm_password_placeholder": "أعد إدخال كلمة المرور",
       "submit": "إنشاء حساب",
       "have_account": "لديك حساب بالفعل؟",
+      "country": "الدولة",
+      "country_placeholder": "أدخل اسم الدولة",
+      "city": "المدينة",
+      "city_placeholder": "أدخل اسم المدينة",
       "signin": "تسجيل الدخول",
       "phone": "رقم الهاتف",
 "phone_placeholder": "أدخل رقم هاتفك",
@@ -149,7 +153,9 @@
   "password_required": "كلمة المرور مطلوبة",
   "password_short": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
   "confirm_password_required": "تأكيد كلمة المرور مطلوب",
-  "passwords_not_match": "كلمتا المرور غير متطابقتين"
+  "passwords_not_match": "كلمتا المرور غير متطابقتين",
+    "country_required": "الدولة مطلوبة",
+  "city_required": "المدينة مطلوبة"
 }
     }
   },
