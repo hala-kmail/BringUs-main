@@ -366,7 +366,7 @@
   transition: color 0.3s ease;
   font-family: 'Tajawal', sans-serif;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
