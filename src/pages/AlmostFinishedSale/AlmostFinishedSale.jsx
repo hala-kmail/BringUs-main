@@ -7,7 +7,7 @@ import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
-import './almostFinishedSale.css';
+import './AlmostFinishedSale.css';
 
 const almostFinishedSale = () => {
   const { t, i18n } = useTranslation();
