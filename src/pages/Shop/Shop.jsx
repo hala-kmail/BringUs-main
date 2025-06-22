@@ -880,7 +880,7 @@ const Shop = () => {
               {/* زر مسح الكل يظهر فقط عند وجود فلاتر نشطة */}
               {(filters.categories.length > 0 || filters.subcategories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice || searchQuery) && (
                 <button className="clear-filters-btn" onClick={clearFilters} style={{ marginRight: currentLang === 'ar' ? 0 : 8, marginLeft: currentLang === 'ar' ? 8 : 0, background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '4px 12px', fontSize: 13, color: '#ef4444', cursor: 'pointer' }}>
-                  {t('filters.clearAll') || 'مسح الكل'}
+                  {t('shop.clear_filters')}
                 </button>
               )}
             </div>
