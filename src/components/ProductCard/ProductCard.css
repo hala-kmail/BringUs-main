@@ -57,3 +57,25 @@ h3.product-top-name{
 .product-image-img{
     cursor: pointer;
 }
+.almost-finished-sale-page .stock-level.low-stock .stock-text {
+    color: #dc2626;
+  }
+  
+  .almost-finished-sale-page .stock-level.in_stock .stock-text {
+    color: #d97706;
+  }
+  
+  .almost-finished-sale-page .stock-level.sold_out .stock-text {
+    color: #7c3aed;
+  }
+  
+.product-card .red.stock-fill {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+}
+.product-card .orange.stock-fill {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+.product-card .yellow.stock-fill {
+  background: linear-gradient(90deg, #f5e20b, #d9b206);
+}
+  

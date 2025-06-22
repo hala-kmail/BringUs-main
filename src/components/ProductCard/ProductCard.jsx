@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
+import CountdownTimer from '../CountdownTimer/CountdownTimer';
 
 // دوال utility للتصدير
 export const isDiscountActive = (product) => {
@@ -30,6 +31,7 @@ const ProductCard = ({
   getFeatureById,
   getCategoryById,
   showStockInfo = false,
+  showDiscountInfo = false,
 }) => {
   const feature = getFeatureById ? getFeatureById(product.featureId) : null;
   const category = getCategoryById ? getCategoryById(product.categoryId) : null;
@@ -39,6 +41,19 @@ const ProductCard = ({
     if (stock === 0) return 'sold_out';
     if (stock <= 10) return 'low-stock';
     return 'in_stock';
+  };
+  const getStockStatusForAlmostFinishedSale = (stock) => {
+    if (stock <=4) return 'red';
+    if (stock <= 7) return 'orange';
+    return 'yellow';
+  };
+  // دالة لحساب الخصم الفعلي
+  const getActiveDiscountPercentage = (product) => {
+    if (!product.discountPercentage) return null;
+    if (!product.discountEndTime) return product.discountPercentage;
+    const now = new Date();
+    const endTime = new Date(product.discountEndTime);
+    return now < endTime ? product.discountPercentage : null;
   };
   
   return (
@@ -92,7 +107,7 @@ const ProductCard = ({
       </div>
 
       {/* Product Info */}
-      <div className="product-info-section">
+      <div className="product-info-section product-info">
         <div className="product-info-top">
           <Link
             to={`/product/${product.id}`}
@@ -118,18 +133,18 @@ const ProductCard = ({
               </h4>
             </Link>
           )}
-          {/* Stock Info */}
+          {/* Stock Info (خاص بصفحة AlmostFinishedSale) */}
           {showStockInfo && product.stock !== undefined && (
             <div className="stock-info">
               <div className={`stock-level ${getStockStatus(product.stock)}`}>
                 <span className="stock-text">
-                  {getStockStatus(product.stock) === 'low-stock'
-                    ? t('almostFinished.onlyLeft', { count: product.stock }) 
-                    : t(`shop.${getStockStatus(product.stock)}`)}  
+                {getStockStatus(product.stock) === 'sold_out' ? currentLang === 'ar' ? 'منتهي المخزون' : 'Out of Stock' : currentLang === 'ar'
+                    ? getStockStatus(product.stock) === 'low-stock' ? currentLang === 'ar' ? `${product.stock} متبقي فقط` : `${product.stock} Only left` : ''
+                    : getStockStatus(product.stock) === 'in_stock' ? currentLang === 'ar' ? 'في المخزون' : 'In Stock' : ''}
                 </span>
                 <div className="stock-bar">
                   <div 
-                    className="stock-fill" 
+                    className={`stock-fill ${getStockStatusForAlmostFinishedSale(product.stock)}`} 
                     style={{ 
                       width: `${Math.min((product.stock / 10) * 100, 100)}%` 
                     }}
@@ -143,7 +158,6 @@ const ProductCard = ({
           {/* Price */}
           <div className="product-price-container">
             {isDiscountActive(product) ? (
-
               <>
                 <span className="current-price">
                   {getEffectivePrice(product).toFixed(2)} {t('new_arrivals.currency')}
@@ -158,7 +172,7 @@ const ProductCard = ({
               </span>
             )}
           </div>
-
+         
           {/* Add to Cart Button */}
           <button
             className="add-to-cart-btn"
@@ -179,6 +193,28 @@ const ProductCard = ({
             </svg>
           </button>
         </div>
+         {/* Discount Info (خاص بصفحة AlmostFinishedSale) */}
+         {showDiscountInfo && isDiscountActive(product) && (
+            <>
+              <div className="discount-info">
+                <div className="savings-amount">
+                  <span className="savings-label">{t('almostFinished.youSave')}</span>
+                  <span className="savings-value">
+                    {(product.originalPrice - product.discountPrice).toFixed(2)} {t('new_arrivals.currency')}
+                  </span>
+                </div>
+                <div className="discount-percentage-large">
+                  <span className="discount-text">{product.discountPercentage}% {t('almostFinished.off')}</span>
+                </div>
+              </div>
+              {/* Countdown Timer for discount end time */}
+              {product.discountEndTime && (
+                <div>
+                  <CountdownTimer endTime={product.discountEndTime} size="small" />
+                </div>
+              )}
+            </>
+          )}
       </div>
     </div>
   );

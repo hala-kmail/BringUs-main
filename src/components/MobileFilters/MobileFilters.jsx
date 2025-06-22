@@ -143,7 +143,7 @@ const MobileFilters = ({
       }
     });
 
-    console.log('Smart filter counts calculated:', counts);
+   
     return { counts, uniqueValues };
   }, [filters, categories, features]);
 

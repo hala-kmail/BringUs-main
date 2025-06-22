@@ -2,7 +2,7 @@
 .almost-finished-sale-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', sans-serif;
 }
 
 /* Arabic Font Support */
@@ -168,11 +168,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
 }
 
 .almost-finished-sale-page .results-info {
@@ -233,7 +229,7 @@
   border-color: #d1d5db;
 }
 
-.almost-finished-sale-page .product-image-container {
+/* .almost-finished-sale-page .product-image-container {
   position: relative;
   width: 100%;
   height: 250px;
@@ -250,7 +246,7 @@
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
-}
+} */
 
 .almost-finished-sale-page .product-card:hover .product-image {
   transform: scale(1.05);
@@ -343,12 +339,14 @@
 }
 
 /* Product Info - Updated to match home page */
-.almost-finished-sale-page .product-info {
-  padding: 1rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+.almost-finished-sale-page .product-info,
+.almost-finished-sale-page .product-info-section {
+  display: flex !important;
+  flex-direction: column !important;
+  opacity: 1 !important;
+  height: auto !important;
+  position: static !important;
+  z-index: 2 !important;
 }
 
 .almost-finished-sale-page .product-main-content {
@@ -436,17 +434,7 @@
   transition: width 0.3s ease;
 }
 
-.almost-finished-sale-page .stock-level.critical .stock-fill {
-  background: linear-gradient(90deg, #dc2626, #f87171);
-}
 
-.almost-finished-sale-page .stock-level.low .stock-fill {
-  background: linear-gradient(90deg, #d97706, #fbbf24);
-}
-
-.almost-finished-sale-page .stock-level.limited .stock-fill {
-  background: linear-gradient(90deg, #7c3aed, #a78bfa);
-}
 
 /* Discount Info - Simple One Line Design */
 .almost-finished-sale-page .discount-info {
@@ -507,6 +495,7 @@
 /* Countdown Timer in Product Card */
 .countdown-container {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   align-items: center;
 }

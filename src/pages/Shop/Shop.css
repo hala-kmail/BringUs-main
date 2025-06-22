@@ -2,7 +2,7 @@
 .shop-page {
   min-height: 100vh;
   
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Arabic Font Support */
@@ -15,7 +15,7 @@
 }
 
 .shop-container {
-  max-width: 85%;
+  /* max-width: 85%; */
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -2047,7 +2047,7 @@
   background: transparent;
   border-radius: 0;
   border: none;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Clean controls */
@@ -2064,7 +2064,7 @@
   color: #374151;
   font-weight: 500;
   white-space: nowrap;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .desktop-only .sort-controls select,
@@ -2078,7 +2078,7 @@
   color: #374151;
   font-weight: 500;
   min-width: 120px;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 8px center;
@@ -2125,7 +2125,7 @@
   font-size: 14px;
   color: #6b7280;
   transition: all 0.2s ease;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .desktop-only .view-btn:hover {
@@ -2158,7 +2158,8 @@
 
 /* RTL Support - simplified */
 [dir="rtl"] .shop-toolbar.desktop-only {
-  font-family: 'Tajawal', 'Arial', sans-serif;
+  flex-direction: row;
+  font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 [dir="rtl"] .desktop-only .toolbar-left {

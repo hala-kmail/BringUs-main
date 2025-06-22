@@ -10,8 +10,13 @@ import { allProducts, categories, features, subcategories, getSubCategories, get
 import './Shop.css';
 import namer from 'color-namer';
 import ProductCard from '../../components/ProductCard/ProductCard';
+import SidebarFilters from '../../components/Shop/SidebarFilters';
+import ProductsGrid from '../../components/Shop/ProductsGrid';
+import Pagination from '../../components/Shop/Pagination';
+import ShopToolbar from '../../components/Shop/ShopToolbar';
 
 const Shop = () => {
+  
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -147,23 +152,9 @@ const Shop = () => {
       baseProducts = baseProducts.filter(product => product.isBestSeller === true);
     }
 
-    // Now count products that match this color
+    // الآن عد المنتجات التي تحتوي على اللون المطلوب فقط
     return baseProducts.filter(product => {
-      if (product.colors && Array.isArray(product.colors)) {
-        return product.colors.includes(color);
-      }
-      // Fallback: check product name for color keywords
-      const productName = product.name[currentLang].toLowerCase();
-      const colorKeywords = {
-        'Red': ['red', 'أحمر', 'tomato', 'طماطم', 'apple', 'تفاح'],
-        'Green': ['green', 'أخضر', 'spinach', 'سبانخ', 'lettuce', 'خس'],
-        'Yellow': ['yellow', 'أصفر', 'banana', 'موز', 'lemon', 'ليمون'],
-        'Orange': ['orange', 'برتقالي', 'carrot', 'جزر', 'pumpkin', 'يقطين'],
-        'Blue': ['blue', 'أزرق', 'blueberry', 'توت أزرق'],
-        'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
-      };
-      const keywords = colorKeywords[color] || [color.toLowerCase()];
-      return keywords.some(keyword => productName.includes(keyword));
+      return product.colors && Array.isArray(product.colors) && product.colors.includes(color);
     }).length;
   };
 
@@ -196,28 +187,7 @@ const Shop = () => {
     // Apply color filter
     if (filters.colors.length > 0) {
       baseProducts = baseProducts.filter(product => {
-        // Check if product has colors array
-        if (product.colors && Array.isArray(product.colors)) {
-          return filters.colors.some(color => 
-            product.colors.includes(color)
-          );
-        }
-        
-        // Fallback: check product name for color keywords
-        const productName = product.name[currentLang].toLowerCase();
-        const colorKeywords = {
-          'Red': ['red', 'أحمر', 'tomato', 'طماطم', 'apple', 'تفاح'],
-          'Green': ['green', 'أخضر', 'spinach', 'سبانخ', 'lettuce', 'خس'],
-          'Yellow': ['yellow', 'أصفر', 'banana', 'موز', 'lemon', 'ليمون'],
-          'Orange': ['orange', 'برتقالي', 'carrot', 'جزر', 'pumpkin', 'يقطين'],
-          'Blue': ['blue', 'أزرق', 'blueberry', 'توت أزرق'],
-          'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
-        };
-        
-        return filters.colors.some(color => {
-          const keywords = colorKeywords[color] || [color.toLowerCase()];
-          return keywords.some(keyword => productName.includes(keyword));
-        });
+        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
       });
     }
 
@@ -272,28 +242,7 @@ const Shop = () => {
     // Apply color filter
     if (filters.colors.length > 0) {
       baseProducts = baseProducts.filter(product => {
-        // Check if product has colors array
-        if (product.colors && Array.isArray(product.colors)) {
-          return filters.colors.some(color => 
-            product.colors.includes(color)
-          );
-        }
-        
-        // Fallback: check product name for color keywords
-        const productName = product.name[currentLang].toLowerCase();
-        const colorKeywords = {
-          'Red': ['red', 'أحمر', 'tomato', 'طماطم', 'apple', 'تفاح'],
-          'Green': ['green', 'أخضر', 'spinach', 'سبانخ', 'lettuce', 'خس'],
-          'Yellow': ['yellow', 'أصفر', 'banana', 'موز', 'lemon', 'ليمون'],
-          'Orange': ['orange', 'برتقالي', 'carrot', 'جزر', 'pumpkin', 'يقطين'],
-          'Blue': ['blue', 'أزرق', 'blueberry', 'توت أزرق'],
-          'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
-        };
-        
-        return filters.colors.some(color => {
-          const keywords = colorKeywords[color] || [color.toLowerCase()];
-          return keywords.some(keyword => productName.includes(keyword));
-        });
+        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
       });
     }
 
@@ -350,28 +299,7 @@ const Shop = () => {
     // Apply color filter
     if (filters.colors.length > 0) {
       baseProducts = baseProducts.filter(product => {
-        // Check if product has colors array
-        if (product.colors && Array.isArray(product.colors)) {
-          return filters.colors.some(color => 
-            product.colors.includes(color)
-          );
-        }
-        
-        // Fallback: check product name for color keywords
-        const productName = product.name[currentLang].toLowerCase();
-        const colorKeywords = {
-          'Red': ['red', 'أحمر', 'tomato', 'طماطم', 'apple', 'تفاح'],
-          'Green': ['green', 'أخضر', 'spinach', 'سبانخ', 'lettuce', 'خس'],
-          'Yellow': ['yellow', 'أصفر', 'banana', 'موز', 'lemon', 'ليمون'],
-          'Orange': ['orange', 'برتقالي', 'carrot', 'جزر', 'pumpkin', 'يقطين'],
-          'Blue': ['blue', 'أزرق', 'blueberry', 'توت أزرق'],
-          'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
-        };
-        
-        return filters.colors.some(color => {
-          const keywords = colorKeywords[color] || [color.toLowerCase()];
-          return keywords.some(keyword => productName.includes(keyword));
-        });
+        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
       });
     }
 
@@ -533,28 +461,7 @@ const Shop = () => {
     // Apply color filter
     if (filters.colors.length > 0) {
       filtered = filtered.filter(product => {
-        // Check if product has colors array
-        if (product.colors && Array.isArray(product.colors)) {
-          return filters.colors.some(color => 
-            product.colors.includes(color)
-          );
-        }
-        
-        // Fallback: check product name for color keywords
-        const productName = product.name[currentLang].toLowerCase();
-        const colorKeywords = {
-          'Red': ['red', 'أحمر', 'tomato', 'طماطم', 'apple', 'تفاح'],
-          'Green': ['green', 'أخضر', 'spinach', 'سبانخ', 'lettuce', 'خس'],
-          'Yellow': ['yellow', 'أصفر', 'banana', 'موز', 'lemon', 'ليمون'],
-          'Orange': ['orange', 'برتقالي', 'carrot', 'جزر', 'pumpkin', 'يقطين'],
-          'Blue': ['blue', 'أزرق', 'blueberry', 'توت أزرق'],
-          'Purple': ['purple', 'بنفسجي', 'eggplant', 'باذنجان', 'grape', 'عنب']
-        };
-        
-        return filters.colors.some(color => {
-          const keywords = colorKeywords[color] || [color.toLowerCase()];
-          return keywords.some(keyword => productName.includes(keyword));
-        });
+        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
       });
     }
 
@@ -874,294 +781,32 @@ const Shop = () => {
 
         <div className="shop-main">
           {/* Sidebar Filters */}
-          <aside className={`shop-sidebar ${showFilters ? 'show' : ''}`}>
-            <div className="shop-sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h3>{t('shop.filters')}</h3>
-              {/* زر مسح الكل يظهر فقط عند وجود فلاتر نشطة */}
-              {(filters.categories.length > 0 || filters.subcategories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice || searchQuery) && (
-                <button className="clear-filters-btn" onClick={clearFilters} style={{ marginRight: currentLang === 'ar' ? 0 : 8, marginLeft: currentLang === 'ar' ? 8 : 0, background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '4px 12px', fontSize: 13, color: '#ef4444', cursor: 'pointer' }}>
-                  {t('shop.clear_filters')}
-                </button>
-              )}
-            </div>
-
-            {/* مربع البحث داخل الفلاتر الجانبية */}
-            <div className="sidebar-search-box" style={{ position: 'relative', marginBottom: 16 }}>
-              <input
-                type="text"
-                className="sidebar-search-input"
-                placeholder={t('search.placeholder') || 'ابحث عن منتج...'}
-                value={searchQuery}
-                onChange={e => handleSearch(e.target.value)}
-                style={{ width: '100%', padding: '8px 32px 8px 8px', borderRadius: 6, border: '1px solid #e5e7eb', marginBottom: 0 }}
-              />
-              <button
-                className="sidebar-search-clear"
-                onClick={() => searchQuery ? handleSearch('') : null}
-                style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: searchQuery ? 'pointer' : 'default', fontSize: 18, color: '#aaa', padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                title={searchQuery ? t('search.clear') : t('search.search')}
-                tabIndex={-1}
-                type="button"
-              >
-                {searchQuery ? (
-                  '✕'
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="9" cy="9" r="7" stroke="#aaa" strokeWidth="2" />
-                    <line x1="14.1213" y1="14.1213" x2="18" y2="18" stroke="#aaa" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            {/* Active Filters */}
-            {(filters.categories.length > 0 || filters.subcategories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
-              <div className="active-filters">
-                {filters.categories.map(categoryId => {
-                  const category = categories.find(cat => cat.id === categoryId);
-                  return (
-                    <span 
-                      key={categoryId} 
-                      className="active-filter"
-                      onClick={() => removeFilter('categories', categoryId)}
-                      title={`Remove ${category?.name[currentLang] || categoryId} filter`}
-                    >
-                      <span className="filter-close">✕</span> {category?.name[currentLang] || categoryId}
-                    </span>
-                  );
-                })}
-                {filters.subcategories.map(subcategoryId => {
-                  const subcategory =  getSubCategories(subcategoryId);
-                  return (
-                    <span 
-                      key={subcategoryId} 
-                      className="active-filter"
-                      onClick={() => removeFilter('subcategories', subcategoryId)}
-                      title={`Remove ${subcategory?.name[currentLang] || subcategoryId} filter`}
-                    >
-                      <span className="filter-close">✕</span> {subcategory?.name[currentLang] || subcategoryId}
-                    </span>
-                  );
-                })}
-                {filters.features.map(feature => (
-                  <span 
-                    key={feature} 
-                    className="active-filter"
-                    onClick={() => removeFilter('features', feature)}
-                    title={`Remove ${feature} filter`}
-                  >
-                    <span className="filter-close">✕</span> {features.find(f => f.id === feature)?.name[currentLang] || feature}
-                  </span>
-                ))}
-                {filters.colors.map(color => (
-                  <span 
-                    key={color} 
-                    className="active-filter"
-                    onClick={() => removeFilter('colors', color)}
-                    title={`Remove ${color} filter`}
-                  >
-                    <span className="filter-close">✕</span> {getColorLabel(color, t)}
-                  </span>
-                ))}
-                {filters.status.map(status => (
-                  <span 
-                    key={status} 
-                    className="active-filter"
-                    onClick={() => removeFilter('status', status)}
-                    title={`Remove ${status} filter`}
-                  >
-                    <span className="filter-close">✕</span> {t(`filters.status_names.${status}`)}
-                  </span>
-                ))}
-              
-              </div>
-            )}
-
-            {/* Price Filter */}
-            <div className="filter-section">
-              <div className="filter-section-header" onClick={() => toggleSectionCollapse('price')}>
-              <h4>{t('shop.price_filter')}</h4>
-                <button className={`section-collapse-btn ${collapsedSections.price ? 'collapsed' : 'expanded'}`}>
-                  {collapsedSections.price ? '+' : '−'}
-                </button>
-              </div>
-              {!collapsedSections.price && (
-              <div className="price-range">
-                <div className="price-inputs">
-                  <input
-                    type="number"
-                    placeholder={t('shop.min_price')}
-                    value={filters.priceRange.min}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, min: Number(e.target.value) }
-                    )}
-                  />
-                  <span>-</span>
-                  <input
-                    type="number"
-                    placeholder={t('shop.max_price')}
-                    value={filters.priceRange.max}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, max: Number(e.target.value) }
-                    )}
-                  />
-                </div>
-                <div className="price-range-slider">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={filters.priceRange.min}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, min: Number(e.target.value) }
-                    )}
-                    className="range-min"
-                  />
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={filters.priceRange.max}
-                    onChange={(e) => handleFilterChange('priceRange', 
-                      { ...filters.priceRange, max: Number(e.target.value) }
-                    )}
-                    className="range-max"
-                  />
-                </div>
-                <div className="price-display">
-                  {t('shop.price')}: ₪{filters.priceRange.min} — ₪{filters.priceRange.max}
-                </div>
-               
-              </div>
-              )}
-            </div>
-
-            {/* Product Categories with Subcategories */}
-            <div className="filter-section">
-              <div className="filter-section-header" onClick={() => toggleSectionCollapse('categories')}>
-              <h4>{t('shop.product_categories')}</h4>
-                <button className={`section-collapse-btn ${collapsedSections.categories ? 'collapsed' : 'expanded'}`}>
-                  {collapsedSections.categories ? '+' : '−'}
-                </button>
-              </div>
-              {!collapsedSections.categories && (
-              <div className="category-list">
-                {renderCategoryTree()}
-              </div>
-              )}
-            </div>
-
-            {/* Filter by Color */}
-            <div className="filter-section">
-              <div className="filter-section-header" onClick={() => toggleSectionCollapse('colors')}>
-                <h4>{t('shop.filter_by_color')}</h4>
-                <button className={`section-collapse-btn ${collapsedSections.colors ? 'collapsed' : 'expanded'}`}>
-                  {collapsedSections.colors ? '+' : '−'}
-                </button>
-              </div>
-              {!collapsedSections.colors && (
-                <div className="color-filters">
-                  {colors.map(color => {
-                    const count = filterCounts[`color_${color}`] || 0;
-                    return (
-                      <label key={color} className="color-filter" style={{ opacity: count === 0 ? 0.5 : 1 }}>
-                        <input
-                          type="checkbox"
-                          checked={filters.colors.includes(color)}
-                          onChange={e => handleFilterChange('colors', color, e.target.checked)}
-                          disabled={count === 0 && !filters.colors.includes(color)}
-                        />
-                        <span
-                          className="color-swatch"
-                          style={
-                            color === "mixed"
-                              ? { background: "linear-gradient(90deg, #eab308 0%, #ef4444 50%, #3b82f6 100%)" }
-                              : color && color.startsWith('#')
-                                ? { background: color, border: color === "#fff" ? "2px solid #e2e8f0" : undefined }
-                                : { background: '#e5e7eb', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }
-                          }
-                        >
-                          {(!color.startsWith('#') && color !== 'mixed') && '?'}
-                        </span>
-                        <span className="color-name">{getColorLabel(color, t)}</span> ({count})
-                        {count === 0 && !filters.colors.includes(color) && (
-                          <span style={{ fontSize: '10px', color: '#aaa', marginLeft: 4 }}>{t('filters.not_available')}</span>
-                        )}
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Filter by Features */}
-            <div className="filter-section">
-              <div className="filter-section-header" onClick={() => toggleSectionCollapse('features')}>
-              <h4>{t('shop.filter_by_features')}</h4>
-                <button className={`section-collapse-btn ${collapsedSections.features ? 'collapsed' : 'expanded'}`}>
-                  {collapsedSections.features ? '+' : '−'}
-                </button>
-              </div>
-              {!collapsedSections.features && (
-              <div className="feature-filters">
-                {features.map(feature => {
-                  const count = filterCounts[`feature_${feature.id}`] || 0;
-                  return count > 0 ? (
-                    <label key={feature.id} className="filter-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={filters.features.includes(feature.id)}
-                        onChange={(e) => handleFilterChange('features', feature.id, e.target.checked)}
-                      />
-                      <span className="checkmark"></span>
-                      {feature.name[currentLang]} ({count})
-                    </label>
-                  ) : null;
-                })}
-              </div>
-              )}
-            </div>
-
-            {/* Product Status */}
-            <div className="filter-section">
-              <div className="filter-section-header" onClick={() => toggleSectionCollapse('status')}>
-                <h4>{t('shop.product_status')}</h4>
-                <button className={`section-collapse-btn ${collapsedSections.status ? 'collapsed' : 'expanded'}`}>
-                  {collapsedSections.status ? '+' : '−'}
-                </button>
-              </div>
-              {!collapsedSections.status && (
-                <div className="status-filters">
-                  {statusOptions.map(status => {
-                    const count = filterCounts[`status_${status}`] || filteredProducts.filter(product => {
-                      switch (status) {
-                        case 'on_sale': return product.discountPrice || product.discountPercentage;
-                        case 'in_stock': return product.stock && product.stock > 0;
-                        case 'new': return product.isNew === true;
-                        case 'featured': return product.isBestSeller === true;
-                        default: return false;
-                      }
-                    }).length;
-                    return (
-                      <label key={status} className="filter-checkbox" style={{ opacity: count === 0 ? 0.5 : 1 }}>
-                        <input
-                          type="checkbox"
-                          checked={filters.status.includes(status)}
-                          onChange={e => handleFilterChange('status', status, e.target.checked)}
-                          disabled={count === 0 && !filters.status.includes(status)}
-                        />
-                        <span className="checkmark"></span>
-                        {t(`filters.status_names.${status}`)} ({count})
-                        {count === 0 && !filters.status.includes(status) && (
-                          <span style={{ fontSize: '10px', color: '#aaa', marginLeft: 4 }}>{t('filters.not_available')}</span>
-                        )}
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </aside>
+         
+            <SidebarFilters
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              filterCounts={filterCounts}
+              collapsedSections={collapsedSections}
+              toggleSectionCollapse={toggleSectionCollapse}
+              expandedCategories={expandedCategories}
+              toggleCategoryExpansion={toggleCategoryExpansion}
+              categories={categories}
+              subcategories={subcategories}
+              features={features}
+              colors={colors}
+              statusOptions={statusOptions}
+              clearFilters={clearFilters}
+              removeFilter={removeFilter}
+              getColorLabel={getColorLabel}
+              getCategoryProductCount={getCategoryProductCount}
+              renderCategoryTree={renderCategoryTree}
+            
+              currentLang={currentLang}
+              initialMaxPrice={initialMaxPrice}
+              searchQuery={searchQuery}
+              handleSearch={handleSearch}
+            />
+       
 
           {/* Main Content */}
           <main className="shop-content">
@@ -1214,21 +859,6 @@ const Shop = () => {
                   </button>
                 </div>
 
-                <div className="mobile-sort-control">
-                  <select 
-                    value={filters.sortBy}
-                    onChange={(e) => handleSortChange(e.target.value)}
-                    className="mobile-sort-select"
-                  >
-                    <option value="default">{t('shop.sort.default')}</option>
-                    <option value="price-low-high">{t('shop.sort.price_low_high')}</option>
-                    <option value="price-high-low">{t('shop.sort.price_high_low')}</option>
-                    <option value="name-a-z">{t('shop.sort.name_a_z')}</option>
-                    <option value="name-z-a">{t('shop.sort.name_z_a')}</option>
-                    <option value="newest">{t('shop.sort.newest')}</option>
-                    <option value="oldest">{t('shop.sort.oldest')}</option>
-                  </select>
-                </div>
               </div>
 
               {/* Bottom Row: Results Info */}
@@ -1262,122 +892,42 @@ const Shop = () => {
             </div>
 
             {/* Desktop Toolbar (hidden on mobile) */}
-            <div className="shop-toolbar desktop-only">
-              <div className="toolbar-left">
-                <button 
-                  className="mobile-filter-toggle"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  ☰ {t('shop.filters')}
-                </button>
-                <span className="results-count">
-                  {t('shop.showing_results', { 
-                    start: (currentPage - 1) * itemsPerPage + 1,
-                    end: Math.min(currentPage * itemsPerPage, filteredProducts.length),
-                    total: filteredProducts.length 
-                  })}
-                </span>
-              </div>
-              
-              <div className="toolbar-right">
-                <div className="sort-controls">
-                  <label>{t('shop.sorting')}:</label>
-                  <select 
-                    value={filters.sortBy}
-                    onChange={(e) => handleSortChange(e.target.value)}
-                    className="sort-select"
-                  >
-                    <option value="default">{t('shop.sort.default')}</option>
-                    <option value="price-low-high">{t('shop.sort.price_low_high')}</option>
-                    <option value="price-high-low">{t('shop.sort.price_high_low')}</option>
-                    <option value="name-a-z">{t('shop.sort.name_a_z')}</option>
-                    <option value="name-z-a">{t('shop.sort.name_z_a')}</option>
-                    <option value="newest">{t('shop.sort.newest')}</option>
-                    <option value="oldest">{t('shop.sort.oldest')}</option>
-                  </select>
-                </div>
-                
-                <div className="show-controls">
-                  <label>{t('shop.show')}:</label>
-                  <select 
-                    value={itemsPerPage}
-                    onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                  >
-                    <option value="10">10 {t('shop.items')}</option>
-                    <option value="20">20 {t('shop.items')}</option>
-                    <option value="50">50 {t('shop.items')}</option>
-                  </select>
-                </div>
-
-                <div className="view-controls">
-                  <button 
-                    className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                    onClick={() => setViewMode('grid')}
-                  >
-                    ⊞
-                  </button>
-                  <button 
-                    className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                    onClick={() => setViewMode('list')}
-                  >
-                    ☰
-                  </button>
-                </div>
-              </div>
-            </div>
+            
+              <ShopToolbar
+                filters={filters}
+                handleSortChange={handleSortChange}
+                itemsPerPage={itemsPerPage}
+                handleItemsPerPageChange={handleItemsPerPageChange}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                currentLang={currentLang}
+                filteredCount={filteredProducts.length}
+                totalCount={allProducts.length}
+              />
+            
 
             {/* Products Grid */}
-            <div className={`products-grid desktop-grid ${viewMode}`}>
-              {paginatedProducts.map((product) => (
-                <ProductCard
-                key={product.id}
-                product={product}
-                currentLang={currentLang}
-                t={t}
-                isInWishlist={isInWishlist}
-                handleWishlistToggle={handleWishlistToggle}
-                handleAddToCart={handleAddToCart}
-                getFeatureById={getFeatureById}
-                getCategoryById={getCategoryById}
-                showStockInfo={true}
-              />
-              ))}
-            </div>
+            <ProductsGrid
+              paginatedProducts={paginatedProducts}
+              viewMode={viewMode}
+              ProductCard={ProductCard}
+              currentLang={currentLang}
+              t={t}
+              isInWishlist={isInWishlist}
+              handleWishlistToggle={handleWishlistToggle}
+              handleAddToCart={handleAddToCart}
+              getFeatureById={getFeatureById}
+              getCategoryById={getCategoryById}
+              showStockInfo={true}
+            />
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination">
-                <button 
-                  className="page-btn prev"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                 ‹
-                </button>
-                
-                {getVisiblePages().map((page, index) => (
-                  page === '...' ? (
-                    <span key={`dots-${index}`} className="page-dots">...</span>
-                  ) : (
-                    <button
-                      key={page}
-                      className={`page-btn ${currentPage === page ? 'active' : ''}`}
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                    </button>
-                  )
-                ))}
-                
-                <button 
-                  className="page-btn next"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                 ›
-                </button>
-              </div>
-            )}
+            <Pagination
+              totalPages={totalPages}
+              currentPage={currentPage}
+              handlePageChange={handlePageChange}
+              getVisiblePages={getVisiblePages}
+            />
           </main>
         </div>
       </div>

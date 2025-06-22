@@ -7,6 +7,8 @@ import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
+import ShopToolbar from '../../components/Shop/ShopToolbar';
+import ProductCard from '../../components/ProductCard/ProductCard';
 import './AlmostFinishedSale.css';
 
 const almostFinishedSale = () => {
@@ -15,7 +17,8 @@ const almostFinishedSale = () => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [currentSection, setCurrentSection] = useState('almost-finished');
   const [sortBy, setSortBy] = useState('stockLowToHigh');
-
+  const [viewMode, setViewMode] = useState('grid');
+  const currentLang = i18n.language;
   // Helper function to check if discount is active
   const isDiscountActive = (product) => {
     if (!product.discountPrice || !product.discountPercentage) return false;
@@ -105,6 +108,9 @@ const almostFinishedSale = () => {
     toggleWishlist(product);
   };
 
+  const almostFinishedTotal = allProducts.filter(product => product.stock <= 10 && product.stock > 0).length;
+  const discountedTotal = allProducts.filter(product => isDiscountActive(product) && product.stock > 0).length;
+
   return (
     <div className="almost-finished-sale-page" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
       {/* <TopBar /> */}
@@ -116,14 +122,14 @@ const almostFinishedSale = () => {
         <div className="almost-finished-hero">
           <div className="hero-content">
             <div className="hero-text">
-              <span className="hero-label">{t('almostFinished.heroLabel')}</span>
-              <h1 className="hero-title">{t('almostFinished.heroTitle')}</h1>
-              <p className="hero-subtitle">{t('almostFinished.heroSubtitle')}</p>
+              <span className="hero-label">{currentLang === 'ar' ? 'المنتجات القريبة من الانتهاء' : 'Almost Finished Products'}</span>
+              <h1 className="hero-title">{currentLang === 'ar' ? 'المنتجات القريبة من الانتهاء' : 'Almost Finished Products'}</h1>
+             
             </div>
             <div className="hero-visual">
               <div className="countdown-badge">
                 <div className="timer-icon">⏰</div>
-                <span>{t('almostFinished.hurry')}</span>
+                <span>{currentLang === 'ar' ? 'تنتهي قريبا' : 'Hurry'}</span>
               </div>
             </div>
           </div>
@@ -135,162 +141,61 @@ const almostFinishedSale = () => {
             className={`tab-button ${currentSection === 'almost-finished' ? 'active' : ''}`}
             onClick={() => setCurrentSection('almost-finished')}
           >
-            <span className="tab-icon">📦</span>
-            {t('almostFinished.almostFinished')}
+            <span className="tab-icon">
+              {/* SVG Box Icon */}
+              {/* <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg> */}
+            </span>
+            {currentLang === 'ar' ? 'المنتجات القريبة من الانتهاء' : 'Almost Finished Products'}
             <span className="tab-count">({almostFinishedProducts.length})</span>
           </button>
           <button 
             className={`tab-button ${currentSection === 'discounted' ? 'active' : ''}`}
             onClick={() => setCurrentSection('discounted')}
           >
-            <span className="tab-icon">🏷️</span>
-            {t('almostFinished.discountedProducts')}
+            <span className="tab-icon">
+              {/* SVG Discount Tag Icon */}
+              {/* <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-8 8a2 2 0 0 1-2.83 0l-6.17-6.17a2 2 0 0 1 0-2.83l8-8a2 2 0 0 1 2.83 0l6.17 6.17a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/><line x1="17" y1="17" x2="17.01" y2="17"/></svg> */}
+            </span>
+            {currentLang === 'ar' ? 'منتجات عليها خصم' : 'Discounted Products'}
             <span className="tab-count">({discountedProducts.length})</span>
           </button>
         </div>
 
-        {/* Sort Controls */}
-        <div className="sort-controls">
-          <div className="results-info">
-            <span>{t('almostFinished.resultsFound', { count: currentProducts.length })}</span>
-          </div>
-          <div className="sort-dropdown">
-            <label htmlFor="sort-select">{t('almostFinished.sortBy')}</label>
-            <select 
-              id="sort-select"
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="stockLowToHigh">{t('almostFinished.sortOptions.stockLowToHigh')}</option>
-              <option value="stockHighToLow">{t('almostFinished.sortOptions.stockHighToLow')}</option>
-              <option value="discountHighToLow">{t('almostFinished.sortOptions.discountHighToLow')}</option>
-              <option value="priceLowToHigh">{t('almostFinished.sortOptions.priceLowToHigh')}</option>
-              <option value="priceHighToLow">{t('almostFinished.sortOptions.priceHighToLow')}</option>
-            </select>
-          </div>
-        </div>
+        {/* Shop Toolbar */}
+        <ShopToolbar
+          filters={{ sortBy }}
+          handleSortChange={setSortBy}
+          itemsPerPage={0}
+          handleItemsPerPageChange={() => {}}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          currentLang={currentLang}
+          filteredCount={currentProducts.length}
+          totalCount={currentSection === 'almost-finished' ? almostFinishedTotal : discountedTotal}
+          sortOptions={[
+            { value: 'stockLowToHigh', label: currentLang === 'ar' ? 'الأقل مخزوناً' : 'Stock: Low to High' },
+            { value: 'stockHighToLow', label: currentLang === 'ar' ? 'الأعلى مخزوناً' : 'Stock: High to Low' },
+            { value: 'discountHighToLow', label: currentLang === 'ar' ? 'الأعلى خصماً' : 'Discount: High to Low' },
+            { value: 'priceLowToHigh', label: currentLang === 'ar' ? 'الأقل سعراً' : 'Price: Low to High' },
+            { value: 'priceHighToLow', label: currentLang === 'ar' ? 'الأعلى سعراً' : 'Price: High to Low' }
+          ]}
+        />
 
         {/* Products Grid */}
-        <div className="products-grid">
+        <div className={`products-grid ${viewMode}`}>
           {currentProducts.length > 0 ? (
             currentProducts.map((product) => (
-              <div key={product.id} className="product-card">
-                {/* Product Image */}
-                <div className="product-image-container">
-                  <div 
-                    className="product-image"
-                    style={{
-                      backgroundImage: `url(${product.image})`
-                    }}
-                    onClick={() => navigate(`/product/${product.id}`)}
-                  >
-                  </div>
-                  
-                  {/* Discount Badge */}
-                  {getActiveDiscountPercentage(product) && (
-                    <div className="discount-badge">
-                      -{getActiveDiscountPercentage(product)}%
-                    </div>
-                  )}
-
-                  {/* Stock Status Badge */}
-                  <div className={`stock-badge ${getStockStatus(product.stock)}`}>
-                    {getStockStatusText(product.stock)}
-                  </div>
-
-                  {/* Wishlist Button */}
-                  <div 
-                    className="wishlist-btn"
-                    onClick={() => handleWishlistToggle(product)}
-                  >
-                    <svg 
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24" 
-                      fill={isInWishlist(product.id) ? '#ef4444' : 'none'}
-                      stroke={isInWishlist(product.id) ? '#ef4444' : '#6b7280'}
-                      strokeWidth="2"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Product Info */}
-                <div className="product-info">
-                  <div className="product-main-content">
-                    <h3 
-                      className="product-name"
-                      onClick={() => navigate(`/product/${product.id}`)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {product.name[i18n.language] || product.name.en}
-                    </h3>
-                    
-                    <div className="product-pricing">
-                      {isDiscountActive(product) ? (
-                        <>
-                          <span className="current-price">
-                            {product.discountPrice.toFixed(2)} {t('shop.currency')}
-                          </span>
-                          <span className="original-price">
-                            {product.originalPrice.toFixed(2)} {t('shop.currency')}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="current-price">
-                          {product.originalPrice.toFixed(2)} {t('shop.currency')}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Stock Info - Only show for almost finished products */}
-                    {currentSection === 'almost-finished' && (
-                      <div className="stock-info">
-                        <div className={`stock-level ${getStockStatus(product.stock)}`}>
-                          <span className="stock-text">
-                            {t('almostFinished.onlyLeft', { count: product.stock })}
-                          </span>
-                          <div className="stock-bar">
-                            <div 
-                              className="stock-fill" 
-                              style={{ 
-                                width: `${Math.min((product.stock / 10) * 100, 100)}%` 
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Discount Info - Only show for discounted products with active discounts */}
-                    {currentSection === 'discounted' && isDiscountActive(product) && (
-                      <>
-                        <div className="discount-info">
-                          <div className="savings-amount">
-                            <span className="savings-label">{t('almostFinished.youSave')}</span>
-                            <span className="savings-value">
-                              {(product.originalPrice - product.discountPrice).toFixed(2)} {t('shop.currency')}
-                            </span>
-                          </div>
-                          <div className="discount-percentage-large">
-                            <span className="discount-text">{getActiveDiscountPercentage(product)}% {t('almostFinished.off')}</span>
-                          </div>
-                        </div>
-                        
-                        {/* Countdown Timer for discount end time - Only in discounted section */}
-                        {product.discountEndTime && (
-                          <div >
-                            <CountdownTimer endTime={product.discountEndTime} size="small" />
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                 
-                </div>
-              </div>
+              <ProductCard
+                key={product.id}
+                product={product}
+                currentLang={currentLang}
+                t={t}
+                isInWishlist={isInWishlist}
+                handleWishlistToggle={handleWishlistToggle}
+                handleAddToCart={handleAddToCart}
+                showStockInfo={currentSection === 'almost-finished'}
+                showDiscountInfo={currentSection === 'discounted'}
+              />
             ))
           ) : (
             <div className="no-products">
