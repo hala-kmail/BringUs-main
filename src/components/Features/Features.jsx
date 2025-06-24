@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import './Features.css';
 
 const Features = () => {
-  const { t } = useTranslation();
 
+  const { t, i18n } = useTranslation();
+  console.log('FEATURES LANG:', i18n.language);
+  console.log(t('features.payment_online.title'));
   const features = [
     {
       id: 1,

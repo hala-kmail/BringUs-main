@@ -27,6 +27,7 @@ const ProductsGrid = ({
           getFeatureById={getFeatureById}
           getCategoryById={getCategoryById}
           showStockInfo={showStockInfo}
+          isListView={viewMode === 'list' || viewMode === 'list-view'}
         />
       ))}
     </div>

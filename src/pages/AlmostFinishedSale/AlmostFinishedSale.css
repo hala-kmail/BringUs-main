@@ -438,7 +438,7 @@
 
 /* Discount Info - Simple One Line Design */
 .almost-finished-sale-page .discount-info {
-  margin-bottom: 1rem;
+  
   padding: 0.5rem;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
@@ -777,12 +777,7 @@
     display: none !important;
   }
 
-  /* إخفاء معلومات المخزون والخصم على الموبايل لتوفير المساحة */
-  .almost-finished-sale-page .stock-info,
-  .almost-finished-sale-page .discount-info {
-    display: none;
-  }
-
+ 
   .floating-almost-finished-btn {
     position: fixed;
     bottom: 24px;

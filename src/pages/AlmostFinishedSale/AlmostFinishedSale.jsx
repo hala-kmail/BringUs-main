@@ -195,6 +195,7 @@ const almostFinishedSale = () => {
                 handleAddToCart={handleAddToCart}
                 showStockInfo={currentSection === 'almost-finished'}
                 showDiscountInfo={currentSection === 'discounted'}
+                isListView={viewMode === 'list'}
               />
             ))
           ) : (

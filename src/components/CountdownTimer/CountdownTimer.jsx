@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import './CountdownTimer.css';
 
 const CountdownTimer = ({ endTime, size = 'small' }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -11,7 +11,7 @@ const CountdownTimer = ({ endTime, size = 'small' }) => {
     seconds: 0
   });
   const [isExpired, setIsExpired] = useState(false);
-
+  const currentLang = i18n.language;
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
@@ -58,13 +58,13 @@ const CountdownTimer = ({ endTime, size = 'small' }) => {
         {/* Days */}
         <div className="countdown-unit">
           <div className="countdown-number">{formatNumber(timeLeft.days)}</div>
-          <div className="countdown-label">{t('countdown.days')}</div>
+          <div className="countdown-label">{currentLang === 'ar' ? 'أيام' : 'Days'}</div>
         </div>
 
         {/* Hours */}
         <div className="countdown-unit">
           <div className="countdown-number">{formatNumber(timeLeft.hours)}</div>
-          <div className="countdown-label">{t('countdown.hours')}</div>
+          <div className="countdown-label">{currentLang === 'ar' ? 'ساعات' : 'Hours'}</div>
         </div>
 
         {/* Separator */}
@@ -73,7 +73,7 @@ const CountdownTimer = ({ endTime, size = 'small' }) => {
         {/* Minutes */}
         <div className="countdown-unit">
           <div className="countdown-number">{formatNumber(timeLeft.minutes)}</div>
-          <div className="countdown-label">{t('countdown.minutes')}</div>
+          <div className="countdown-label">{currentLang === 'ar' ? 'دقائق' : 'Minutes'}</div>
         </div>
 
         {/* Separator */}
@@ -82,12 +82,12 @@ const CountdownTimer = ({ endTime, size = 'small' }) => {
         {/* Seconds */}
         <div className="countdown-unit">
           <div className="countdown-number">{formatNumber(timeLeft.seconds)}</div>
-          <div className="countdown-label">{t('countdown.seconds')}</div>
+          <div className="countdown-label">{currentLang === 'ar' ? 'ثوان' : 'Seconds'}</div>
         </div>
       </div>
       
       <div className="countdown-message">
-        {t('countdown.remainsUntilEnd')}
+        {currentLang === 'ar' ? 'يتبقى' : 'Remaining'}
       </div>
     </div>
   );

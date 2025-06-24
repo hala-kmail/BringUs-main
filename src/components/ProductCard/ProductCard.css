@@ -78,4 +78,19 @@ h3.product-top-name{
 .product-card .yellow.stock-fill {
   background: linear-gradient(90deg, #f5e20b, #d9b206);
 }
+
+.countdown-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+/* عند عرض الكارد في وضع القائمة (list-view) يكون الاتجاه صف */
+.list-view .countdown-container {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
   

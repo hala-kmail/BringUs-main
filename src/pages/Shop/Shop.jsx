@@ -800,7 +800,7 @@ const Shop = () => {
               getColorLabel={getColorLabel}
               getCategoryProductCount={getCategoryProductCount}
               renderCategoryTree={renderCategoryTree}
-            
+              isListView={viewMode === 'list'}
               currentLang={currentLang}
               initialMaxPrice={initialMaxPrice}
               searchQuery={searchQuery}

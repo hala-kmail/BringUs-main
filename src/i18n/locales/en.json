@@ -155,7 +155,8 @@
         "passwords_not_match": "Passwords do not match",
         "city_required": "City is required"
     }
-  },
+  }
+},
   "footer": {
   "newsletter_title": "Subscribe to our newsletter",
   "newsletter_desc": "Register your email to get the latest offers and discounts. No spam!",
@@ -187,7 +188,7 @@
     "share": "Share this Product",
     "share_product": "Share Product",
     "copy_link_question": "Do you want to copy the product link?",
-    "link_copied": "Link copied successfully!",
+    "link_copied": "Product link copied to clipboard!",
     "share_error": "Error sharing product",
     "compare": "Compare",
     "payment": "Payment",
@@ -210,7 +211,18 @@
     "zoom_image": "Zoom Image",
     "decrease_quantity": "Decrease Quantity",
     "increase_quantity": "Increase Quantity",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "color": "Color",
+    "size": "Size",
+    "adding": "Adding...",
+    "select_color_first": "Please select a color first",
+    "select_size_first": "Please select a size first",
+    "error_adding_to_cart": "Error adding product to cart",
+    "whatsapp_greeting": "Hello, I want to order {{name}}",
+    "total_price": "Total Price",
+    "product_link": "Product link",
+    "breadcrumb_sep": ">",
+    "video_not_supported": "Your browser does not support the video tag."
   },
   "related_products": {
     "title": "Related Products",
@@ -516,4 +528,4 @@
   },
   "error_add": "Failed to add product to wishlist!",
   "error_remove": "Failed to remove product from wishlist!"
-} }
+ }

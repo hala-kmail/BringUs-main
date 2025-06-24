@@ -19,6 +19,7 @@ i18n
     },
     fallbackLng: 'ar',
     supportedLngs: ['ar', 'en'],
+    defaultNS: 'translation',
     interpolation: {
       escapeValue: false
     },

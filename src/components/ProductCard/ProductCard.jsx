@@ -32,6 +32,7 @@ const ProductCard = ({
   getCategoryById,
   showStockInfo = false,
   showDiscountInfo = false,
+  isListView = false,
 }) => {
   const feature = getFeatureById ? getFeatureById(product.featureId) : null;
   const category = getCategoryById ? getCategoryById(product.categoryId) : null;
@@ -57,7 +58,7 @@ const ProductCard = ({
   };
   
   return (
-    <div className="product-card">
+    <div className={`product-card${isListView ? ' list-view' : ''}`}>
       {/* Product Image */}
       <div className="product-image"  >
        
@@ -133,14 +134,21 @@ const ProductCard = ({
               </h4>
             </Link>
           )}
+          {isListView && product.description && (
+          <div className="product-description">
+            {product.description[currentLang]}
+          </div>
+        )}
           {/* Stock Info (خاص بصفحة AlmostFinishedSale) */}
           {showStockInfo && product.stock !== undefined && (
             <div className="stock-info">
               <div className={`stock-level ${getStockStatus(product.stock)}`}>
                 <span className="stock-text">
-                {getStockStatus(product.stock) === 'sold_out' ? currentLang === 'ar' ? 'منتهي المخزون' : 'Out of Stock' : currentLang === 'ar'
-                    ? getStockStatus(product.stock) === 'low-stock' ? currentLang === 'ar' ? `${product.stock} متبقي فقط` : `${product.stock} Only left` : ''
-                    : getStockStatus(product.stock) === 'in_stock' ? currentLang === 'ar' ? 'في المخزون' : 'In Stock' : ''}
+                  {getStockStatus(product.stock) === 'sold_out'
+                    ? t('outOfStock')
+                    : getStockStatus(product.stock) === 'low-stock'
+                      ? currentLang === 'ar' ? `${product.stock} متبقي فقط` : `${product.stock} Only left`
+                      : currentLang === 'ar' ? 'في المخزون' : 'In Stock'}
                 </span>
                 <div className="stock-bar">
                   <div 
@@ -198,13 +206,13 @@ const ProductCard = ({
             <>
               <div className="discount-info">
                 <div className="savings-amount">
-                  <span className="savings-label">{t('almostFinished.youSave')}</span>
+                  <span className="savings-label">{currentLang === 'ar' ? 'توفير' : 'You Save'}</span>
                   <span className="savings-value">
                     {(product.originalPrice - product.discountPrice).toFixed(2)} {t('new_arrivals.currency')}
                   </span>
                 </div>
                 <div className="discount-percentage-large">
-                  <span className="discount-text">{product.discountPercentage}% {t('almostFinished.off')}</span>
+                  <span className="discount-text">{product.discountPercentage}% {currentLang === 'ar' ? 'خصم' : 'Off'}</span>
                 </div>
               </div>
               {/* Countdown Timer for discount end time */}
@@ -215,6 +223,7 @@ const ProductCard = ({
               )}
             </>
           )}
+        
       </div>
     </div>
   );
