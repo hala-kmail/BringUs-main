@@ -5,8 +5,7 @@ import './Features.css';
 const Features = () => {
 
   const { t, i18n } = useTranslation();
-  console.log('FEATURES LANG:', i18n.language);
-  console.log(t('features.payment_online.title'));
+
   const features = [
     {
       id: 1,

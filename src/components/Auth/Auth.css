@@ -209,6 +209,16 @@ body, html {
   .language-switcher span {
     font-size: 0.875rem;
   }
+
+  .bar-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .desktop-bar-btns {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
@@ -279,6 +289,16 @@ body, html {
   .language-switcher span {
     font-size: 0.8rem;
   }
+
+  .bar-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .desktop-bar-btns {
+    display: none;
+  }
 }
 
 @media (max-width: 360px) {
@@ -306,6 +326,16 @@ body, html {
   .submit-button {
     height: 2rem;
     font-size: 0.85rem;
+  }
+
+  .bar-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .desktop-bar-btns {
+    display: none;
   }
 }
 
@@ -360,4 +390,76 @@ body, html {
 /* Global box-sizing reset */
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+.fab-wholesale {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 2rem;
+  border: none;
+  box-shadow: 0 4px 16px rgba(99,76,159,0.15);
+  cursor: pointer;
+  z-index: 3000;
+  transition: background 0.2s;
+}
+.fab-wholesale:hover {
+  background: var(--primary-dark);
+}
+
+.almost-finished-with-register {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .almost-finished-with-register {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+}
+
+.wholesale-inline-btn {
+  display: flex;
+  align-items: center;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99,76,159,0.08);
+  transition: background 0.2s;
+  margin: 1rem;
+  margin-bottom: 0;
+  min-width: 180px;
+  justify-content: center;
+}
+.wholesale-inline-btn:hover {
+  background: var(--primary-dark);
+}
+
+.bar-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.desktop-bar-btns {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 } 
