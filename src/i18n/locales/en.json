@@ -24,6 +24,15 @@
     "settings": "Settings",
     "logout": "Logout"
   },
+  "wholesale": {
+    "register_title": "Wholesale Register",
+    "email": "Email",
+    "enter_email": "Enter your email",
+    "password": "Password",
+    "enter_password": "Enter your password",
+    "remember_me": "Remember me",
+    "register": "Register"
+  },
   "announcement": {
     "text": "FREE delivery & 40% Discount for next 3 orders! Place your 1st order in",
     "countdown_label": "Until the end of the sale:",
