@@ -1,13 +1,10 @@
-/**
- * Data access layer for the improved relational data structure
- */
+
 import { allProducts } from './products.js';
 import { categories } from './categories.js';
-import { subcategories } from './subcategories.js';
 import { features } from './features.js';
 
 // Export all data entities
-export { allProducts, categories, subcategories, features };
+export { allProducts, categories, features };
 
 // Helper functions for data relationships and queries
 export const getMainCategories = () => {
@@ -104,14 +101,6 @@ export const getProductsByFeature = (featureId) => {
   return allProducts.filter(product => product.featureId === featureId);
 };
 
-/**
- * Get subcategories by category ID
- * @param {number} categoryId - The category ID
- * @returns {Array} Array of subcategories in the category
- */
-export const getSubcategoriesByCategory = (categoryId) => {
-  return subcategories.filter(subcategory => subcategory.categoryId === categoryId);
-};
 
 /**
  * Get best seller products
@@ -316,7 +305,7 @@ export const getProductStatistics = () => {
     maxPrice,
     averagePrice: Math.round(averagePrice * 100) / 100,
     categoriesCount: categories.length,
-    subcategoriesCount: subcategories.length,
+    
     featuresCount: features.length
   };
 };
@@ -325,7 +314,7 @@ export const getProductStatistics = () => {
 export default {
   allProducts,
   categories,
-  subcategories,
+ 
   features,
   getMainCategories,
   getSubCategories,
@@ -336,7 +325,7 @@ export default {
   getProductsByCategory,
   getProductsBySubcategory,
   getProductsByFeature,
-  getSubcategoriesByCategory,
+ 
   getBestSellerProducts,
   getNewProducts,
   getDiscountedProducts,

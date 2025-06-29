@@ -10,7 +10,7 @@ const SidebarFilters = ({
   expandedCategories,
   toggleCategoryExpansion,
   categories,
-  subcategories,
+  getSubCategories,
   features,
   colors,
   statusOptions,
@@ -43,7 +43,7 @@ const SidebarFilters = ({
           placeholder={currentLang === 'ar' ? 'ابحث عن منتج...' : 'Search for a product...'}
           value={searchQuery}
           onChange={e => handleSearch(e.target.value)}
-          style={{ width: '100%', padding: '8px 32px 8px 8px', borderRadius: 6, border: '1px solid #e5e7eb', marginBottom: 0 }}
+          style={{ width: '100%', padding: '8px 32px 8px 8px', borderRadius: 6, border: '1px solid #e5e7eb', marginBottom: 0, fontFamily: 'Tajawal, sans-serif' }}
         />
         <button
           className="sidebar-search-clear"
@@ -80,15 +80,20 @@ const SidebarFilters = ({
             );
           })}
           {filters.subcategories.map(subcategoryId => {
-            const subcategory = subcategories.find(sub => sub.id === subcategoryId);
+            let foundSub = null;
+            for (const cat of categories) {
+              const subs = getSubCategories(cat.id);
+              const match = subs.find(sub => sub.id === subcategoryId);
+              if (match) { foundSub = match; break; }
+            }
             return (
               <span 
                 key={subcategoryId} 
                 className="active-filter"
                 onClick={() => removeFilter('subcategories', subcategoryId)}
-                title={`Remove ${subcategory?.name[currentLang] || subcategoryId} filter`}
+                title={`Remove ${foundSub?.name?.[currentLang] || subcategoryId} filter`}
               >
-                <span className="filter-close">✕</span> {subcategory?.name[currentLang] || subcategoryId}
+                <span className="filter-close">✕</span> {foundSub?.name?.[currentLang] || subcategoryId}
               </span>
             );
           })}

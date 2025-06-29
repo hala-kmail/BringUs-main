@@ -153,4 +153,44 @@
     font-size: 16px;
     margin-top: 6px;
   }
+}
+
+@media (max-width: 768px) {
+  .countdown-timer {
+    font-size: 0.38rem;
+    padding: 0;
+    gap: 0;
+    background: none;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    box-shadow: none;
+  }
+ .countdown-timer.small .countdown-unit {
+    font-size: 1em;
+    font-weight: bold;
+    padding: 0 !important;
+    background-color: inherit !important;
+    margin: 0;
+    min-width: unset !important;
+    line-height: 1;
+  }
+  .countdown-timer .countdown-label {
+    display: none;
+  }
+  .countdown-timer .countdown-separator {
+    font-size: 1em;
+    margin: 0 0.2em !important;
+    padding: 0;
+    line-height: 1;
+  }
+  .countdown-container {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    margin: 0;
+  }
+  .countdown-message {
+    display: none;
+  }
 } 

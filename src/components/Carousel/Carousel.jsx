@@ -6,8 +6,7 @@ const Carousel = () => {
   const { t, i18n } = useTranslation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-
-  // Sample carousel images - replace with your actual images
+//-----------------------------------images-----------------------------------
   const slides = [
     {
       id: 1,
@@ -62,7 +61,7 @@ const Carousel = () => {
       link: '#'
     }
   ];
-
+//-----------------------------------move--------------------------------------  
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
@@ -74,7 +73,7 @@ const Carousel = () => {
   const goToSlide = (index) => {
     setCurrentSlide(index);
   };
-
+//-----------------------------------auto play--------------------------------------  
   useEffect(() => {
     if (!isAutoPlaying) return;
 
@@ -84,7 +83,7 @@ const Carousel = () => {
 
     return () => clearInterval(interval);
   }, [currentSlide, isAutoPlaying]);
-
+//-----------------------------------auto play--------------------------------------  
   const handleMouseEnter = () => {
     setIsAutoPlaying(false);
   };
@@ -92,9 +91,9 @@ const Carousel = () => {
   const handleMouseLeave = () => {
     setIsAutoPlaying(true);
   };
-
+//-----------------------------------current lang--------------------------------------  
   const currentLang = i18n.language;
-
+//-----------------------------------return--------------------------------------  
   return (
     <div 
       className="carousel-container"
@@ -117,13 +116,11 @@ const Carousel = () => {
                 <div className="slide-overlay"></div>
               </a>
               <div className="slide-content">
-                {/* يمكنك إرجاع العنوان هنا إذا أردت */}
               </div>
             </div>
           ))}
         </div>
-
-        {/* Navigation Arrows */}
+{/*---------------------------Navigation Arrows-----------------------------------*/}
         <button 
           className="carousel-arrow carousel-arrow-prev" 
           onClick={currentLang === 'ar' ? nextSlide : prevSlide}
@@ -140,8 +137,7 @@ const Carousel = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-
-        {/* Dots Indicator */}
+{/* //-----------------------------------dots indicator--------------------------------------   */}
         <div className="carousel-dots">
           {slides.map((_, index) => (
             <button

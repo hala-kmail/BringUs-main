@@ -17,7 +17,7 @@
 .almost-finished-container {
   max-width: 85%;
   margin: 0 auto;
-  padding: 0 2rem;
+ 
 }
 
 /* Hero Section */
@@ -206,7 +206,7 @@
 /* Products Grid */
 .almost-finished-sale-page .products-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  
   gap: 1rem;
   margin-bottom: 3rem;
 }
@@ -316,22 +316,7 @@
 }
 
 /* Wishlist Button - Updated to match home page */
-.almost-finished-sale-page .wishlist-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  z-index: 3;
-  border: none;
-}
+
 
 .almost-finished-sale-page .wishlist-btn:hover {
   background: white;
@@ -500,76 +485,6 @@
   align-items: center;
 }
 
-.almost-finished-sale-page .countdown-timer.small {
-  padding: 0.25rem;
-
-  font-size: 0.65rem;
-}
-
-.almost-finished-sale-page .countdown-timer .timer-units {
-  gap: 0.15rem;
-}
-
-
-.almost-finished-sale-page .countdown-timer .timer-unit {
-  min-width: 18px;
-  
-}
-
-.almost-finished-sale-page .countdown-timer .separator {
-  margin: 0 0.05rem;
-}
-
-.almost-finished-sale-page .countdown-timer .timer-message {
-  font-size: 0.55em;
-  margin-top: 0.15rem;
-}
-
-/* Add to Cart Button - Updated to match home page BestSellers */
-.almost-finished-sale-page .add-to-cart-btn {
-  width: 100%;
-  background: var(--primary-color, #987811);
-  color: #fff;
-  border: 1px solid var(--primary-dark, #6d5c0a);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  margin-top: auto;
-  position: relative;
-  font-family: 'Tajawal', sans-serif;
-}
-
-.almost-finished-sale-page .add-to-cart-btn:hover {
-  background: var(--primary-light, #bfa93a);
-  border-color: var(--primary-color, #987811);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(152, 120, 17, 0.15);
-}
-
-.almost-finished-sale-page .add-to-cart-btn::before {
-  display: none !important;
-  content: none !important;
-}
-
-.almost-finished-sale-page .add-to-cart-btn svg {
-  display: block !important;
-  width: 25px;
-  height: 25px;
-  flex-shrink: 0;
-}
-
-.almost-finished-sale-page .add-to-cart-btn .button-text {
-  display: inline !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
 
 /* No Products */
 .almost-finished-sale-page .no-products {
@@ -672,7 +587,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .almost-finished-container {
-    padding: 1rem;
+  
   }
   
   .almost-finished-hero {
@@ -700,7 +615,7 @@
   
   .section-tabs {
     font-size: 12px;
-   flex-wrap: nowrap;
+ 
     align-items: center;
   }
   
@@ -716,40 +631,14 @@
     text-align: center;
   }
   
-  .almost-finished-sale-page .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-  }
+ 
+  
   
   .almost-finished-sale-page .product-image-container {
     height: 120px;
   }
 
-  .almost-finished-sale-page .product-info {
-    padding: 0.5rem;
-  }
-
-  .almost-finished-sale-page .product-name {
-    font-size: 0.7rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .almost-finished-sale-page .current-price {
-    font-size: 0.8rem;
-  }
-
-  .almost-finished-sale-page .original-price {
-    font-size: 0.65rem;
-  }
-
-  .almost-finished-sale-page .add-to-cart-btn {
-    padding: 0;
-    width: 35px !important;
-    height: 35px !important;
-    border-radius: 50% !important;
-    justify-content: center !important;
-    font-size: 0.7rem;
-  }
+  
   .countdown-timer.small .countdown-unit {
     background-color: #e5e7eb70;
     padding: 6px 4px;
@@ -825,11 +714,7 @@
     font-size: 1.5rem;
   }
   
-  .almost-finished-sale-page .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.4rem;
-  }
-
+ 
   .almost-finished-sale-page .product-image-container {
     height: 135px;
   }
@@ -875,10 +760,7 @@
 }
 
 @media (max-width: 360px) {
-  .almost-finished-sale-page .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.3rem;
-  }
+ 
 
   .almost-finished-sale-page .product-image-container {
     height: 90px;
@@ -914,11 +796,7 @@
   
 
 @media (max-width: 360px) {
-  .almost-finished-sale-page .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.3rem;
-  }
-
+ 
   .almost-finished-sale-page .product-image-container {
     height: 90px;
   }

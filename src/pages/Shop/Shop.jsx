@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
-import { allProducts, categories, features, subcategories, getSubCategories, getFeatureById, getCategoryById, getMainCategories } from '../../data/index';
+import { allProducts, categories, features, getSubCategories, getFeatureById, getCategoryById, getMainCategories } from '../../data/index';
 import './Shop.css';
 import namer from 'color-namer';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -391,10 +391,7 @@ const Shop = () => {
       counts[`category_${category.name.en}`] = getCategoryCount(category.name.en);
     });
 
-    // Count subcategories
-    subcategories.forEach(subcategory => {
-      counts[`subcategory_${subcategory.id}`] = getSubcategoryCount(subcategory.id);
-    });
+  
     
     // Count colors
     colors.forEach(color => {
@@ -420,11 +417,12 @@ const Shop = () => {
 
     // Apply search filter if there's a search query
     if (searchQuery.trim()) {
-        const searchTerm = searchQuery.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name[currentLang].toLowerCase().includes(searchTerm) ||
-        product.description[currentLang].toLowerCase().includes(searchTerm)
-      );
+      const searchTerm = searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(product => {
+        const name = (product.name[currentLang] || '').toString().toLowerCase();
+        const desc = (product.description[currentLang] || '').toString().toLowerCase();
+        return name.includes(searchTerm) || desc.includes(searchTerm);
+      });
     }
 
     // Apply price filter
@@ -546,21 +544,49 @@ const Shop = () => {
         }));
       }
     } else if (filterType === 'subcategories') {
-      if (checked) {
-        setFilters(prev => ({
+      setFilters(prev => {
+        let newSubcategories = checked
+          ? Array.from(new Set([...prev.subcategories, value]))
+          : prev.subcategories.filter(id => id !== value);
+        // ابحث عن الفئة الرئيسية لهذه الفئة الفرعية عبر جميع الفئات
+        let parentCatId = null;
+        for (const cat of categories) {
+          const subs = getSubCategories(cat.id);
+          if (subs.some(sub => sub.id === value)) {
+            parentCatId = cat.id;
+            break;
+          }
+        }
+        let newCategories = [...prev.categories];
+        if (parentCatId) {
+          // جميع الفروع لهذه الفئة الرئيسية
+          const allSubs = getSubCategories(parentCatId).map(sub => sub.id);
+          const allSelected = allSubs.length > 0 && allSubs.every(id => newSubcategories.includes(id));
+          if (allSelected) {
+            // إذا كل الفروع محددة، أضف الرئيسية
+            if (!newCategories.includes(parentCatId)) newCategories.push(parentCatId);
+          } else {
+            // إذا لم تعد كل الفروع محددة، أزل الرئيسية
+            newCategories = newCategories.filter(id => id !== parentCatId);
+          }
+        }
+        return {
           ...prev,
-          subcategories: Array.from(new Set([...prev.subcategories, value])),
-          // إذا أضفت سب كاتيجوري، أزل الكاتيجوري الرئيسي له من الفلتر (حتى لا يكون مكرر)
-          categories: prev.categories.filter(id => id !== value)
-        }));
-      } else {
-        setFilters(prev => ({
-          ...prev,
-          subcategories: prev.subcategories.filter(id => id !== value)
-        }));
-      }
+          subcategories: newSubcategories,
+          categories: newCategories
+        };
+      });
+      return;
     } else if (filterType === 'priceRange') {
-      setFilters(prev => ({ ...prev, priceRange: value }));
+      // منع الأرقام السالبة وتصحيح القيم
+      let min = Math.max(0, value.min);
+      let max = Math.max(0, value.max);
+      if (min > max) {
+        // إذا البداية أكبر من النهاية، اجعل النهاية تساوي البداية
+        max = min;
+      }
+      setFilters(prev => ({ ...prev, priceRange: { min, max } }));
+      return;
     } else if (checked !== null) {
       setFilters(prev => ({
         ...prev,
@@ -791,7 +817,7 @@ const Shop = () => {
               expandedCategories={expandedCategories}
               toggleCategoryExpansion={toggleCategoryExpansion}
               categories={categories}
-              subcategories={subcategories}
+                
               features={features}
               colors={colors}
               statusOptions={statusOptions}
@@ -911,15 +937,15 @@ const Shop = () => {
               paginatedProducts={paginatedProducts}
               viewMode={viewMode}
               ProductCard={ProductCard}
-              currentLang={currentLang}
-              t={t}
-              isInWishlist={isInWishlist}
-              handleWishlistToggle={handleWishlistToggle}
-              handleAddToCart={handleAddToCart}
-              getFeatureById={getFeatureById}
-              getCategoryById={getCategoryById}
-              showStockInfo={true}
-            />
+                currentLang={currentLang}
+                t={t}
+                isInWishlist={isInWishlist}
+                handleWishlistToggle={handleWishlistToggle}
+                handleAddToCart={handleAddToCart}
+                getFeatureById={getFeatureById}
+                getCategoryById={getCategoryById}
+                showStockInfo={true}
+              />
 
             {/* Pagination */}
             <Pagination

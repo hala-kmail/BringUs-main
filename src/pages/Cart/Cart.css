@@ -342,7 +342,7 @@
 .cart-items-container {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 2rem;
+  gap: 1rem;
   align-items: start;
 }
 
@@ -608,7 +608,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1050px) {
   .cart-content {
     padding: 1rem;
     padding-bottom: 100px; /* Space for fixed bottom bar */

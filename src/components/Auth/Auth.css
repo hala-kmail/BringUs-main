@@ -412,14 +412,13 @@ body, html {
   background: var(--primary-dark);
 }
 
+/* almost-finished-with-register */
 .almost-finished-with-register {
   display: flex;
-  flex-direction: row;
   justify-content: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
-
 @media (max-width: 768px) {
   .almost-finished-with-register {
     flex-direction: column;
@@ -428,6 +427,35 @@ body, html {
   }
 }
 
+/* bar-header */
+.bar-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 768px) {
+  .bar-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+}
+
+/* desktop-bar-btns */
+.desktop-bar-btns {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+@media (max-width: 768px) {
+  .desktop-bar-btns {
+    display: none;
+  }
+}
+
+/* wholesale-inline-btn */
 .wholesale-inline-btn {
   display: flex;
   align-items: center;
@@ -448,18 +476,4 @@ body, html {
 }
 .wholesale-inline-btn:hover {
   background: var(--primary-dark);
-}
-
-.bar-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.desktop-bar-btns {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
 } 

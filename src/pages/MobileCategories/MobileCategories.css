@@ -178,6 +178,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  margin: 0;
   transition: color 0.3s ease;
   font-family: 'Tajawal', sans-serif;
 }
@@ -413,7 +414,7 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 425px) {
   .categories-sidebar {
     width: 90px;
   }
@@ -427,12 +428,13 @@
   }
 
   .subcategories-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
 
   .subcategory-image {
-    width: 35px;
-    height: 35px;
+    width: 55px;
+    height: 55px;
   }
 
   .subcategory-item {

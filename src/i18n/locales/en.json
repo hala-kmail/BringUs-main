@@ -514,7 +514,7 @@
     "onlyLeft": "Only {{count}} left!",
     "noProducts": "No products found",
     "noProductsDesc": "All products in this section are currently available or have been sold out.",
-    "youSave": "You Save:",
+    "youSave": "Save:",
     "off": "OFF"
   },
   "stock": {

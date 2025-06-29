@@ -37,6 +37,11 @@ const ProductDetail = () => {
 
   const currentLang = i18n.language;
 
+  // Scroll to top on product change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [id]);
+
   // قاموس ترجمة الألوان الشائعة
  
   console.log('ProductActions is loaded!');
@@ -365,7 +370,7 @@ const ProductDetail = () => {
             currentLang={currentLang}
             t={t}
           />
-        
+
           {/* Product Information */}
           <div className="product-detail-info-wrapper">
             <ProductInfoSection

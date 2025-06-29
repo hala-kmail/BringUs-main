@@ -5,20 +5,24 @@ import CountdownTimer from '../CountdownTimer/CountdownTimer';
 
 // دوال utility للتصدير
 export const isDiscountActive = (product) => {
-  if (!product.discountEndTime) return false;
-  const now = new Date();
-  const endTime = new Date(product.discountEndTime);
-  return now < endTime;
+  if (
+    !product.discountPrice ||
+    product.discountPercentage === null ||
+    product.discountPercentage === undefined ||
+    Number(product.discountPercentage) <= 0 ||
+    product.discountEndTime === null ||
+    product.discountEndTime === undefined ||
+    product.discountEndTime<new Date().toISOString()||
+    Number(product.discountPrice) >= Number(product.originalPrice)
+  ) return false;
+  return true;
 };
 
 export const getEffectivePrice = (product) => { 
-  const basePrice = product.originalPrice;
-  if ( isDiscountActive(product)) {
-    const discountAmount = (basePrice * product.discountPercentage) / 100;
-   
-    return basePrice - discountAmount;
+  if (isDiscountActive(product)) {
+    return product.discountPrice;
   }
-  return basePrice;
+  return product.originalPrice;
 };
 
 const ProductCard = ({
@@ -206,7 +210,7 @@ const ProductCard = ({
             <>
               <div className="discount-info">
                 <div className="savings-amount">
-                  <span className="savings-label">{currentLang === 'ar' ? 'توفير' : 'You Save'}</span>
+                  <span className="savings-label">{currentLang === 'ar' ? 'توفير' : 'Save'}</span>
                   <span className="savings-value">
                     {(product.originalPrice - product.discountPrice).toFixed(2)} {t('new_arrivals.currency')}
                   </span>

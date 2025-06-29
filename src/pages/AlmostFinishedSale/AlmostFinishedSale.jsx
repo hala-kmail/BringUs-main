@@ -3,12 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { allProducts } from '../../data/products';
-import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
-import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 import ShopToolbar from '../../components/Shop/ShopToolbar';
-import ProductCard from '../../components/ProductCard/ProductCard';
+import ProductCard, { isDiscountActive, getEffectivePrice } from '../../components/ProductCard/ProductCard';
 import './AlmostFinishedSale.css';
 
 const almostFinishedSale = () => {
@@ -19,85 +17,48 @@ const almostFinishedSale = () => {
   const [sortBy, setSortBy] = useState('stockLowToHigh');
   const [viewMode, setViewMode] = useState('grid');
   const currentLang = i18n.language;
-  // Helper function to check if discount is active
-  const isDiscountActive = (product) => {
-    if (!product.discountPrice || !product.discountPercentage) return false;
-    if (!product.discountEndTime) return true; // If no end time, consider it active
-    
-    const now = new Date();
-    const endTime = new Date(product.discountEndTime);
-    return now < endTime;
-  };
+  
 
-  // Helper function to get effective price (considering expired discounts)
-  const getEffectivePrice = (product) => {
-    if (isDiscountActive(product)) {
-      return product.discountPrice;
-    }
-    return product.originalPrice;
-  };
-
-  // Helper function to get discount percentage (only if active)
   const getActiveDiscountPercentage = (product) => {
     if (isDiscountActive(product)) {
-      return product.discountPercentage;
+      return Number(product.discountPercentage) || 0;
+      
     }
-    return null;
+    return 0;
   };
 
-  // Filter products by type - only show products with stock 10 or less
+  // Unified sort function
+  const getSortFunction = (sortBy, getActiveDiscountPercentage, getEffectivePrice) => (a, b) => {
+    switch (sortBy) {
+      case 'stockLowToHigh':
+        return a.stock - b.stock;
+      case 'stockHighToLow':
+        return b.stock - a.stock;
+      case 'discountHighToLow':
+        return getActiveDiscountPercentage(b) - getActiveDiscountPercentage(a);
+      case 'discountLowToHigh':
+        return getActiveDiscountPercentage(a) - getActiveDiscountPercentage(b); 
+      case 'priceLowToHigh':
+        return getEffectivePrice(a) - getEffectivePrice(b);
+      case 'priceHighToLow':
+        return getEffectivePrice(b) - getEffectivePrice(a);
+      default:
+        return a.stock - b.stock;
+    }
+  };
+
   const almostFinishedProducts = allProducts
     .filter(product => product.stock <= 10 && product.stock > 0)
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'stockLowToHigh':
-          return a.stock - b.stock;
-        case 'stockHighToLow':
-          return b.stock - a.stock;
-        case 'discountHighToLow':
-          return (getActiveDiscountPercentage(b) || 0) - (getActiveDiscountPercentage(a) || 0);
-        case 'priceLowToHigh':
-          return getEffectivePrice(a) - getEffectivePrice(b);
-        case 'priceHighToLow':
-          return getEffectivePrice(b) - getEffectivePrice(a);
-        default:
-          return a.stock - b.stock;
-      }
-    });
+    .sort(getSortFunction(sortBy, getActiveDiscountPercentage, getEffectivePrice));
 
-  // Show only products with active discounts
   const discountedProducts = allProducts
     .filter(product => isDiscountActive(product) && product.stock > 0)
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'stockLowToHigh':
-          return a.stock - b.stock;
-        case 'stockHighToLow':
-          return b.stock - a.stock;
-        case 'discountHighToLow':
-          return (getActiveDiscountPercentage(b) || 0) - (getActiveDiscountPercentage(a) || 0);
-        case 'priceLowToHigh':
-          return getEffectivePrice(a) - getEffectivePrice(b);
-        case 'priceHighToLow':
-          return getEffectivePrice(b) - getEffectivePrice(a);
-        default:
-          return (getActiveDiscountPercentage(b) || 0) - (getActiveDiscountPercentage(a) || 0);
-      }
-    });
+    .sort(getSortFunction(sortBy, getActiveDiscountPercentage, getEffectivePrice));
 
   const currentProducts = currentSection === 'almost-finished' ? almostFinishedProducts : discountedProducts;
 
-  const getStockStatus = (stock) => {
-    if (stock <= 3) return 'critical';
-    if (stock <= 5) return 'low';
-    if (stock <= 10) return 'limited';
-    return 'available';
-  };
-
-  const getStockStatusText = (stock) => {
-    const status = getStockStatus(stock);
-    return t(`stock.${status}`);
-  };
+  
+ 
 
   const handleAddToCart = (product) => {
     // Navigate to product details page like other components
@@ -113,7 +74,7 @@ const almostFinishedSale = () => {
 
   return (
     <div className="almost-finished-sale-page" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* <TopBar /> */}
+      
       <Navbar />
       <SecondaryNavbar />
       
@@ -142,8 +103,7 @@ const almostFinishedSale = () => {
             onClick={() => setCurrentSection('almost-finished')}
           >
             <span className="tab-icon">
-              {/* SVG Box Icon */}
-              {/* <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg> */}
+             
             </span>
             {currentLang === 'ar' ? 'المنتجات القريبة من الانتهاء' : 'Almost Finished Products'}
             <span className="tab-count">({almostFinishedProducts.length})</span>
@@ -172,13 +132,21 @@ const almostFinishedSale = () => {
           currentLang={currentLang}
           filteredCount={currentProducts.length}
           totalCount={currentSection === 'almost-finished' ? almostFinishedTotal : discountedTotal}
-          sortOptions={[
-            { value: 'stockLowToHigh', label: currentLang === 'ar' ? 'الأقل مخزوناً' : 'Stock: Low to High' },
-            { value: 'stockHighToLow', label: currentLang === 'ar' ? 'الأعلى مخزوناً' : 'Stock: High to Low' },
-            { value: 'discountHighToLow', label: currentLang === 'ar' ? 'الأعلى خصماً' : 'Discount: High to Low' },
-            { value: 'priceLowToHigh', label: currentLang === 'ar' ? 'الأقل سعراً' : 'Price: Low to High' },
-            { value: 'priceHighToLow', label: currentLang === 'ar' ? 'الأعلى سعراً' : 'Price: High to Low' }
-          ]}
+          sortOptions={
+            currentSection === 'almost-finished'
+              ? [
+                  { value: 'stockLowToHigh', label: currentLang === 'ar' ? 'الأقل مخزوناً' : 'Stock: Low to High' },
+                  { value: 'stockHighToLow', label: currentLang === 'ar' ? 'الأعلى مخزوناً' : 'Stock: High to Low' },
+                  { value: 'priceLowToHigh', label: currentLang === 'ar' ? 'الأقل سعراً' : 'Price: Low to High' },
+                  { value: 'priceHighToLow', label: currentLang === 'ar' ? 'الأعلى سعراً' : 'Price: High to Low' }
+                ]
+              : [
+                  { value: 'discountHighToLow', label: currentLang === 'ar' ? 'الأعلى خصماً' : 'Discount: High to Low' },
+                  { value: 'discountLowToHigh', label: currentLang === 'ar' ? 'الأقل خصماً' : 'Discount: Low to High' },
+                  { value: 'priceLowToHigh', label: currentLang === 'ar' ? 'الأقل سعراً' : 'Price: Low to High' },
+                  { value: 'priceHighToLow', label: currentLang === 'ar' ? 'الأعلى سعراً' : 'Price: High to Low' }
+                ]
+          }
         />
 
         {/* Products Grid */}

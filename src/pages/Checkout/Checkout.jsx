@@ -36,8 +36,9 @@ const Checkout = () => {
   const cartTotals = getCartTotals();
 
   // أضف حالة لطريقة الاستلام والمنطقة
+  const defaultAreaId = localStorage.getItem('register_area') || 1; // 1 = الضفة
   const [deliveryMethod, setDeliveryMethod] = useState('delivery'); // 'delivery' or 'store'
-  const [deliveryArea, setDeliveryArea] = useState(localStorage.getItem('register_area') || 1); // default area
+  const [deliveryArea, setDeliveryArea] = useState(defaultAreaId);
 
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
@@ -90,7 +91,7 @@ useEffect(() => {
     address: localStorage.getItem('register_address') || '',
     district: localStorage.getItem('register_district') || '',
     city: localStorage.getItem('register_city') || prev.city || '',
-    deliveryArea: localStorage.getItem('register_area') || '',
+    deliveryArea: localStorage.getItem('register_area') || '1',
 
   }));
   
@@ -98,11 +99,38 @@ useEffect(() => {
 ////////////////////////////////////////////////////////////////////////////////////////
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // معالجة خاصة لحقل الهاتف
+    if (name === 'phone') {
+      // فقط أرقام و+
+      let sanitized = value.replace(/[^0-9+]/g, '');
+      // إضافة + في البداية إذا لم يوجد
+      if (sanitized && sanitized[0] !== '+') {
+        sanitized = '+' + sanitized.replace(/^\++/, '');
+      }
+      // لا تتجاوز 15 رقم بعد +
+      if (sanitized.startsWith('+')) {
+        const digits = sanitized.slice(1).replace(/[^0-9]/g, '');
+        sanitized = '+' + digits.slice(0, 15);
+      } else {
+        sanitized = sanitized.slice(0, 15);
+      }
+      setFormData(prev => ({
+        ...prev,
+        [name]: sanitized
+      }));
+      // Clear error when user starts typing
+      if (formErrors[name]) {
+        setFormErrors(prev => ({
+          ...prev,
+          [name]: ''
+        }));
+      }
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    
     // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({
@@ -120,7 +148,7 @@ useEffect(() => {
     if (!formData.phone.trim()) {
       errors.phone = t('checkout.validation.phone_required');
     } else if (!/^[0-9+\-\s()]{10,}$/.test(formData.phone.trim())) {
-      errors.phone = t('checkout.validation.invalid_phone_number');
+      errors.phone = t('checkout.validation.phone_invalid');
     }
     if (deliveryMethod === 'delivery') {
       if (!formData.address.trim()) {
@@ -137,7 +165,10 @@ useEffect(() => {
   // عدل حساب الشحن حسب طريقة الاستلام
   const getShippingPrice = () => {
     if (deliveryMethod === 'store') return 0;
-    return getShippingPriceByAreaId(Number(formData.deliveryArea));
+    // إذا لم يوجد منطقة، اجعلها الضفة (id=1) وسعرها 20
+    const areaId = Number(formData.deliveryArea) || 1;
+    const price = getShippingPriceByAreaId(areaId);
+    return price !== undefined ? price : 20;
   };
 //////////////////////////////////////////////////////////////////////////////////////
 // عدل زر تأكيد الطلب ليظهر popup الدفع بدلاً من الإرسال المباشر
@@ -421,7 +452,7 @@ const handleSendWhatsApp = () => {
                 <div className="total-row">
                   <span>{t('checkout.shipping')}</span>
                   <span>
-                    {getShippingPrice() === 0 ? (t('checkout.free')) : `₪${getShippingPrice()}`}
+                    {deliveryMethod === 'store' ? t('checkout.free') : (getShippingPrice() === 0 ? t('checkout.free') : `₪${getShippingPrice()}`)}
                   </span>
                 </div>
                 
@@ -471,7 +502,7 @@ const handleSendWhatsApp = () => {
  {/* Popup طرق الدفع */}
  {showPaymentPopup && (
         <div className="privacy-popup-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="privacy-popup" style={{ background: '#fff', borderRadius: 12, maxWidth: 600, width: '95%', padding: 60, boxShadow: '0 4px 24px rgba(0,0,0,0.15)', position: 'relative', maxHeight: '80vh' }}>
+          <div className="privacy-popup" style={{ background: '#fff', borderRadius: 12, maxWidth: 600, width: '95%', padding: 60, boxShadow: '0 4px 24px rgba(0,0,0,0.15)', position: 'relative' }}>
             <button type="button" onClick={() => setShowPaymentPopup(false)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }} aria-label="Close">×</button>
             <h3 style={{ marginTop: 0, marginBottom: 16, color: 'var(--primary-color)' }}>{t('checkout.payment_methods')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

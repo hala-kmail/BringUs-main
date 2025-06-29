@@ -60,7 +60,8 @@ const CountdownTimer = ({ endTime, size = 'small' }) => {
           <div className="countdown-number">{formatNumber(timeLeft.days)}</div>
           <div className="countdown-label">{currentLang === 'ar' ? 'أيام' : 'Days'}</div>
         </div>
-
+  {/* Separator */}
+  <div className="countdown-separator">:</div>
         {/* Hours */}
         <div className="countdown-unit">
           <div className="countdown-number">{formatNumber(timeLeft.hours)}</div>

@@ -1328,7 +1328,7 @@ export const allProducts = [
     "originalPrice": 45.99,
     "discountPrice": 38.99,
     "discountPercentage": 15,
-    "discountEndTime": "2025-06-25T19:30:00Z",
+    "discountEndTime": "2025-06-30T19:30:00Z",
     "featureId": 13,
     "colors": [
       "#ef4444"

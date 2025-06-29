@@ -960,10 +960,7 @@ right: auto;
     margin-right: 0;
   }
 
-  .product-action-btn > *:not(svg) {
-    display: none;
-  }
-
+ 
   .product-countdown {
     gap: 0.5rem;
   }
@@ -1123,7 +1120,9 @@ right: auto;
   .product-detail-price {
     order: 4;
   }
-
+  .product-action-btn span{
+    display: none;
+  }
   /* Add countdown styles for smallest screens */
   .product-countdown-section {
     margin: 0.5rem 0;

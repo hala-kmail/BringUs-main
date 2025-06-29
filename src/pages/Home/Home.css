@@ -22,7 +22,7 @@
 }
 
 /* Responsive adjustments for home content */
-@media (max-width: 768px) {
+@media (max-width: 968px) {
   .home-content > *:not(.carousel-container) {
   
     max-width: 100%;

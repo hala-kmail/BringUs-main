@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { 
   allProducts, 
-  categories, 
-  subcategories, 
+  categories,  
   getProductsByCategory, 
-  getSubcategoriesByCategory,
-  getProductsBySubcategory 
+  getProductsBySubcategory, 
+  getSubCategories, 
+  getMainCategories
 } from '../../data/index';
 import './MobileCategories.css';
 
@@ -74,22 +74,28 @@ const MobileCategories = () => {
     return products.length > 0;
   };
 
-  // تصفية الفئات لإظهار فقط التي تحتوي على منتجات
-  const getFilteredCategories = () => {
-    return categories.filter(category => hasProductsInCategory(category.id));
+  // تصفية الفئات لإظهار فقط الفئات الرئيسية التي تحتوي على منتجات
+  const getFilteredMainCategories = () => {
+    // الفئات الرئيسية فقط
+    console.log(getMainCategories());
+    return getMainCategories().filter(category => hasProductsInCategory(category.id));
   };
 
   // دالة لجلب الفئات الفرعية لفئة معينة
   const getCategorySubcategories = (categoryId) => {
-    const subCategories = getSubcategoriesByCategory(categoryId);
+    const subCategories = getSubCategories(categoryId); // فقط الفروع المباشرة
     // تصفية الفئات الفرعية لإظهار فقط التي تحتوي على منتجات
     return subCategories.filter(subcategory => hasProductsInSubcategory(subcategory.id));
   };
 
-  // دالة لجلب جميع الفئات الفرعية من جميع الفئات
+  // دالة لجلب جميع الفئات الفرعية من جميع الفئات الرئيسية (تستخدم فقط عند اختيار الكل)
   const getAllSubcategories = () => {
-    // جلب جميع الفئات الفرعية وتصفيتها لإظهار فقط التي تحتوي على منتجات
-    return subcategories.filter(subcategory => hasProductsInSubcategory(subcategory.id));
+    let allSubCategories = [];
+    getMainCategories().forEach(mainCat => {
+      const subCats = getSubCategories(mainCat.id);
+      allSubCategories = allSubCategories.concat(subCats);
+    });
+    return allSubCategories.filter(subcategory => hasProductsInSubcategory(subcategory.id));
   };
 
   // تحديد خيار "الكل" كافتراضي
@@ -120,14 +126,13 @@ const MobileCategories = () => {
   };
 
   const handleSubcategoryClick = (subcategoryId) => {
-    // البحث عن الفئة الرئيسية للفئة الفرعية
-    const subcategory = subcategories.find(sub => sub.id === subcategoryId);
+    // البحث عن الفئة الفرعية من قائمة categories
+    const subcategory = categories.find(sub => sub.id === subcategoryId);
     if (subcategory) {
-      const mainCategorySlug = categorySlugMapping[subcategory.categoryId];
-      const subcategorySlug = subcategorySlugMapping[subcategoryId];
-      
-      if (mainCategorySlug && subcategorySlug) {
-        navigate(`/category/${mainCategorySlug}/${subcategorySlug}`);
+      // جلب الفئة الرئيسية
+      const mainCategory = categories.find(cat => cat.id === subcategory.parentCategoryId);
+      if (mainCategory && mainCategory.slug && subcategory.slug) {
+        navigate(`/category/${mainCategory.slug[currentLang]}/${subcategory.slug[currentLang]}`);
       }
     }
   };
@@ -137,8 +142,7 @@ const MobileCategories = () => {
     if (selectedCategory === 'all') {
       return t('categories.all_categories');
     }
-    const filteredCategories = getFilteredCategories();
-    return filteredCategories.find(cat => cat.id === selectedCategory)?.name[currentLang];
+    return getMainCategories().find(cat => cat.id === selectedCategory)?.name[currentLang];
   };
 
   // دالة للحصول على نص الزر "عرض الكل"
@@ -149,7 +153,7 @@ const MobileCategories = () => {
     return t('new_arrivals.view_all');
   };
 
-  const filteredCategories = getFilteredCategories();
+  const filteredMainCategories = getFilteredMainCategories();
 
   return (
     <div className="mobile-categories-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
@@ -180,7 +184,7 @@ const MobileCategories = () => {
           </button>
           
           {/* باقي الفئات */}
-          {filteredCategories.map((category) => (
+          {getMainCategories().map((category) => (
             <button
               key={category.id}
               className={`category-item ${selectedCategory === category.id ? 'active' : ''}`}
@@ -232,7 +236,7 @@ const MobileCategories = () => {
 
           {categorySubcategories.length === 0 && (
             <div className="no-subcategories">
-              <div className="no-subcategories-icon">📂</div>
+             
                   <h3>{t('shop.no_products_title')}</h3>
                   <p>{t('shop.no_products_description')}</p>
                 </div>
