@@ -77,7 +77,7 @@ export const CartProvider = ({ children }) => {
         name: product.name,
         image: product.image,
         originalPrice: product.originalPrice,
-        discountPrice: product.discountPrice,
+        
         finalPrice: getEffectivePrice(product),
         selectedColor,
         selectedSize,

@@ -174,7 +174,7 @@ const ProductDetail = () => {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleWhatsAppOrder = () => {
     if (product) {
-      const finalPrice = discountPrice || originalPrice;
+      const finalPrice =  originalPrice;
       const totalPrice = (finalPrice * quantity).toFixed(2);
       
       let message = `${t('product_detail.whatsapp_greeting', { name: product.name[currentLang] })}`;
@@ -253,29 +253,26 @@ const ProductDetail = () => {
 
   // Calculate price based on selected size
   const calculatePrice = () => {
-    if (!product) return { originalPrice: 0, discountPrice: 0 };
+    if (!product) return { originalPrice: 0 };
     
     let basePriceOriginal = product.originalPrice;
-    let basePriceDiscount = product.discountPrice;
+    
     
     // Find selected size and add price modifier
     if (product.sizes && selectedSize) {
       const size = product.sizes.find(s => s.name === selectedSize);
       if (size && size.priceModifier) {
         basePriceOriginal += size.priceModifier;
-        if (basePriceDiscount) {
-          basePriceDiscount += size.priceModifier;
-        }
+        
       }
     }
     
     return {
-      originalPrice: basePriceOriginal,
-      discountPrice: basePriceDiscount
+      originalPrice: basePriceOriginal
     };
   };
 
-  const { originalPrice, discountPrice } = calculatePrice();
+  const { originalPrice } = calculatePrice();
 
   const incrementQuantity = () => {
     setQuantity(prev => Math.min(prev + 1, product?.stock || 1));
@@ -380,7 +377,7 @@ const ProductDetail = () => {
               currentLang={currentLang}
               t={t}
               originalPrice={originalPrice}
-              discountPrice={discountPrice}
+             
               isDiscountActive={isDiscountActive}
               getEffectivePrice={getEffectivePrice}
             />

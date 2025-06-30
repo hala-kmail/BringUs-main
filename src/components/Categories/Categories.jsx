@@ -11,16 +11,16 @@ const Categories = () => {
   const [activeMainCategory, setActiveMainCategory] = useState(null);
   const currentLang = i18n.language;
 
-  
+  //-----------------------------------mainCategories------------------------------------------------  
   const mainCategories = getMainCategories();
 
- 
+  //-----------------------------------subcategories------------------------------------------------  
   const subcategories = activeMainCategory ? getSubCategories(activeMainCategory.id) : [];
 
-  
+  //-----------------------------------allSubcategories------------------------------------------------  
   const allSubcategories = mainCategories.flatMap((cat) => getSubCategories(cat.id));
 
- 
+  //-----------------------------------handleMainCategoryClick------------------------------------------------  
   const handleMainCategoryClick = (category) => {
     setActiveMainCategory(category);
     navigate(`/category/${category.slug['en']}`);
@@ -28,7 +28,7 @@ const Categories = () => {
     setActiveMainCategory(null);
   };
 
-  
+  //-----------------------------------handleSubcategoryClick------------------------------------------------  
   const handleSubcategoryClick = (subcategory) => {
    
     let mainCategory = activeMainCategory;
@@ -43,26 +43,25 @@ const Categories = () => {
     }
   };
 
-  
+  //-----------------------------------handleClosePanel------------------------------------------------  
   const handleClosePanel = () => {
     setIsPanelOpen(false);
     setActiveMainCategory(null);
   };
-
+//-----------------------------------return------------------------------------------------  
   return (
     <div className="categories-component">
       <button className="categories-btn" onClick={() => setIsPanelOpen(!isPanelOpen)}>
         <span className="categories-icon">☰</span>
-        <span className="categories-label">{t('categories.all_categories')}</span>
-        
+        <span className="categories-label">{t('categories.all_categories')}</span>  
       </button>
 
-      
+      {/*-----------------------------------Categories Panel------------------------------------------------   */}
       {isPanelOpen && (
         <div className={`categories-panel ${currentLang === 'ar' ? 'rtl' : 'ltr'}`}> 
           <button className="close-panel-btn" onClick={handleClosePanel}>×</button>
           <div className="categories-panel-content">
-            {/* العمود الأيمن: قائمة الفئات الرئيسية */}
+            {/*-----------------------------------Main Categories List------------------------------------------------   */}
             <div className="main-categories-list">
               {mainCategories.map((category) => (
                 <button
@@ -93,7 +92,7 @@ const Categories = () => {
                 </button>
               ))}
             </div>
-            {/* العمود الأيسر: دوائر الفئات الفرعية */}
+              {/*-----------------------------------Subcategories List------------------------------------------------   */}
             <div className="subcategories-list">
               {(activeMainCategory ? subcategories : allSubcategories).length > 0 ? (
                 (activeMainCategory ? subcategories : allSubcategories).map((subcategory) => (

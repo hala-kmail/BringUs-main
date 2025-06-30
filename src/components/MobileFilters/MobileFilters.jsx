@@ -39,7 +39,7 @@ const MobileFilters = ({
 
       // Apply price filter
       baseProducts = baseProducts.filter(product => {
-        const price = product.discountPrice || product.originalPrice;
+        const price =  product.originalPrice;
         return price >= filters.priceRange.min && price <= filters.priceRange.max;
       });
 
@@ -74,7 +74,7 @@ const MobileFilters = ({
           return filters.status.some(status => {
             switch (status) {
               case 'on_sale':
-                return product.discountPrice || product.discountPercentage;
+                return  product.discountPercentage;
               case 'in_stock':
                 return product.stock && product.stock > 0;
               case 'new':
@@ -131,7 +131,7 @@ const MobileFilters = ({
       else if (section === 'status') {
         const statusChecks = {
           'in_stock': (product) => product.stock && product.stock > 0,
-          'on_sale': (product) => product.discountPrice || product.discountPercentage,
+          'on_sale': (product) =>  product.discountPercentage,
           'new': (product) => product.isNew === true,
           'featured': (product) => product.isBestSeller === true
         };
@@ -299,7 +299,7 @@ const MobileFilters = ({
 
     // Apply price filter
     filtered = filtered.filter(product => {
-      const price = product.discountPrice || product.originalPrice;
+      const price =  product.originalPrice;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
@@ -334,7 +334,7 @@ const MobileFilters = ({
         return filters.status.some(status => {
           switch (status) {
             case 'on_sale':
-              return product.discountPrice || product.discountPercentage;
+              return  product.discountPercentage;
             case 'in_stock':
               return product.stock && product.stock > 0;
             case 'new':

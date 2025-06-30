@@ -8,15 +8,12 @@ const CategoriesGrid = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const currentLang = i18n.language;
-
-
+//-----------------------------------handleCategoryClick--------------------------------------  
   const handleCategoryClick = (category) => {
     const categorySlug = category.slug['en'];
     navigate(`/category/${categorySlug}`);
   };
-
-
-
+//-----------------------------------return------------------------------------------------  
   return (
     <section className="categories-grid-section">
       <div className="categories-grid-container">

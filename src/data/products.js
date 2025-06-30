@@ -24,7 +24,7 @@ export const allProducts = [
       "ar": "تفاح عضوي طازج، غني بالنكهة والعناصر الغذائية."
     },
     "originalPrice": 25.99,
-    "discountPrice": 19.99,
+   
     "discountPercentage": 23,
     "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 1,
@@ -67,7 +67,6 @@ export const allProducts = [
       "ar": "موز ناضج وحلو، مثالي للوجبات الخفيفة."
     },
     "originalPrice": 8.99,
-    "discountPrice": 6.99,
     "discountPercentage": 22,
     "discountEndTime": "2025-06-22T15:30:00Z",
     "featureId": 2,
@@ -99,7 +98,6 @@ export const allProducts = [
       "ar": "سبانخ عضوية طازجة، مليئة بالفيتامينات."
     },
     "originalPrice": 12.99,
-    "discountPrice": 8.99,
     "discountPercentage": 31,
     "discountEndTime": "2025-06-14T18:45:00Z",
     "featureId": 1,
@@ -130,7 +128,6 @@ export const allProducts = [
       "ar": "طماطم حمراء طازجة، مثالية للطبخ."
     },
     "originalPrice": 15.99,
-    "discountPrice": 12.99,
     "discountPercentage": 19,
     "discountEndTime": "2025-06-16T21:15:00Z",
     "featureId": 2,
@@ -162,7 +159,6 @@ export const allProducts = [
       "ar": "جزر عضوي طازج، حلو ومقرمش."
     },
     "originalPrice": 9.99,
-    "discountPrice": 7.99,
     "discountPercentage": 20,
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 1,
@@ -194,7 +190,6 @@ export const allProducts = [
       "ar": "بطاطا طازجة"
     },
     "originalPrice": 15.99,
-    "discountPrice": 10.99,
     "discountPercentage": 31,
     "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 1,
@@ -243,7 +238,6 @@ export const allProducts = [
       "ar": "فيليه سلمون فاخر، طازج ولذيذ."
     },
     "originalPrice": 89.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 2,
     "colors": [
@@ -284,7 +278,6 @@ export const allProducts = [
       "ar": "ستيك لحم بقري مرعى طبيعي، طري ولذيذ."
     },
     "originalPrice": 45.99,
-    "discountPrice": 35.99,
     "discountPercentage": 22,
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 3,
@@ -315,7 +308,6 @@ export const allProducts = [
       "ar": "صدر دجاج طازج، قليل الدهن وصحي."
     },
     "originalPrice": 32.99,
-    "discountPrice": 28.99,
     "discountPercentage": 12,
     "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 2,
@@ -347,7 +339,6 @@ export const allProducts = [
       "ar": "جمبري طازج، مأكولات بحرية فاخرة."
     },
     "originalPrice": 65.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
@@ -378,7 +369,6 @@ export const allProducts = [
       "ar": "حليب طازج، غني بالكالسيوم والفيتامينات."
     },
     "originalPrice": 18.99,
-    "discountPrice": 15.99,
     "discountPercentage": 16,
     "discountEndTime": "2025-06-30T23:59:59Z",
     "featureId": 2,
@@ -409,7 +399,6 @@ export const allProducts = [
       "ar": "زبادي يوناني، كريمي ومغذي."
     },
     "originalPrice": 22.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 4,
     "colors": [
@@ -440,7 +429,6 @@ export const allProducts = [
       "ar": "بيض طازج من المزرعة، عضوي وطبيعي."
     },
     "originalPrice": 16.99,
-    "discountPrice": 13.99,
     "discountPercentage": 18,
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 1,
@@ -472,7 +460,6 @@ export const allProducts = [
       "ar": "جبن حرفي، معتق للكمال."
     },
     "originalPrice": 35.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
@@ -503,7 +490,6 @@ export const allProducts = [
       "ar": "خبز العجين المخمر الحرفي، مصنوع يدوياً يومياً."
     },
     "originalPrice": 12.99,
-    "discountPrice": 9.99,
     "discountPercentage": 15,
     "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 5,
@@ -535,7 +521,6 @@ export const allProducts = [
       "ar": "كرواسان طازج، بالزبدة ومقرمش."
     },
     "originalPrice": 18.99,
-    "discountPrice": 14.99,
     "discountPercentage": 21,
     "discountEndTime": "2025-06-12T15:30:00Z",
     "featureId": 2,
@@ -567,7 +552,6 @@ export const allProducts = [
       "ar": "خبز القمح الكامل، صحي ومغذي."
     },
     "originalPrice": 14.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 6,
     "colors": [
@@ -593,7 +577,6 @@ export const allProducts = [
       "ar": "مافن الشوكولاتة، حلو ورطب."
     },
     "originalPrice": 24.99,
-    "discountPrice": 19.99,
     "discountPercentage": 20,
     "discountEndTime": "2025-06-14T18:45:00Z",
     "featureId": 2,
@@ -637,7 +620,6 @@ export const allProducts = [
       "ar": "عصير برتقال طازج، غني بفيتامين سي."
     },
     "originalPrice": 15.99,
-    "discountPrice": 12.99,
     "discountPercentage": 19,
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 2,
@@ -681,7 +663,6 @@ export const allProducts = [
       "ar": "مياه فوارة، منعشة وطبيعية."
     },
     "originalPrice": 8.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 4,
     "colors": [
@@ -724,7 +705,6 @@ export const allProducts = [
       "ar": "شاي أخضر، عضوي وغني بمضادات الأكسدة."
     },
     "originalPrice": 19.99,
-    "discountPrice": 16.99,
     "discountPercentage": 15,
     "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 1,
@@ -768,7 +748,6 @@ export const allProducts = [
       "ar": "بوظة تشيز كيك، جودة فاخرة."
     },
     "originalPrice": 12.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
@@ -811,7 +790,6 @@ export const allProducts = [
       "ar": "خضروات مجمدة مشكلة، صحية ومريحة."
     },
     "originalPrice": 16.99,
-    "discountPrice": 13.99,
     "discountPercentage": 18,
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 6,
@@ -855,7 +833,6 @@ export const allProducts = [
       "ar": "بيتزا مجمدة، جاهزة للخبز."
     },
     "originalPrice": 28.99,
-    "discountPrice": 22.99,
     "discountPercentage": 21,
     "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 7,
@@ -900,7 +877,6 @@ export const allProducts = [
       "ar": "آيس كريم فاخر، كريمي ولذيذ."
     },
     "originalPrice": 24.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
@@ -942,7 +918,6 @@ export const allProducts = [
       "ar": "تفاح مجمد فاخر، كريمي ولذيذ."
     },
     "originalPrice": 24.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
@@ -985,7 +960,6 @@ export const allProducts = [
       "ar": "برتقال مجمد فاخر، كريمي ولذيذ."
     },
     "originalPrice": 24.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 3,
     "colors": [
@@ -1027,7 +1001,6 @@ export const allProducts = [
       "ar": "أرز بسمتي، حبة طويلة فاخرة."
     },
     "originalPrice": 45.99,
-    "discountPrice": 38.99,
     "discountPercentage": 15,
     "discountEndTime": "2025-06-30T23:59:59Z",
     "featureId": 3,
@@ -1070,7 +1043,6 @@ export const allProducts = [
       "ar": "زيت زيتون بكر ممتاز، معصور على البارد."
     },
     "originalPrice": 52.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 9,
     "colors": [
@@ -1112,7 +1084,6 @@ export const allProducts = [
       "ar": "مسحوق غسيل مركز، تنظيف قوي."
     },
     "originalPrice": 35.99,
-    "discountPrice": 28.99,
     "discountPercentage": 19,
     "discountEndTime": "2025-06-20T14:30:00Z",
     "featureId": 10,
@@ -1155,7 +1126,6 @@ export const allProducts = [
       "ar": "ورق تواليت ناعم، مريح وماص."
     },
     "originalPrice": 24.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 11,
     "colors": [
@@ -1197,7 +1167,6 @@ export const allProducts = [
       "ar": "صابون أطباق مضاد للبكتيريا، تنظيف فعال."
     },
     "originalPrice": 18.99,
-    "discountPrice": 14.99,
     "discountPercentage": 21,
     "discountEndTime": "2025-06-22T17:00:00Z",
     "featureId": 12,
@@ -1240,7 +1209,6 @@ export const allProducts = [
       "ar": "أقراص فيتامين سي، دعم طبيعي للمناعة."
     },
     "originalPrice": 29.99,
-    "discountPrice": 24.99,
     "discountPercentage": 17,
     "discountEndTime": "2025-06-10T12:00:00Z",
     "featureId": 4,
@@ -1284,7 +1252,6 @@ export const allProducts = [
       "ar": "معقم اليدين، حماية مضادة للبكتيريا."
     },
     "originalPrice": 16.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 12,
     "colors": [
@@ -1326,7 +1293,6 @@ export const allProducts = [
       "ar": "حقيبة إسعافات أولية كاملة، أساسيات الطوارئ."
     },
     "originalPrice": 45.99,
-    "discountPrice": 38.99,
     "discountPercentage": 15,
     "discountEndTime": "2025-06-30T19:30:00Z",
     "featureId": 13,
@@ -1351,7 +1317,6 @@ export const allProducts = [
       }
     ],
     "categoryId": 31,
-  
     "stock": 35,
     "isBestSeller": false,
     "isNew": true,
@@ -1370,7 +1335,6 @@ export const allProducts = [
       "ar": "حفاضات أطفال ناعمة جداً، حماية لطيفة."
     },
     "originalPrice": 42.99,
-    "discountPrice": 35.99,
     "discountPercentage": 16,
     "discountEndTime": "2025-06-28T13:45:00Z",
     "featureId": 14,
@@ -1413,7 +1377,6 @@ export const allProducts = [
       "ar": "حليب أطفال مغذي، تغذية كاملة."
     },
     "originalPrice": 65.99,
-    "discountPrice": null,
     "discountPercentage": null,
     "featureId": 15,
     "colors": [
@@ -1455,7 +1418,6 @@ export const allProducts = [
       "ar": "مناديل أطفال لطيفة، ناعمة وآمنة."
     },
     "originalPrice": 22.99,
-    "discountPrice": 18.99,
     "discountPercentage": 17,
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 16,

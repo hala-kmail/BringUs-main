@@ -9,41 +9,37 @@ const SecondaryNavbar = () => {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(window.scrollY);
+  //-----------------------------------handleScroll------------------------------------------------  
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
-   
     if (currentScrollY > lastScrollY && currentScrollY > 60) {
-      
-      // Scrolling down
       setIsVisible(false);
     } else {
-      // Scrolling up
       setIsVisible(true);
     }
-
     setLastScrollY(currentScrollY);
   };
-
+//-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
-
+//-----------------------------------navigationLinks------------------------------------------------    
   const navigationLinks = [
     { id: 'home', name: t('secondary_nav.home'), path: '/home' },
     { id: 'shop', name: t('secondary_nav.shop'), path: '/shop' }
   ];
-
+//-----------------------------------return------------------------------------------------  
   return (
     <div className={`secondary-navbar ${isVisible ? 'show' : 'hide'}`}>
       <div className="secondary-navbar-container">
-        {/* Categories Section */}
+{/*-----------------------------------Categories Section------------------------------------------------   */}
         <div className="secondary-nav-section categories-section">
           <Categories />
         </div>
 
-        {/* Navigation Links */}
+{/*-----------------------------------Navigation Links------------------------------------------------   */}
         <div className="secondary-nav-section navigation-section">
           <nav className="navigation-links">
             {navigationLinks.map((link) => (
@@ -62,7 +58,7 @@ const SecondaryNavbar = () => {
           </nav>
         </div>
 
-        {/* Special Offers Section */}
+{/*-----------------------------------Special Offers Section------------------------------------------------   */}
         <div className="secondary-nav-section offers-section">
           <Link to="/trending" className="offer-link trending">
             <span className="offer-text">{t('secondary_nav.trending_products')}</span>

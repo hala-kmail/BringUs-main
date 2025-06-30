@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { 
-  allProducts, 
+ 
   categories,  
   getProductsByCategory, 
-  getProductsBySubcategory, 
+  
   getSubCategories, 
   getMainCategories
 } from '../../data/index';

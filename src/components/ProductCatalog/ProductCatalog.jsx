@@ -212,10 +212,10 @@ const ProductCatalog = ({ language = 'en' }) => {
               </div>
               
               <div className="product-pricing">
-                {product.discountPrice ? (
+                {product.discountPercentage ? (
                   <>
                     <span className="original-price">${product.originalPrice}</span>
-                    <span className="discount-price">${product.discountPrice}</span>
+                    
                   </>
                 ) : (
                   <span className="price">${product.originalPrice}</span>

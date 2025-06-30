@@ -6,40 +6,43 @@
 
 .home-content {
   width: 100%;
- overflow-x: hidden;
+  overflow-x: hidden;
 }
 
-.home-content > *:not(.carousel-container) {
+.home-content>*:not(.carousel-container) {
   max-width: 85%;
   margin: 1rem auto;
-  
+
 }
-.best-sellers{
- 
-    padding: 0.5rem;
-    border-radius: 20px;
+
+.best-sellers {
+
+  padding: 0.5rem;
+  border-radius: 20px;
 
 }
 
 /* Responsive adjustments for home content */
 @media (max-width: 968px) {
-  .home-content > *:not(.carousel-container) {
-  
+  .home-content>*:not(.carousel-container) {
+
     max-width: 100%;
   }
+
   .home-content {
-    
+
     padding: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .home-content > *:not(.carousel-container) {
-   
+  .home-content>*:not(.carousel-container) {
+
     max-width: 100%;
   }
+
   .home-content {
-   overflow-x: hidden;
+    overflow-x: hidden;
     padding: 1rem;
   }
-} 
+}

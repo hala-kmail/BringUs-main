@@ -24,11 +24,9 @@ const Shop = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  
-  // Search state - initialize from URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
-  // احسب أعلى سعر من المنتجات
+  //-----------------------------------getMaxProductPrice------------------------------------------------  
   const getMaxProductPrice = () => {
     return Math.max(
       ...allProducts.map(p => p.discountPrice || p.originalPrice || 0)
@@ -37,7 +35,7 @@ const Shop = () => {
 
   const initialMaxPrice = getMaxProductPrice();
 
-  // Filter states
+  //-----------------------------------Filter states------------------------------------------------  
   const [filters, setFilters] = useState({
     priceRange: { min: 0, max: initialMaxPrice },
     categories: [],
@@ -51,10 +49,10 @@ const Shop = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // grid or list
   
-  // State for expanded categories (to show subcategories)
+  //-----------------------------------State for expanded categories (to show subcategories)------------------------------------------------  
   const [expandedCategories, setExpandedCategories] = useState({});
   
-  // State for collapsed filter sections on desktop
+  //-----------------------------------State for collapsed filter sections on desktop------------------------------------------------  
   const [collapsedSections, setCollapsedSections] = useState({
     price: false,
     categories: false,
@@ -63,7 +61,7 @@ const Shop = () => {
     status: false
   });
   
-  // Pagination states
+  //-----------------------------------Pagination states------------------------------------------------  
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [paginatedProducts, setPaginatedProducts] = useState([]);
@@ -71,7 +69,7 @@ const Shop = () => {
 
   const currentLang = i18n.language;
 
-  // Get all unique categories from the new data structure
+  //-----------------------------------getAllCategories------------------------------------------------  
   const getAllCategories = () => {
     return categories.map(category => category.name.en).sort();
   };
@@ -110,7 +108,7 @@ const Shop = () => {
 
     // Apply price filter
     baseProducts = baseProducts.filter(product => {
-      const price = product.discountPrice || product.originalPrice;
+      const price =  product.originalPrice;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
@@ -565,10 +563,10 @@ const Shop = () => {
           if (allSelected) {
             // إذا كل الفروع محددة، أضف الرئيسية
             if (!newCategories.includes(parentCatId)) newCategories.push(parentCatId);
-          } else {
+      } else {
             // إذا لم تعد كل الفروع محددة، أزل الرئيسية
             newCategories = newCategories.filter(id => id !== parentCatId);
-          }
+      }
         }
         return {
           ...prev,
@@ -831,7 +829,7 @@ const Shop = () => {
               initialMaxPrice={initialMaxPrice}
               searchQuery={searchQuery}
               handleSearch={handleSearch}
-            />
+                        />
        
 
           {/* Main Content */}

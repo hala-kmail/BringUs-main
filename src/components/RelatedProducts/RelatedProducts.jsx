@@ -14,7 +14,7 @@ const RelatedProducts = ({ currentProductId, currentCategoryId }) => {
 
   const currentLang = i18n.language;
 
-  // Get current category
+
   const currentCategory = getCategoryById(currentCategoryId);
 
   // Filter products by category and exclude current product

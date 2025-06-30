@@ -15,10 +15,6 @@ const ProductActions = ({
 }) => {
     
     const { t, i18n } = useTranslation();
-    console.log('hala:', i18n.language);
-    console.log(t('product_detail.order_whatsapp'));
- 
-
     return (
   <div className="product-detail-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
       

@@ -6,7 +6,7 @@ import { useCart } from '../../contexts/CartContext';
 import { allProducts } from '../../data/products';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
-
+import { getEffectivePrice } from '../ProductCard/ProductCard';
 
 const searchPlaceholders = [
   {
@@ -47,7 +47,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
-  const userName = "محمد أحمد";
+  const userName = localStorage.getItem('register_name') || 'Guest';
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -63,13 +63,11 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
- /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     const fetchPlaceholders = async () => {
       try {
-       
-        // مثال: const response = await fetch('https://api.example.com/placeholders');
-        // const data = await response.json();
+
         const data = searchPlaceholders; 
         const formattedPlaceholders = data.map(item => item[currentLang] || item.en);
         setPlaceholders(formattedPlaceholders);
@@ -82,9 +80,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
     fetchPlaceholders();
   }, [currentLang]);
-
-
-  // Typewriter effect for placeholder
+//-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     let interval;
     const currentPlaceholder = placeholders[placeholderIndex] || '';
@@ -113,8 +109,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
     return () => clearInterval(interval);
   }, [displayedText, isTyping, placeholderIndex, placeholders]);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Handle search functionality
+//-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
       const filteredProducts = allProducts.filter(product => {
@@ -132,8 +127,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
       setShowSearchDropdown(false);
     }
   }, [searchQuery, currentLang]);
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Close dropdown when clicking outside
+//-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     const handleClickOutside = (event) => {
     
@@ -151,14 +145,14 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle product selection
+//-----------------------------------handleProductClick------------------------------------------------  
   const handleProductClick = (productId) => {
     setSearchQuery('');
     setShowSearchDropdown(false);
     navigate(`/product/${productId}`);
   };
 
-  // Handle search form submission
+//-----------------------------------handleSearchSubmit------------------------------------------------  
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -166,21 +160,20 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
       setShowSearchDropdown(false);
     }
   };
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get real cart items count
+//-----------------------------------getCartTotals------------------------------------------------  
   const cartTotals = getCartTotals();
   const cartItemsCount = cartTotals.itemsCount;
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        {/* Logo */}
+        {/*-----------------------------------Logo------------------------------------------------   */}
         <Link to="/home" className="navbar-logo">
           <img src={logo} alt="Hala Store" />
           <span className="logo-text">Hala Store</span>
         </Link>
 
-        {/* Desktop Search Bar */}
+        {/*-----------------------------------Desktop Search Bar------------------------------------------------   */}
         <div className="search-bar desktop-search" ref={searchRef}>
           <form onSubmit={handleSearchSubmit} className="search-form">
             <input
@@ -199,7 +192,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
             </button>
           </form>
 
-          {/* Search Dropdown */}
+          {/*-----------------------------------Search Dropdown------------------------------------------------   */}
           {showSearchDropdown && (
             <div className="search-dropdown" ref={dropdownRef}>
               <div className="search-results">
@@ -216,13 +209,10 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                       <h4 className="result-name">{product.name[currentLang]}</h4>
                       <p className="result-description">{product.description[currentLang]}</p>
                       <div className="result-price">
-                        {product.discountPrice ? (
-                          <>
-                            <span className="current-price">₪{product.discountPrice.toFixed(2)}</span>
-                            <span className="original-price">₪{product.originalPrice.toFixed(2)}</span>
-                          </>
-                        ) : (
-                          <span className="current-price">₪{product.originalPrice.toFixed(2)}</span>
+                        {product.discountPercentage && product.discountPercentage > 0 && product.discountEndTime > new Date().toISOString() ? (
+                        <> <span className="original-price">₪{product.originalPrice.toFixed(2)}</span>
+                         <span className="current-price">₪{getEffectivePrice(product).toFixed(2)}</span>  </>
+                        ) : (  <span className="current-price">₪{getEffectivePrice(product).toFixed(2)}</span> 
                         )}
                       </div>
                     </div>
@@ -246,16 +236,16 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
           )}
         </div>
 
-        {/* User Actions */}
+        {/*-----------------------------------User Actions------------------------------------------------   */}
         <div className="user-actions">
-          {/* Mobile Search Button */}
+          {/*-----------------------------------Mobile Search Button------------------------------------------------   */}
           <button className="mobile-search-trigger" onClick={onMobileSearchToggle}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
 
-          {/* Language Selector */}
+              {/*-----------------------------------Language Selector------------------------------------------------   */}
           <div className="selector-dropdown"ref={langRef}>
             <button
               className="selector-button"
@@ -283,7 +273,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
             </div>}
           </div>
 
-          {/* User Menu */}
+          {/*-----------------------------------User Menu------------------------------------------------   */}
           <div className="selector-dropdown user-menu" ref={userRef}>
             <button
               className="selector-button user-button"
@@ -328,7 +318,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
             </div>}
           </div>
 
-          {/* Wishlist */}
+          {/*-----------------------------------Wishlist------------------------------------------------   */}
           <Link to="/wishlist" className="action-item">
             <div className="icon-container">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -338,7 +328,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
             </div>
           </Link>
 
-          {/* Cart */}
+            {/*-----------------------------------Cart------------------------------------------------   */}
           <Link to="/cart" className="action-item">
             <div className="icon-container">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

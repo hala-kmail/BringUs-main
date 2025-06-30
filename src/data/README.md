@@ -62,7 +62,7 @@ Enhanced product structure with references to other entities.
     ar: "تفاح عضوي طازج..."
   },
   originalPrice: 25.99,
-  discountPrice: 19.99,
+  
   discountPercentage: 23,
   featureId: 1,           // References features.id
   colors: ["Red", "Green"],
@@ -285,7 +285,7 @@ CREATE TABLE products (
     ar: String
   },
   originalPrice: Number,
-  discountPrice: Number,
+
   discountPercentage: Number,
   featureId: Number,
   colors: [String],

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import TopBar from '../../components/TopBar/TopBar';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
@@ -12,21 +11,23 @@ import AlmostFinishedCard from '../../components/AlmostFinishedCard/AlmostFinish
 import WholesaleRegisterModal from '../../components/WholesaleRegisterModal';
 import './Home.css';
 import { useTranslation } from 'react-i18next';
+//-----------------------------------Home------------------------------------------------  
 const Home = () => {
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [isWholesaleModalOpen, setIsWholesaleModalOpen] = useState(false);
-  const { t } = useTranslation();
-  const handleMobileSearchToggle = () => {
+ //-----------------------------------isWholesaleModalOpen------------------------------------------------  
+  const [isWholesaleModalOpen, setIsWholesaleModalOpen] = useState(false); 
+  const handleWholesaleModalOpen = () => setIsWholesaleModalOpen(true);
+  const handleWholesaleModalClose = () => setIsWholesaleModalOpen(false);
+  //-----------------------------------isMobileSearchOpen------------------------------------------------  
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false); 
+    const handleMobileSearchToggle = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
   };
-
   const handleMobileSearchClose = () => {
     setIsMobileSearchOpen(false);
   };
-
-  const handleWholesaleModalOpen = () => setIsWholesaleModalOpen(true);
-  const handleWholesaleModalClose = () => setIsWholesaleModalOpen(false);
-
+//-----------------------------------t------------------------------------------------  
+  const { t } = useTranslation();
+//-----------------------------------return------------------------------------------------  
   return (
     <div className="home">
       {/* <TopBar /> */}
@@ -35,11 +36,8 @@ const Home = () => {
         isMobileSearchOpen={isMobileSearchOpen}
       />
       <SecondaryNavbar />
-      <WholesaleRegisterModal isOpen={isWholesaleModalOpen} onClose={handleWholesaleModalClose} />
-      <MobileSearch 
-        isOpen={isMobileSearchOpen}
-        onClose={handleMobileSearchClose}
-      />
+      
+      <MobileSearch isOpen={isMobileSearchOpen} onClose={handleMobileSearchClose}/>
       <main className="home-content">
         <Carousel />
         <CategoriesGrid />
@@ -60,6 +58,7 @@ const Home = () => {
           </button>
           <AlmostFinishedCard />
         </div>
+        <WholesaleRegisterModal isOpen={isWholesaleModalOpen} onClose={handleWholesaleModalClose} />
         <Features />
         <NewArrivals />
         <BestSellers />

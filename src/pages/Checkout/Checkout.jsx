@@ -12,14 +12,16 @@ import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import './Checkout.css';
 import namer from 'color-namer';
 import deliveryAreas, { getShippingPriceByAreaId, getAreaLabelById, getDefaultAreaIdFromLocalStorage } from '../../data/deliveryAreas';
-
+import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
+import CheckoutForm from '../../components/Checkout/CheckoutForm';
+import OrderSummary from '../../components/Checkout/OrderSummary';
+import { validateRequired, validateAndSanitizePhone } from '../../utils/validation';
+//-----------------------------------Checkout------------------------------------------------  
 const Checkout = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { cartItems, getCartTotals, clearCart } = useCart();
   const currentLang = i18n.language;
-  
-  // Form state
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -29,26 +31,20 @@ const Checkout = () => {
     district: '',
     notes: ''
   });
-
   const [formErrors, setFormErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
-
   const cartTotals = getCartTotals();
-
-  // أضف حالة لطريقة الاستلام والمنطقة
-  const defaultAreaId = localStorage.getItem('register_area') || 1; // 1 = الضفة
-  const [deliveryMethod, setDeliveryMethod] = useState('delivery'); // 'delivery' or 'store'
+  const defaultAreaId = localStorage.getItem('register_area') || 1; 
+  const [deliveryMethod, setDeliveryMethod] = useState('delivery'); 
   const [deliveryArea, setDeliveryArea] = useState(defaultAreaId);
-
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
-
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
 
-
+//-----------------------------------paymentMethods------------------------------------------------  
   const paymentMethods = [
     { key: 'palpay', label: currentLang === 'ar' ? 'بال بي' : 'PalPay', img: `${palpayImg}` },
     { key: 'paypal', label: currentLang === 'ar' ? 'باي بال' : 'PayPal', img: `${paypalImg}` },
@@ -56,7 +52,7 @@ const Checkout = () => {
     { key: 'reflect', label: currentLang === 'ar' ? 'ريفليك' : 'Refill', img: `${reflectImg}` },
     { key: 'visa', label: currentLang === 'ar' ? 'رابط دفع الكتروني' : 'SA Link', img: `${visaImg}` },
   ];
-///////////////////////////////////////////////////////////////////////////////////////////
+  //-----------------------------------getColorKey------------------------------------------------  
   function getColorKey(hex) {
     if (!hex) return '';
     if (hex === 'mixed') return 'mixed';
@@ -66,7 +62,7 @@ const Checkout = () => {
       return hex;
     }
   }
-
+//-----------------------------------getColorLabel------------------------------------------------  
   function getColorLabel(hex, t) {
     const colorKey = getColorKey(hex);
     const translation = t(`filters.color_names.${colorKey}`);
@@ -76,13 +72,13 @@ const Checkout = () => {
     }
     return translation;
   }
-////////////////////////////////////////////////////////////////////////////////////////
+//-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     if (cartItems.length === 0) {
       navigate('/cart');
     }
   }, [cartItems.length, navigate]);
-  // تعبئة الحقول تلقائياً من localStorage إذا توفرت
+  //-----------------------------------useEffect------------------------------------------------  
 useEffect(() => {
   setFormData(prev => ({
     ...prev,
@@ -96,29 +92,15 @@ useEffect(() => {
   }));
   
 }, []);
-////////////////////////////////////////////////////////////////////////////////////////
+//-----------------------------------handleInputChange------------------------------------------------  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // معالجة خاصة لحقل الهاتف
     if (name === 'phone') {
-      // فقط أرقام و+
-      let sanitized = value.replace(/[^0-9+]/g, '');
-      // إضافة + في البداية إذا لم يوجد
-      if (sanitized && sanitized[0] !== '+') {
-        sanitized = '+' + sanitized.replace(/^\++/, '');
-      }
-      // لا تتجاوز 15 رقم بعد +
-      if (sanitized.startsWith('+')) {
-        const digits = sanitized.slice(1).replace(/[^0-9]/g, '');
-        sanitized = '+' + digits.slice(0, 15);
-      } else {
-        sanitized = sanitized.slice(0, 15);
-      }
+      const { sanitized } = validateAndSanitizePhone(value, t('checkout.validation.phone_invalid'));
       setFormData(prev => ({
         ...prev,
         [name]: sanitized
       }));
-      // Clear error when user starts typing
       if (formErrors[name]) {
         setFormErrors(prev => ({
           ...prev,
@@ -131,7 +113,6 @@ useEffect(() => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -139,59 +120,44 @@ useEffect(() => {
       }));
     }
   };
-
+//-----------------------------------validateForm------------------------------------------------  
   const validateForm = () => {
     const errors = {};
-    if (!formData.fullName.trim()) {
-      errors.fullName = t('checkout.validation.name_required');
-    }
-    if (!formData.phone.trim()) {
-      errors.phone = t('checkout.validation.phone_required');
-    } else if (!/^[0-9+\-\s()]{10,}$/.test(formData.phone.trim())) {
-      errors.phone = t('checkout.validation.phone_invalid');
-    }
+    errors.fullName = validateRequired(formData.fullName, t('checkout.validation.name_required'));
+    const phoneResult = validateAndSanitizePhone(formData.phone, t('checkout.validation.phone_invalid'));
+    errors.phone = phoneResult.error || validateRequired(formData.phone, t('checkout.validation.phone_required'));
     if (deliveryMethod === 'delivery') {
-      if (!formData.address.trim()) {
-        errors.address = t('checkout.validation.address_required');
-      }
-      if (!formData.city.trim()) {
-        errors.city = t('checkout.validation.city_required');
-      }
+      errors.address = validateRequired(formData.address, t('checkout.validation.address_required'));
+      errors.city = validateRequired(formData.city, t('checkout.validation.city_required'));
     }
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.values(errors).every((err) => !err);
   };
-///////////////////////////////////////////////////////////////////////////////////////
-  // عدل حساب الشحن حسب طريقة الاستلام
+  //-----------------------------------getShippingPrice------------------------------------------------  
   const getShippingPrice = () => {
     if (deliveryMethod === 'store') return 0;
-    // إذا لم يوجد منطقة، اجعلها الضفة (id=1) وسعرها 20
     const areaId = Number(formData.deliveryArea) || 1;
     const price = getShippingPriceByAreaId(areaId);
     return price !== undefined ? price : 20;
   };
-//////////////////////////////////////////////////////////////////////////////////////
-// عدل زر تأكيد الطلب ليظهر popup الدفع بدلاً من الإرسال المباشر
+  //-----------------------------------handlePlaceOrderClick------------------------------------------------  
 const handlePlaceOrderClick = (e) => {
   e.preventDefault();
   if (!validateForm()) return;
   setShowPaymentPopup(true);
 };
-
- // عند اختيار طريقة دفع
+//-----------------------------------handleSelectPayment------------------------------------------------  
  const handleSelectPayment = (method) => {
   setSelectedPaymentMethod(method);
   setShowPaymentPopup(false);
   setShowPaymentConfirm(true);
   setPaymentDone(false);
 };
-
- // عند تأكيد الدفع (تم الدفع)
+//-----------------------------------handlePaymentDone------------------------------------------------  
  const handlePaymentDone = () => {
   setPaymentDone(true);
 };
-
-// عند إرسال الطلب عبر واتساب بعد الدفع
+//-----------------------------------handleSendWhatsApp------------------------------------------------  
 const handleSendWhatsApp = () => {
   const orderData = {
     customerInfo: formData,
@@ -210,8 +176,7 @@ const handleSendWhatsApp = () => {
   setPaymentDone(false);
   navigate('/');
 };
-//////////////////////////////////////////////////////////////////////////////////////
-
+//-----------------------------------handleWhatsAppOrder------------------------------------------------  
   const handleWhatsAppOrder = (orderData) => {
     const { customerInfo, items, totals } = orderData;
     
@@ -244,11 +209,11 @@ const handleSendWhatsApp = () => {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
-
+//-----------------------------------if cartItems is empty------------------------------------------------  
   if (cartItems.length === 0) {
-    return null; // Will redirect in useEffect
+    return null; 
   }
-//////////////////////////////////////////////////////////////////////////////////////
+//-----------------------------------return------------------------------------------------  
   return (
     <div className="checkout-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
           <Navbar />
@@ -256,24 +221,10 @@ const handleSendWhatsApp = () => {
       
       <div className="checkout-content">
         {/* Breadcrumb Navigation */}
-        <nav className="checkout-breadcrumb">
-        <Link to="/">
-            <span>{t('secondary_navbar.home')}</span>
-          </Link>
-          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
-          <Link to="/shop">
-              <span>{t('secondary_navbar.shop')}</span>
-            </Link>
-          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
-          <Link to="/cart">
-              <span>{t('secondary_navbar.cart')}</span>
-            </Link>
-          
-          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
-          <span className="breadcrumb-current">
-            {t('checkout.title')}
-          </span>
-        </nav>
+        <Breadcrumb currentLang={currentLang} t={t} breadcrumbPath={[
+          { name: t('secondary_navbar.cart'), slug: 'cart' },
+          { name: t('checkout.title'), slug: '' }
+        ]} />
 
         {/* Header */}
         <div className="checkout-header">
@@ -289,214 +240,38 @@ const handleSendWhatsApp = () => {
               {t('checkout.delivery_info')}
             </h2>
             
-            <form  className="checkout-form">
-              {/* طريقة الاستلام */}
-              <div className="form-group">
-                <label style={{ fontWeight: 600 }}>{t('checkout.delivery_method')} *</label>
-                <div style={{ display: 'flex', gap: 24, marginTop: 8 }}>
-                  <label>
-                    <input type="radio" name="deliveryMethod" value="delivery" checked={deliveryMethod === 'delivery'} onChange={() => setDeliveryMethod('delivery')} />
-                    {t('checkout.delivery')}
-                  </label>
-                  <label>
-                    <input type="radio" name="deliveryMethod" value="store" checked={deliveryMethod === 'store'} onChange={() => setDeliveryMethod('store')} />
-                    {t('checkout.pickup_from_store')}
-                  </label>
-                </div>
-              </div>
-              {/* دائماً: الاسم، الهاتف */}
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="fullName">{t('checkout.full_name')}*</label>
-                  <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder={t('checkout.full_name_placeholder')} className={formErrors.fullName ? 'error' : ''} />
-                  {formErrors.fullName && <span className="error-message">{formErrors.fullName}</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="phone">{t('checkout.phone')}  *</label>
-                  <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder={t('checkout.phone_placeholder')} className={formErrors.phone ? 'error' : ''} />
-                  {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
-                </div>
-              </div>
-              {/* إذا كان توصيل */}
-              {deliveryMethod === 'delivery' && (
-                <>
-                  {/* منطقة التوصيل */}
-                  <div className="form-group">
-                    <label htmlFor="deliveryArea">{t('checkout.delivery_area')} *</label>
-                        <select id="deliveryArea" name="deliveryArea" value={formData.deliveryArea} onChange={handleInputChange}>
-                      {deliveryAreas.map(area => (
-                        <option key={area.id} value={area.id}>{area.label[currentLang]}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="city">{t('checkout.city')} *</label>
-                      <input type="text" id="city" name="city" value={formData.city} onChange={handleInputChange} placeholder={t('checkout.city_placeholder')} className={formErrors.city ? 'error' : ''} />
-                      {formErrors.city && <span className="error-message">{formErrors.city}</span>}
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="district">{t('checkout.district')}</label>
-                      <input type="text" id="district" name="district" value={formData.district} onChange={handleInputChange} placeholder={t('checkout.district_placeholder')} />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="address">{t('checkout.address')} *</label>
-                    <textarea id="address" name="address" value={formData.address} onChange={handleInputChange} placeholder={t('checkout.address_placeholder')} rows="3" className={formErrors.address ? 'error' : ''}></textarea>
-                    {formErrors.address && <span className="error-message">{formErrors.address}</span>}
-                  </div>
-                </>
-              )}
-              {/* دائماً: الملاحظات */}
-              <div className="form-group">
-                <label htmlFor="notes">{t('checkout.notes')} </label>
-                <textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} placeholder={t('checkout.notes_placeholder')} rows="2"></textarea>
-              </div>
-              {/* Checkbox للموافقة على سياسة الخصوصية */}
-              <div className="form-group" style={{ margin: '16px 0' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={privacyChecked}
-                    onChange={e => {
-                      setPrivacyChecked(e.target.checked);
-                      if (e.target.checked) setShowPrivacyPopup(true);
-                    }}
-                  />
-                  <span>
-                 {t('checkout.agree_privacy')} 
-                  </span>
-                  <button
-                    type="button"
-                    style={{ background: 'none', border: 'none', color: 'var(--primary-color)', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
-                    onClick={() => setShowPrivacyPopup(true)}
-                  >
-                    {t('checkout.view')} 
-                  </button>
-                </label>
-              </div>
-              {/* Popup لسياسة الخصوصية */}
-              {showPrivacyPopup && (
-                <div className="privacy-popup-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div className="privacy-popup" style={{ background: '#fff', borderRadius: 12, maxWidth: 600, width: '90%', padding: 24, boxShadow: '0 4px 24px rgba(0,0,0,0.15)', position: 'relative', maxHeight: '80vh', overflowY: 'auto' }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowPrivacyPopup(false)}
-                      style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}
-                      aria-label="Close"
-                    >×</button>
-                    <h3 style={{ marginTop: 0, marginBottom: 16, color: 'var(--primary-color)' }}>{currentLang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy'}</h3>
-                    <div style={{ fontSize: 15, color: '#333', whiteSpace: 'pre-line' }}>
-                    {t('checkout.privacy_policy_text')} 
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* إذا كان استلام من المتجر */}
-              {deliveryMethod === 'store' && (
-                <div className="store-pickup-info" style={{ background: '#f3f4f6', borderRadius: 8, padding: 16, margin: '16px 0', color: '#444' }}>
-                  <strong>{currentLang === 'ar' ? 'عنوان المتجر:' : 'Store Location:'}</strong>
-                  <div>{currentLang === 'ar' ? 'رام الله - شارع الإرسال - بجانب البنك العربي' : 'Ramallah - Al-Irsal St. - Next to Arab Bank'}</div>
-                  <div>{currentLang === 'ar' ? 'ساعات العمل: 9 صباحاً - 9 مساءً' : 'Working hours: 9am - 9pm'}</div>
-                  <div>{currentLang === 'ar' ? 'يرجى الحضور خلال ساعات العمل لاستلام طلبك.' : 'Please come during working hours to pick up your order.'}</div>
-                </div>
-              )}
-            </form>
+            <CheckoutForm
+              t={t}
+              currentLang={currentLang}
+              deliveryMethod={deliveryMethod}
+              setDeliveryMethod={setDeliveryMethod}
+              formData={formData}
+              setFormData={setFormData}
+              formErrors={formErrors}
+              handleInputChange={handleInputChange}
+              privacyChecked={privacyChecked}
+              setPrivacyChecked={setPrivacyChecked}
+              showPrivacyPopup={showPrivacyPopup}
+              setShowPrivacyPopup={setShowPrivacyPopup}
+              deliveryAreas={deliveryAreas}
+            />
           </div>
 
           {/* Order Summary */}
-          <div className="order-summary-section">
-            <h2 className="section-title">
-              {currentLang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}
-            </h2>
+         
             
-            <div className="order-summary">
-              {/* Items List */}
-              <div className="order-items">
-                {cartItems.map((item) => (
-                  <div key={item.cartItemId} className="order-item">
-                    <div className="item-image">
-                      <img src={item.image} alt={item.name[currentLang]} />
-                      <span className="item-quantity">{item.quantity}</span>
-                    </div>
-                    <div className="item-details">
-                      <h4 className="item-name">{item.name[currentLang]}</h4>
-                      {(item.selectedColor || item.selectedSize) && (
-                        <div className="item-options">
-                          {item.selectedColor && (
-                            <span>{currentLang === 'ar' ? 'اللون' : 'Color'}: {getColorLabel(item.selectedColor, t)}</span>
-                          )}
-                          {item.selectedSize && (
-                            <span>{currentLang === 'ar' ? 'الحجم' : 'Size'}: {item.selectedSize}</span>
-                          )}
-                        </div>
-                      )}
-                      <div className="item-price">
-                      ₪{item.finalPrice.toFixed(2)} × {item.quantity}
-                      </div>
-                    </div>
-                    <div className="item-total">
-                    ₪{(item.finalPrice * item.quantity).toFixed(2)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Totals */}
-              <div className="order-totals">
-                <div className="total-row">
-                  <span>{t('checkout.subtotal')}</span>
-                  <span>₪{cartTotals.subtotal}</span>
-                </div>
-                
-                <div className="total-row">
-                  <span>{t('checkout.shipping')}</span>
-                  <span>
-                    {deliveryMethod === 'store' ? t('checkout.free') : (getShippingPrice() === 0 ? t('checkout.free') : `₪${getShippingPrice()}`)}
-                  </span>
-                </div>
-                
-                <hr className="totals-divider" />
-                
-                <div className="total-row total-final">
-                  <span>{t('checkout.total')}</span>
-                  <span>₪{(cartTotals.subtotal + getShippingPrice()).toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button 
-                type="submit"
-                className="place-order-btn"
-                onClick={handlePlaceOrderClick}
-                disabled={isProcessing || !privacyChecked}
-              >
-                {isProcessing ? (
-                  <span className="processing">
-                    {t('checkout.processing')}
-                  </span>
-                ) : (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {t('checkout.place_order')}
-                  </>
-                )}
-              </button>
-
-              {/* Security Note */}
-              <div className="security-note">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span>
-                  {t('checkout.security_note')}
-                </span>
-              </div>
-              
-            </div>
-          </div>
+            <OrderSummary
+              cartItems={cartItems}
+              cartTotals={cartTotals}
+              deliveryMethod={deliveryMethod}
+              getShippingPrice={getShippingPrice}
+              t={t}
+              currentLang={currentLang}
+              onPlaceOrder={handlePlaceOrderClick}
+              isProcessing={isProcessing}
+              privacyChecked={privacyChecked}
+            />
+         
         </div>
       </div>
  {/* Popup طرق الدفع */}
@@ -545,7 +320,7 @@ const handleSendWhatsApp = () => {
               </>
             ) : (
               <button onClick={handleSendWhatsApp} style={{ width: '100%', background: '#25D366', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24" style={{ marginLeft: 8 }}><path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/></svg>
+                <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24" style={{ marginLeft: 8 }}><path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/></svg>
                   {t('checkout.send_whatsapp')} 
               </button>
             )}

@@ -121,9 +121,9 @@ const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuer
                   <div className="suggestion-content">
                     <span className="suggestion-name">{product.name[language]}</span>
                     <span className="suggestion-price">
-                      {product.discountPrice ? (
+                      {product.discountPercentage ? (
                         <>
-                          <span className="current-price">${product.discountPrice}</span>
+                         
                           <span className="original-price">${product.originalPrice}</span>
                         </>
                       ) : (

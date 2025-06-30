@@ -3,24 +3,21 @@ import { Link } from 'react-router-dom';
 import './ProductCard.css';
 import CountdownTimer from '../CountdownTimer/CountdownTimer';
 
-// دوال utility للتصدير
 export const isDiscountActive = (product) => {
-  if (
-    !product.discountPrice ||
+  if ( 
     product.discountPercentage === null ||
     product.discountPercentage === undefined ||
     Number(product.discountPercentage) <= 0 ||
     product.discountEndTime === null ||
     product.discountEndTime === undefined ||
-    product.discountEndTime<new Date().toISOString()||
-    Number(product.discountPrice) >= Number(product.originalPrice)
+    product.discountEndTime<new Date().toISOString()
   ) return false;
   return true;
 };
 
 export const getEffectivePrice = (product) => { 
   if (isDiscountActive(product)) {
-    return product.discountPrice;
+    return product.originalPrice - (product.originalPrice * product.discountPercentage / 100);
   }
   return product.originalPrice;
 };
@@ -212,7 +209,7 @@ const ProductCard = ({
                 <div className="savings-amount">
                   <span className="savings-label">{currentLang === 'ar' ? 'توفير' : 'Save'}</span>
                   <span className="savings-value">
-                    {(product.originalPrice - product.discountPrice).toFixed(2)} {t('new_arrivals.currency')}
+                    {(product.originalPrice-getEffectivePrice(product)   ).toFixed(2)} {t('new_arrivals.currency')}
                   </span>
                 </div>
                 <div className="discount-percentage-large">

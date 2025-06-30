@@ -7,8 +7,7 @@ const ProductInfoSection = ({
   feature,
   currentLang,
   t,
-  originalPrice,
-  discountPrice,
+  originalPrice, 
   isDiscountActive,
   getEffectivePrice
 }) => {
@@ -26,7 +25,7 @@ const ProductInfoSection = ({
             {t('product_detail.new')}
           </span>
         )}
-        {product.discountPercentage && (
+        {product.discountPercentage && product.discountPercentage > 0 && product.discountEndTime > new Date().toISOString() && (
           <span className="product-detail-badge product-sale-badge">
             -{product.discountPercentage}%
           </span>

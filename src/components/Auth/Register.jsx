@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';
+import { validateRequired, validatePhone, validateEmail, validateMinLength, validateMatch } from '../../utils/validation';
 
 const Register = () => {
   const { t } = useTranslation();
@@ -23,40 +24,16 @@ const Register = () => {
   ];
   const validateForm = () => {
     const errors = {};
-    if (!name.trim()) {
-      errors.name = t('auth.register.validation.name_required');
-    }
-    if (!phone.trim()) {
-      errors.phone = t('auth.register.validation.phone_required');
-    } else if (!/^[0-9+\-\s()]{10,}$/.test(phone.trim())) {
-      errors.phone = t('auth.register.validation.phone_invalid');
-    }
-    if (!area.trim()) {
-      errors.area = t('auth.register.validation.area_required');
-    }
-    if (!city.trim()) {
-      errors.city = t('auth.register.validation.city_required');
-    }
-    if (!address.trim()) {
-      errors.address = t('auth.register.validation.address_required');
-    }
-    if (!email.trim()) {
-      errors.email = t('auth.register.validation.email_required');
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
-      errors.email = t('auth.register.validation.email_invalid');
-    }
-    if (!password) {
-      errors.password = t('auth.register.validation.password_required');
-    } else if (password.length < 6) {
-      errors.password = t('auth.register.validation.password_short');
-    }
-    if (!confirmPassword) {
-      errors.confirmPassword = t('auth.register.validation.confirm_password_required');
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = t('auth.register.validation.passwords_not_match');
-    }
+    errors.name = validateRequired(name, t('auth.register.validation.name_required'));
+    errors.phone = validatePhone(phone, t('auth.register.validation.phone_invalid')) || validateRequired(phone, t('auth.register.validation.phone_required'));
+    errors.area = validateRequired(area, t('auth.register.validation.area_required'));
+    errors.city = validateRequired(city, t('auth.register.validation.city_required'));
+    errors.address = validateRequired(address, t('auth.register.validation.address_required'));
+    errors.email = validateEmail(email, t('auth.register.validation.email_invalid')) || validateRequired(email, t('auth.register.validation.email_required'));
+    errors.password = validateMinLength(password, 6, t('auth.register.validation.password_short')) || validateRequired(password, t('auth.register.validation.password_required'));
+    errors.confirmPassword = validateMatch(confirmPassword, password, t('auth.register.validation.passwords_not_match')) || validateRequired(confirmPassword, t('auth.register.validation.confirm_password_required'));
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.values(errors).every((err) => !err);
   };
 ///////////////////////////////////////////////////////////////////////////////////////
   const handleSubmit = (e) => {
