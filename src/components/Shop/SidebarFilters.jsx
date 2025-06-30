@@ -1,36 +1,347 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getColorLabel, getAllColors } from '../../data/index';
+import { categories, features, getSubCategories, getMainCategories, allProducts } from '../../data/index';
+import namer from 'color-namer';
 
 const SidebarFilters = ({
   filters,
   onFilterChange,
-  filterCounts,
-  collapsedSections,
-  toggleSectionCollapse,
-  expandedCategories,
-  toggleCategoryExpansion,
-  categories,
-  getSubCategories,
-  features,
-  colors,
-  statusOptions,
   clearFilters,
   removeFilter,
-  getColorLabel,
-  getCategoryProductCount,
-  renderCategoryTree,
-
   initialMaxPrice,
   searchQuery,
-  handleSearch
+  handleSearch,
+  filteredProducts = allProducts
 }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
+  
+  //-----------------------------------State for collapsed filter sections on desktop------------------------------------------------  
+  const [collapsedSections, setCollapsedSections] = useState({
+    price: false,
+    categories: false,
+    colors: false,
+    features: false,
+    status: false
+  });
+
+  //-----------------------------------State for expanded categories (to show subcategories)------------------------------------------------  
+  const [expandedCategories, setExpandedCategories] = useState({});
+  
+  //-----------------------------------Filter counts state------------------------------------------------  
+  const [filterCounts, setFilterCounts] = useState({});
+
+  //-----------------------------------toggleSectionCollapse------------------------------------------------  
+  const toggleSectionCollapse = (sectionName) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [sectionName]: !prev[sectionName]
+    }));
+  };
+
+  //-----------------------------------toggleCategoryExpansion------------------------------------------------  
+  const toggleCategoryExpansion = (categoryId) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
+
+  //-----------------------------------getAllColors------------------------------------------------  
+ 
+  const colors = getAllColors();
+
+  //-----------------------------------statusOptions------------------------------------------------  
+  const statusOptions = [];
+  if (allProducts.some(p => p.stock && p.stock > 0)) statusOptions.push('in_stock');
+  if (allProducts.some(p => (p.discountPrice || p.discountPercentage))) statusOptions.push('on_sale');
+  if (allProducts.some(p => p.isNew)) statusOptions.push('new');
+  if (allProducts.some(p => p.isBestSeller)) statusOptions.push('featured');
+
+  //-----------------------------------getAllDescendantCategoryIds------------------------------------------------
+  const getAllDescendantCategoryIds = (categoryId) => {
+    const directSubs = getSubCategories(categoryId);
+    let ids = [categoryId];
+    directSubs.forEach(sub => {
+      ids = ids.concat(getAllDescendantCategoryIds(sub.id));
+    });
+    return ids;
+  };
+
+  //-----------------------------------getCategoryProductCount------------------------------------------------
+  const getCategoryProductCount = (categoryId) => {
+    const allIds = getAllDescendantCategoryIds(categoryId);
+    return allProducts.filter(product => allIds.includes(product.categoryId)).length;
+  };
+
+  //-----------------------------------getColorCount------------------------------------------------  
+  const getColorCount = (color) => {
+    let baseProducts = [...allProducts];
+    baseProducts = baseProducts.filter(product => {
+      const price = product.originalPrice;
+      return price >= filters.priceRange.min && price <= filters.priceRange.max;
+    });
+
+    // Apply category filter (شامل كل الفروع المتداخلة)
+    if (filters.categories.length > 0) {
+      let allCategoryIds = [];
+      filters.categories.forEach(catId => {
+        allCategoryIds = allCategoryIds.concat(getAllDescendantCategoryIds(catId));
+      });
+      allCategoryIds = Array.from(new Set(allCategoryIds));
+      baseProducts = baseProducts.filter(product => allCategoryIds.includes(product.categoryId));
+    }
+
+    // Apply feature filter
+    if (filters.features.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return filters.features.includes(product.featureId);
+      });
+    }
+
+    // Apply status filter
+    if (filters.status.includes('on_sale')) {
+      baseProducts = baseProducts.filter(product => {
+        const now = new Date();
+        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
+        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
+        return hasDiscount && validTime;
+      });
+    }
+    if (filters.status.includes('in_stock')) {
+      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+    }
+    if (filters.status.includes('new')) {
+      baseProducts = baseProducts.filter(product => product.isNew === true);
+    }
+    if (filters.status.includes('featured')) {
+      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
+    }
+
+    return baseProducts.filter(product => {
+      return product.colors && Array.isArray(product.colors) && product.colors.includes(color);
+    }).length;
+  };
+
+  //-----------------------------------getFeatureCount------------------------------------------------  
+  const getFeatureCount = (featureId) => {
+    let baseProducts = [...allProducts];
+    
+    baseProducts = baseProducts.filter(product => {
+      const price = product.originalPrice;
+      return price >= filters.priceRange.min && price <= filters.priceRange.max;
+    });
+
+    if (filters.categories.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        const category = categories.find(cat => cat.id === product.categoryId);
+        return category && filters.categories.includes(category.id);
+      });
+    }
+
+    if (filters.colors.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
+      });
+    }
+
+    if (filters.status.includes('on_sale')) {
+      baseProducts = baseProducts.filter(product => {
+        const now = new Date();
+        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
+        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
+        return hasDiscount && validTime;
+      });
+    }
+
+    if (filters.status.includes('in_stock')) {
+      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+    }
+
+    if (filters.status.includes('new')) {
+      baseProducts = baseProducts.filter(product => product.isNew === true);
+    }
+
+    if (filters.status.includes('featured')) {
+      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
+    }
+
+    return baseProducts.filter(product => {
+      return product.featureId === featureId;
+    }).length;
+  };
+
+  //-----------------------------------getCategoryCount------------------------------------------------  
+  const getCategoryCount = (categoryName) => {
+    let baseProducts = [...allProducts];
+    
+    baseProducts = baseProducts.filter(product => {
+      const price = product.originalPrice;
+      return price >= filters.priceRange.min && price <= filters.priceRange.max;
+    });
+
+    if (filters.features.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return filters.features.includes(product.featureId);
+      });
+    }
+
+    if (filters.colors.length > 0) {
+      baseProducts = baseProducts.filter(product => {
+        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
+      });
+    }
+
+    if (filters.status.includes('on_sale')) {
+      baseProducts = baseProducts.filter(product => {
+        const now = new Date();
+        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
+        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
+        return hasDiscount && validTime;
+      });
+    }
+
+    if (filters.status.includes('in_stock')) {
+      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+    }
+
+    if (filters.status.includes('new')) {
+      baseProducts = baseProducts.filter(product => product.isNew === true);
+    }
+
+    if (filters.status.includes('featured')) {
+      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
+    }
+
+    return baseProducts.filter(product => {
+      const category = categories.find(cat => cat.id === product.categoryId);
+      return category && category.name.en === categoryName;
+    }).length;
+  };
+
+  //-----------------------------------updateFilterCounts------------------------------------------------
+  const updateFilterCounts = (filteredProducts) => {
+    const counts = {};
+    // Count categories
+    categories.forEach(category => {
+      counts[`category_${category.name.en}`] = getCategoryCount(category.name.en);
+    });
+    // Count colors
+    colors.forEach(color => {
+      counts[`color_${color}`] = getColorCount(color);
+    });
+    // Count features
+    features.forEach(feature => {
+      counts[`feature_${feature.id}`] = getFeatureCount(feature.id);
+    });
+    // Count status options بناءً على المنتجات المعروضة فقط
+    statusOptions.forEach(status => {
+      let count = 0;
+      switch (status) {
+        case 'in_stock':
+          count = filteredProducts.filter(p => p.stock && p.stock > 0).length;
+          break;
+        case 'on_sale':
+          count = filteredProducts.filter(p => {
+            const now = new Date();
+            const hasDiscount = (p.discountPrice || p.discountPercentage > 0);
+            const validTime = !p.discountEndTime || new Date(p.discountEndTime) > now;
+            return hasDiscount && validTime;
+          }).length;
+          break;
+        case 'new':
+          count = filteredProducts.filter(p => p.isNew).length;
+          break;
+        case 'featured':
+          count = filteredProducts.filter(p => p.isBestSeller).length;
+          break;
+        default:
+          count = 0;
+      }
+      counts[`status_${status}`] = count;
+    });
+    setFilterCounts(counts);
+  };
+
+  //-----------------------------------getColorKey------------------------------------------------
+  function getColorKey(hex) {
+    if (!hex) return '';
+    if (hex === 'mixed') return 'mixed';
+    try {
+      return namer(hex).ntc[0].name.toLowerCase();
+    } catch {
+      return hex;
+    }
+  }
+
+  //-----------------------------------getColorLabel------------------------------------------------
+  function getColorLabelLocal(hex, t) {
+    const colorKey = getColorKey(hex);
+    const translation = t(`filters.color_names.${colorKey}`);
+    // إذا لم توجد ترجمة (أو الترجمة نفسها هي المفتاح)، أظهر الاسم الإنجليزي أو الكود
+    if (!translation || translation === `filters.color_names.${colorKey}`) {
+      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+      return hex;
+    }
+    return translation;
+  }
+
+  //-----------------------------------renderCategoryTree------------------------------------------------
+  const renderCategoryTree = (parentId = null, level = 0) => {
+    const cats = parentId === null ? getMainCategories() : getSubCategories(parentId);
+    if (!cats.length) return null;
+    return (
+      <div className={`category-tree level-${level}`}>
+        {cats.map(category => {
+          const count = getCategoryProductCount(category.id);
+          const hasChildren = getSubCategories(category.id).length > 0;
+          const isExpanded = expandedCategories[category.id];
+          return count > 0 ? (
+            <div key={category.id} className="category-filter-item" style={{ marginLeft: level * 16 }}>
+              <div className="category-main-filter">
+                <label className="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={filters.categories.includes(category.id)}
+                    onChange={e => onFilterChange('categories', category.id, e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  {category.name[currentLang]}  
+                </label>
+                {hasChildren && (
+                  <button
+                    className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
+                    onClick={() => toggleCategoryExpansion(category.id)}
+                    type="button"
+                  >
+                    {isExpanded ? '−' : '+'}
+                  </button>
+                )}
+              </div>
+              {/* الفروع - شجري */}
+              {hasChildren && isExpanded && (
+                <div className="subcategory-filters">
+                  {renderCategoryTree(category.id, level + 1)}
+                </div>
+              )}
+            </div>
+          ) : null;
+        })}
+      </div>
+    );
+  };
+
+  // Update filter counts when filters change
+  useEffect(() => {
+    updateFilterCounts(filteredProducts); // Pass the actual filtered products
+  }, [filters, filteredProducts]);
+
   return (
     <aside className={`shop-sidebar`}>
       <div className="shop-sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3>{currentLang === 'ar' ? 'الفلاتر' : 'Filters'}</h3>
-        {(filters.categories.length > 0 || filters.subcategories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice || searchQuery) && (
+        {(filters.categories.length > 0  || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice || searchQuery) && (
           <button className="clear-filters-btn" onClick={clearFilters} style={{ marginRight: currentLang === 'ar' ? 0 : 8, marginLeft: currentLang === 'ar' ? 8 : 0, background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '4px 12px', fontSize: 13, color: '#ef4444', cursor: 'pointer' }}>
             {currentLang === 'ar' ? 'مسح الفلاتر' : 'Clear Filters'}
           </button>
@@ -64,7 +375,7 @@ const SidebarFilters = ({
         </button>
       </div>
       {/* Active Filters */}
-      {(filters.categories.length > 0 || filters.subcategories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
+      {(filters.categories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
         <div className="active-filters">
           {filters.categories.map(categoryId => {
             const category = categories.find(cat => cat.id === categoryId);
@@ -79,24 +390,8 @@ const SidebarFilters = ({
               </span>
             );
           })}
-          {filters.subcategories.map(subcategoryId => {
-            let foundSub = null;
-            for (const cat of categories) {
-              const subs = getSubCategories(cat.id);
-              const match = subs.find(sub => sub.id === subcategoryId);
-              if (match) { foundSub = match; break; }
-            }
-            return (
-              <span 
-                key={subcategoryId} 
-                className="active-filter"
-                onClick={() => removeFilter('subcategories', subcategoryId)}
-                title={`Remove ${foundSub?.name?.[currentLang] || subcategoryId} filter`}
-              >
-                <span className="filter-close">✕</span> {foundSub?.name?.[currentLang] || subcategoryId}
-              </span>
-            );
-          })}
+
+          
           {filters.features.map(feature => (
             <span 
               key={feature} 
@@ -114,7 +409,7 @@ const SidebarFilters = ({
               onClick={() => removeFilter('colors', color)}
               title={`Remove ${color} filter`}
             >
-              <span className="filter-close">✕</span> {getColorLabel(color, t)}
+              <span className="filter-close">✕</span> {getColorLabelLocal(color, t)}
             </span>
           ))}
           {filters.status.map(status => (
@@ -178,7 +473,7 @@ const SidebarFilters = ({
           </div>
         )}
       </div>
-      {/* Product Categories with Subcategories */}
+{/* -----------------------------category tree------------------------------------------------ */}
       <div className="filter-section">
         <div className="filter-section-header" onClick={() => toggleSectionCollapse('categories')}>
           <h4>{currentLang === 'ar' ? 'الفئات' : 'Categories'}</h4>
@@ -192,7 +487,7 @@ const SidebarFilters = ({
           </div>
         )}
       </div>
-      {/* Filter by Color */}
+{/* -----------------------------color------------------------------------------------ */}
       <div className="filter-section">
         <div className="filter-section-header" onClick={() => toggleSectionCollapse('colors')}>
           <h4>{currentLang === 'ar' ? 'اللون' : 'Color'}</h4>
@@ -202,39 +497,21 @@ const SidebarFilters = ({
         </div>
         {!collapsedSections.colors && (
           <div className="color-filters">
-            {colors.map(color => {
-              const count = filterCounts[`color_${color}`] || 0;
-              return (
-                <label key={color} className="color-filter" style={{ opacity: count === 0 ? 0.5 : 1 }}>
+            {colors.map(color => (
+                <label key={color} className="color-filter">
                   <input
                     type="checkbox"
                     checked={filters.colors.includes(color)}
-                    onChange={e => onFilterChange('colors', color, e.target.checked)}
-                    disabled={count === 0 && !filters.colors.includes(color)}
+                    onChange={(e) => onFilterChange('colors', color, e.target.checked)}
                   />
-                  <span
-                    className="color-swatch"
-                    style={
-                      color === "mixed"
-                        ? { background: "linear-gradient(90deg, #eab308 0%, #ef4444 50%, #3b82f6 100%)" }
-                        : color && color.startsWith('#')
-                          ? { background: color, border: color === "#fff" ? "2px solid #e2e8f0" : undefined }
-                          : { background: '#e5e7eb', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }
-                    }
-                  >
-                    {(!color.startsWith('#') && color !== 'mixed') && '?'}
-                  </span>
-                  <span className="color-name">{getColorLabel(color, t)}</span> ({count})
-                  {count === 0 && !filters.colors.includes(color) && (
-                    <span style={{ fontSize: '10px', color: '#aaa', marginLeft: 4 }}>{t('filters.not_available')}</span>
-                  )}
+                  <span className={`color-swatch color-${getColorKey(color)}`} style={{ backgroundColor: color }}></span>
+                  {getColorLabelLocal(color, t)}
                 </label>
-              );
-            })}
+            ))}
           </div>
         )}
       </div>
-      {/* Filter by Features */}
+{/* -----------------------------features------------------------------------------------ */}
       <div className="filter-section">
         <div className="filter-section-header" onClick={() => toggleSectionCollapse('features')}>
           <h4>{currentLang === 'ar' ? 'الميزات' : 'Features'}</h4>
@@ -244,9 +521,7 @@ const SidebarFilters = ({
         </div>
         {!collapsedSections.features && (
           <div className="feature-filters">
-            {features.map(feature => {
-              const count = filterCounts[`feature_${feature.id}`] || 0;
-              return count > 0 ? (
+            {features.map(feature => (
                 <label key={feature.id} className="filter-checkbox">
                   <input
                     type="checkbox"
@@ -254,14 +529,13 @@ const SidebarFilters = ({
                     onChange={(e) => onFilterChange('features', feature.id, e.target.checked)}
                   />
                   <span className="checkmark"></span>
-                  {feature.name[currentLang]} ({count})
+                  {feature.name[currentLang]}
                 </label>
-              ) : null;
-            })}
+            ))}
           </div>
         )}
       </div>
-      {/* Product Status */}
+{/* -----------------------------status------------------------------------------------ */}
       <div className="filter-section">
         <div className="filter-section-header" onClick={() => toggleSectionCollapse('status')}>
           <h4>{currentLang === 'ar' ? 'الحالة' : 'Status'}</h4>
@@ -271,24 +545,17 @@ const SidebarFilters = ({
         </div>
         {!collapsedSections.status && (
           <div className="status-filters">
-            {statusOptions.map(status => {
-              const count = filterCounts[`status_${status}`] || 0;
-              return (
-                <label key={status} className="filter-checkbox" style={{ opacity: count === 0 ? 0.5 : 1 }}>
+            {statusOptions.map(status => (
+                <label key={status} className="filter-checkbox">
                   <input
                     type="checkbox"
                     checked={filters.status.includes(status)}
-                    onChange={e => onFilterChange('status', status, e.target.checked)}
-                    disabled={count === 0 && !filters.status.includes(status)}
+                    onChange={(e) => onFilterChange('status', status, e.target.checked)}
                   />
                   <span className="checkmark"></span>
-                  {t(`filters.status_names.${status}`)} ({count})
-                  {count === 0 && !filters.status.includes(status) && (
-                    <span style={{ fontSize: '10px', color: '#aaa', marginLeft: 4 }}>{t('filters.not_available')}</span>
-                  )}
+                  {t(`filters.status_names.${status}`)}
                 </label>
-              );
-            })}
+            ))}
           </div>
         )}
       </div>

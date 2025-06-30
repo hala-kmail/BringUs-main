@@ -625,11 +625,11 @@
     max-width: 300px;
   }
   
-  .sort-controls {
+  /* .sort-controls {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
-  }
+  } */
   
  
   

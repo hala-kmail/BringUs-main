@@ -6,7 +6,7 @@ import {
  
   categories,  
   getProductsByCategory, 
-  
+  allProducts,
   getSubCategories, 
   getMainCategories
 } from '../../data/index';
@@ -70,7 +70,7 @@ const MobileCategories = () => {
 
   // دالة للتحقق من وجود منتجات في فئة فرعية معينة
   const hasProductsInSubcategory = (subcategoryId) => {
-    const products = getProductsBySubcategory(subcategoryId);
+    const products = allProducts.filter(product => product.categoryId === subcategoryId);
     return products.length > 0;
   };
 

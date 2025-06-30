@@ -18,6 +18,7 @@ import ProductCard from '../../components/ProductCard/ProductCard';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import ShopToolbar from '../../components/Shop/ShopToolbar';
 import Pagination from '../../components/Shop/Pagination';
+import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 //-----------------------------------Category------------------------------------------------  
 const Category = () => {
   const location = useLocation();
@@ -55,7 +56,7 @@ const Category = () => {
         setCurrentCategory(category);
         const subCategories = getSubCategories(categoryId);
         setCategorySubcategories(subCategories);
-    //-----------------------------------breadcrumb------------------------------------------------  
+        //-----------------------------------breadcrumb------------------------------------------------  
         const breadcrumb = [];
         let currentPath = '';
         slugs.forEach((slug, index) => {
@@ -185,9 +186,7 @@ const Category = () => {
     { value: 'name', label: { ar: 'الاسم', en: 'Name' } },
   ];
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [pathAfterCategory]);
+  useScrollToTopOnChange([pathAfterCategory]);
 
   return (
     <div className="category-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>

@@ -17,6 +17,7 @@ import ProductInfoSection from '../../components/ProductDetail/ProductInfoSectio
 import ProductOptions from '../../components/ProductDetail/ProductOptions';
 import ProductActions from '../../components/ProductDetail/ProductActions';
 import ProductBreadcrumb from '../../components/ProductDetail/ProductBreadcrumb';
+import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -37,10 +38,7 @@ const ProductDetail = () => {
 
   const currentLang = i18n.language;
 
-  // Scroll to top on product change
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [id]);
+  useScrollToTopOnChange([id]);
 
   // قاموس ترجمة الألوان الشائعة
  

@@ -634,9 +634,9 @@
   }
 
   /* Hide desktop layout on mobile */
-  .desktop-only {
+  /* .desktop-only {
     display: none !important;
-  }
+  } */
 
   /* Show mobile layout on mobile */
   .mobile-only {

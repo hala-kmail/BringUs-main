@@ -2,10 +2,47 @@
 import { allProducts } from './products.js';
 import { categories } from './categories.js';
 import { features } from './features.js';
+import namer from 'color-namer';
 
 //-----------------------------------export------------------------------------------------  
 export { allProducts, categories, features };
 
+//-----------------------------------getMaxProductPrice------------------------------------------------  
+export const getMaxProductPrice = () => {
+  return Math.max(
+    ...allProducts.map(p => p.originalPrice+1 || 0)
+  );
+};
+//----------------------------------getColorKey------------------------------------------------ 
+export const getColorKey = (hex) => {
+  if (!hex) return '';
+  if (hex === 'mixed') return 'mixed';
+  try {
+    return namer(hex).ntc[0].name.toLowerCase();
+  } catch {
+    return hex;
+  }
+}
+//----------------------------------getColorLabel------------------------------------------------ 
+export const getColorLabel = (hex, t) => {
+  const colorKey = getColorKey(hex);
+  const translation = t(`filters.color_names.${colorKey}`);
+  if (!translation || translation === `filters.color_names.${colorKey}`) {
+    if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+    return hex;
+  }
+  return translation;
+}
+ //----------------------------------getAllColors------------------------------------------------ 
+ export const getAllColors = () => {
+  const colorSet = new Set();
+  allProducts.forEach(product => {
+    if (product.colors && Array.isArray(product.colors)) {
+      product.colors.forEach(color => colorSet.add(color));
+    }
+  });
+  return Array.from(colorSet);
+}
 //-----------------------------------getMainCategories------------------------------------------------  
 export const getMainCategories = () => {
   return categories.filter(category => category.parentCategoryId === null);
@@ -220,7 +257,7 @@ export const getProductStatistics = () => {
 export default {
   allProducts,
   categories,
- 
+  getMaxProductPrice, 
   features,
   getMainCategories,
   getSubCategories,
@@ -241,5 +278,8 @@ export default {
   filterProducts,
   getProductStatistics,
   getCategoryIdBySlug,
-  getProductsByParentCategory
+  getProductsByParentCategory,
+  getColorKey,
+  getColorLabel,
+  getAllColors
 };

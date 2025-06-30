@@ -1,9 +1,9 @@
 import React from 'react';
+import ProductCard from '../ProductCard/ProductCard';
 
 const ProductsGrid = ({
-  paginatedProducts,
+  products = [],
   viewMode,
-  ProductCard,
   currentLang,
   t,
   isInWishlist,
@@ -13,9 +13,13 @@ const ProductsGrid = ({
   getCategoryById,
   showStockInfo
 }) => {
+  if (!Array.isArray(products)) {
+    return <div>No products available</div>;
+  }
+
   return (
     <div className={`products-grid desktop-grid ${viewMode}`}>
-      {paginatedProducts.map((product) => (
+      {products.map((product) => (
         <ProductCard
           key={product.id}
           product={product}

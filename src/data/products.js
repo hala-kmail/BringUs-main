@@ -192,7 +192,7 @@ export const allProducts = [
     "originalPrice": 15.99,
     "discountPercentage": 31,
     "discountEndTime": "2025-06-22T17:00:00Z",
-    "featureId": 1,
+    "featureId": 17,
     "colors": [
       "#ef4444"
     ],
@@ -282,7 +282,7 @@ export const allProducts = [
     "discountEndTime": "2025-06-25T19:30:00Z",
     "featureId": 3,
     "colors": [
-      "#a0522d"
+      "#000000"
     ],
     "sizes": [
       { "name": "250g", "ar": "250 جرام", "priceModifier": 0 },

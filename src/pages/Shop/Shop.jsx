@@ -6,14 +6,14 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
-import { allProducts, categories, features, getSubCategories, getFeatureById, getCategoryById, getMainCategories } from '../../data/index';
+import { allProducts, categories, features, getSubCategories, getFeatureById, getCategoryById, getMainCategories, getMaxProductPrice  } from '../../data/index';
 import './Shop.css';
-import namer from 'color-namer';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import SidebarFilters from '../../components/Shop/SidebarFilters';
 import ProductsGrid from '../../components/Shop/ProductsGrid';
 import Pagination from '../../components/Shop/Pagination';
 import ShopToolbar from '../../components/Shop/ShopToolbar';
+import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 
 const Shop = () => {
   
@@ -27,318 +27,28 @@ const Shop = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
   //-----------------------------------getMaxProductPrice------------------------------------------------  
-  const getMaxProductPrice = () => {
-    return Math.max(
-      ...allProducts.map(p => p.discountPrice || p.originalPrice || 0)
-    );
-  };
-
   const initialMaxPrice = getMaxProductPrice();
-
   //-----------------------------------Filter states------------------------------------------------  
   const [filters, setFilters] = useState({
     priceRange: { min: 0, max: initialMaxPrice },
     categories: [],
-    subcategories: [], // Add subcategories filter
+    subcategories: [], 
     features: [],
     colors: [],
     status: [],
-    sortBy: 'default'
+    sortBy: 'newest'
   });
 
+//-----------------------------------View mode------------------------------------------------  
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // grid or list
-  
-  //-----------------------------------State for expanded categories (to show subcategories)------------------------------------------------  
-  const [expandedCategories, setExpandedCategories] = useState({});
-  
-  //-----------------------------------State for collapsed filter sections on desktop------------------------------------------------  
-  const [collapsedSections, setCollapsedSections] = useState({
-    price: false,
-    categories: false,
-    colors: false,
-    features: false,
-    status: false
-  });
+  const [viewMode, setViewMode] = useState('grid'); 
   
   //-----------------------------------Pagination states------------------------------------------------  
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [paginatedProducts, setPaginatedProducts] = useState([]);
-  const [filterCounts, setFilterCounts] = useState({});
 
   const currentLang = i18n.language;
-
-  //-----------------------------------getAllCategories------------------------------------------------  
-  const getAllCategories = () => {
-    return categories.map(category => category.name.en).sort();
-  };
-  
-  const categoriesList = getAllCategories();
-
-  // Helper function to convert category name to translation key
-  const getCategoryTranslationKey = (category) => {
-    return category.toLowerCase().replace(/\s*&\s*/g, '_').replace(/\s+/g, '_');
-  };
-
-  // استخرج جميع الألوان الفريدة من المنتجات
-  const getAllColors = () => {
-    const colorSet = new Set();
-    allProducts.forEach(product => {
-      if (product.colors && Array.isArray(product.colors)) {
-        product.colors.forEach(color => colorSet.add(color));
-      }
-    });
-    return Array.from(colorSet);
-  };
-
-  const colors = getAllColors();
-  
-  // Get all unique brands from the new features structure
-  const getAllBrands = () => {
-    return features.map(feature => feature.name.en).sort();
-  };
-  
-  const brands = getAllBrands();
-  const statusOptions = ['in_stock', 'on_sale', 'new', 'featured'];
-
-  // Function to count products by color from filtered products
-  const getColorCount = (color) => {
-    let baseProducts = [...allProducts];
-
-    // Apply price filter
-    baseProducts = baseProducts.filter(product => {
-      const price =  product.originalPrice;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    // Apply category filter (شامل كل الفروع المتداخلة)
-    if (filters.categories.length > 0) {
-      let allCategoryIds = [];
-      filters.categories.forEach(catId => {
-        allCategoryIds = allCategoryIds.concat(getAllDescendantCategoryIds(catId));
-      });
-      allCategoryIds = Array.from(new Set(allCategoryIds));
-      baseProducts = baseProducts.filter(product => allCategoryIds.includes(product.categoryId));
-    }
-
-    // Apply subcategory filter
-    if (filters.subcategories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return filters.subcategories.includes(product.subcategoryId);
-      });
-    }
-
-    // Apply feature filter
-    if (filters.features.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return filters.features.includes(product.featureId);
-      });
-    }
-
-    // Apply status filter
-    if (filters.status.includes('on_sale')) {
-      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
-    }
-    if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
-    }
-    if (filters.status.includes('new')) {
-      baseProducts = baseProducts.filter(product => product.isNew === true);
-    }
-    if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
-    }
-
-    // الآن عد المنتجات التي تحتوي على اللون المطلوب فقط
-    return baseProducts.filter(product => {
-      return product.colors && Array.isArray(product.colors) && product.colors.includes(color);
-    }).length;
-  };
-
-  // Function to count products by feature from filtered products
-  const getFeatureCount = (featureId) => {
-    // Get products that match current filters (excluding feature filter)
-    let baseProducts = [...allProducts];
-    
-    // Apply price filter
-    baseProducts = baseProducts.filter(product => {
-      const price = product.discountPrice || product.originalPrice;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    // Apply category filter
-    if (filters.categories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.id);
-      });
-    }
-
-    // Apply subcategory filter
-    if (filters.subcategories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return filters.subcategories.includes(product.subcategoryId);
-      });
-    }
-
-    // Apply color filter
-    if (filters.colors.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
-      });
-    }
-
-    // Apply status filter
-    if (filters.status.includes('on_sale')) {
-      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
-    }
-
-    if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
-    }
-
-    if (filters.status.includes('new')) {
-      baseProducts = baseProducts.filter(product => product.isNew === true);
-    }
-
-    if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
-    }
-
-    // Now count products that match this feature
-    return baseProducts.filter(product => {
-      return product.featureId === featureId;
-    }).length;
-  };
-
-  // Function to count products by category from filtered products
-  const getCategoryCount = (categoryName) => {
-    // Get products that match current filters (excluding category filter)
-    let baseProducts = [...allProducts];
-    
-    // Apply price filter
-    baseProducts = baseProducts.filter(product => {
-      const price = product.discountPrice || product.originalPrice;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    // Apply subcategory filter
-    if (filters.subcategories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return filters.subcategories.includes(product.subcategoryId);
-      });
-    }
-
-    // Apply feature filter
-    if (filters.features.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return filters.features.includes(product.featureId);
-      });
-    }
-
-    // Apply color filter
-    if (filters.colors.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
-      });
-    }
-
-    // Apply status filter
-    if (filters.status.includes('on_sale')) {
-      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
-    }
-
-    if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
-    }
-
-    if (filters.status.includes('new')) {
-      baseProducts = baseProducts.filter(product => product.isNew === true);
-    }
-
-    if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
-    }
-
-    // Now count products that match this category
-    return baseProducts.filter(product => {
-      const category = categories.find(cat => cat.id === product.categoryId);
-      return category && category.name.en === categoryName;
-    }).length;
-  };
-
-  // Function to count products by subcategory from filtered products
-  const getSubcategoryCount = (subcategoryId) => {
-    // Get products that match current filters (excluding subcategory filter)
-    let baseProducts = [...allProducts];
-    
-    // Apply price filter
-    baseProducts = baseProducts.filter(product => {
-      const price = product.discountPrice || product.originalPrice;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    // Apply category filter
-    if (filters.categories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.id);
-      });
-    }
-
-    // Apply feature filter
-    if (filters.features.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return filters.features.includes(product.featureId);
-      });
-    }
-
-    // Apply color filter
-    if (filters.colors.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
-      });
-    }
-
-    // Apply status filter
-    if (filters.status.includes('on_sale')) {
-      baseProducts = baseProducts.filter(product => product.discountPrice || product.discountPercentage);
-    }
-
-    if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
-    }
-
-    if (filters.status.includes('new')) {
-      baseProducts = baseProducts.filter(product => product.isNew === true);
-    }
-
-    if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
-    }
-
-    // Now count products that match this subcategory
-    return baseProducts.filter(product => {
-      return product.subcategoryId === subcategoryId;
-    }).length;
-  };
-
-  // Function to toggle category expansion
-  const toggleCategoryExpansion = (categoryId) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId]
-    }));
-  };
-
-  // Function to toggle filter section collapse
-  const toggleSectionCollapse = (sectionName) => {
-    setCollapsedSections(prev => ({
-      ...prev,
-      [sectionName]: !prev[sectionName]
-    }));
-  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -349,67 +59,52 @@ const Shop = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Monitor URL search parameters
-  useEffect(() => {
-    const urlSearchQuery = searchParams.get('search') || '';
-    if (urlSearchQuery !== searchQuery) {
-      setSearchQuery(urlSearchQuery);
-    }
-  }, [searchParams]);
-
+  // الآثار الجانبية والتبعيات
   useEffect(() => {
     applyFilters();
+    // eslint-disable-next-line
   }, [filters, searchQuery]);
 
   useEffect(() => {
     applyPagination();
+    // eslint-disable-next-line
   }, [filteredProducts, currentPage, itemsPerPage]);
 
+  // Initialize filters from URL params
   useEffect(() => {
-    updateFilterCounts();
-  }, [filters, currentLang]);
-
-  useEffect(() => {
-    const maxPrice = getMaxProductPrice();
-    setFilters(prev => ({
-      ...prev,
-      priceRange: {
-        ...prev.priceRange,
-        max: maxPrice
+    const category = searchParams.get('category');
+    const feature = searchParams.get('feature');
+    
+    if (category) {
+      const categoryId = parseInt(category);
+      if (!isNaN(categoryId)) {
+        setFilters(prev => ({
+          ...prev,
+          categories: [categoryId]
+        }));
       }
-    }));
+    }
+    
+    if (feature) {
+      const featureId = parseInt(feature);
+      if (!isNaN(featureId)) {
+        setFilters(prev => ({
+          ...prev,
+          features: [featureId]
+        }));
+      }
+    }
     // eslint-disable-next-line
   }, [allProducts.length]);
 
-  const updateFilterCounts = () => {
-    const counts = {};
-    
-    // Count categories
-    categories.forEach(category => {
-      counts[`category_${category.name.en}`] = getCategoryCount(category.name.en);
-    });
-
-  
-    
-    // Count colors
-    colors.forEach(color => {
-      counts[`color_${color}`] = getColorCount(color);
-    });
-    
-    // Count features
-    features.forEach(feature => {
-      counts[`feature_${feature.id}`] = getFeatureCount(feature.id);
-    });
-    
-    setFilterCounts(counts);
-  };
-
+//----------------------------------applyPagination------------------------------------------------
   const applyPagination = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     setPaginatedProducts(filteredProducts.slice(startIndex, endIndex));
   };
 
+//----------------------------------applyFilters------------------------------------------------
   const applyFilters = () => {
     let filtered = [...allProducts];
 
@@ -441,17 +136,13 @@ const Shop = () => {
     }
 
     // Apply subcategory filter
-    if (filters.subcategories.length > 0) {
-      filtered = filtered.filter(product => {
-        return filters.subcategories.includes(product.subcategoryId);
-      });
-    }
+    // if (filters.subcategories.length > 0) {
+    //   filtered = filtered.filter(product => filters.subcategories.includes(product.subcategoryId));
+    // }
 
     // Apply feature filter
     if (filters.features.length > 0) {
-      filtered = filtered.filter(product => {
-        return filters.features.includes(product.featureId);
-      });
+      filtered = filtered.filter(product => filters.features.includes(product.featureId));
     }
 
     // Apply color filter
@@ -461,21 +152,26 @@ const Shop = () => {
       });
     }
 
-    // Apply status filter
-      if (filters.status.includes('on_sale')) {
-        filtered = filtered.filter(product => product.discountPrice || product.discountPercentage);
-      }
+    // Apply status filters
+    if (filters.status.includes('on_sale')) {
+      filtered = filtered.filter(product => {
+        const now = new Date();
+        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
+        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
+        return hasDiscount && validTime;
+      });
+    }
 
-      if (filters.status.includes('in_stock')) {
-        filtered = filtered.filter(product => product.stock && product.stock > 0);
-      }
+    if (filters.status.includes('in_stock')) {
+      filtered = filtered.filter(product => product.stock && product.stock > 0);
+    }
 
-      if (filters.status.includes('new')) {
-        filtered = filtered.filter(product => product.isNew === true);
-      }
+    if (filters.status.includes('new')) {
+      filtered = filtered.filter(product => product.isNew === true);
+    }
 
-      if (filters.status.includes('featured')) {
-        filtered = filtered.filter(product => product.isBestSeller === true);
+    if (filters.status.includes('featured')) {
+      filtered = filtered.filter(product => product.isBestSeller === true);
     }
 
     // Apply sorting
@@ -511,6 +207,7 @@ const Shop = () => {
     setCurrentPage(1); // Reset pagination when filters change
   };
 
+//----------------------------------getAllDescendantCategoryIds------------------------------------------------
   // Helper: جلب كل معرفات الفروع المتداخلة لقسم معين (recursive)
   const getAllDescendantCategoryIds = (categoryId) => {
     const directSubs = getSubCategories(categoryId);
@@ -521,12 +218,7 @@ const Shop = () => {
     return ids;
   };
 
-  // عداد المنتجات لكل كاتيجوري (يشمل كل الفروع المتداخلة)
-  const getCategoryProductCount = (categoryId) => {
-    const allIds = getAllDescendantCategoryIds(categoryId);
-    return allProducts.filter(product => allIds.includes(product.categoryId)).length;
-  };
-
+//----------------------------------handleFilterChange------------------------------------------------
   // عند تغيير فلتر الكاتيجوري أو السب كاتيجوري
   const handleFilterChange = (filterType, value, checked = null) => {
     if (filterType === 'categories') {
@@ -597,6 +289,7 @@ const Shop = () => {
     }
   };
 
+//----------------------------------clearFilters------------------------------------------------
   const clearFilters = () => {
     setFilters({
       priceRange: { min: 0, max: initialMaxPrice },
@@ -607,15 +300,10 @@ const Shop = () => {
       status: [],
       sortBy: 'default'
     });
-    setExpandedCategories({}); // Collapse all categories
     setSearchQuery(''); // امسح نص البحث أيضاً
   };
 
-  const clearCategoryFilter = () => {
-    setFilters(prev => ({ ...prev, categories: [], subcategories: [] })); // Clear both categories and subcategories
-    setExpandedCategories({}); // Collapse all categories
-  };
-
+//----------------------------------removeFilter------------------------------------------------
   const removeFilter = (filterType, value) => {
     setFilters(prev => ({
       ...prev,
@@ -623,318 +311,197 @@ const Shop = () => {
     }));
   };
 
+//----------------------------------handleWishlistToggle------------------------------------------------
   const handleWishlistToggle = (product) => {
     toggleWishlist(product);
   };
 
+//----------------------------------handleAddToCart------------------------------------------------
   const handleAddToCart = (product) => {
     // Navigate to product details page
     navigate(`/product/${product.id}`);
   };
 
+//----------------------------------handleMobileSearchToggle------------------------------------------------
   const handleMobileSearchToggle = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
   };
 
+//----------------------------------handleMobileSearchClose------------------------------------------------       
   const handleMobileSearchClose = () => {
     setIsMobileSearchOpen(false);
   };
 
-  // Search function
+//----------------------------------handleSearch------------------------------------------------
   const handleSearch = (query) => {
     setSearchQuery(query);
-    // Update URL search parameters
+    // تحديث URL params
     if (query.trim()) {
-      setSearchParams({ search: query });
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('search', query.trim());
+        return newParams;
+      });
     } else {
-      setSearchParams({});
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('search');
+        return newParams;
+      });
     }
   };
 
-  // Pagination functions
+//----------------------------------totalPages------------------------------------------------
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  
+
+//----------------------------------handlePageChange------------------------------------------------
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+//----------------------------------handleItemsPerPageChange------------------------------------------------
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1); // Reset to first page
   };
 
+//----------------------------------getVisiblePages------------------------------------------------
   const getVisiblePages = () => {
     if (totalPages <= 1) return [1];
     
-    const delta = 2;
-    const range = [];
+    const maxVisiblePages = 5;
+    const current = currentPage;
+    
+    if (totalPages <= maxVisiblePages) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    let start = Math.max(1, current - Math.floor(maxVisiblePages / 2));
+    let end = Math.min(totalPages, start + maxVisiblePages - 1);
+    
+    if (end - start + 1 < maxVisiblePages) {
+      start = Math.max(1, end - maxVisiblePages + 1);
+    }
+    
+    const range = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    
     const rangeWithDots = [];
-
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i);
-    }
-
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
+    if (start > 1) {
       rangeWithDots.push(1);
+      if (start > 2) rangeWithDots.push('...');
     }
-
     rangeWithDots.push(...range);
-
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
+    if (end < totalPages) {
+      if (end < totalPages - 1) rangeWithDots.push('...');
       rangeWithDots.push(totalPages);
     }
-
+    
     return rangeWithDots.filter((page, index, array) => array.indexOf(page) === index && page <= totalPages);
   };
 
+//----------------------------------handleSortChange------------------------------------------------
   const handleSortChange = (newSortBy) => {
     setFilters(prev => ({ ...prev, sortBy: newSortBy }));
   };
 
-  function getColorKey(hex) {
-    if (!hex) return '';
-    if (hex === 'mixed') return 'mixed';
-    try {
-      return namer(hex).ntc[0].name.toLowerCase();
-    } catch {
-      return hex;
-    }
+//----------------------------------useScrollToTopOnChange------------------------------------------------
+  useScrollToTopOnChange([currentPage, filters, itemsPerPage]);
+
+//----------------------------------Helper function for getAllColors------------------------------------------------
+  function getAllColors() {
+    const colorSet = new Set();
+    allProducts.forEach(product => {
+      if (product.colors && Array.isArray(product.colors)) {
+        product.colors.forEach(color => colorSet.add(color));
+      }
+    });
+    return Array.from(colorSet);
   }
 
-  function getColorLabel(hex, t) {
-    const colorKey = getColorKey(hex);
-    const translation = t(`filters.color_names.${colorKey}`);
-    // إذا لم توجد ترجمة (أو الترجمة نفسها هي المفتاح)، أظهر الاسم الإنجليزي أو الكود
-    if (!translation || translation === `filters.color_names.${colorKey}`) {
-      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
-      return hex;
-    }
-    return translation;
-  }
-
-  // Helper: عرض شجرة الأقسام بشكل متداخل (recursive)
-  const renderCategoryTree = (parentId = null, level = 0) => {
-    const cats = parentId === null ? getMainCategories() : getSubCategories(parentId);
-    if (!cats.length) return null;
-    return (
-      <div className={`category-tree level-${level}`}> 
-        {cats.map(category => {
-          const count = getCategoryProductCount(category.id);
-          const hasChildren = getSubCategories(category.id).length > 0;
-          const isExpanded = expandedCategories[category.id];
-          return count > 0 ? (
-            <div key={category.id} className="category-filter-item" style={{ marginLeft: level * 16 }}>
-              <div className="category-main-filter">
-                <label className="filter-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={filters.categories.includes(category.id)}
-                    onChange={e => handleFilterChange('categories', category.id, e.target.checked)}
-                  />
-                  <span className="checkmark"></span>
-                  {category.name[currentLang]} ({count})
-                </label>
-                {hasChildren && (
-                  <button
-                    className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
-                    onClick={() => toggleCategoryExpansion(category.id)}
-                    type="button"
-                  >
-                    {isExpanded ?  '−' : '+'}
-                  </button>
-                )}
-              </div>
-              {/* الفروع - شجري */}
-              {hasChildren && isExpanded && (
-                <div className="subcategory-filters">
-                  {renderCategoryTree(category.id, level + 1)}
-                </div>
-              )}
-            </div>
-          ) : null;
-        })}
-      </div>
-    );
-  };
-
+//----------------------------------return------------------------------------------------
   return (
     <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      {/* <TopBar /> */}
-      <Navbar 
-        onMobileSearchToggle={handleMobileSearchToggle}
-        isMobileSearchOpen={isMobileSearchOpen}
-      />
+      <Navbar onMobileSearchToggle={handleMobileSearchToggle} />
       <SecondaryNavbar />
-      <MobileSearch 
-        isOpen={isMobileSearchOpen}
-        onClose={handleMobileSearchClose}
-        onSearch={handleSearch}
-        searchQuery={searchQuery}
-      />
-
-      {/* Mobile Filters */}
-      <MobileFilters
-        isOpen={showFilters}
-        onClose={() => setShowFilters(false)}
-        filters={filters}
-        onFiltersChange={setFilters}
-      />
+      
+      {isMobileSearchOpen && (
+        <MobileSearch
+          isOpen={isMobileSearchOpen}
+          onClose={handleMobileSearchClose}
+          searchQuery={searchQuery}
+          onSearch={handleSearch}
+          products={allProducts}
+          currentLang={currentLang}
+          t={t}
+        />
+      )}
 
       <div className="shop-container">
-        {/* Shop Header with Filter Button */}
-        <div className="shop-header">
-          <div className="shop-filters-toggle" style={{ display: 'none' }}>
-            <button 
-              className="filter-button"
-              onClick={() => setShowFilters(true)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <span>{t('filters.title')}</span>
-            </button>
-          </div>
-          
-        
-        </div>
-
         <div className="shop-main">
           {/* Sidebar Filters */}
-         
-            <SidebarFilters
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              filterCounts={filterCounts}
-              collapsedSections={collapsedSections}
-              toggleSectionCollapse={toggleSectionCollapse}
-              expandedCategories={expandedCategories}
-              toggleCategoryExpansion={toggleCategoryExpansion}
-              categories={categories}
-                
-              features={features}
-              colors={colors}
-              statusOptions={statusOptions}
-              clearFilters={clearFilters}
-              removeFilter={removeFilter}
-              getColorLabel={getColorLabel}
-              getCategoryProductCount={getCategoryProductCount}
-              renderCategoryTree={renderCategoryTree}
-              isListView={viewMode === 'list'}
-              currentLang={currentLang}
-              initialMaxPrice={initialMaxPrice}
-              searchQuery={searchQuery}
-              handleSearch={handleSearch}
-                        />
-       
+          <SidebarFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            clearFilters={clearFilters}
+            removeFilter={removeFilter}
+            initialMaxPrice={initialMaxPrice}
+            searchQuery={searchQuery}
+            handleSearch={handleSearch}
+            filteredProducts={filteredProducts}
+          />
 
           {/* Main Content */}
-          <main className="shop-content">
-            {/* Mobile Toolbar - Show on mobile */}
-            <div className="mobile-shop-toolbar">
-              {/* Top Row: Search info + Advanced Filters + View Controls */}
-              <div className="mobile-filter-controls">
-                <button 
-                  className="mobile-filter-btn"
-                  onClick={() => setShowFilters(true)}
-                  title={t('filters.title')}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
-                </button>
+          <div className="shop-content">
+            {/* Mobile Filters Toggle */}
+            {isMobile && (
+              <button
+                className="mobile-filters-toggle"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                {t('shop.filters')} ({Object.values(filters).flat().length - 2})
+              </button>
+            )}
 
-                {/* Search Display */}
-                {searchQuery && (
-                  <div className="mobile-search-display">
-                    <span>{t('search.searching_for', { query: searchQuery })}</span>
-                    <button 
-                      className="mobile-search-clear"
-                      onClick={() => handleSearch('')}
-                      title={t('search.clear')}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-
-                <div className="mobile-view-controls">
-                  <button 
-                    className={`mobile-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                    onClick={() => setViewMode('grid')}
-                    title={t('shop.grid_view')}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                  </button>
-                  <button 
-                    className={`mobile-view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                    onClick={() => setViewMode('list')}
-                    title={t('shop.list_view')}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                    </svg>
-                  </button>
-                </div>
-
-              </div>
-
-              {/* Bottom Row: Results Info */}
-              <div className="mobile-results-info">
-                <div className="mobile-results-count">
-                  {searchQuery ? (
-                    t('shop.search_results', { 
-                      count: filteredProducts.length,
-                      query: searchQuery 
-                    })
-                  ) : (
-                    t('shop.showing_products', { 
-                      count: filteredProducts.length 
-                    })
-                  )}
-                </div>
-                
-                <div className="mobile-items-per-page">
-                  <label>{t('shop.items_per_page')}:</label>
-                  <select 
-                    value={itemsPerPage}
-                    onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                    className="mobile-items-select"
-                  >
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Desktop Toolbar (hidden on mobile) */}
-            
-              <ShopToolbar
+            {/* Mobile Filters */}
+            {isMobile && showFilters && (
+              <MobileFilters
+                isOpen={showFilters}
+                onClose={() => setShowFilters(false)}
                 filters={filters}
-                handleSortChange={handleSortChange}
-                itemsPerPage={itemsPerPage}
-                handleItemsPerPageChange={handleItemsPerPageChange}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
+                onFiltersChange={setFilters}
+                categories={categories}
+                features={features}
+                colors={getAllColors()}
+                statusOptions={['in_stock', 'on_sale', 'new', 'featured']}
+                clearFilters={clearFilters}
+                removeFilter={removeFilter}
+                initialMaxPrice={initialMaxPrice}
+                t={t}
                 currentLang={currentLang}
-                filteredCount={filteredProducts.length}
-                totalCount={allProducts.length}
               />
-            
+            )}
+
+           
+
+            {/* Shop Toolbar */}
+            <ShopToolbar
+              filters={filters}
+              handleSortChange={handleSortChange}
+              itemsPerPage={itemsPerPage}
+              handleItemsPerPageChange={handleItemsPerPageChange}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              currentLang={currentLang}
+              filteredCount={filteredProducts.length}
+              totalCount={allProducts.length}
+            />
 
             {/* Products Grid */}
-            <ProductsGrid
-              paginatedProducts={paginatedProducts}
-              viewMode={viewMode}
-              ProductCard={ProductCard}
+            {filteredProducts.length > 0 ? (
+              <ProductsGrid
+                products={paginatedProducts}
+                viewMode={viewMode}
                 currentLang={currentLang}
                 t={t}
                 isInWishlist={isInWishlist}
@@ -942,21 +509,33 @@ const Shop = () => {
                 handleAddToCart={handleAddToCart}
                 getFeatureById={getFeatureById}
                 getCategoryById={getCategoryById}
-                showStockInfo={true}
               />
+            ) : (
+              <div className="no-products">
+                <h3>{t('shop.no_products_title')}</h3>
+                <p>{t('shop.no_products_description')}</p>
+                <button onClick={clearFilters} className="clear-filters-btn">
+                  {t('shop.clear_filters')}
+                </button>
+              </div>
+            )}
 
             {/* Pagination */}
-            <Pagination
-              totalPages={totalPages}
-              currentPage={currentPage}
-              handlePageChange={handlePageChange}
-              getVisiblePages={getVisiblePages}
-            />
-          </main>
+            {totalPages > 1 && (
+              <Pagination
+                totalPages={totalPages}
+                currentPage={currentPage}
+                handlePageChange={handlePageChange}
+                getVisiblePages={getVisiblePages}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
+
+ 
 };
 
 export default Shop; 

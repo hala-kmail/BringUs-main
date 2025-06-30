@@ -29,22 +29,22 @@ const almostFinishedSale = () => {
 
   // Unified sort function
   const getSortFunction = (sortBy, getActiveDiscountPercentage, getEffectivePrice) => (a, b) => {
-    switch (sortBy) {
-      case 'stockLowToHigh':
-        return a.stock - b.stock;
-      case 'stockHighToLow':
-        return b.stock - a.stock;
-      case 'discountHighToLow':
+      switch (sortBy) {
+        case 'stockLowToHigh':
+          return a.stock - b.stock;
+        case 'stockHighToLow':
+          return b.stock - a.stock;
+        case 'discountHighToLow':
         return getActiveDiscountPercentage(b) - getActiveDiscountPercentage(a);
       case 'discountLowToHigh':
         return getActiveDiscountPercentage(a) - getActiveDiscountPercentage(b); 
-      case 'priceLowToHigh':
-        return getEffectivePrice(a) - getEffectivePrice(b);
-      case 'priceHighToLow':
-        return getEffectivePrice(b) - getEffectivePrice(a);
-      default:
-        return a.stock - b.stock;
-    }
+        case 'priceLowToHigh':
+          return getEffectivePrice(a) - getEffectivePrice(b);
+        case 'priceHighToLow':
+          return getEffectivePrice(b) - getEffectivePrice(a);
+        default:
+          return a.stock - b.stock;
+      }
   };
 
   const almostFinishedProducts = allProducts

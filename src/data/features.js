@@ -112,6 +112,15 @@ export const features = [
       ar: "لطيف"
     }
   }
+  ,
+  {
+    id: 17,
+    name: {
+      en: "Good",
+      ar: "جيد"
+    }
+  },
+  
 ];
 
 export default features; 

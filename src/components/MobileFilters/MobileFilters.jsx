@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { allProducts, categories, features } from '../../data/index';
+import { allProducts, categories, features, getAllColors } from '../../data/index';
 import './MobileFilters.css';
 import namer from 'color-namer';
 
@@ -14,11 +14,18 @@ const MobileFilters = ({
     status: [],
     priceRange: { min: 0, max: 1000 }
   },
-  onFiltersChange
+  onFiltersChange,
+  categories: categoriesProp = categories,
+  features: featuresProp = features,
+  colors: colorsProp = getAllColors(),
+  statusOptions = ['in_stock', 'on_sale', 'new', 'featured'],
+  t: tProp,
+  currentLang
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t: tHook, i18n } = useTranslation();
+  const t = tProp || tHook;
   const [expandedSections, setExpandedSections] = useState(['categories', 'status']);
-
+  const colors = colorsProp;
   // Calculate filter data with smart availability checking
   const filterData = useMemo(() => {
     const counts = {
@@ -33,6 +40,26 @@ const MobileFilters = ({
       status: new Set(['in_stock', 'on_sale', 'new', 'featured'])
     };
 
+    // Helper function to get all descendant category IDs (same as getAllDescendantCategoryIds below)
+    const getDescendantIds = (categoryId) => {
+      const result = [categoryId];
+      const getChildren = (parentId) => {
+        const children = categoriesProp.filter(cat => cat.parentId === parentId);
+        children.forEach(child => {
+          result.push(child.id);
+          getChildren(child.id);
+        });
+      };
+      getChildren(categoryId);
+      return result;
+    };
+
+    // Helper function to get category product count (including descendants)
+    const getCategoryProductCount = (categoryId, baseProducts) => {
+      const allIds = getDescendantIds(categoryId);
+      return baseProducts.filter(product => allIds.includes(product.categoryId)).length;
+    };
+
     // Function to get base filtered products (excluding the section we're calculating)
     const getBaseFilteredProducts = (excludeSection) => {
       let baseProducts = [...allProducts];
@@ -45,10 +72,12 @@ const MobileFilters = ({
 
       // Apply category filter (unless we're calculating categories)
       if (excludeSection !== 'categories' && filters.categories?.length > 0) {
-        baseProducts = baseProducts.filter(product => {
-          const category = categories.find(cat => cat.id === product.categoryId);
-          return category && filters.categories.includes(category.id);
+        let allCategoryIds = [];
+        filters.categories.forEach(catId => {
+          allCategoryIds = allCategoryIds.concat(getDescendantIds(catId));
         });
+        allCategoryIds = Array.from(new Set(allCategoryIds));
+        baseProducts = baseProducts.filter(product => allCategoryIds.includes(product.categoryId));
       }
 
       // Apply features filter (unless we're calculating features)
@@ -74,7 +103,10 @@ const MobileFilters = ({
           return filters.status.some(status => {
             switch (status) {
               case 'on_sale':
-                return  product.discountPercentage;
+                const now = new Date();
+                const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
+                const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
+                return hasDiscount && validTime;
               case 'in_stock':
                 return product.stock && product.stock > 0;
               case 'new':
@@ -98,14 +130,14 @@ const MobileFilters = ({
       const baseProducts = getBaseFilteredProducts(section);
       
       if (section === 'categories') {
-        categories.forEach(category => {
-          const count = baseProducts.filter(product => product.categoryId === category.id).length;
+        categoriesProp.forEach(category => {
+          const count = getCategoryProductCount(category.id, baseProducts);
           counts.categories[category.id] = count;
         });
       }
       
       else if (section === 'features') {
-        features.forEach(feature => {
+        featuresProp.forEach(feature => {
           const count = baseProducts.filter(product => product.featureId === feature.id).length;
           counts.features[feature.id] = count;
         });
@@ -131,7 +163,12 @@ const MobileFilters = ({
       else if (section === 'status') {
         const statusChecks = {
           'in_stock': (product) => product.stock && product.stock > 0,
-          'on_sale': (product) =>  product.discountPercentage,
+          'on_sale': (product) => {
+            const now = new Date();
+            const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
+            const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
+            return hasDiscount && validTime;
+          },
           'new': (product) => product.isNew === true,
           'featured': (product) => product.isBestSeller === true
         };
@@ -145,7 +182,7 @@ const MobileFilters = ({
 
    
     return { counts, uniqueValues };
-  }, [filters, categories, features]);
+  }, [filters, categoriesProp, featuresProp]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
@@ -159,7 +196,11 @@ const MobileFilters = ({
 
   // Handle filter toggle
   const handleFilterToggle = useCallback((sectionId, itemId) => {
-    if (!onFiltersChange) return;
+    console.log('handleFilterToggle called:', sectionId, itemId);
+    if (!onFiltersChange) {
+      console.error('onFiltersChange is not provided!');
+      return;
+    }
 
     const newFilters = { ...filters };
     const currentArray = newFilters[sectionId] || [];
@@ -208,12 +249,41 @@ const MobileFilters = ({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
         </svg>
       ),
-      items: categories.map(category => ({
-        id: category.id,
-        name: category.name[i18n.language],
-        count: filterData.counts.categories[category.id] || 0,
-        isSelected: filters.categories?.includes(category.id) || false
-      }))
+      items: [],
+      isHierarchical: true,
+      renderHierarchical: () => {
+        const renderCategoryLevel = (parentId = null, level = 0) => {
+          const cats = parentId === null ? getMainCategories() : getSubCategories(parentId);
+          if (!cats.length) return null;
+          
+          return cats.map(category => {
+            const count = filterData.counts.categories[category.id] || 0;
+            const hasChildren = getSubCategories(category.id).length > 0;
+            const isSelected = filters.categories?.includes(category.id) || false;
+            
+            return (
+              <div key={category.id} className="mobile-category-group" style={{ marginLeft: level * 16 }}>
+                <button
+                  className={`mobile-filter-item mobile-category-item ${isSelected ? 'selected' : ''} ${count === 0 ? 'disabled' : ''}`}
+                  onClick={() => handleCategoryToggle(category.id)}
+                  disabled={count === 0 && !isSelected}
+                  style={{ width: '100%', marginBottom: '8px' }}
+                >
+                  <span className="mobile-item-name">{category.name[i18n.language]}</span>
+                  {isSelected && <span className="mobile-selected-indicator">✓</span>}
+                </button>
+                {hasChildren && (
+                  <div className="mobile-subcategories" style={{ marginLeft: '12px', marginBottom: '8px' }}>
+                    {renderCategoryLevel(category.id, level + 1)}
+                  </div>
+                )}
+              </div>
+            );
+          });
+        };
+        
+        return renderCategoryLevel();
+      }
     },
     {
       id: 'features',
@@ -223,10 +293,9 @@ const MobileFilters = ({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
         </svg>
       ),
-      items: features.map(feature => ({
+      items: featuresProp.map(feature => ({
         id: feature.id,
         name: feature.name[i18n.language],
-        count: filterData.counts.features[feature.id] || 0,
         isSelected: filters.features?.includes(feature.id) || false
       }))
     },
@@ -244,10 +313,9 @@ const MobileFilters = ({
           <circle cx="16" cy="14" r="2" fill="#4444ff" stroke="none" />
         </svg>
       ),
-      items: Array.from(filterData.uniqueValues.colors).map(color => ({
+        items: Array.from(filterData.uniqueValues.colors).map(color => ({
         id: color,
         name: t(`filters.color_names.${getColorKey(color)}`),
-        count: filterData.counts.colors[color] || 0,
         isSelected: filters.colors?.includes(color) || false,
         color: color.toLowerCase()
       }))
@@ -263,35 +331,86 @@ const MobileFilters = ({
       items: Array.from(filterData.uniqueValues.status).map(status => ({
         id: status,
         name: t(`filters.status_names.${status}`),
-        count: filterData.counts.status[status] || 0,
         isSelected: filters.status?.includes(status) || false
       }))
     }
-  ], [filterData, filters, i18n.language, t]);
-
-  // Handle expand/collapse all sections (بعد تعريف filterSections)
-  const handleExpandCollapseAll = useCallback(() => {
-    if (expandedSections.length === filterSections.length) {
-      // إذا كانت جميع الأقسام مفتوحة، أغلقها جميعاً
-      setExpandedSections([]);
-    } else {
-      // إذا لم تكن جميع الأقسام مفتوحة، افتحها جميعاً
-      setExpandedSections(filterSections.map(section => section.id));
-    }
-  }, [expandedSections.length, filterSections]);
+  ], [filterData, filters, i18n.language, t, categoriesProp, featuresProp]);
 
   // Toggle section expansion
-  const toggleSection = useCallback((sectionId) => {
-    setExpandedSections(prev => {
-      if (prev.includes(sectionId)) {
-        // إذا كان القسم مفتوحاً، أغلقه
-        return prev.filter(id => id !== sectionId);
-      } else {
-        // إذا كان القسم مغلقاً، افتحه (أضفه للقائمة)
-        return [...prev, sectionId];
+  const toggleSection = (sectionId) => {
+    setExpandedSections(prev => 
+      prev.includes(sectionId) 
+        ? prev.filter(id => id !== sectionId)
+        : [...prev, sectionId]
+    );
+  };
+
+  // Category hierarchy functions
+  const getMainCategories = () => {
+    return categoriesProp.filter(cat => !cat.parentId);
+  };
+
+  const getSubCategories = (parentId) => {
+    return categoriesProp.filter(cat => cat.parentId === parentId);
+  };
+
+  const getAllDescendantCategoryIds = (categoryId) => {
+    const descendants = [];
+    const getChildren = (parentId) => {
+      const children = getSubCategories(parentId);
+      children.forEach(child => {
+        descendants.push(child.id);
+        getChildren(child.id);
+      });
+    };
+    getChildren(categoryId);
+    return descendants;
+  };
+
+  // Enhanced filter toggle for categories with hierarchy
+  const handleCategoryToggle = useCallback((categoryId) => {
+    if (!onFiltersChange) return;
+
+    const newFilters = { ...filters };
+    const currentArray = newFilters.categories || [];
+    
+    if (currentArray.includes(categoryId)) {
+      // If unchecking, remove this category and all its descendants
+      const descendantIds = getAllDescendantCategoryIds(categoryId);
+      newFilters.categories = currentArray.filter(id => 
+        id !== categoryId && !descendantIds.includes(id)
+      );
+    } else {
+      // If checking a main category, add it
+      // If checking a subcategory, add it and check if all siblings are selected to auto-select parent
+      newFilters.categories = [...currentArray, categoryId];
+      
+      const category = categoriesProp.find(cat => cat.id === categoryId);
+      if (category && category.parentId) {
+        // This is a subcategory, check if all siblings are now selected
+        const siblings = getSubCategories(category.parentId);
+        const allSiblingsSelected = siblings.every(sibling => 
+          newFilters.categories.includes(sibling.id)
+        );
+        
+        if (allSiblingsSelected && !newFilters.categories.includes(category.parentId)) {
+          newFilters.categories.push(category.parentId);
+        }
       }
-    });
-  }, []);
+    }
+    
+    console.log('Category toggled:', categoryId, 'New filters:', newFilters);
+    onFiltersChange(newFilters);
+  }, [filters, onFiltersChange, categoriesProp]);
+
+  // Handle expand/collapse all sections
+  const handleExpandCollapseAll = () => {
+    if (expandedSections.length === filterSections.length) {
+      setExpandedSections([]);
+    } else {
+      setExpandedSections(filterSections.map(section => section.id));
+    }
+  };
 
   // Calculate filtered products count based on current filters
   const filteredProductsCount = useMemo(() => {
@@ -306,7 +425,7 @@ const MobileFilters = ({
     // Apply category filter
     if (filters.categories?.length > 0) {
       filtered = filtered.filter(product => {
-        const category = categories.find(cat => cat.id === product.categoryId);
+        const category = categoriesProp.find(cat => cat.id === product.categoryId);
         return category && filters.categories.includes(category.id);
       });
     }
@@ -334,7 +453,10 @@ const MobileFilters = ({
         return filters.status.some(status => {
           switch (status) {
             case 'on_sale':
-              return  product.discountPercentage;
+              const now = new Date();
+              const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
+              const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
+              return hasDiscount && validTime;
             case 'in_stock':
               return product.stock && product.stock > 0;
             case 'new':
@@ -404,17 +526,22 @@ const MobileFilters = ({
               >
                 <span className="mobile-section-icon">{section.icon}</span>
                 <span className="mobile-section-title">{section.title}</span>
-                <span className="mobile-section-count">
-                  ({section.items.filter(item => item.isSelected).length}/{section.items.filter(item => item.count > 0).length})
-                  {section.items.filter(item => item.count > 0).length !== section.items.length && (
-                    <span className="unavailable-indicator" title={i18n.language === 'ar' ? 'بعض الخيارات غير متاحة' : 'Some options unavailable'}>
-                      <svg width="10" height="10" fill="currentColor" viewBox="0 0 16 16" style={{ marginLeft: '0.25rem' }}>
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
-                      </svg>
-                    </span>
-                  )}
-                </span>
+                {/* Active filter indicator */}
+                {(() => {
+                  if (section.id === 'categories' && filters.categories && filters.categories.length > 0) {
+                    return <span className="mobile-section-indicator" title={t('filters.active')}>●</span>;
+                  }
+                  if (section.id === 'features' && filters.features && filters.features.length > 0) {
+                    return <span className="mobile-section-indicator" title={t('filters.active')}>●</span>;
+                  }
+                  if (section.id === 'colors' && filters.colors && filters.colors.length > 0) {
+                    return <span className="mobile-section-indicator" title={t('filters.active')}>●</span>;
+                  }
+                  if (section.id === 'status' && filters.status && filters.status.length > 0) {
+                    return <span className="mobile-section-indicator" title={t('filters.active')}>●</span>;
+                  }
+                  return null;
+                })()}
                 <span className="mobile-chevron">
                   <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={expandedSections.includes(section.id) ? "M19 9l-7 7-7-7" : "M9 5l7 7-7 7"} />
@@ -424,41 +551,39 @@ const MobileFilters = ({
 
               {expandedSections.includes(section.id) && (
                 <div className="mobile-section-content">
-                  <div className="mobile-filter-grid">
-                    {section.items.map(item => (
-                      <button
-                        key={item.id}
-                        className={`mobile-filter-item ${item.isSelected ? 'selected' : ''} ${item.count === 0 ? 'disabled' : ''}`}
-                        onClick={() => item.count > 0 && handleFilterToggle(section.id, item.id)}
-                        disabled={item.count === 0 && !item.isSelected}
-                        aria-pressed={item.isSelected}
-                        title={item.count === 0 && !item.isSelected ? 
-                          (i18n.language === 'ar' ? 'لا توجد منتجات متوفرة' : 'No products available') : 
-                          undefined
-                        }
-                      >
-                        {section.id === 'colors' && (
-                          <span
-                            className="mobile-color-dot"
-                            style={
-                              item.id === "mixed"
-                                ? { background: "linear-gradient(90deg, #eab308 0%, #ef4444 50%, #3b82f6 100%)" }
-                                : item.id && item.id.startsWith('#')
-                                  ? { background: item.id, border: item.id === "#fff" ? "2px solid #e2e8f0" : undefined }
-                                  : { background: '#e5e7eb', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }
-                            }
-                          >
-                            {(item.id && !item.id.startsWith('#') && item.id !== 'mixed') && '?'}
-                          </span>
-                        )}
-                        <span className="mobile-item-name">{item.name}</span>
-                        <span className={`mobile-item-count ${item.count === 0 ? 'zero-count' : ''}`}>
-                          ({item.count})
-                        </span>
-                        {item.isSelected && <span className="mobile-selected-indicator">✓</span>}
-                      </button>
-                    ))}
-                  </div>
+                  {section.isHierarchical ? (
+                    <div className="mobile-hierarchical-content">
+                      {section.renderHierarchical()}
+                    </div>
+                  ) : (
+                    <div className="mobile-filter-grid">
+                      {section.items.map(item => (
+                        <button
+                          key={item.id}
+                          className={`mobile-filter-item ${item.isSelected ? 'selected' : ''}`}
+                          onClick={() => handleFilterToggle(section.id, item.id)}
+                          aria-pressed={item.isSelected}
+                        >
+                          {section.id === 'colors' && (
+                            <span
+                              className="mobile-color-dot"
+                              style={
+                                item.id === "mixed"
+                                  ? { background: "linear-gradient(90deg, #eab308 0%, #ef4444 50%, #3b82f6 100%)" }
+                                  : item.id && item.id.startsWith('#')
+                                    ? { background: item.id, border: item.id === "#fff" ? "2px solid #e2e8f0" : undefined }
+                                    : { background: '#e5e7eb', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }
+                              }
+                            >
+                              {(item.id && !item.id.startsWith('#') && item.id !== 'mixed') && '?'}
+                            </span>
+                          )}
+                          <span className="mobile-item-name">{item.name}</span>
+                          {item.isSelected && <span className="mobile-selected-indicator">✓</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -467,7 +592,7 @@ const MobileFilters = ({
 
         {/* Footer */}
         <div className="mobile-filters-footer">
-          <div className="footer-stats">
+          {/* <div className="footer-stats">
             {activeFiltersCount > 0 ? (
               <span>
                 {t('filters.totalProducts', { count: filteredProductsCount })} 
@@ -480,7 +605,7 @@ const MobileFilters = ({
             ) : (
               <span>{t('filters.totalProducts', { count: allProducts.length })}</span>
             )}
-          </div>
+          </div> */}
           <div className="footer-actions">
             {activeFiltersCount > 0 && (
               <button className="reset-button" onClick={handleClearAll}>
