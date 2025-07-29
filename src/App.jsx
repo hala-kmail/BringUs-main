@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { WishlistProvider } from './contexts/WishlistContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AppDataProvider } from './contexts/AppDataContext';
+import DynamicColors from './components/DynamicColors/DynamicColors';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Home from './pages/Home/Home';
@@ -27,6 +29,7 @@ const AppContent = () => {
 
   return (
     <div className="App">
+      <DynamicColors />
       {!isAuthPage && <AnnouncementBar />}
       <div className="main-content">
         <Routes>
@@ -35,7 +38,7 @@ const AppContent = () => {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
-          <Route path="/category/*" element={<Category />} />
+          <Route path="/category/:categorySlug" element={<Category />} />
       
           <Route path="/mobile-categories" element={<MobileCategories />} />
           <Route path="/product/:id" element={<ProductDetail />} />
@@ -53,15 +56,17 @@ const AppContent = () => {
 
 function App() {
   return (
-    <ThemeProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <Router>
-            <AppContent />
-          </Router>
-        </WishlistProvider>
-      </CartProvider>
-    </ThemeProvider>
+    <AppDataProvider>
+      <ThemeProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </WishlistProvider>
+        </CartProvider>
+      </ThemeProvider>
+    </AppDataProvider>
   );
 }
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getColorLabel, getAllColors } from '../../data/index';
-import { categories, features, getSubCategories, getMainCategories, allProducts } from '../../data/index';
+// Remove static imports
+// import { getColorLabel, getAllColors } from '../../data/index';
+// import { categories, features, getSubCategories, getMainCategories, allProducts } from '../../data/index';
 import namer from 'color-namer';
+import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 
 const SidebarFilters = ({
   filters,
@@ -12,7 +14,13 @@ const SidebarFilters = ({
   initialMaxPrice,
   searchQuery,
   handleSearch,
-  filteredProducts = allProducts
+  filteredProducts = [],
+  // New props from Shop page
+  allProducts = [],
+  categories = [],
+  getMainCategories,
+  getSubCategories,
+  getAllColors
 }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
@@ -48,23 +56,24 @@ const SidebarFilters = ({
     }));
   };
 
-  //-----------------------------------getAllColors------------------------------------------------  
- 
-  const colors = getAllColors();
+  //-----------------------------------getAllColors from props or create fallback------------------------------------------------  
+  const colors = getAllColors ? getAllColors() : [];
 
   //-----------------------------------statusOptions------------------------------------------------  
   const statusOptions = [];
-  if (allProducts.some(p => p.stock && p.stock > 0)) statusOptions.push('in_stock');
-  if (allProducts.some(p => (p.discountPrice || p.discountPercentage))) statusOptions.push('on_sale');
+  if (allProducts.some(p => (p.stock || 0) > 0)) statusOptions.push('in_stock');
+  if (allProducts.some(p => p.salePrice && p.salePrice < (p.originalPrice || p.price))) statusOptions.push('on_sale');
   if (allProducts.some(p => p.isNew)) statusOptions.push('new');
-  if (allProducts.some(p => p.isBestSeller)) statusOptions.push('featured');
+  if (allProducts.some(p => p.isFeatured || p.isBestSeller)) statusOptions.push('featured');
 
   //-----------------------------------getAllDescendantCategoryIds------------------------------------------------
   const getAllDescendantCategoryIds = (categoryId) => {
+    if (!getSubCategories) return [categoryId];
+    
     const directSubs = getSubCategories(categoryId);
     let ids = [categoryId];
     directSubs.forEach(sub => {
-      ids = ids.concat(getAllDescendantCategoryIds(sub.id));
+      ids = ids.concat(getAllDescendantCategoryIds(sub._id || sub.id));
     });
     return ids;
   };
@@ -72,189 +81,135 @@ const SidebarFilters = ({
   //-----------------------------------getCategoryProductCount------------------------------------------------
   const getCategoryProductCount = (categoryId) => {
     const allIds = getAllDescendantCategoryIds(categoryId);
-    return allProducts.filter(product => allIds.includes(product.categoryId)).length;
+    return allProducts.filter(product => {
+      const productCategoryId = product.category?._id || product.categoryId;
+      return allIds.includes(productCategoryId);
+    }).length;
   };
 
   //-----------------------------------getColorCount------------------------------------------------  
   const getColorCount = (color) => {
     let baseProducts = [...allProducts];
+    
+    // Apply price filter
     baseProducts = baseProducts.filter(product => {
-      const price = product.originalPrice;
+      const price = product.salePrice || product.originalPrice || product.price || 0;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
     // Apply category filter (شامل كل الفروع المتداخلة)
     if (filters.categories.length > 0) {
-      let allCategoryIds = [];
-      filters.categories.forEach(catId => {
-        allCategoryIds = allCategoryIds.concat(getAllDescendantCategoryIds(catId));
-      });
-      allCategoryIds = Array.from(new Set(allCategoryIds));
-      baseProducts = baseProducts.filter(product => allCategoryIds.includes(product.categoryId));
-    }
-
-    // Apply feature filter
-    if (filters.features.length > 0) {
       baseProducts = baseProducts.filter(product => {
-        return filters.features.includes(product.featureId);
+        const productCategoryId = product.category?._id || product.categoryId;
+        return filters.categories.some(catId => {
+          return getAllDescendantCategoryIds(catId).includes(productCategoryId);
+        });
       });
     }
 
     // Apply status filter
     if (filters.status.includes('on_sale')) {
       baseProducts = baseProducts.filter(product => {
-        const now = new Date();
-        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
-        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
-        return hasDiscount && validTime;
+        return product.salePrice && product.salePrice < (product.originalPrice || product.price);
       });
     }
     if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+      baseProducts = baseProducts.filter(product => (product.stock || 0) > 0);
     }
     if (filters.status.includes('new')) {
       baseProducts = baseProducts.filter(product => product.isNew === true);
     }
     if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
+      baseProducts = baseProducts.filter(product => product.isFeatured === true || product.isBestSeller === true);
     }
 
     return baseProducts.filter(product => {
-      return product.colors && Array.isArray(product.colors) && product.colors.includes(color);
+      // التحقق من الألوان الفردية والمخلوطة (كلها سترينغ)
+      const productColors = getSimpleColorsFromColorsField(product);
+      return productColors.includes(color);
     }).length;
   };
 
-  //-----------------------------------getFeatureCount------------------------------------------------  
-  const getFeatureCount = (featureId) => {
-    let baseProducts = [...allProducts];
-    
-    baseProducts = baseProducts.filter(product => {
-      const price = product.originalPrice;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    if (filters.categories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        const category = categories.find(cat => cat.id === product.categoryId);
-        return category && filters.categories.includes(category.id);
-      });
-    }
-
-    if (filters.colors.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
-      });
-    }
-
-    if (filters.status.includes('on_sale')) {
-      baseProducts = baseProducts.filter(product => {
-        const now = new Date();
-        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
-        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
-        return hasDiscount && validTime;
-      });
-    }
-
-    if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
-    }
-
-    if (filters.status.includes('new')) {
-      baseProducts = baseProducts.filter(product => product.isNew === true);
-    }
-
-    if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
-    }
-
-    return baseProducts.filter(product => {
-      return product.featureId === featureId;
-    }).length;
+  // Helper function to get product colors
+  const getProductColors = (product) => {
+    // استخدم دالة getProcessedColors من productUtils للحصول على الألوان المعالجة
+    return getSimpleColorsFromColorsField(product);
   };
 
   //-----------------------------------getCategoryCount------------------------------------------------  
-  const getCategoryCount = (categoryName) => {
+  const getCategoryCount = (categoryId) => {
     let baseProducts = [...allProducts];
     
+    // Apply price filter
     baseProducts = baseProducts.filter(product => {
-      const price = product.originalPrice;
+      const price = product.salePrice || product.originalPrice || product.price || 0;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
-    if (filters.features.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        return filters.features.includes(product.featureId);
-      });
-    }
-
+    // Apply color filter
     if (filters.colors.length > 0) {
       baseProducts = baseProducts.filter(product => {
-        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
+        const productColors = getProductColors(product);
+        return productColors.some(color => filters.colors.includes(color));
       });
     }
 
+    // Apply status filter
     if (filters.status.includes('on_sale')) {
       baseProducts = baseProducts.filter(product => {
-        const now = new Date();
-        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
-        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
-        return hasDiscount && validTime;
+        return product.salePrice && product.salePrice < (product.originalPrice || product.price);
       });
     }
-
     if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => product.stock && product.stock > 0);
+      baseProducts = baseProducts.filter(product => (product.stock || 0) > 0);
     }
-
     if (filters.status.includes('new')) {
       baseProducts = baseProducts.filter(product => product.isNew === true);
     }
-
     if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isBestSeller === true);
+      baseProducts = baseProducts.filter(product => product.isFeatured === true || product.isBestSeller === true);
     }
 
     return baseProducts.filter(product => {
-      const category = categories.find(cat => cat.id === product.categoryId);
-      return category && category.name.en === categoryName;
+      const productCategoryId = product.category?._id || product.categoryId;
+      return getAllDescendantCategoryIds(categoryId).includes(productCategoryId);
     }).length;
   };
 
   //-----------------------------------updateFilterCounts------------------------------------------------
   const updateFilterCounts = (filteredProducts) => {
     const counts = {};
+    
     // Count categories
-    categories.forEach(category => {
-      counts[`category_${category.name.en}`] = getCategoryCount(category.name.en);
-    });
+    if (categories && categories.length > 0) {
+      categories.forEach(category => {
+        const categoryId = category._id || category.id;
+        counts[`category_${categoryId}`] = getCategoryCount(categoryId);
+      });
+    }
+    
     // Count colors
     colors.forEach(color => {
       counts[`color_${color}`] = getColorCount(color);
     });
-    // Count features
-    features.forEach(feature => {
-      counts[`feature_${feature.id}`] = getFeatureCount(feature.id);
-    });
+    
     // Count status options بناءً على المنتجات المعروضة فقط
     statusOptions.forEach(status => {
       let count = 0;
       switch (status) {
         case 'in_stock':
-          count = filteredProducts.filter(p => p.stock && p.stock > 0).length;
+          count = filteredProducts.filter(p => (p.stock || 0) > 0).length;
           break;
         case 'on_sale':
           count = filteredProducts.filter(p => {
-            const now = new Date();
-            const hasDiscount = (p.discountPrice || p.discountPercentage > 0);
-            const validTime = !p.discountEndTime || new Date(p.discountEndTime) > now;
-            return hasDiscount && validTime;
+            return p.salePrice && p.salePrice < (p.originalPrice || p.price);
           }).length;
           break;
         case 'new':
           count = filteredProducts.filter(p => p.isNew).length;
           break;
         case 'featured':
-          count = filteredProducts.filter(p => p.isBestSeller).length;
+          count = filteredProducts.filter(p => p.isFeatured || p.isBestSeller).length;
           break;
         default:
           count = 0;
@@ -267,7 +222,14 @@ const SidebarFilters = ({
   //-----------------------------------getColorKey------------------------------------------------
   function getColorKey(hex) {
     if (!hex) return '';
-    if (hex === 'mixed') return 'mixed';
+    // تحقق إذا كان اللون مختلطاً (مثل "color1+color2")
+    if (hex.includes('+')) {
+      return 'mixed';
+    }
+    // تحقق إذا كان اللون مختلطاً (JSON string)
+    if (hex.startsWith('[')) {
+      return 'mixed';
+    }
     try {
       return namer(hex).ntc[0].name.toLowerCase();
     } catch {
@@ -276,43 +238,84 @@ const SidebarFilters = ({
   }
 
   //-----------------------------------getColorLabel------------------------------------------------
-  function getColorLabelLocal(hex, t) {
-    const colorKey = getColorKey(hex);
+  function getColorLabelLocal(color, t) {
+    // تحقق إذا كان اللون مختلطاً (مثل "color1+color2")
+    if (color.includes('+')) {
+      return t('filters.color_names.mixed');
+    }
+    
+    // تحقق إذا كان اللون مختلطاً (JSON string)
+    if (color.startsWith('[')) {
+      return t('filters.color_names.mixed');
+    }
+    
+    const colorKey = getColorKey(color);
     const translation = t(`filters.color_names.${colorKey}`);
-    // إذا لم توجد ترجمة (أو الترجمة نفسها هي المفتاح)، أظهر الاسم الإنجليزي أو الكود
     if (!translation || translation === `filters.color_names.${colorKey}`) {
-      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
-      return hex;
+      if (colorKey && colorKey !== color) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+      return color;
     }
     return translation;
+  }
+  
+  //-----------------------------------getColorStyle------------------------------------------------
+  function getColorStyle(color) {
+    // التحقق من الألوان المدمجة (مثل "color1+color2")
+    if (color.includes('+')) {
+      const colors = color.split('+');
+      if (colors.length > 1) {
+        return { background: `linear-gradient(135deg, ${colors.join(', ')})` };
+      }
+    }
+    
+    // التحقق من الألوان المدمجة (JSON string)
+    if (color.startsWith('[')) {
+      try {
+        const colors = JSON.parse(color);
+        if (colors.length > 1) {
+          return { background: `linear-gradient(135deg, ${colors.join(', ')})` };
+        }
+      } catch (e) {
+        // Fallback for invalid JSON
+        return { backgroundColor: '#ccc' };
+      }
+    }
+    
+    return { backgroundColor: color };
   }
 
   //-----------------------------------renderCategoryTree------------------------------------------------
   const renderCategoryTree = (parentId = null, level = 0) => {
+    if (!getMainCategories || !getSubCategories) return null;
+    
     const cats = parentId === null ? getMainCategories() : getSubCategories(parentId);
-    if (!cats.length) return null;
+    if (!cats || !cats.length) return null;
+    
     return (
       <div className={`category-tree level-${level}`}>
         {cats.map(category => {
-          const count = getCategoryProductCount(category.id);
-          const hasChildren = getSubCategories(category.id).length > 0;
-          const isExpanded = expandedCategories[category.id];
+          const categoryId = category._id || category.id;
+          const count = getCategoryProductCount(categoryId);
+          const hasChildren = getSubCategories(categoryId).length > 0;
+          const isExpanded = expandedCategories[categoryId];
+          const categoryName = category[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || category.name || 'Unknown Category';
+          
           return count > 0 ? (
-            <div key={category.id} className="category-filter-item" style={{ marginLeft: level * 16 }}>
+            <div key={categoryId} className="category-filter-item" style={{ marginLeft: level * 16 }}>
               <div className="category-main-filter">
                 <label className="filter-checkbox">
                   <input
                     type="checkbox"
-                    checked={filters.categories.includes(category.id)}
-                    onChange={e => onFilterChange('categories', category.id, e.target.checked)}
+                    checked={filters.categories.includes(categoryId)}
+                    onChange={e => onFilterChange('categories', categoryId, e.target.checked)}
                   />
                   <span className="checkmark"></span>
-                  {category.name[currentLang]}  
+                  {categoryName} ({count})
                 </label>
                 {hasChildren && (
                   <button
                     className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
-                    onClick={() => toggleCategoryExpansion(category.id)}
+                    onClick={() => toggleCategoryExpansion(categoryId)}
                     type="button"
                   >
                     {isExpanded ? '−' : '+'}
@@ -322,7 +325,7 @@ const SidebarFilters = ({
               {/* الفروع - شجري */}
               {hasChildren && isExpanded && (
                 <div className="subcategory-filters">
-                  {renderCategoryTree(category.id, level + 1)}
+                  {renderCategoryTree(categoryId, level + 1)}
                 </div>
               )}
             </div>
@@ -335,7 +338,7 @@ const SidebarFilters = ({
   // Update filter counts when filters change
   useEffect(() => {
     updateFilterCounts(filteredProducts); // Pass the actual filtered products
-  }, [filters, filteredProducts]);
+  }, [filters, filteredProducts, allProducts, categories]);
 
   return (
     <aside className={`shop-sidebar`}>
@@ -374,34 +377,25 @@ const SidebarFilters = ({
           )}
         </button>
       </div>
+      
       {/* Active Filters */}
       {(filters.categories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
         <div className="active-filters">
           {filters.categories.map(categoryId => {
-            const category = categories.find(cat => cat.id === categoryId);
+            const category = categories.find(cat => (cat._id || cat.id) === categoryId);
+            const categoryName = category ? (category[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || category.name) : categoryId;
             return (
               <span 
                 key={categoryId} 
                 className="active-filter"
                 onClick={() => removeFilter('categories', categoryId)}
-                title={`Remove ${category?.name[currentLang] || categoryId} filter`}
+                title={`Remove ${categoryName} filter`}
               >
-                <span className="filter-close">✕</span> {category?.name[currentLang] || categoryId}
+                <span className="filter-close">✕</span> {categoryName}
               </span>
             );
           })}
 
-          
-          {filters.features.map(feature => (
-            <span 
-              key={feature} 
-              className="active-filter"
-              onClick={() => removeFilter('features', feature)}
-              title={`Remove ${feature} filter`}
-            >
-              <span className="filter-close">✕</span> {features.find(f => f.id === feature)?.name[currentLang] || feature}
-            </span>
-          ))}
           {filters.colors.map(color => (
             <span 
               key={color} 
@@ -424,6 +418,7 @@ const SidebarFilters = ({
           ))}
         </div>
       )}
+      
       {/* Price Filter */}
       <div className="filter-section">
         <div className="filter-section-header" onClick={() => toggleSectionCollapse('price')}>
@@ -473,92 +468,86 @@ const SidebarFilters = ({
           </div>
         )}
       </div>
-{/* -----------------------------category tree------------------------------------------------ */}
-      <div className="filter-section">
-        <div className="filter-section-header" onClick={() => toggleSectionCollapse('categories')}>
-          <h4>{currentLang === 'ar' ? 'الفئات' : 'Categories'}</h4>
-          <button className={`section-collapse-btn ${collapsedSections.categories ? 'collapsed' : 'expanded'}`}>
-            {collapsedSections.categories ? '+' : '−'}
-          </button>
-        </div>
-        {!collapsedSections.categories && (
-          <div className="category-list">
-            {renderCategoryTree()}
+
+      {/* Category Filter */}
+      {categories && categories.length > 0 && (
+        <div className="filter-section">
+          <div className="filter-section-header" onClick={() => toggleSectionCollapse('categories')}>
+            <h4>{currentLang === 'ar' ? 'الفئات' : 'Categories'}</h4>
+            <button className={`section-collapse-btn ${collapsedSections.categories ? 'collapsed' : 'expanded'}`}>
+              {collapsedSections.categories ? '+' : '−'}
+            </button>
           </div>
-        )}
-      </div>
-{/* -----------------------------color------------------------------------------------ */}
-      <div className="filter-section">
-        <div className="filter-section-header" onClick={() => toggleSectionCollapse('colors')}>
-          <h4>{currentLang === 'ar' ? 'اللون' : 'Color'}</h4>
-          <button className={`section-collapse-btn ${collapsedSections.colors ? 'collapsed' : 'expanded'}`}>
-            {collapsedSections.colors ? '+' : '−'}
-          </button>
+          {!collapsedSections.categories && (
+            <div className="category-list">
+              {renderCategoryTree()}
+            </div>
+          )}
         </div>
-        {!collapsedSections.colors && (
-          <div className="color-filters">
-            {colors.map(color => (
-                <label key={color} className="color-filter">
-                  <input
-                    type="checkbox"
-                    checked={filters.colors.includes(color)}
-                    onChange={(e) => onFilterChange('colors', color, e.target.checked)}
-                  />
-                  <span className={`color-swatch color-${getColorKey(color)}`} style={{ backgroundColor: color }}></span>
-                  {getColorLabelLocal(color, t)}
-                </label>
-            ))}
+      )}
+
+      {/* Color Filter */}
+      {colors && colors.length > 0 && (
+        <div className="filter-section">
+          <div className="filter-section-header" onClick={() => toggleSectionCollapse('colors')}>
+            <h4>{currentLang === 'ar' ? 'اللون' : 'Color'}</h4>
+            <button className={`section-collapse-btn ${collapsedSections.colors ? 'collapsed' : 'expanded'}`}>
+              {collapsedSections.colors ? '+' : '−'}
+            </button>
           </div>
-        )}
-      </div>
-{/* -----------------------------features------------------------------------------------ */}
-      <div className="filter-section">
-        <div className="filter-section-header" onClick={() => toggleSectionCollapse('features')}>
-          <h4>{currentLang === 'ar' ? 'الميزات' : 'Features'}</h4>
-          <button className={`section-collapse-btn ${collapsedSections.features ? 'collapsed' : 'expanded'}`}>
-            {collapsedSections.features ? '+' : '−'}
-          </button>
+          {!collapsedSections.colors && (
+            <div className="color-filters">
+              {colors.map(color => {
+                const colorCount = filterCounts[`color_${color}`] || 0;
+                return colorCount > 0 ? (
+                  <label key={color} className="color-filter">
+                    <input
+                      type="checkbox"
+                      checked={filters.colors.includes(color)}
+                      onChange={(e) => onFilterChange('colors', color, e.target.checked)}
+                    />
+                    <span 
+                      className={`color-swatch color-${getColorKey(color)}`} 
+                      style={getColorStyle(color)}
+                    ></span>
+                    {getColorLabelLocal(color, t)} ({colorCount})
+                  </label>
+                ) : null;
+              })}
+            </div>
+          )}
         </div>
-        {!collapsedSections.features && (
-          <div className="feature-filters">
-            {features.map(feature => (
-                <label key={feature.id} className="filter-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={filters.features.includes(feature.id)}
-                    onChange={(e) => onFilterChange('features', feature.id, e.target.checked)}
-                  />
-                  <span className="checkmark"></span>
-                  {feature.name[currentLang]}
-                </label>
-            ))}
+      )}
+
+      {/* Status Filter */}
+      {statusOptions.length > 0 && (
+        <div className="filter-section">
+          <div className="filter-section-header" onClick={() => toggleSectionCollapse('status')}>
+            <h4>{currentLang === 'ar' ? 'الحالة' : 'Status'}</h4>
+            <button className={`section-collapse-btn ${collapsedSections.status ? 'collapsed' : 'expanded'}`}>
+              {collapsedSections.status ? '+' : '−'}
+            </button>
           </div>
-        )}
-      </div>
-{/* -----------------------------status------------------------------------------------ */}
-      <div className="filter-section">
-        <div className="filter-section-header" onClick={() => toggleSectionCollapse('status')}>
-          <h4>{currentLang === 'ar' ? 'الحالة' : 'Status'}</h4>
-          <button className={`section-collapse-btn ${collapsedSections.status ? 'collapsed' : 'expanded'}`}>
-            {collapsedSections.status ? '+' : '−'}
-          </button>
+          {!collapsedSections.status && (
+            <div className="status-filters">
+              {statusOptions.map(status => {
+                const statusCount = filterCounts[`status_${status}`] || 0;
+                return statusCount > 0 ? (
+                  <label key={status} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={filters.status.includes(status)}
+                      onChange={(e) => onFilterChange('status', status, e.target.checked)}
+                    />
+                    <span className="checkmark"></span>
+                    {t(`filters.status_names.${status}`)} ({statusCount})
+                  </label>
+                ) : null;
+              })}
+            </div>
+          )}
         </div>
-        {!collapsedSections.status && (
-          <div className="status-filters">
-            {statusOptions.map(status => (
-                <label key={status} className="filter-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={filters.status.includes(status)}
-                    onChange={(e) => onFilterChange('status', status, e.target.checked)}
-                  />
-                  <span className="checkmark"></span>
-                  {t(`filters.status_names.${status}`)}
-                </label>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </aside>
   );
 };

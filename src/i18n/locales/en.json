@@ -123,14 +123,17 @@
       "password": "Password",
       "password_placeholder": "Enter your password",
       "submit": "Sign In",
+      "loading": "Signing in...",
       "no_account": "Don't have an account?",
       "signup": "Sign Up"
     },
     "register": {
       "title": "Create Account",
       "subtitle": "Create your account to access all features",
-      "name": "Full Name",
-      "name_placeholder": "Enter your full name",
+      "firstName": "First Name",
+      "firstName_placeholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastName_placeholder": "Enter your last name",
       "email": "Email",
       "email_placeholder": "Enter your email",
       "password": "Password",
@@ -138,6 +141,7 @@
       "confirm_password": "Confirm Password",
       "confirm_password_placeholder": "Re-enter your password",
       "submit": "Create Account",
+      "creating": "Creating...",
       "have_account": "Already have an account?",
       "signin": "Sign In",
       "phone": "Phone",
@@ -150,10 +154,19 @@
       "address_placeholder": "Enter your address",
       "district": "District",
       "district_placeholder": "Enter your district",
+      "zipCode": "Zip Code",
+      "zipCode_placeholder": "Enter zip code",
+      "country": "Country",
+      "country_placeholder": "Enter country name",
+      "select_area": "Select area",
+      "checking_email": "Checking email...",
       "validation": {
-        "name_required": "Full name is required",
+        "firstName_required": "First name is required",
+        "firstName_length": "First name must be between 2 and 50 characters",
+        "lastName_required": "Last name is required",
+        "lastName_length": "Last name must be between 2 and 50 characters",
         "phone_required": "Phone number is required",
-        "phone_invalid": "Invalid phone number",
+        "phone_invalid": "Invalid phone number (must start with number or +)",
         "area_required": "Area is required",
         "address_required": "Address is required",  
         "email_required": "Email is required",
@@ -162,10 +175,18 @@
         "password_short": "Password must be at least 6 characters",
         "confirm_password_required": "Confirm password is required",
         "passwords_not_match": "Passwords do not match",
-        "city_required": "City is required"
+        "city_required": "City is required",
+        "zipCode_invalid": "Invalid zip code",
+        "email_exists": "Email already exists",
+        "password_min_length": "Password must be at least 6 characters"
     }
-  }
-},
+  },
+  "validation": {
+    "email_required": "Email is required",
+    "email_invalid": "Invalid email format",
+    "password_required": "Password is required",
+    "password_min_length": "Password must be at least 6 characters"
+  },
   "footer": {
   "newsletter_title": "Subscribe to our newsletter",
   "newsletter_desc": "Register your email to get the latest offers and discounts. No spam!",
@@ -223,15 +244,22 @@
     "quantity": "Quantity",
     "color": "Color",
     "size": "Size",
+    
     "adding": "Adding...",
     "select_color_first": "Please select a color first",
     "select_size_first": "Please select a size first",
+    "specifications": "Specifications",
+    "available_colors": "Available Colors",
+    "mixed_colors": "Mixed Colors",
+    "items_available": "items available",
+    "low_stock_warning": "Only {{count}} left - Almost sold out!",
     "error_adding_to_cart": "Error adding product to cart",
     "whatsapp_greeting": "Hello, I want to order {{name}}",
     "total_price": "Total Price",
     "product_link": "Product link",
     "breadcrumb_sep": ">",
-    "video_not_supported": "Your browser does not support the video tag."
+    "video_not_supported": "Your browser does not support the video tag.",  
+    "out_of_stock_soon": "Out of stock, coming soon"
   },
   "related_products": {
     "title": "Related Products",
@@ -536,5 +564,6 @@
     "description": "Shop now before they're gone"
   },
   "error_add": "Failed to add product to wishlist!",
-  "error_remove": "Failed to remove product from wishlist!"
- }
+  "error_remove": "Failed to remove product from wishlist!",
+  "out_of_stock_soon": "Out of stock, coming soon"
+}}

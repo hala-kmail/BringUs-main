@@ -1,66 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import useStoreSliders from '../../hooks/useStoreSliders';
 import './Carousel.css';
 
 const Carousel = () => {
   const { t, i18n } = useTranslation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-//-----------------------------------images-----------------------------------
-  const slides = [
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80',
-      title: {
-        en: 'Fresh Groceries Delivered',
-        ar: 'توصيل البقالة الطازجة'
-      },
-      subtitle: {
-        en: 'Get the freshest products delivered to your doorstep',
-        ar: 'احصل على أطازج المنتجات موصلة إلى باب منزلك'
-      },
-      link: '#'
-    },
-    {
-      id: 2,
-      image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      title: {
-        en: 'Organic Fruits & Vegetables',
-        ar: 'فواكه وخضروات عضوية'
-      },
-      subtitle: {
-        en: 'Premium quality organic produce for healthy living',
-        ar: 'منتجات عضوية عالية الجودة للحياة الصحية'
-      },
-      link: '#'
-    },
-    {
-      id: 3,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      title: {
-        en: 'Special Offers & Discounts',
-        ar: 'عروض خاصة وخصومات'
-      },
-      subtitle: {
-        en: 'Save up to 40% on your favorite products',
-        ar: 'وفر حتى 40% على منتجاتك المفضلة'
-      },
-      link: '#'
-    },
-    {
-      id: 4,
-      image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2065&q=80',
-      title: {
-        en: 'Fast & Reliable Delivery',
-        ar: 'توصيل سريع وموثوق'
-      },
-      subtitle: {
-        en: 'Same day delivery available from 7:00 to 23:00',
-        ar: 'توصيل في نفس اليوم متاح من 7:00 إلى 23:00'
-      },
-      link: '#'
+  const { sliders, loading, error } = useStoreSliders();
+
+  // Use API sliders if available, otherwise use fallback
+  // Filter only active sliders (include both sliders and videos)
+  const slides = sliders && sliders.length > 0 
+    ? sliders.filter(slide => slide.isActive)
+    : [];
+
+  // Helper function to get slide data in the correct format
+  const getSlideData = (slide) => {
+    // If it's API data, map it to the expected format
+    if (slide.imageUrl || slide.thumbnailUrl) {
+      return {
+        id: slide._id || slide.id,
+        image: slide.imageUrl || slide.thumbnailUrl,
+        // title: slide.title || '',
+        // description: slide.description || '',
+        link: slide.link || slide.url || slide.videoUrl || '#',
+        type: slide.type || 'slider',
+        videoUrl: slide.videoUrl || null,
+        youtubeId: slide.youtubeId || null
+      };
     }
-  ];
+    // If it's already in the correct format (fallback slides)
+    return slide;
+  };
 //-----------------------------------move--------------------------------------  
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -94,6 +66,34 @@ const Carousel = () => {
 //-----------------------------------current lang--------------------------------------  
   const currentLang = i18n.language;
 //-----------------------------------return--------------------------------------  
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="carousel-container">
+        <div className="carousel-loading">
+          <div className="loading-spinner"></div>
+          <p>{currentLang === 'ar' ? 'جاري تحميل السلايدر...' : 'Loading slider...'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    console.error('Carousel error:', error);
+  }
+
+  // Show message if no slides available
+  if (!loading && slides.length === 0) {
+    return (
+      <div className="carousel-container">
+        <div className="carousel-loading">
+          <p>{currentLang === 'ar' ? 'لا توجد سلايدر متاحة حالياً' : 'No sliders available at the moment'}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="carousel-container"
@@ -109,16 +109,36 @@ const Carousel = () => {
               : `translateX(-${currentSlide * 100}%)` 
           }}
         >
-          {slides.map((slide) => (
-            <div key={slide.id} className="carousel-slide">
-              <a href={slide.link} className="slide-image">
-                <img src={slide.image} alt={slide.title[currentLang]} />
-                <div className="slide-overlay"></div>
-              </a>
-              <div className="slide-content">
+          {slides.map((slide) => {
+            const slideData = getSlideData(slide);
+            return (
+              <div key={slideData.id} className="carousel-slide">
+                {slideData.type === 'video' ? (
+                  // Video slide
+                  <div className="slide-video">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${slideData.youtubeId}?autoplay=0&rel=0`}
+                      title={slideData.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                    <div className="slide-overlay"></div>
+                  </div>
+                ) : (
+                  // Image slide
+                  <a href={slideData.link} className="slide-image">
+                    <img src={slideData.image} alt={slideData.title} />
+                    <div className="slide-overlay"></div>
+                  </a>
+                )}
+                <div className="slide-content">
+                  {/* <h2 className="slide-title">{slideData.title}</h2> */}
+                  {/* <p className="slide-subtitle">{slideData.description}</p> */}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 {/*---------------------------Navigation Arrows-----------------------------------*/}
         <button 

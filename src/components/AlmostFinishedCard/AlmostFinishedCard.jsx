@@ -1,11 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import useProducts from '../../hooks/useProducts';
 import './AlmostFinishedCard.css';
 
 const AlmostFinishedCard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { products } = useProducts();
+  
+  // Calculate almost finished products count using lowStockThreshold
+  const almostFinishedCount = React.useMemo(() => {
+    if (!products || !Array.isArray(products)) return 0;
+    
+    return products.filter(product => {
+      const stockThreshold = product.lowStockThreshold || 5; // fallback to 5 if not defined
+      return product.stock <= stockThreshold && product.stock > 0;
+    }).length;
+  }, [products]);
 
   return (
     <div className="almost-finished-card" onClick={() => navigate('/almost-finished-sale')}>
@@ -16,6 +28,11 @@ const AlmostFinishedCard = () => {
         <div className="text-container">
           <h3>{t('almost_finished.title')}</h3>
           <p>{t('almost_finished.description')}</p>
+          {almostFinishedCount > 0 && (
+            <div className="count-badge">
+              {almostFinishedCount} {t('almostFinished.productsLeft')}
+            </div>
+          )}
         </div>
         <div className="arrow-container">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

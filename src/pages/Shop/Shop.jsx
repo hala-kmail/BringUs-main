@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -6,7 +6,8 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
-import { allProducts, categories, features, getSubCategories, getFeatureById, getCategoryById, getMainCategories, getMaxProductPrice  } from '../../data/index';
+// Remove static imports
+// import { allProducts, categories, features, getSubCategories, getFeatureById, getCategoryById, getMainCategories, getMaxProductPrice  } from '../../data/index';
 import './Shop.css';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import SidebarFilters from '../../components/Shop/SidebarFilters';
@@ -14,6 +15,11 @@ import ProductsGrid from '../../components/Shop/ProductsGrid';
 import Pagination from '../../components/Shop/Pagination';
 import ShopToolbar from '../../components/Shop/ShopToolbar';
 import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
+// Add dynamic data hooks
+import useProducts from '../../hooks/useProducts';
+import useCategories from '../../hooks/useCategories';
+import { useAppData } from '../../contexts/AppDataContext';
+import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 
 const Shop = () => {
   
@@ -22,13 +28,30 @@ const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+
+  // Use dynamic data hooks
+  const { products, loading: productsLoading, error: productsError, searchProducts, fetchProductsByCategory } = useProducts();
+  const { categories, getMainCategories, getSubCategories, loading: categoriesLoading } = useCategories();
+  const { store } = useAppData();
+
+  // Derived data
+  const allProducts = products || [];
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   
-  //-----------------------------------getMaxProductPrice------------------------------------------------  
+  // Calculate dynamic max price
+  const getMaxProductPrice = () => {
+    if (!allProducts.length) return 1000;
+    return Math.max(...allProducts.map(product => 
+      Math.max(product.originalPrice || 0, product.salePrice || 0, product.price || 0)
+    ));
+  };
+
   const initialMaxPrice = getMaxProductPrice();
-  //-----------------------------------Filter states------------------------------------------------  
+
+  // Filter states
   const [filters, setFilters] = useState({
     priceRange: { min: 0, max: initialMaxPrice },
     categories: [],
@@ -39,17 +62,69 @@ const Shop = () => {
     sortBy: 'newest'
   });
 
-//-----------------------------------View mode------------------------------------------------  
+  // API-based search function
+  const performAPISearch = useCallback(async (query) => {
+    if (!query.trim()) {
+      // If empty search, reset to all products
+      setFilteredProducts(allProducts);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const result = await searchProducts(query);
+      if (result && result.products) {
+        setFilteredProducts(result.products);
+        console.log('Search results:', result.products.length, 'products found');
+      } else {
+        setFilteredProducts([]);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setFilteredProducts([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [searchProducts, allProducts]);
+
+  // API-based category filtering
+  const performCategoryFilter = useCallback(async (categoryIds) => {
+    if (!categoryIds.length) {
+      setFilteredProducts(allProducts);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // For now, we'll use the first category ID
+      // In the future, this could be enhanced to support multiple categories
+      const result = await fetchProductsByCategory(categoryIds[0]);
+      if (result && result.products) {
+        setFilteredProducts(result.products);
+        console.log('Category filter results:', result.products.length, 'products found');
+      } else {
+        setFilteredProducts([]);
+      }
+    } catch (error) {
+      console.error('Category filter error:', error);
+      setFilteredProducts([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [fetchProductsByCategory, allProducts]);
+
+  // View mode
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); 
   
-  //-----------------------------------Pagination states------------------------------------------------  
+  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [paginatedProducts, setPaginatedProducts] = useState([]);
 
   const currentLang = i18n.language;
 
+  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -59,11 +134,33 @@ const Shop = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Update filters when max price changes
+  useEffect(() => {
+    const newMaxPrice = getMaxProductPrice();
+    if (newMaxPrice !== initialMaxPrice) {
+      setFilters(prev => ({
+        ...prev,
+        priceRange: { ...prev.priceRange, max: newMaxPrice }
+      }));
+    }
+  }, [allProducts]);
+
+  // Initialize filtered products
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      setFilteredProducts(allProducts);
+    }
+  }, [allProducts]);
+
   // الآثار الجانبية والتبعيات
   useEffect(() => {
-    applyFilters();
+    // Use async function inside useEffect
+    const applyFiltersAsync = async () => {
+      await applyFilters();
+    };
+    applyFiltersAsync();
     // eslint-disable-next-line
-  }, [filters, searchQuery]);
+  }, [filters, searchQuery, allProducts]);
 
   useEffect(() => {
     applyPagination();
@@ -105,65 +202,47 @@ const Shop = () => {
   };
 
 //----------------------------------applyFilters------------------------------------------------
-  const applyFilters = () => {
+  const applyFilters = async () => {
     let filtered = [...allProducts];
 
-    // Apply search filter if there's a search query
+    // If we have a search query, use API search results as base
     if (searchQuery.trim()) {
-      const searchTerm = searchQuery.trim().toLowerCase();
-      filtered = filtered.filter(product => {
-        const name = (product.name[currentLang] || '').toString().toLowerCase();
-        const desc = (product.description[currentLang] || '').toString().toLowerCase();
-        return name.includes(searchTerm) || desc.includes(searchTerm);
-      });
+      // API search is already performed in handleSearch
+      filtered = [...filteredProducts];
+    } else if (filters.categories.length > 0) {
+      // If category filter is applied, use API category results
+      await performCategoryFilter(filters.categories);
+      filtered = [...filteredProducts];
+    } else {
+      // Use all products as base
+      filtered = [...allProducts];
     }
 
+    // Apply client-side filters for remaining criteria
+    
     // Apply price filter
     filtered = filtered.filter(product => {
-      const price = product.discountPrice || product.originalPrice;
+      const price = product.salePrice || product.originalPrice || product.price || 0;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
-
-    // Apply category filter
-    if (filters.categories.length > 0) {
-      // اجمع كل الآيدي المتداخلة لكل قسم مختار
-      let allCategoryIds = [];
-      filters.categories.forEach(catId => {
-        allCategoryIds = allCategoryIds.concat(getAllDescendantCategoryIds(catId));
-      });
-      allCategoryIds = Array.from(new Set(allCategoryIds));
-      filtered = filtered.filter(product => allCategoryIds.includes(product.categoryId));
-    }
-
-    // Apply subcategory filter
-    // if (filters.subcategories.length > 0) {
-    //   filtered = filtered.filter(product => filters.subcategories.includes(product.subcategoryId));
-    // }
-
-    // Apply feature filter
-    if (filters.features.length > 0) {
-      filtered = filtered.filter(product => filters.features.includes(product.featureId));
-    }
 
     // Apply color filter
     if (filters.colors.length > 0) {
       filtered = filtered.filter(product => {
-        return product.colors && Array.isArray(product.colors) && filters.colors.some(color => product.colors.includes(color));
+        const productColors = getProductColors(product);
+        return productColors.some(color => filters.colors.includes(color));
       });
     }
 
     // Apply status filters
     if (filters.status.includes('on_sale')) {
       filtered = filtered.filter(product => {
-        const now = new Date();
-        const hasDiscount = (product.discountPrice || product.discountPercentage > 0);
-        const validTime = !product.discountEndTime || new Date(product.discountEndTime) > now;
-        return hasDiscount && validTime;
+        return product.salePrice && product.salePrice < (product.originalPrice || product.price);
       });
     }
 
     if (filters.status.includes('in_stock')) {
-      filtered = filtered.filter(product => product.stock && product.stock > 0);
+      filtered = filtered.filter(product => (product.stock || 0) > 0);
     }
 
     if (filters.status.includes('new')) {
@@ -171,32 +250,52 @@ const Shop = () => {
     }
 
     if (filters.status.includes('featured')) {
-      filtered = filtered.filter(product => product.isBestSeller === true);
+      filtered = filtered.filter(product => product.isFeatured === true || product.isBestSeller === true);
     }
 
     // Apply sorting
     switch (filters.sortBy) {
       case 'price-low-high':
-        filtered.sort((a, b) => (a.discountPrice || a.originalPrice) - (b.discountPrice || b.originalPrice));
+        filtered.sort((a, b) => {
+          const priceA = a.salePrice || a.originalPrice || a.price || 0;
+          const priceB = b.salePrice || b.originalPrice || b.price || 0;
+          return priceA - priceB;
+        });
         break;
       case 'price-high-low':
-        filtered.sort((a, b) => (b.discountPrice || b.originalPrice) - (a.discountPrice || a.originalPrice));
+        filtered.sort((a, b) => {
+          const priceA = a.salePrice || a.originalPrice || a.price || 0;
+          const priceB = b.salePrice || b.originalPrice || b.price || 0;
+          return priceB - priceA;
+        });
         break;
       case 'name-a-z':
-        filtered.sort((a, b) => a.name[currentLang].localeCompare(b.name[currentLang]));
+        filtered.sort((a, b) => {
+          const nameA = a[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
+          const nameB = b[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
+          return nameA.localeCompare(nameB);
+        });
         break;
       case 'name-z-a':
-        filtered.sort((a, b) => b.name[currentLang].localeCompare(a.name[currentLang]));
+        filtered.sort((a, b) => {
+          const nameA = a[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
+          const nameB = b[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
+          return nameB.localeCompare(nameA);
+        });
         break;
       case 'newest':
         filtered.sort((a, b) => {
-          if (a.isNew && !b.isNew) return -1;
-          if (!a.isNew && b.isNew) return 1;
-          return b.id - a.id; // Assume higher ID means newer
+          const dateA = new Date(a.createdAt || a.date || 0);
+          const dateB = new Date(b.createdAt || b.date || 0);
+          return dateB - dateA;
         });
         break;
       case 'oldest':
-        filtered.sort((a, b) => a.id - b.id);
+        filtered.sort((a, b) => {
+          const dateA = new Date(a.createdAt || a.date || 0);
+          const dateB = new Date(b.createdAt || b.date || 0);
+          return dateA - dateB;
+        });
         break;
       default:
         // Default sorting - keep original order
@@ -207,66 +306,56 @@ const Shop = () => {
     setCurrentPage(1); // Reset pagination when filters change
   };
 
+  // Helper function to get product colors
+  const getProductColors = (product) => {
+    const colors = [];
+    
+    // إضافة الألوان الفردية
+    const individualColors = getSimpleColorsFromColorsField(product);
+    colors.push(...individualColors);
+    
+    // إضافة الألوان المدمجة
+    const simpleColors = getSimpleColorsFromColorsField(product);
+    simpleColors.forEach(colorGroup => {
+      const mixedColorKey = colorGroup.join('+');
+      colors.push(mixedColorKey);
+    });
+    
+    return colors;
+  };
+
 //----------------------------------getAllDescendantCategoryIds------------------------------------------------
   // Helper: جلب كل معرفات الفروع المتداخلة لقسم معين (recursive)
   const getAllDescendantCategoryIds = (categoryId) => {
+    if (!categories || !getSubCategories) return [categoryId];
+    
     const directSubs = getSubCategories(categoryId);
     let ids = [categoryId];
     directSubs.forEach(sub => {
-      ids = ids.concat(getAllDescendantCategoryIds(sub.id));
+      ids = ids.concat(getAllDescendantCategoryIds(sub._id || sub.id));
     });
     return ids;
   };
 
 //----------------------------------handleFilterChange------------------------------------------------
-  // عند تغيير فلتر الكاتيجوري أو السب كاتيجوري
-  const handleFilterChange = (filterType, value, checked = null) => {
+  const handleFilterChange = async (filterType, value, checked = null) => {
     if (filterType === 'categories') {
+      let newCategories;
       if (checked) {
-        setFilters(prev => ({
-          ...prev,
-          categories: Array.from(new Set([...prev.categories, value]))
-        }));
+        newCategories = Array.from(new Set([...filters.categories, value]));
       } else {
-        setFilters(prev => ({
-          ...prev,
-          categories: prev.categories.filter(id => id !== value)
-        }));
+        newCategories = filters.categories.filter(id => id !== value);
       }
-    } else if (filterType === 'subcategories') {
-      setFilters(prev => {
-        let newSubcategories = checked
-          ? Array.from(new Set([...prev.subcategories, value]))
-          : prev.subcategories.filter(id => id !== value);
-        // ابحث عن الفئة الرئيسية لهذه الفئة الفرعية عبر جميع الفئات
-        let parentCatId = null;
-        for (const cat of categories) {
-          const subs = getSubCategories(cat.id);
-          if (subs.some(sub => sub.id === value)) {
-            parentCatId = cat.id;
-            break;
-          }
-        }
-        let newCategories = [...prev.categories];
-        if (parentCatId) {
-          // جميع الفروع لهذه الفئة الرئيسية
-          const allSubs = getSubCategories(parentCatId).map(sub => sub.id);
-          const allSelected = allSubs.length > 0 && allSubs.every(id => newSubcategories.includes(id));
-          if (allSelected) {
-            // إذا كل الفروع محددة، أضف الرئيسية
-            if (!newCategories.includes(parentCatId)) newCategories.push(parentCatId);
-      } else {
-            // إذا لم تعد كل الفروع محددة، أزل الرئيسية
-            newCategories = newCategories.filter(id => id !== parentCatId);
+      
+      setFilters(prev => ({
+        ...prev,
+        categories: newCategories
+      }));
+      
+      // If categories changed and no search query, perform API category filter
+      if (!searchQuery.trim()) {
+        await performCategoryFilter(newCategories);
       }
-        }
-        return {
-          ...prev,
-          subcategories: newSubcategories,
-          categories: newCategories
-        };
-      });
-      return;
     } else if (filterType === 'priceRange') {
       // منع الأرقام السالبة وتصحيح القيم
       let min = Math.max(0, value.min);
@@ -292,13 +381,13 @@ const Shop = () => {
 //----------------------------------clearFilters------------------------------------------------
   const clearFilters = () => {
     setFilters({
-      priceRange: { min: 0, max: initialMaxPrice },
+      priceRange: { min: 0, max: getMaxProductPrice() },
       categories: [],
       subcategories: [], // Clear subcategories too
       features: [],
       colors: [],
       status: [],
-      sortBy: 'default'
+      sortBy: 'newest'
     });
     setSearchQuery(''); // امسح نص البحث أيضاً
   };
@@ -319,7 +408,7 @@ const Shop = () => {
 //----------------------------------handleAddToCart------------------------------------------------
   const handleAddToCart = (product) => {
     // Navigate to product details page
-    navigate(`/product/${product.id}`);
+    navigate(`/product/${product._id || product.id}`);
   };
 
 //----------------------------------handleMobileSearchToggle------------------------------------------------
@@ -333,8 +422,9 @@ const Shop = () => {
   };
 
 //----------------------------------handleSearch------------------------------------------------
-  const handleSearch = (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
+    
     // تحديث URL params
     if (query.trim()) {
       setSearchParams(prev => {
@@ -342,12 +432,18 @@ const Shop = () => {
         newParams.set('search', query.trim());
         return newParams;
       });
+      
+      // Perform API search
+      await performAPISearch(query);
     } else {
       setSearchParams(prev => {
         const newParams = new URLSearchParams(prev);
         newParams.delete('search');
         return newParams;
       });
+      
+      // Reset to all products
+      setFilteredProducts(allProducts);
     }
   };
 
@@ -412,11 +508,68 @@ const Shop = () => {
   function getAllColors() {
     const colorSet = new Set();
     allProducts.forEach(product => {
-      if (product.colors && Array.isArray(product.colors)) {
-        product.colors.forEach(color => colorSet.add(color));
-      }
+      const simpleColors = getSimpleColorsFromColorsField(product);
+      simpleColors.forEach(color => colorSet.add(color));
     });
     return Array.from(colorSet);
+  }
+
+  // Helper functions for compatibility
+  const getFeatureById = (id) => {
+    // This can be implemented when features API is available
+    return { id, name: { ar: 'ميزة', en: 'Feature' } };
+  };
+
+  const getCategoryById = (id) => {
+    if (!categories) return null;
+    return categories.find(cat => (cat._id || cat.id) === id);
+  };
+
+  // Loading state - include search loading
+  if (productsLoading || categoriesLoading || isSearching) {
+    return (
+      <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+        <Navbar onMobileSearchToggle={handleMobileSearchToggle} />
+        <SecondaryNavbar />
+        <div className="shop-container">
+          <div className="loading-state" style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '400px',
+            fontSize: '18px',
+            color: '#666'
+          }}>
+            {isSearching 
+              ? (currentLang === 'ar' ? 'جاري البحث...' : 'Searching...') 
+              : (currentLang === 'ar' ? 'جاري التحميل...' : 'Loading...')
+            }
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (productsError) {
+    return (
+      <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+        <Navbar onMobileSearchToggle={handleMobileSearchToggle} />
+        <SecondaryNavbar />
+        <div className="shop-container">
+          <div className="error-state" style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '400px',
+            fontSize: '18px',
+            color: '#ef4444'
+          }}>
+            {currentLang === 'ar' ? 'خطأ في تحميل المنتجات' : 'Error loading products'}
+          </div>
+        </div>
+      </div>
+    );
   }
 
 //----------------------------------return------------------------------------------------
@@ -445,10 +598,15 @@ const Shop = () => {
             onFilterChange={handleFilterChange}
             clearFilters={clearFilters}
             removeFilter={removeFilter}
-            initialMaxPrice={initialMaxPrice}
+            initialMaxPrice={getMaxProductPrice()}
             searchQuery={searchQuery}
             handleSearch={handleSearch}
             filteredProducts={filteredProducts}
+            allProducts={allProducts}
+            categories={categories || []}
+            getMainCategories={getMainCategories}
+            getSubCategories={getSubCategories}
+            getAllColors={getAllColors}
           />
 
           {/* Main Content */}
@@ -470,19 +628,18 @@ const Shop = () => {
                 onClose={() => setShowFilters(false)}
                 filters={filters}
                 onFiltersChange={setFilters}
-                categories={categories}
-                features={features}
+                categories={categories || []}
+                features={[]} // Features can be added when API is available
                 colors={getAllColors()}
                 statusOptions={['in_stock', 'on_sale', 'new', 'featured']}
+                allProducts={allProducts}
                 clearFilters={clearFilters}
                 removeFilter={removeFilter}
-                initialMaxPrice={initialMaxPrice}
+                initialMaxPrice={getMaxProductPrice()}
                 t={t}
                 currentLang={currentLang}
               />
             )}
-
-           
 
             {/* Shop Toolbar */}
             <ShopToolbar

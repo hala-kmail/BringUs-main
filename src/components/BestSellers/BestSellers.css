@@ -491,3 +491,50 @@
     max-width: none;
   }
 } 
+
+/* Loading and Error States */
+.best-sellers-loading,
+.best-sellers-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.best-sellers-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.best-sellers-loading p,
+.best-sellers-error p {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.best-sellers-error p {
+  color: #ef4444;
+}
+
+.no-products {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 

@@ -3,10 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { useAppData } from '../../contexts/AppDataContext';
 import { allProducts } from '../../data/products';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
-import { getEffectivePrice } from '../ProductCard/ProductCard';
+import { getEffectivePrice } from '../../utils/productUtils';
+import useLogin from '../../hooks/useLogin';
+import useProducts from '../../hooks/useProducts';
 
 const searchPlaceholders = [
   {
@@ -46,8 +49,28 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const currentLang = i18n.language;
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-
-  const userName = localStorage.getItem('register_name') || 'Guest';
+  const { logout } = useLogin();
+  const { user, store, isAuthenticated, isLoading, isInitialized } = useAppData(); 
+  const { searchProducts, loading: productsLoading } = useProducts();
+  
+  // Get user name from user data or localStorage
+  const getUserName = () => {
+    if (user && user.firstName) {
+      return user.firstName;
+    }
+    const storedUser = localStorage.getItem('userInfo');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        return parsedUser.firstName || 'Guest';
+      } catch (err) {
+        console.error('Error parsing stored user info:', err);
+      }
+    }
+    return localStorage.getItem('register_name') || 'Guest';
+  };
+  
+  const userName = getUserName();
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -80,6 +103,17 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
     fetchPlaceholders();
   }, [currentLang]);
+
+//-----------------------------------useEffect------------------------------------------------  
+  useEffect(() => {
+    // Monitor changes in store and user data
+    console.log('Navbar - Store/User data changed:');
+    console.log('Store:', store);
+    console.log('User:', user);
+    console.log('Is Loading:', isLoading);
+    console.log('Is Initialized:', isInitialized);
+  }, [store, user, isLoading, isInitialized]);
+
 //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     let interval;
@@ -111,22 +145,52 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   }, [displayedText, isTyping, placeholderIndex, placeholders]);
 //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
-    if (searchQuery.trim().length > 0) {
-      const filteredProducts = allProducts.filter(product => {
-        const productName = product.name[currentLang]?.toLowerCase() || '';
-        const productDesc = product.description[currentLang]?.toLowerCase() || '';
-        const query = searchQuery.toLowerCase();
-        return productName.includes(query) || productDesc.includes(query);
-      }).slice(0, 8);
-
-      setSearchResults(filteredProducts);
-      
-      setShowSearchDropdown(true);
-    } else {
-      setSearchResults([]);
-      setShowSearchDropdown(false);
-    }
-  }, [searchQuery, currentLang]);
+    let ignore = false;
+    const doSearch = async () => {
+      if (searchQuery.trim().length > 0) {
+        setSearchResults([]);
+        setShowSearchDropdown(true);
+        const result = await searchProducts(searchQuery);
+        if (!ignore) {
+          let filtered = [];
+          if (result && result.products) {
+            const query = searchQuery.trim().toLowerCase();
+            filtered = result.products.filter(product => {
+              // الاسم
+              const nameAr = product.nameAr?.toLowerCase() || '';
+              const nameEn = product.nameEn?.toLowerCase() || '';
+              const nameObjAr = product.name?.ar?.toLowerCase() || '';
+              const nameObjEn = product.name?.en?.toLowerCase() || '';
+              // الوصف
+              const descAr = product.descriptionAr?.toLowerCase() || '';
+              const descEn = product.descriptionEn?.toLowerCase() || '';
+              const descObjAr = product.description?.ar?.toLowerCase() || '';
+              const descObjEn = product.description?.en?.toLowerCase() || '';
+              // السعر
+              const price = (product.finalPrice || product.originalPrice || product.price || '').toString();
+              return (
+                nameAr.includes(query) ||
+                nameEn.includes(query) ||
+                nameObjAr.includes(query) ||
+                nameObjEn.includes(query) ||
+                descAr.includes(query) ||
+                descEn.includes(query) ||
+                descObjAr.includes(query) ||
+                descObjEn.includes(query) ||
+                price.includes(query)
+              );
+            });
+          }
+          setSearchResults(filtered.slice(0, 8));
+        }
+      } else {
+        setSearchResults([]);
+        setShowSearchDropdown(false);
+      }
+    };
+    doSearch();
+    return () => { ignore = true; };
+  }, [searchQuery, currentLang, searchProducts]);
 //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -163,14 +227,25 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 //-----------------------------------getCartTotals------------------------------------------------  
   const cartTotals = getCartTotals();
   const cartItemsCount = cartTotals.itemsCount;
-
+//-----------------------------------handleLogout------------------------------------------------  
+  const handleLogout = () => {
+    logout();
+    setIsUserDropdownOpen(false);
+    navigate('/login');
+  };
   return (
     <nav className="navbar">
       <div className="navbar-container">
         {/*-----------------------------------Logo------------------------------------------------   */}
         <Link to="/home" className="navbar-logo">
-          <img src={logo} alt="Hala Store" />
-          <span className="logo-text">Hala Store</span>
+          {store && store.logo ? (
+            <img src={store.logo.url} alt={store.nameEn || store.nameAr || 'Store Logo'} />
+          ) : (
+            <img src={logo} alt="Hala Store" />
+          )}
+          <span className="logo-text">
+            {store ?currentLang==='ar'? (store.nameAr) : (store.nameEn) : 'Hala Store'}
+          </span>
         </Link>
 
         {/*-----------------------------------Desktop Search Bar------------------------------------------------   */}
@@ -203,14 +278,23 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                     onClick={() => handleProductClick(product.id)}
                   >
                     <div className="result-image">
-                      <img src={product.image} alt={product.name[currentLang]} />
+                      <img src={product.mainImage} alt={
+                        (product.name && typeof product.name === 'object' && product.name[currentLang]) ||
+                        product.nameAr || product.nameEn || ''
+                      } />
                     </div>
                     <div className="result-details">
-                      <h4 className="result-name">{product.name[currentLang]}</h4>
-                      <p className="result-description">{product.description[currentLang]}</p>
+                      <h4 className="result-name">{
+                        (product.name && typeof product.name === 'object' && product.name[currentLang]) ||
+                        product.nameAr || product.nameEn || ''
+                      }</h4>
+                      <p className="result-description">{
+                        (product.description && typeof product.description === 'object' && product.description[currentLang]) ||
+                        product.descriptionAr || product.descriptionEn || ''
+                      }</p>
                       <div className="result-price">
                         {product.discountPercentage && product.discountPercentage > 0 && product.discountEndTime > new Date().toISOString() ? (
-                        <> <span className="original-price">₪{product.originalPrice.toFixed(2)}</span>
+                        <> <span className="original-price">₪{product.originalPrice?.toFixed(2)}</span>
                          <span className="current-price">₪{getEffectivePrice(product).toFixed(2)}</span>  </>
                         ) : (  <span className="current-price">₪{getEffectivePrice(product).toFixed(2)}</span> 
                         )}
@@ -309,7 +393,7 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                 </svg>
                 {t('navbar.settings')}
               </Link>
-              <button className="dropdown-item logout">
+              <button className="dropdown-item logout" onClick={handleLogout}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>

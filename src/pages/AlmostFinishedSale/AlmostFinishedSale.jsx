@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
-import { allProducts } from '../../data/products';
+// Remove static import
+// import { allProducts } from '../../data/products';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import ShopToolbar from '../../components/Shop/ShopToolbar';
-import ProductCard, { isDiscountActive, getEffectivePrice } from '../../components/ProductCard/ProductCard';
+import ProductCard from '../../components/ProductCard/ProductCard';
+import { isDiscountActive, getEffectivePrice } from '../../utils/productUtils';
+// Add dynamic data hooks
+import useProducts from '../../hooks/useProducts';
+import { useAppData } from '../../contexts/AppDataContext';
 import './AlmostFinishedSale.css';
 
-const almostFinishedSale = () => {
+const AlmostFinishedSale = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -18,11 +23,16 @@ const almostFinishedSale = () => {
   const [viewMode, setViewMode] = useState('grid');
   const currentLang = i18n.language;
   
+  // Use dynamic data
+  const { products, loading: productsLoading, error: productsError } = useProducts();
+  const { store } = useAppData();
+  
+  // Use products from API instead of static data
+  const allProducts = products || [];
 
   const getActiveDiscountPercentage = (product) => {
     if (isDiscountActive(product)) {
       return Number(product.discountPercentage) || 0;
-      
     }
     return 0;
   };
@@ -47,8 +57,12 @@ const almostFinishedSale = () => {
       }
   };
 
+  // Filter products based on lowStockThreshold instead of hardcoded value
   const almostFinishedProducts = allProducts
-    .filter(product => product.stock <= 10 && product.stock > 0)
+    .filter(product => {
+      const stockThreshold = product.lowStockThreshold || 5; // fallback to 5 if not defined
+      return product.stock <= stockThreshold && product.stock > 0;
+    })
     .sort(getSortFunction(sortBy, getActiveDiscountPercentage, getEffectivePrice));
 
   const discountedProducts = allProducts
@@ -57,20 +71,66 @@ const almostFinishedSale = () => {
 
   const currentProducts = currentSection === 'almost-finished' ? almostFinishedProducts : discountedProducts;
 
-  
- 
-
   const handleAddToCart = (product) => {
     // Navigate to product details page like other components
-    navigate(`/product/${product.id}`);
+    navigate(`/product/${product._id || product.id}`);
   };
 
   const handleWishlistToggle = (product) => {
     toggleWishlist(product);
   };
 
-  const almostFinishedTotal = allProducts.filter(product => product.stock <= 10 && product.stock > 0).length;
+  // Update counts to use lowStockThreshold
+  const almostFinishedTotal = allProducts.filter(product => {
+    const stockThreshold = product.lowStockThreshold || 5;
+    return product.stock <= stockThreshold && product.stock > 0;
+  }).length;
+  
   const discountedTotal = allProducts.filter(product => isDiscountActive(product) && product.stock > 0).length;
+
+  // Loading state
+  if (productsLoading) {
+    return (
+      <div className="almost-finished-sale-page" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="almost-finished-container">
+          <div className="loading-state" style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '400px',
+            fontSize: '18px',
+            color: '#666'
+          }}>
+            {currentLang === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (productsError) {
+    return (
+      <div className="almost-finished-sale-page" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="almost-finished-container">
+          <div className="error-state" style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '400px',
+            fontSize: '18px',
+            color: '#ef4444'
+          }}>
+            {currentLang === 'ar' ? 'خطأ في تحميل المنتجات' : 'Error loading products'}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="almost-finished-sale-page" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
@@ -154,7 +214,7 @@ const almostFinishedSale = () => {
           {currentProducts.length > 0 ? (
             currentProducts.map((product) => (
               <ProductCard
-                key={product.id}
+                key={product._id || product.id}
                 product={product}
                 currentLang={currentLang}
                 t={t}
@@ -179,4 +239,4 @@ const almostFinishedSale = () => {
   );
 };
 
-export default almostFinishedSale; 
+export default AlmostFinishedSale; 

@@ -1,0 +1,21 @@
+.breadcrumb {
+  padding: 1rem 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.breadcrumb-item a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-item a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.breadcrumb-item span {
+  color: #111827;
+  font-weight: 500;
+} 

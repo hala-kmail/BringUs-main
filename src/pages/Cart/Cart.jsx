@@ -9,7 +9,7 @@ import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationMo
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import './Cart.css';
 import namer from 'color-namer';
-import { getEffectivePrice, isDiscountActive } from '../../components/ProductCard/ProductCard';
+import { getEffectivePrice, isDiscountActive } from '../../utils/productUtils';
 
 const Cart = () => {
   const { t, i18n } = useTranslation();

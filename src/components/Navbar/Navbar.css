@@ -33,11 +33,20 @@
 .navbar-logo img {
   height: 40px;
   width: auto;
+  border-radius: 4px;
+  object-fit: contain;
 }
 
 .logo-text {
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.store-name {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
 /* Search Bar */
@@ -692,6 +701,21 @@
 }
 
 .user-actions .selector-button:hover .user-name {
+  color: var(--primary-color);
+}
+
+.user-actions .store-name {
+  font-size: 0.75rem;
+  color: #6B7280;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  margin-top: 0.125rem;
+}
+
+.user-actions .selector-button:hover .store-name {
   color: var(--primary-color);
 }
 

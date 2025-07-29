@@ -15,6 +15,7 @@
 }
 
 .almost-finished-container {
+  padding-top: 5vw;
   max-width: 85%;
   margin: 0 auto;
  
@@ -586,9 +587,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .almost-finished-container {
-  
-  }
+ 
   
   .almost-finished-hero {
     padding: 2rem 1.5rem;

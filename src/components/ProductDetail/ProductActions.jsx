@@ -19,11 +19,7 @@ const ProductActions = ({
   <div className="product-detail-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
       
       <div className="product-actions-row" style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%' }}>
-      <div className="product-quantity-selector" style={{ display: 'flex', alignItems: 'center', gap: '5px'}}>
-        <button onClick={decrementQuantity}>-</button>
-        <span>{quantity}</span>
-        <button onClick={incrementQuantity}>+</button>
-      </div>
+      
       <button 
         className="add-to-cart-btn" 
         onClick={handleAddToCart}
@@ -43,8 +39,9 @@ const ProductActions = ({
     </div>
     <div className="product-additional-actions" style={{ display: 'flex', gap: '10px', width: '100%' }}>
       <button 
-        className={`product-action-btn ${isInWishlist(product.id) ? 'in-wishlist' : ''}`}
+        className={`wishlist-button ${isInWishlist(product._id) ? 'active' : ''}`}
         onClick={handleWishlistToggle}
+        aria-label={t('product_detail.toggle_wishlist')}
         style={{ width: '100%' }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

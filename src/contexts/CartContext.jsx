@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast/Toast';
 import { getDefaultAreaIdFromLocalStorage, getShippingPriceByAreaId } from '../data/deliveryAreas';
-import { getEffectivePrice } from '../components/ProductCard/ProductCard';
+import { getEffectivePrice } from '../utils/productUtils'; // تم تعديل المسار
+
 const CartContext = createContext();
 
 export const useCart = () => {
@@ -73,12 +74,13 @@ export const CartProvider = ({ children }) => {
       // Add new item to cart
       const newCartItem = {
         cartItemId,
-        productId: product.id,
-        name: product.name,
-        image: product.image,
-        originalPrice: product.originalPrice,
-        
-        finalPrice: getEffectivePrice(product),
+        productId: product._id, // استخدام _id
+        name: { // تخزين كلا الاسمين
+          ar: product.nameAr,
+          en: product.nameEn
+        },
+        image: product.mainImage || (product.images && product.images[0]) || null,
+        finalPrice: finalPrice, // السعر المحسوب
         selectedColor,
         selectedSize,
         quantity,
@@ -88,7 +90,7 @@ export const CartProvider = ({ children }) => {
     }
 
     // Show success toast message
-    const productName = product.name[currentLang] || product.name.ar || product.name.en;
+    const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
     const message = currentLang === 'ar' 
       ? `تم إضافة ${productName} إلى السلة بنجاح!`
       : `${productName} added to cart successfully!`;
@@ -142,8 +144,8 @@ export const CartProvider = ({ children }) => {
   // Get cart totals
   const getCartTotals = () => {
     const subtotal = cartItems.reduce((total, item) => {
-      // استخدم getEffectivePrice دائماً
-      return total + (getEffectivePrice({ ...item.product}) * item.quantity);
+      // استخدم finalPrice المخزن في السلة
+      return total + (item.finalPrice * item.quantity);
     }, 0);
 
     // Count unique products instead of total quantity

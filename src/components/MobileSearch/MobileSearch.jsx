@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { allProducts } from '../../data/index';
 import './MobileSearch.css';
+import { useAppData } from '../../contexts/AppDataContext';
+import useProducts from '../../hooks/useProducts';
 
 const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuery }) => {
   const { t, i18n } = useTranslation();
@@ -10,6 +12,7 @@ const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuer
   const [searchQuery, setSearchQuery] = useState(parentSearchQuery || '');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const language = i18n.language === 'ar' ? 'ar' : 'en';
+  const { searchProducts } = useProducts();
 
   useEffect(() => {
     if (isOpen) {
@@ -31,12 +34,43 @@ const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuer
       setFilteredProducts([]);
       return;
     }
-    const results = allProducts.filter(product =>
-      product.name[language].toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description[language].toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredProducts(results.slice(0, 10)); // Limit to 10 results for performance
-  }, [searchQuery, language]);
+    let ignore = false;
+    const doSearch = async () => {
+      const result = await searchProducts(searchQuery);
+      let filtered = [];
+      if (result && result.products) {
+        const query = searchQuery.trim().toLowerCase();
+        filtered = result.products.filter(product => {
+          // الاسم
+          const nameAr = product.nameAr?.toLowerCase() || '';
+          const nameEn = product.nameEn?.toLowerCase() || '';
+          const nameObjAr = product.name?.ar?.toLowerCase() || '';
+          const nameObjEn = product.name?.en?.toLowerCase() || '';
+          // الوصف
+          const descAr = product.descriptionAr?.toLowerCase() || '';
+          const descEn = product.descriptionEn?.toLowerCase() || '';
+          const descObjAr = product.description?.ar?.toLowerCase() || '';
+          const descObjEn = product.description?.en?.toLowerCase() || '';
+          // السعر
+          const price = (product.finalPrice || product.originalPrice || product.price || '').toString();
+          return (
+            nameAr.includes(query) ||
+            nameEn.includes(query) ||
+            nameObjAr.includes(query) ||
+            nameObjEn.includes(query) ||
+            descAr.includes(query) ||
+            descEn.includes(query) ||
+            descObjAr.includes(query) ||
+            descObjEn.includes(query) ||
+            price.includes(query)
+          );
+        });
+      }
+      if (!ignore) setFilteredProducts(filtered.slice(0, 10));
+    };
+    doSearch();
+    return () => { ignore = true; };
+  }, [searchQuery]);
 
   const handleClose = () => {
     setSearchQuery('');
@@ -110,24 +144,29 @@ const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuer
               {filteredProducts.map(product => (
                 <div 
                   className="suggestion-item" 
-                  key={product.id}
-                  onClick={() => handleProductClick(product.id)}
+                  key={product.id || product._id}
+                  onClick={() => handleProductClick(product.id || product._id)}
                 >
                   <img 
-                    src={product.image} 
-                    alt={product.name[language]} 
+                    src={product.mainImage || product.image} 
+                    alt={
+                      (product.name && typeof product.name === 'object' && (product.name[language] || product.name.ar || product.name.en)) ||
+                      product.nameAr || product.nameEn || ''
+                    }
                     style={{width: 40, height: 40, borderRadius: 8, objectFit: 'cover', marginRight: 12}} 
                   />
                   <div className="suggestion-content">
-                    <span className="suggestion-name">{product.name[language]}</span>
+                    <span className="suggestion-name">{
+                      (product.name && typeof product.name === 'object' && (product.name[language] || product.name.ar || product.name.en)) ||
+                      product.nameAr || product.nameEn || ''
+                    }</span>
                     <span className="suggestion-price">
                       {product.discountPercentage ? (
                         <>
-                         
-                          <span className="original-price">${product.originalPrice}</span>
+                          <span className="original-price">₪{product.originalPrice || product.price || product.finalPrice}</span>
                         </>
                       ) : (
-                        <span className="current-price">${product.originalPrice}</span>
+                        <span className="current-price">₪{product.finalPrice || product.originalPrice || product.price}</span>
                       )}
                     </span>
                   </div>

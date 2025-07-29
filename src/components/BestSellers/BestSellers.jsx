@@ -1,38 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
-import { getBestSellerProducts, getFeatureById, getCategoryById } from '../../data/index';
+import { useCart } from '../../contexts/CartContext';
+import useProducts from '../../hooks/useProducts';
 import ProductCard from '../ProductCard/ProductCard';
 import './BestSellers.css';
 
 const BestSellers = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const navigate = useNavigate();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [bestSellerProducts, setBestSellerProducts] = useState([]);
 
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Get products that are marked as best sellers
-  const bestSellerProducts = getBestSellerProducts();
+  const { 
+    products,
+    loading, 
+    error,
+    getFinalPrice,
+    getMainImage,
+    getProductName,
+    isInStock
+  } = useProducts();
 
   const currentLang = i18n.language;
 
+  useEffect(() => {
+    if (products && products.length > 0) {
+      const sortedProducts = [...products]
+        .sort((a, b) => b.soldCount - a.soldCount)
+        .slice(0, 8);
+      setBestSellerProducts(sortedProducts);
+    }
+  }, [products]);
+
   const handleAddToCart = (product) => {
-    // Navigate to product details page
-    navigate(`/product/${product.id}`);
+    if (isInStock(product)) {
+      addToCart({
+        id: product._id,
+        name: getProductName(product, currentLang),
+        price: getFinalPrice(product),
+        image: getMainImage(product),
+        quantity: 1
+      });
+    } else {
+      navigate(`/product/${product._id}`);
+    }
   };
 
   const handleWishlistToggle = (product) => {
-    toggleWishlist(product);
+    toggleWishlist({
+      id: product._id,
+      name: getProductName(product, currentLang),
+      price: getFinalPrice(product),
+      image: getMainImage(product)
+    });
   };
 
   return (
@@ -52,22 +75,41 @@ const BestSellers = () => {
           </Link>
         </div>
 
+        {/* Loading State */}
+        {loading && bestSellerProducts.length === 0 && (
+          <div className="best-sellers-loading">
+            <div className="loading-spinner"></div>
+            <p>{currentLang === 'ar' ? 'جاري تحميل أفضل المنتجات...' : 'Loading best sellers...'}</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="best-sellers-error">
+            <p>{currentLang === 'ar' ? 'خطأ في تحميل المنتجات' : 'Error loading products'}</p>
+          </div>
+        )}
+
         {/* Products Grid */}
-        <div className="products-grid">
-          {bestSellerProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              currentLang={currentLang}
-              t={t}
-              isInWishlist={isInWishlist}
-              handleWishlistToggle={handleWishlistToggle}
-              handleAddToCart={handleAddToCart}
-              getFeatureById={getFeatureById}
-              getCategoryById={getCategoryById}
-            />
-          ))}
-        </div>
+        {!loading && !error && (
+          <div className="products-grid">
+            {bestSellerProducts.length > 0 ? (
+              bestSellerProducts.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  isInWishlist={isInWishlist}
+                  handleWishlistToggle={handleWishlistToggle}
+                  handleAddToCart={handleAddToCart}
+                />
+              ))
+            ) : (
+              <div className="no-products">
+                <p>{currentLang === 'ar' ? 'لا توجد منتجات متاحة' : 'No products available'}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

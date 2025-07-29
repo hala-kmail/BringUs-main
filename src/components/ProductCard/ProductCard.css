@@ -38,6 +38,14 @@ h3.product-top-name{
     width: 45px;
     height: 50px;
 }
+
+/* تعطيل زر الإضافة للسلة عند عدم توفر المنتج */
+.product-info-bottom .add-to-cart-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #9CA3AF;
+}
+
 .product-info-section {
     gap: 1rem;
     padding: 1.5rem;
@@ -48,89 +56,232 @@ h3.product-top-name{
 }
 .product-info-section .product-category-name:hover {
     font-weight: 500 !important;
-    color: var(--primary-color) !important;
-}
-.low-stock .stock-text {
-    color: #d97706;
-    font-weight: 700;
-    font-size: 12px;
-}
-.in_stock .stock-text {
-    color: #21722c;
-    font-weight: 700;
-    font-size: 12px;
-}
-.sold_out .stock-text {
-    color: #912222;
-    font-weight: 700;
-    font-size: 12px;
-}
-.product-image-img{
-    cursor: pointer;
-}
-.almost-finished-sale-page .stock-level.low-stock .stock-text {
-    color: #dc2626;
-  }
-  
-  .almost-finished-sale-page .stock-level.in_stock .stock-text {
-    color: #d97706;
-  }
-  
-  .almost-finished-sale-page .stock-level.sold_out .stock-text {
-    color: #7c3aed;
-  }
-  
-.product-card .red.stock-fill {
-  background: linear-gradient(90deg, #dc2626, #f87171);
-}
-.product-card .orange.stock-fill {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
-}
-.product-card .yellow.stock-fill {
-  background: linear-gradient(90deg, #f5e20b, #d9b206);
 }
 
-.countdown-container {
+/* Badge للمنتجات */
+.product-badges {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    align-items: center;
+    gap: 0.25rem;
+    z-index: 2;
 }
 
-/* عند عرض الكارد في وضع القائمة (list-view) يكون الاتجاه صف */
-.list-view .countdown-container {
+.product-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+}
+
+.product-new-badge {
+    background-color: #10B981; /* أخضر */
+}
+
+.bestseller-badge {
+    background-color: #F59E0B; /* أصفر/برتقالي */
+}
+
+.product-discount-badge {
+    background-color: #EF4444; /* أحمر */
+}
+
+.out-of-stock-badge {
+    background-color: #6B7280; /* رمادي */
+}
+
+/* أنماط الصورة */
+.product-image {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    aspect-ratio: 1 / 1;
+}
+
+.product-image-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-image:hover .product-image-img {
+    transform: scale(1.05);
+}
+
+/* زر المفضلة */
+.wishlist-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: white;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    z-index: 3;
+}
+
+.wishlist-btn:hover {
+    background-color: #f3f4f6;
+    transform: scale(1.1);
+}
+
+/* معلومات المخزون */
+.stock-info {
+    margin-top: 0.5rem;
+}
+
+.stock-level {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stock-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.stock-level.sold_out .stock-text {
+    color: #EF4444;
+}
+
+.stock-level.low-stock .stock-text {
+    color: #F59E0B;
+}
+
+.stock-level.in_stock .stock-text {
+    color: #10B981;
+}
+
+.stock-bar {
+    width: 100%;
+    height: 0.25rem;
+    background-color: #E5E7EB;
+    border-radius: 0.125rem;
+    overflow: hidden;
+}
+
+.stock-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.stock-fill.red {
+    background-color: #EF4444;
+}
+
+.stock-fill.orange {
+    background-color: #F59E0B;
+}
+
+.stock-fill.yellow {
+    background-color: #FCD34D;
+}
+
+/* أنماط الخصم */
+.discount-info {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #FEF2F2;
+    border-radius: 0.25rem;
+    border: 1px solid #FECACA;
+}
+
+.savings-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.savings-label {
+    font-size: 0.75rem;
+    color: #7F1D1D;
+    font-weight: 500;
+}
+
+.savings-value {
+    font-size: 0.875rem;
+    color: #DC2626;
+    font-weight: 600;
+}
+
+.discount-percentage-large {
+    text-align: center;
+}
+
+.discount-text {
+    font-size: 0.875rem;
+    color: #DC2626;
+    font-weight: 700;
+}
+
+/* عرض القائمة */
+.product-card.list-view {
+    display: flex;
     flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 10px;
-}
-  
-@media (min-width: 1400px) {
-    .products-grid {
-        grid-template-columns: repeat(5, 1fr) ;
-    }
+    align-items: stretch;
 }
 
-@media (min-width: 2000px) {
-    .products-grid {
-        grid-template-columns: repeat(6, 1fr) ;
-    }
+.product-card.list-view .product-image {
+    width: 200px;
+    height: 150px;
+    flex-shrink: 0;
 }
- @media (max-width: 968px) {
+
+.product-card.list-view .product-info-section {
+    flex: 1;
+}
+
+.product-description {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+.product-description p{
+    margin: 0;
+}
+/* الاستجابة */
+@media (max-width: 1200px) {
     .products-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 900px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.4rem;
     }
-  }
-@media (max-width: 320px) {
+    
+    .product-card.list-view .product-image {
+        width: 120px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 600px) {
     .products-grid {
-        grid-template-columns: repeat(1, 1fr) ;
+        grid-template-columns: 1fr;
+    }
+    
+    .product-card.list-view {
+        flex-direction: column;
+    }
+    
+    .product-card.list-view .product-image {
+        width: 100%;
+        height: 200px;
     }
 }

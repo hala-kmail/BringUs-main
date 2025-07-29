@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
@@ -7,26 +7,28 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
-import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
-import { getProductById, getCategoryById, getFeatureById } from '../../data/index';
+import useProducts from '../../hooks/useProducts';
 import './ProductDetail.css';
 import namer from 'color-namer';
-import { getEffectivePrice, isDiscountActive } from '../../components/ProductCard/ProductCard';
 import ProductMediaGallery from '../../components/ProductDetail/ProductMediaGallery';
 import ProductInfoSection from '../../components/ProductDetail/ProductInfoSection';
 import ProductOptions from '../../components/ProductDetail/ProductOptions';
 import ProductActions from '../../components/ProductDetail/ProductActions';
 import ProductBreadcrumb from '../../components/ProductDetail/ProductBreadcrumb';
 import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
-
+import { validateProductForCart } from '../../utils/productUtils';
+import { useAppData } from '../../contexts/AppDataContext';
+const API_BASE_URL = 'http://localhost:5001/api';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const [ product, setProduct] = useState(null);
+  const { categories: allCategories } = useAppData();
+  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -35,469 +37,273 @@ const ProductDetail = () => {
   const [addToCartLoading, setAddToCartLoading] = useState(false);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [specMeta, setSpecMeta] = useState([]);
+
+  const { 
+    fetchProductById, 
+    getFinalPrice, 
+    getMainImage, 
+    getProductName, 
+    getProductDescription,
+    isInStock 
+  } = useProducts();
 
   const currentLang = i18n.language;
 
   useScrollToTopOnChange([id]);
 
-  // قاموس ترجمة الألوان الشائعة
- 
-  console.log('ProductActions is loaded!');
-  // دالة لإرجاع اسم اللون المترجم من hex
+  // جلب بيانات المواصفات من الـ API
+  useEffect(() => {
+    const fetchSpecsMeta = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/meta/product-specifications`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setSpecMeta(data.data);
+        }
+      } catch (e) {
+        setSpecMeta([]);
+      }
+    };
+    fetchSpecsMeta();
+  }, []);
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) {
+        setError('Product ID not found');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const productData = await fetchProductById(id);
+        
+        if (productData) {
+          setProduct(productData);
+          // تعيين اللون الأول كافتراضي إذا كان متوفراً
+          if (productData.allColors && productData.allColors.length > 0) {
+            setSelectedColor(productData.allColors[0]);
+          }
+          // تعيين الحجم الأول كافتراضي إذا كان متوفراً
+          if (productData.specificationValues) {
+            const sizeSpecs = productData.specificationValues.filter(spec => 
+              spec.title === 'الحجم' || spec.title === 'Size'
+            );
+            if (sizeSpecs.length > 0) {
+              setSelectedSize(sizeSpecs[0].value);
+            }
+          }
+        } else {
+          setError('Product not found');
+        }
+      } catch (err) {
+        console.error('Error loading product:', err);
+        setError('Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id, fetchProductById]);
+
   function getColorKey(hex) {
     if (!hex) return '';
-    if (hex === 'mixed') return 'mixed';
     try {
-      return namer(hex).ntc[0].name.toLowerCase();
-    } catch {
+      const colorName = namer(hex);
+      return colorName.ntc[0]?.name || hex;
+    } catch (error) {
       return hex;
     }
   }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  function getColorLabel(hex, t) {
+
+  function getColorLabel(hex) {
+    if (!hex) return '';
+    // لون مختلط (مثل "#841717+#cb5555")
+    if (hex.includes('+')) {
+      return t('filters.color_names.mixed');
+    }
     const colorKey = getColorKey(hex);
-    const translation = t(`filters.color_names.${colorKey}`);
-    if (!translation || translation === `filters.color_names.${colorKey}`) {
+    const translation = t(`filters.color_names.${colorKey.toLowerCase()}`);
+    if (!translation || translation === `filters.color_names.${colorKey.toLowerCase()}`) {
       if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
       return hex;
     }
     return translation;
   }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   const mediaItems = product ? [
-    
-    { type: 'image', url: product.image, thumbnail: product.image, title: product.name[currentLang] },
-   
-    ...(product.additionalImages || []).map(img => ({ 
-      type: 'image', 
-      url: img, 
-      thumbnail: img, 
-      title: product.name[currentLang] 
-    })),
-    
-    ...(product.videos || []).map(video => ({ 
-      type: 'video', 
-      url: video.url, 
-      thumbnail: video.thumbnail, 
-      title: video.title || product.name[currentLang] 
-    }))
+    ...(product.images || []).map(img => ({ type: 'image', url: img, thumbnail: img, title: getProductName(product, currentLang) })),
+    ...(product.videos || []).map(video => ({ type: 'video', url: video.url, thumbnail: video.thumbnail, title: video.title || getProductName(product, currentLang) }))
   ] : [];
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  const getCurrentMedia = () => {
-    if (!mediaItems || mediaItems.length === 0) {
-      return { type: 'image', url: '', thumbnail: '', title: '' };
-    }
-    return mediaItems[selectedMediaIndex] || mediaItems[0];
-  };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  useEffect(() => {
-    if (mediaItems.length > 0 && selectedMediaIndex >= mediaItems.length) {
-      setSelectedMediaIndex(0);
-    }
-  }, [mediaItems.length, selectedMediaIndex]);
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  useEffect(() => {
-    const fetchProduct = () => {
-      setLoading(true);
-      const productData = getProductById(parseInt(id));
-      
-      if (productData) {
-          setProduct(productData);
-        setSelectedColor(productData.colors?.[0] || '');
-        setSelectedSize(productData.sizes?.[0]?.name || '');
-      } else {
-        console.error('Product not found');
-        navigate('/shop');
-      }
-      setLoading(false);
-    };
-
-    if (id) {
-      fetchProduct();
-    }
-  }, [id, navigate]);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleAddToCart = async () => {
-    if (product) {
-      // Validation: Check if color is required and selected
-      if (product.colors && product.colors.length > 0 && !selectedColor) {
-        alert(t('product_detail.select_color_first'));
-        return;
-      }
+    if (!isInStock(product)) return;
 
-      // Validation: Check if size is required and selected
-      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-        alert(t('product_detail.select_size_first'));
-        return;
-      }
-
-      setAddToCartLoading(true);
-      
-      try {
-        // Add to cart with selected options
-        addToCart(product, {
-          selectedColor,
-          selectedSize,
-          quantity
-        });
-
-        console.log('Cart updated:', {
-          product: product.name[currentLang],
+    // التحقق من صحة المنتج قبل الإضافة للسلة
+    const validationErrors = validateProductForCart(product, selectedColor, selectedSize);
+    
+    if (validationErrors.includes('color_required')) {
+      alert(t('product_detail.select_color_first'));
+      return;
+    }
+    
+    if (validationErrors.includes('size_required')) {
+      alert(t('product_detail.select_size_first'));
+      return;
+    }
+    
+    setAddToCartLoading(true);
+    try {
+      const cartItem = {
+        id: product._id,
+        name: getProductName(product, currentLang),
+        price: getFinalPrice(product),
+        image: getMainImage(product),
+        quantity: quantity,
+        color: selectedColor,
+        size: selectedSize,
+        // إضافة معلومات إضافية للمنتج
+        productId: product._id,
+        category: product.category,
+        specifications: {
           color: selectedColor,
-          size: selectedSize,
-          quantity
-        });
-
-        // The cart context now handles showing the success message
-
-      } catch (error) {
-        console.error('Error adding to cart:', error);
-        alert(t('product_detail.error_adding_to_cart'));
-      } finally {
-        setAddToCartLoading(false);
-      }
+          size: selectedSize
+        }
+      };
+      addToCart(cartItem);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setAddToCartLoading(false);
     }
   };
 
   const handleWishlistToggle = () => {
-    if (product) {
-      toggleWishlist(product);
-    }
-  };
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  const handleWhatsAppOrder = () => {
-    if (product) {
-      const finalPrice =  originalPrice;
-      const totalPrice = (finalPrice * quantity).toFixed(2);
-      
-      let message = `${t('product_detail.whatsapp_greeting', { name: product.name[currentLang] })}`;
-      message += `\n${t('product_detail.quantity')}: ${quantity}`;
-      message += `\n${t('product_detail.total_price')}: ₪${totalPrice}`;
-      
-      if (selectedColor) {
-        message += `\n${t('product_detail.color')}: ${getColorLabel(selectedColor, t)}`;
-      }
-      
-      if (selectedSize) {
-        message += `\n${t('product_detail.size')}: ${selectedSize}`;
-      }
-      
-      const phoneNumber = "+970594056090"; // Replace with actual WhatsApp number
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-    }
-  };
-
-  const handleShare = async () => {
-    if (product) {
-      const shareData = {
-        title: product.name[currentLang],
-        text: `${product.name[currentLang]} - ${product.description[currentLang]}`,
-        url: window.location.href
-      };
-
-      try {
-        // Check if Web Share API is supported
-        if (navigator.share) {
-          await navigator.share(shareData);
-        } else {
-          // Fallback: copy URL to clipboard
-          await navigator.clipboard.writeText(window.location.href);
-          alert(t('product_detail.link_copied'));
-        }
-      } catch (error) {
-        // If both methods fail, show the URL in an alert
-        alert(`${t('product_detail.product_link')}: ${window.location.href}`);
-      }
-    }
-  };
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  const handleZoomToggle = () => {
-    setIsZoomModalOpen(!isZoomModalOpen);
-  };
-
-  const handleZoomModalClose = (e) => {
-    if (e.target === e.currentTarget) {
-      setIsZoomModalOpen(false);
-    }
-  };
-
-  // Handle keyboard events for zoom modal
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isZoomModalOpen && mediaItems.length > 0) {
-        if (e.key === 'Escape') {
-          setIsZoomModalOpen(false);
-        } else if (e.key === 'ArrowLeft') {
-          setSelectedMediaIndex(prev => 
-            prev > 0 ? prev - 1 : mediaItems.length - 1
-          );
-        } else if (e.key === 'ArrowRight') {
-          setSelectedMediaIndex(prev => 
-            prev < mediaItems.length - 1 ? prev + 1 : 0
-          );
-        }
-      }
+    const wishlistItem = {
+      id: product._id,
+      name: getProductName(product, currentLang),
+      price: getFinalPrice(product),
+      image: getMainImage(product)
     };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isZoomModalOpen, mediaItems.length]);
-
-  // Calculate price based on selected size
-  const calculatePrice = () => {
-    if (!product) return { originalPrice: 0 };
-    
-    let basePriceOriginal = product.originalPrice;
-    
-    
-    // Find selected size and add price modifier
-    if (product.sizes && selectedSize) {
-      const size = product.sizes.find(s => s.name === selectedSize);
-      if (size && size.priceModifier) {
-        basePriceOriginal += size.priceModifier;
-        
-      }
-    }
-    
-    return {
-      originalPrice: basePriceOriginal
-    };
-  };
-
-  const { originalPrice } = calculatePrice();
-
-  const incrementQuantity = () => {
-    setQuantity(prev => Math.min(prev + 1, product?.stock || 1));
-  };
-
-  const decrementQuantity = () => {
-    setQuantity(prev => Math.max(prev - 1, 1));
-  };
-
-  // Mobile search handlers
-  const handleMobileSearchToggle = () => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
-  };
-
-  const handleMobileSearchClose = () => {
-    setIsMobileSearchOpen(false);
+    toggleWishlist(wishlistItem);
   };
 
   if (loading) {
     return (
-      <div className="product-detail">
-        {/* <TopBar /> */}
-        <Navbar 
-          onMobileSearchToggle={handleMobileSearchToggle}
-          isMobileSearchOpen={isMobileSearchOpen}
-        />
+      <div className="product-detail-page">
+        <Navbar />
         <SecondaryNavbar />
-        <MobileSearch
-          isOpen={isMobileSearchOpen}
-          onClose={handleMobileSearchClose}
-        />
-        <div className="product-detail-content">
-          <div style={{ textAlign: 'center', padding: '2rem' }}>
-            {t('common.loading')}...
-          </div>
+        <div className="product-detail-loading">
+          <div className="loading-spinner"></div>
+          <p>{currentLang === 'ar' ? 'جاري تحميل المنتج...' : 'Loading product...'}</p>
         </div>
       </div>
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
-      <div className="product-detail">
-        {/* <TopBar /> */}
-        <Navbar 
-          onMobileSearchToggle={handleMobileSearchToggle}
-          isMobileSearchOpen={isMobileSearchOpen}
-        />
+      <div className="product-detail-page">
+        <Navbar />
         <SecondaryNavbar />
-        <MobileSearch
-          isOpen={isMobileSearchOpen}
-          onClose={handleMobileSearchClose}
-        />
-        <div className="product-detail-content">
-          <div style={{ textAlign: 'center', padding: '2rem' }}>
-            المنتج غير موجود
-          </div>
+        <div className="product-detail-error">
+          <h2>{currentLang === 'ar' ? 'خطأ في تحميل المنتج' : 'Error Loading Product'}</h2>
+          <p>{error || (currentLang === 'ar' ? 'المنتج غير موجود' : 'Product not found')}</p>
+          <button onClick={() => navigate(-1)} className="back-btn">
+            {currentLang === 'ar' ? 'العودة' : 'Go Back'}
+          </button>
         </div>
       </div>
     );
   }
 
-  const category = getCategoryById(product.categoryId);
-  const feature = getFeatureById(product.featureId);
-
+  const productName = getProductName(product, currentLang);
+  
   return (
-    <div className="product-detail">
-      {/* <TopBar /> */}
-      <Navbar 
-        onMobileSearchToggle={handleMobileSearchToggle}
-        isMobileSearchOpen={isMobileSearchOpen}
-      />
-      
+    <div className="product-detail-page">
+      <Navbar />
       <SecondaryNavbar />
-      <MobileSearch
-        isOpen={isMobileSearchOpen}
-        onClose={handleMobileSearchClose}
-      />
       
-      <div className="product-detail-content">
-        {/* Breadcrumb Navigation */}
-        <ProductBreadcrumb product={product} category={category} t={t} currentLang={currentLang} />
-        <div className="product-detail-container">
-          {/* Product Image Gallery */}
+      {isMobileSearchOpen && (
+        <MobileSearch 
+          isOpen={isMobileSearchOpen} 
+          onClose={() => setIsMobileSearchOpen(false)} 
+        />
+      )}
+
+      <div className="product-detail-container">
+        <ProductBreadcrumb 
+          category={product.category}
+          productName={productName}
+          currentLang={currentLang}
+          t={t}
+          allCategories={allCategories || []}
+        />
+
+        <div className="product-detail-content">
           <ProductMediaGallery
             mediaItems={mediaItems}
+            productName={productName}
+            selectedImageIndex={selectedImageIndex}
+            setSelectedImageIndex={setSelectedImageIndex}
             selectedMediaIndex={selectedMediaIndex}
             setSelectedMediaIndex={setSelectedMediaIndex}
             isZoomModalOpen={isZoomModalOpen}
             setIsZoomModalOpen={setIsZoomModalOpen}
-            productName={product.name[currentLang]}
             currentLang={currentLang}
             t={t}
           />
 
-          {/* Product Information */}
-          <div className="product-detail-info-wrapper">
+          <div className="product-info">
             <ProductInfoSection
               product={product}
-              category={category}
-              feature={feature}
+              productName={productName}
+              productDescription={getProductDescription(product, currentLang)}
+              productPrice={getFinalPrice(product)}
+              categoryName={product.category ? (currentLang === 'ar' ? product.category.nameAr : product.category.nameEn) : ''}
+              specifications={product.specificationValues || []}
               currentLang={currentLang}
               t={t}
-              originalPrice={originalPrice}
-             
-              isDiscountActive={isDiscountActive}
-              getEffectivePrice={getEffectivePrice}
+              quantity={quantity}
             />
+
             <ProductOptions
               product={product}
-              currentLang={currentLang}
-              t={t}
               selectedColor={selectedColor}
               setSelectedColor={setSelectedColor}
               selectedSize={selectedSize}
               setSelectedSize={setSelectedSize}
-              getColorLabel={getColorLabel}
-            />
-             <ProductActions
               quantity={quantity}
-              incrementQuantity={incrementQuantity}
-              decrementQuantity={decrementQuantity}
+              setQuantity={setQuantity}
+              getColorLabel={getColorLabel}
+              currentLang={currentLang}
+              t={t}
+              specificationsMeta={specMeta}
+            />
+
+            <ProductActions
+              product={product}
+              quantity={quantity}
+              isInStock={isInStock(product)}
               addToCartLoading={addToCartLoading}
               handleAddToCart={handleAddToCart}
-              isInWishlist={isInWishlist}
               handleWishlistToggle={handleWishlistToggle}
-              handleShare={handleShare}
-              handleWhatsAppOrder={handleWhatsAppOrder}
-              
-              key={i18n.language}
-              product={product}
-            /> 
+              isInWishlist={isInWishlist}
+              currentLang={currentLang}
+              t={t}
+            />
           </div>
         </div>
+
+        <RelatedProducts 
+          categoryId={product.category?._id}
+          currentProductId={product._id}
+        />
       </div>
-      {/* Related Products */}
-      <RelatedProducts 
-        currentProductId={product.id} 
-        currentCategoryId={product.categoryId} 
-      />
-      {/* Zoom Modal */}
-      {isZoomModalOpen && mediaItems.length > 0 && (
-        <div className="zoom-modal-overlay" onClick={handleZoomModalClose}>
-          <div className="zoom-modal-content">
-            <button 
-              className="zoom-modal-close" 
-              onClick={() => setIsZoomModalOpen(false)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <div className="zoom-modal-media">
-              {mediaItems[selectedMediaIndex]?.type === 'video' && mediaItems[selectedMediaIndex]?.url ? (
-                <video 
-                  src={mediaItems[selectedMediaIndex].url} 
-                  controls
-                  poster={mediaItems[selectedMediaIndex].thumbnail}
-                  autoPlay
-                  className="zoom-modal-video"
-                >
-                  {t('product_detail.video_not_supported')}
-                </video>
-              ) : (
-                <img 
-                  src={mediaItems[selectedMediaIndex]?.url || ''} 
-                  alt={product.name[currentLang]}
-                  className="zoom-modal-image"
-                />
-              )}
-            </div>
-            {mediaItems.length > 1 && (
-              <>
-                <button 
-                  className="zoom-modal-nav-btn-prev" 
-                  onClick={() => setSelectedMediaIndex((selectedMediaIndex - 1 + mediaItems.length) % mediaItems.length)}
-                  style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0, margin: 0, cursor: 'pointer' }}
-                  aria-label="Previous"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button 
-                  className="zoom-modal-nav-btn-next" 
-                  onClick={() => setSelectedMediaIndex((selectedMediaIndex + 1) % mediaItems.length)}
-                  style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0, margin: 0, cursor: 'pointer' }}
-                  aria-label="Next"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
-            <div className="zoom-modal-info">
-              <h3>{product.name[currentLang]}</h3>
-              {mediaItems[selectedMediaIndex]?.type === 'video' && mediaItems[selectedMediaIndex]?.title && (
-                <p>{mediaItems[selectedMediaIndex].title}</p>
-              )}
-              <div className="zoom-modal-counter">
-                {selectedMediaIndex + 1} / {mediaItems.length}
-              </div>
-            </div>
-            {mediaItems.length > 1 && (
-              <div className="zoom-modal-thumbnails">
-                {mediaItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className={`zoom-thumbnail ${selectedMediaIndex === index ? 'zoom-thumbnail-active' : ''}`}
-                    onClick={() => setSelectedMediaIndex(index)}
-                  >
-                    <img src={item.thumbnail || ''} alt={item.title || ''} />
-                    {item.type === 'video' && (
-                      <div className="zoom-thumbnail-play-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z"/>
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

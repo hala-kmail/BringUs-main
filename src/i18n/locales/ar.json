@@ -122,14 +122,17 @@
       "password": "كلمة المرور",
       "password_placeholder": "أدخل كلمة المرور",
       "submit": "تسجيل الدخول",
+      "loading": "جاري تسجيل الدخول...",
       "no_account": "ليس لديك حساب؟",
       "signup": "إنشاء حساب"
     },
     "register": {
       "title": "إنشاء حساب",
       "subtitle": "أنشئ حسابك للوصول إلى جميع المميزات",
-      "name": "الاسم الكامل",
-      "name_placeholder": "أدخل اسمك الكامل",
+      "firstName": "الاسم الأول",
+      "firstName_placeholder": "أدخل اسمك الأول",
+      "lastName": "الاسم الأخير",
+      "lastName_placeholder": "أدخل اسمك الأخير",
       "email": "البريد الإلكتروني",
       "email_placeholder": "أدخل بريدك الإلكتروني",
       "password": "كلمة المرور",
@@ -137,6 +140,7 @@
       "confirm_password": "تأكيد كلمة المرور",
       "confirm_password_placeholder": "أعد إدخال كلمة المرور",
       "submit": "إنشاء حساب",
+      "creating": "جاري الإنشاء...",
       "have_account": "لديك حساب بالفعل؟",
       "country": "الدولة",
       "country_placeholder": "أدخل اسم الدولة",
@@ -151,10 +155,18 @@
       "address_placeholder": "أدخل عنوانك الكامل",
       "district": "الحي (اختياري)",
       "district_placeholder": "اسم الحي (اختياري)",
+      "zipCode": "الرمز البريدي",
+      "zipCode_placeholder": "أدخل الرمز البريدي",
+     
+      "select_area": "اختر المنطقة",
+      "checking_email": "جاري التحقق من البريد الإلكتروني...",
       "validation": {
-        "name_required": "الاسم مطلوب",
+        "firstName_required": "الاسم الأول مطلوب",
+        "firstName_length": "الاسم الأول يجب أن يكون بين 2 و 50 حرف",
+        "lastName_required": "الاسم الأخير مطلوب",
+        "lastName_length": "الاسم الأخير يجب أن يكون بين 2 و 50 حرف",
         "phone_required": "رقم الهاتف مطلوب",
-        "phone_invalid": "رقم الهاتف غير صحيح",
+        "phone_invalid": "رقم الهاتف غير صحيح (يجب أن يبدأ برقم أو +)",
         "area_required": "المنطقة مطلوبة",
         "address_required": "العنوان مطلوب",
         "email_required": "البريد الإلكتروني مطلوب",
@@ -164,8 +176,17 @@
         "confirm_password_required": "تأكيد كلمة المرور مطلوب",
         "passwords_not_match": "كلمتا المرور غير متطابقتين",
         "country_required": "الدولة مطلوبة",
-        "city_required": "المدينة مطلوبة"
+        "city_required": "المدينة مطلوبة",
+        "zipCode_invalid": "الرمز البريدي غير صحيح",
+        "email_exists": "البريد الإلكتروني مستخدم بالفعل",
+        "password_min_length": "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
       }
+    },
+    "validation": {
+      "email_required": "البريد الإلكتروني مطلوب",
+      "email_invalid": "صيغة البريد الإلكتروني غير صحيحة",
+      "password_required": "كلمة المرور مطلوبة",
+      "password_min_length": "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
     }
   },
   "footer": {   "newsletter_title": "اشترك في النشرة البريدية",
@@ -224,15 +245,22 @@
     "quantity": "الكمية",
     "color": "اللون",
     "size": "الحجم",
+    
     "adding": "جاري الإضافة...",
     "select_color_first": "يرجى اختيار اللون أولاً",
     "select_size_first": "يرجى اختيار الحجم أولاً",
+    "specifications": "المواصفات",
+    "available_colors": "الألوان المتوفرة",
+    "mixed_colors": "الألوان المدمجة",
+    "items_available": "قطعة متوفرة",
+    "low_stock_warning": "متبقي فقط {{count}} قطعة - أوشك على النفاد!",
     "error_adding_to_cart": "حدث خطأ أثناء إضافة المنتج إلى السلة",
     "whatsapp_greeting": "مرحباً، أريد أن أطلب {{name}}",
     "total_price": "السعر الإجمالي",
     "product_link": "رابط المنتج",
     "breadcrumb_sep": "‹",
-    "video_not_supported": "متصفحك لا يدعم تشغيل الفيديو."
+    "video_not_supported": "متصفحك لا يدعم تشغيل الفيديو.",
+    "out_of_stock_soon": "المنتج منتهي وسيتوفر قريباً"
   },
   "related_products": {
     "title": "منتجات مشابهة",
@@ -543,5 +571,6 @@
     "noProductsDesc": "جميع المنتجات في هذا القسم متوفرة حالياً أو تم بيعها.",
     "youSave": "وفرّت:",
     "off": "خصم"
-  }
+  },
+  "out_of_stock_soon": "المنتج منتهي وسيتوفر قريباً"
 } 

@@ -46,6 +46,18 @@
   color: #b45309;
 }
 
+.count-badge {
+  background: rgba(146, 64, 14, 0.1);
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  display: inline-block;
+  border: 1px solid rgba(146, 64, 14, 0.2);
+}
+
 .arrow-container {
   display: flex;
   align-items: center;
@@ -80,4 +92,9 @@
 /* RTL Support */
 [dir="rtl"] .arrow-container svg {
   transform: rotate(180deg);
+}
+
+[dir="rtl"] .count-badge {
+  font-family: 'Tajawal', 'Arial', sans-serif;
+  font-weight: 700;
 } 

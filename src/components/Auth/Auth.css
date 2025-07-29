@@ -44,6 +44,19 @@ body, html {
   font-size: 1.1rem;
 }
 
+.store-logo {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.store-logo-img {
+  max-width: 120px;
+  max-height: 80px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -126,6 +139,34 @@ body, html {
 .submit-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(99, 76, 159, 0.2);
+}
+
+.submit-button.disabled {
+  background-color: #9CA3AF;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.submit-button.disabled:hover {
+  background-color: #9CA3AF;
+  transform: none;
+  box-shadow: none;
+}
+
+.form-input.checking {
+  border-color: #F59E0B;
+}
+
+.form-input.error {
+  border-color: #EF4444;
+}
+
+.checking-message {
+  color: #F59E0B;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 
 .auth-footer {
