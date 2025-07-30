@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { useWishlist } from '../../contexts/WishlistContext';
+
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
@@ -20,6 +20,7 @@ import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import { useAppData } from '../../contexts/AppDataContext';
 import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
+import { useWishlist } from '../../contexts/WishlistContext';
 
 const Shop = () => {
   
@@ -401,8 +402,8 @@ const Shop = () => {
   };
 
 //----------------------------------handleWishlistToggle------------------------------------------------
-  const handleWishlistToggle = (product) => {
-    toggleWishlist(product);
+  const handleWishlistToggle = async (product) => {
+    await toggleWishlist(product);
   };
 
 //----------------------------------handleAddToCart------------------------------------------------

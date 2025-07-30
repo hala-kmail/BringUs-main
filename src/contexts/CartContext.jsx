@@ -1,8 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from '../components/Toast/Toast';
 import { getDefaultAreaIdFromLocalStorage, getShippingPriceByAreaId } from '../data/deliveryAreas';
-import { getEffectivePrice } from '../utils/productUtils'; // تم تعديل المسار
+import { getEffectivePrice } from '../utils/productUtils';
+import { getToken, getBearerToken } from '../utils/tokenManager';
+
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const CartContext = createContext();
 
@@ -16,27 +19,61 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
   const { t, i18n } = useTranslation();
 
   const currentLang = i18n.language;
 
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Error loading cart from localStorage:', error);
+  // جلب الكارت من API
+  const fetchCart = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      setCartItems([]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: 'GET',
+        headers: {
+          'Authorization': getBearerToken(),
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setCartItems([]);
+          return;
+        }
+        throw new Error(data.message || 'Failed to fetch cart');
       }
+
+      if (data.success && data.data) {
+        setCartItems(data.data.items || []);
+      } else {
+        setCartItems([]);
+      }
+    } catch (err) {
+      console.error('Error fetching cart:', err);
+      setError(err.message);
+      setCartItems([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // جلب الكارت عند تحميل الصفحة
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+    fetchCart();
+  }, [fetchCart]);
 
   // دالة لإظهار الإشعارات
   const showToast = (message, type = 'success') => {
@@ -48,152 +85,336 @@ export const CartProvider = ({ children }) => {
     setToast({ ...toast, isVisible: false });
   };
 
-  // Add item to cart
-  const addToCart = (product, options = {}) => {
+  // إضافة منتج للكارت
+  const addToCart = useCallback(async (product, options = {}) => {
     const { 
       selectedColor = '', 
-      selectedSize = '', 
-      quantity = 1 
+      quantity = 1,
+      ...otherSpecs // جميع المواصفات الأخرى (بما في ذلك الحجم)
     } = options;
 
-    // Calculate price based on selected size and discount logic
-    let finalPrice = getEffectivePrice({ ...product });
+    const token = getToken();
+    if (!token) {
+      showToast(currentLang === 'ar' ? 'يرجى تسجيل الدخول أولاً' : 'Please login first', 'error');
+      return false;
+    }
 
+    setLoading(true);
+    setError(null);
 
-    const cartItemId = `${product.id}_${selectedColor}_${selectedSize}`;
-
-    // Check if item already exists in cart
-    const existingItemIndex = cartItems.findIndex(item => item.cartItemId === cartItemId);
-
-    if (existingItemIndex >= 0) {
-      // Item exists, update quantity
-      const updatedItems = [...cartItems];
-      updatedItems[existingItemIndex].quantity += quantity;
-      setCartItems(updatedItems);
-    } else {
-      // Add new item to cart
-      const newCartItem = {
-        cartItemId,
-        productId: product._id, // استخدام _id
-        name: { // تخزين كلا الاسمين
-          ar: product.nameAr,
-          en: product.nameEn
-        },
-        image: product.mainImage || (product.images && product.images[0]) || null,
-        finalPrice: finalPrice, // السعر المحسوب
-        selectedColor,
-        selectedSize,
-        quantity,
-        product: product // Keep reference to full product data
+    try {
+      const requestBody = {
+        product: product._id || product.id,
+        quantity: quantity
       };
-      setCartItems([...cartItems, newCartItem]);
-    }
 
-    // Show success toast message
-    const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
-    const message = currentLang === 'ar' 
-      ? `تم إضافة ${productName} إلى السلة بنجاح!`
-      : `${productName} added to cart successfully!`;
-    
-    showToast(message, 'success');
-  };
-
-  // Remove item from cart
-  const removeFromCart = (cartItemId) => {
-    // Find the item to get its name for the toast message
-    const itemToRemove = cartItems.find(item => item.cartItemId === cartItemId);
-    
-    setCartItems(cartItems.filter(item => item.cartItemId !== cartItemId));
-    
-    if (itemToRemove) {
-      const productName = itemToRemove.name[currentLang] || itemToRemove.name.ar || itemToRemove.name.en;
-      const message = currentLang === 'ar' 
-        ? `تم حذف ${productName} من السلة `
-        : `${productName} removed from cart `;
+      // تجميع جميع المواصفات في variant
+      const variantParts = [];
       
-      showToast(message, 'info');
+      if (selectedColor) {
+        variantParts.push(`Color:${selectedColor}`);
+      }
+      
+      // إضافة جميع المواصفات الأخرى (بما في ذلك الحجم)
+      Object.entries(otherSpecs).forEach(([specName, specValue]) => {
+        if (specValue && specValue !== '') {
+          variantParts.push(`${specName}:${specValue}`);
+        }
+      });
+      
+      // إنشاء variant string
+      if (variantParts.length > 0) {
+        requestBody.variant = variantParts.join('|');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: 'POST',
+        headers: {
+          'Authorization': getBearerToken(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          throw new Error(data.message || 'Invalid request');
+        } else if (response.status === 401) {
+          throw new Error('Please login first');
+        }
+        throw new Error(data.message || 'Failed to add to cart');
+      }
+
+      if (data.success) {
+        // تحديث الكارت من API
+        await fetchCart();
+        
+        // إظهار رسالة نجاح
+        const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
+        const message = currentLang === 'ar' 
+          ? `تم إضافة ${productName} إلى السلة بنجاح!`
+          : `${productName} added to cart successfully!`;
+        
+        showToast(message, 'success');
+        return true;
+      }
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      setError(err.message);
+      showToast(err.message, 'error');
+      return false;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [currentLang, fetchCart]);
 
-  // Update item quantity
-  const updateQuantity = (cartItemId, newQuantity) => {
-    if (newQuantity <= 0) {
-      removeFromCart(cartItemId);
-      return;
+  // إزالة منتج من الكارت
+  const removeFromCart = useCallback(async (productId) => {
+    const token = getToken();
+    if (!token) {
+      return false;
     }
 
-    const updatedItems = cartItems.map(item =>
-      item.cartItemId === cartItemId 
-        ? { ...item, quantity: newQuantity }
-        : item
-    );
-    setCartItems(updatedItems);
-  };
+    setLoading(true);
+    setError(null);
 
-  // Clear entire cart
-  const clearCart = () => {
-    setCartItems([]);
-    
-    const message = currentLang === 'ar' 
-      ? 'تم إفراغ السلة بالكامل '
-      : 'Cart cleared successfully ';
-    
-    showToast(message, 'info');
-  };
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': getBearerToken(),
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Please login first');
+        }
+        throw new Error(data.message || 'Failed to remove from cart');
+      }
+
+      if (data.success) {
+        // تحديث الكارت من API
+        await fetchCart();
+        return true;
+      }
+    } catch (err) {
+      console.error('Error removing from cart:', err);
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchCart]);
+
+  // تحديث كمية منتج في الكارت
+  const updateQuantity = useCallback(async (productId, newQuantity) => {
+    const token = getToken();
+    if (!token) {
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': getBearerToken(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          throw new Error(data.message || 'Invalid quantity');
+        } else if (response.status === 401) {
+          throw new Error('Please login first');
+        }
+        throw new Error(data.message || 'Failed to update cart');
+      }
+
+      if (data.success) {
+        // تحديث الكارت من API
+        await fetchCart();
+        return true;
+      }
+    } catch (err) {
+      console.error('Error updating cart:', err);
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchCart]);
+
+  // مسح الكارت بالكامل
+  const clearCart = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': getBearerToken(),
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Please login first');
+        }
+        throw new Error(data.message || 'Failed to clear cart');
+      }
+
+      if (data.success) {
+        setCartItems([]);
+        return true;
+      }
+    } catch (err) {
+      console.error('Error clearing cart:', err);
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Get cart totals
   const getCartTotals = () => {
     const subtotal = cartItems.reduce((total, item) => {
-      // استخدم finalPrice المخزن في السلة
-      return total + (item.finalPrice * item.quantity);
+      // استخدم priceAtAdd المخزن في السلة
+      return total + ((item.priceAtAdd || 0) * (item.quantity || 1));
     }, 0);
 
     // Count unique products instead of total quantity
     const itemsCount = cartItems.length;
 
     // الشحن: يمكنك تعديله حسب الحاجة
-    const shipping =getShippingPriceByAreaId(getDefaultAreaIdFromLocalStorage());
+    const shipping = getShippingPriceByAreaId(getDefaultAreaIdFromLocalStorage());
     const total = subtotal + shipping;
 
     return {
-      subtotal: parseFloat(subtotal.toFixed(2)),
-      shipping: parseFloat(shipping.toFixed(2)),
-      total: parseFloat(total.toFixed(2)),
+      subtotal,
+      shipping,
+      total,
       itemsCount
     };
   };
 
-  // Check if product with specific options is in cart
-  const isInCart = (productId, selectedColor = '', selectedSize = '') => {
-    const cartItemId = `${productId}_${selectedColor}_${selectedSize}`;
-    return cartItems.some(item => item.cartItemId === cartItemId);
+  // التحقق من وجود منتج في الكارت
+  const isInCart = (productId, selectedColor = '', otherSpecs = {}) => {
+    return cartItems.some(item => {
+      const matchesProduct = item.product === productId || item.product._id === productId;
+      
+      // إذا لم يتم تحديد مواصفات، نتحقق من المنتج فقط
+      if (!selectedColor && Object.keys(otherSpecs).length === 0) {
+        return matchesProduct;
+      }
+      
+      // التحقق من المواصفات
+      if (!item.variant) return false;
+      
+      const variantParts = item.variant.split('|');
+      const variantSpecs = {};
+      
+      variantParts.forEach(part => {
+        const [specName, specValue] = part.split(':');
+        if (specName && specValue) {
+          variantSpecs[specName] = specValue;
+        }
+      });
+      
+      // التحقق من اللون
+      if (selectedColor && variantSpecs.Color !== selectedColor) return false;
+      
+      // التحقق من باقي المواصفات (بما في ذلك الحجم)
+      for (const [specName, specValue] of Object.entries(otherSpecs)) {
+        if (specValue && variantSpecs[specName] !== specValue) return false;
+      }
+      
+      return matchesProduct;
+    });
   };
 
-  // Get item quantity in cart
-  const getItemQuantity = (productId, selectedColor = '', selectedSize = '') => {
-    const cartItemId = `${productId}_${selectedColor}_${selectedSize}`;
-    const item = cartItems.find(item => item.cartItemId === cartItemId);
+  // الحصول على كمية منتج في الكارت
+  const getItemQuantity = (productId, selectedColor = '', otherSpecs = {}) => {
+    const item = cartItems.find(item => {
+      const matchesProduct = item.product === productId || item.product._id === productId;
+      
+      // إذا لم يتم تحديد مواصفات، نتحقق من المنتج فقط
+      if (!selectedColor && Object.keys(otherSpecs).length === 0) {
+        return matchesProduct;
+      }
+      
+      // التحقق من المواصفات
+      if (!item.variant) return false;
+      
+      const variantParts = item.variant.split('|');
+      const variantSpecs = {};
+      
+      variantParts.forEach(part => {
+        const [specName, specValue] = part.split(':');
+        if (specName && specValue) {
+          variantSpecs[specName] = specValue;
+        }
+      });
+      
+      // التحقق من اللون
+      if (selectedColor && variantSpecs.Color !== selectedColor) return false;
+      
+      // التحقق من باقي المواصفات (بما في ذلك الحجم)
+      for (const [specName, specValue] of Object.entries(otherSpecs)) {
+        if (specValue && variantSpecs[specName] !== specValue) return false;
+      }
+      
+      return matchesProduct;
+    });
     return item ? item.quantity : 0;
   };
 
   const value = {
     cartItems,
+    loading,
+    error,
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
     getCartTotals,
     isInCart,
-    getItemQuantity
+    getItemQuantity,
+    fetchCart,
+    showToast,
+    hideToast,
+    toast
   };
 
   return (
     <CartContext.Provider value={value}>
       {children}
-      <Toast
+      <Toast 
+        isVisible={toast.isVisible}
         message={toast.message}
         type={toast.type}
-        isVisible={toast.isVisible}
         onClose={hideToast}
       />
     </CartContext.Provider>

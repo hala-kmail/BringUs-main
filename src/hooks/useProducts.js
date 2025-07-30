@@ -70,15 +70,43 @@ const useProducts = () => {
   useEffect(() => {
     // تجنب جلب البيانات إذا كانت متوفرة بالفعل
     if (products && products.length > 0) {
-      console.log('Products already available, skipping API call');
       return;
     }
 
     if (store && store._id) {
       console.log('Auto-fetching products for store:', store._id);
-      fetchProducts(store._id);
+      // استدعاء fetchProducts مباشرة بدلاً من إضافتها لل dependencies
+      const loadProducts = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          
+          const url = `${API_BASE_URL}/products/by-store/${store._id}`;
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const result = await response.json();
+          
+          if (result.success && result.data) {
+            console.log('Products fetched successfully:', result.data.length, 'products');
+            updateProducts(result.data);
+          } else {
+            throw new Error('Failed to fetch products');
+          }
+        } catch (err) {
+          console.error('Error fetching products:', err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      loadProducts();
     }
-  }, [store, products, fetchProducts]);
+  }, [store?._id]); // استخدام store._id فقط
 
   // جلب منتج واحد بالID
   const fetchProductById = useCallback(async (productId) => {
@@ -91,7 +119,6 @@ const useProducts = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching product by ID:', productId);
       const url = `${API_BASE_URL}/products/${productId}`;
       
       const response = await fetch(url);
@@ -101,10 +128,8 @@ const useProducts = () => {
       }
       
       const result = await response.json();
-      console.log('Product API response:', result);
       
       if (result.success && result.data) {
-        console.log('Product fetched successfully:', result.data._id);
         return result.data;
       } else {
         throw new Error('Product not found');

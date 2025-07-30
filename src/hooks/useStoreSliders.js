@@ -12,7 +12,7 @@ const useStoreSliders = () => {
   const fetchSliders = useCallback(async (storeId) => {
     // 1. التحقق من السياق أولاً
     if (sliders !== null) { // التحقق من أن القيمة ليست null
-      console.log('Sliders have already been fetched (or determined to be none), skipping API call');
+    
       return sliders;
     }
     
@@ -67,12 +67,59 @@ const useStoreSliders = () => {
   useEffect(() => {
     if (store && store._id) {
       console.log('Store changed, attempting to fetch sliders for store ID:', store._id);
-      fetchSliders(store._id);
+      // استدعاء fetchSliders مباشرة بدلاً من إضافتها لل dependencies
+      const loadSliders = async () => {
+        // التحقق من السياق أولاً
+        if (sliders !== null) {
+          return sliders;
+        }
+        
+        setLoading(true);
+        setError(null);
+
+        try {
+          const token = localStorage.getItem('authToken');
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          const response = await fetch(`${API_BASE_URL}/store-sliders?storeId=${store._id}`, {
+            method: 'GET',
+            headers,
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.message || 'Failed to fetch sliders');
+          }
+
+          console.log('Sliders API response:', data);
+          
+          if (data.success && data.data) {
+            updateSliders(data.data);
+            console.log('Sliders loaded successfully and updated in context:', data.data);
+          } else {
+            throw new Error('Invalid response format');
+          }
+        } catch (err) {
+          console.error('Error fetching sliders:', err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      loadSliders();
     } else if (store === null && sliders !== null) { // إذا تم تسجيل الخروج
       console.log('No store available, clearing sliders');
       updateSliders(null); // مسح السلايدر من السياق
     }
-  }, [store, sliders, fetchSliders, updateSliders]);
+  }, [store?._id]); // استخدام store._id فقط
 
   // Manual fetch function
   const loadSliders = useCallback((storeId = null) => {

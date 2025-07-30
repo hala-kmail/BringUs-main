@@ -119,11 +119,7 @@
     margin-bottom: 2px;
   }
   
-  .footer-support-value {
-    font-weight: 700;
-    font-size: 20px;
-    color: var(--primary-color, #1e293b);
-  }
+ 
   
   .footer-support-value-email {
     font-weight: 700;
@@ -181,18 +177,93 @@
   }
   
   .footer-social-icons {
+    display: flex;
+    flex-wrap: wrap;
+    
     margin-bottom: 10px;
   }
   
   .footer-social-icons a {
-    margin: 0 6px;
-    color: var(--primary-color);
-    font-size: 22px;
-    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-right: 8px;
+    margin-bottom: 8px;
   }
-  
+
   .footer-social-icons a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  /* Social Media Icons Colors */
+  .social-icon.whatsapp:hover {
+    background: #25D366;
+    color: white;
+  }
+
+  .social-icon.facebook:hover {
+    background: #1877F2;
+    color: white;
+  }
+
+  .social-icon.instagram:hover {
+    background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+    color: white;
+  }
+
+  .social-icon.twitter:hover {
+    background: #1DA1F2;
+    color: white;
+  }
+
+  .social-icon.youtube:hover {
+    background: #FF0000;
+    color: white;
+  }
+
+  .social-icon.linkedin:hover {
+    background: #0077B5;
+    color: white;
+  }
+
+  .social-icon.tiktok:hover {
+    background: #000000;
+    color: white;
+  }
+
+  .social-icon.telegram:hover {
+    background: #0088cc;
+    color: white;
+  }
+
+  .social-icon.snapchat:hover {
+    background: #fffc00;
+    color: #000000;
+  }
+
+  .social-icon.pinterest:hover {
+    background: #e60023;
+    color: white;
+  }
+
+  /* Contact Links */
+  .footer-contact-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .footer-contact-link:hover {
     color: var(--primary-color);
+    text-decoration: underline;
   }
   
   .footer-soon-text {
@@ -213,13 +284,65 @@
       flex-direction: column;
       gap: 24px;
     }
+    
     .footer-newsletter-bar {
       flex-direction: column;
-      gap: 16px;
-      align-items: flex-start;
+      text-align: center;
     }
+    
     .footer-newsletter-form {
       width: 100%;
       max-width: 100%;
     }
+    
+    .footer-social-icons {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .footer-social-icons a {
+      margin: 4px;
+    }
   }
+
+  @media (max-width: 600px) {
+    .footer-newsletter-bar {
+      padding: 24px 16px 32px 16px;
+    }
+    
+    .footer-cols {
+      padding: 16px;
+      gap: 20px;
+    }
+    
+    .footer-col-support {
+      min-width: auto;
+    }
+    
+    .footer-support-row {
+      gap: 12px;
+    }
+    
+    .footer-social-icons a {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+    }
+  }
+
+/* Footer Link Button */
+.footer-link-button {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.footer-link-button:hover {
+  color: var(--primary-color, #667eea);
+}

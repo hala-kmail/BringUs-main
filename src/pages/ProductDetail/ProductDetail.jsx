@@ -1,30 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { useAppData } from '../../contexts/AppDataContext';
+import useProducts from '../../hooks/useProducts';
+import useCategories from '../../hooks/useCategories';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
-import MobileSearch from '../../components/MobileSearch/MobileSearch';
-import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
-import useProducts from '../../hooks/useProducts';
-import './ProductDetail.css';
-import namer from 'color-namer';
+import ProductBreadcrumb from '../../components/ProductDetail/ProductBreadcrumb';
 import ProductMediaGallery from '../../components/ProductDetail/ProductMediaGallery';
 import ProductInfoSection from '../../components/ProductDetail/ProductInfoSection';
 import ProductOptions from '../../components/ProductDetail/ProductOptions';
 import ProductActions from '../../components/ProductDetail/ProductActions';
-import ProductBreadcrumb from '../../components/ProductDetail/ProductBreadcrumb';
+import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
 import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
-import { validateProductForCart } from '../../utils/productUtils';
-import { useAppData } from '../../contexts/AppDataContext';
+import './ProductDetail.css';
+import namer from 'color-namer';
+
 const API_BASE_URL = 'http://localhost:5001/api';
 const ProductDetail = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+  const { id: productId } = useParams();
+  const currentLang = i18n.language;
   const { categories: allCategories } = useAppData();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ const ProductDetail = () => {
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedSpecs, setSelectedSpecs] = useState({});
   const [addToCartLoading, setAddToCartLoading] = useState(false);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -48,9 +49,7 @@ const ProductDetail = () => {
     isInStock 
   } = useProducts();
 
-  const currentLang = i18n.language;
-
-  useScrollToTopOnChange([id]);
+  useScrollToTopOnChange([productId]);
 
   // جلب بيانات المواصفات من الـ API
   useEffect(() => {
@@ -70,16 +69,16 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const loadProduct = async () => {
-      if (!id) {
-        setError('Product ID not found');
-        setLoading(false);
-        return;
-      }
+              if (!productId) {
+          setError('Product ID not found');
+          setLoading(false);
+          return;
+        }
 
-      try {
-        setLoading(true);
-        setError(null);
-        const productData = await fetchProductById(id);
+        try {
+          setLoading(true);
+          setError(null);
+          const productData = await fetchProductById(productId);
         
         if (productData) {
           setProduct(productData);
@@ -93,7 +92,7 @@ const ProductDetail = () => {
               spec.title === 'الحجم' || spec.title === 'Size'
             );
             if (sizeSpecs.length > 0) {
-              setSelectedSize(sizeSpecs[0].value);
+              // سيتم تعيينه في selectedSpecs بدلاً من selectedSize
             }
           }
         } else {
@@ -108,7 +107,7 @@ const ProductDetail = () => {
     };
 
     loadProduct();
-  }, [id, fetchProductById]);
+  }, [productId, fetchProductById]);
 
   function getColorKey(hex) {
     if (!hex) return '';
@@ -136,45 +135,42 @@ const ProductDetail = () => {
   }
   
   const mediaItems = product ? [
+    // إضافة الصورة الرئيسية أولاً إذا كانت موجودة
+    ...(product.mainImage ? [{ type: 'image', url: product.mainImage, thumbnail: product.mainImage, title: getProductName(product, currentLang) }] : []),
+    // إضافة باقي الصور
     ...(product.images || []).map(img => ({ type: 'image', url: img, thumbnail: img, title: getProductName(product, currentLang) })),
+    // إضافة الفيديوهات
     ...(product.videos || []).map(video => ({ type: 'video', url: video.url, thumbnail: video.thumbnail, title: video.title || getProductName(product, currentLang) }))
   ] : [];
+
+
 
   const handleAddToCart = async () => {
     if (!isInStock(product)) return;
 
     // التحقق من صحة المنتج قبل الإضافة للسلة
-    const validationErrors = validateProductForCart(product, selectedColor, selectedSize);
+    const validationErrors = validateProductForCart(product, selectedColor);
     
     if (validationErrors.includes('color_required')) {
       alert(t('product_detail.select_color_first'));
       return;
     }
     
-    if (validationErrors.includes('size_required')) {
-      alert(t('product_detail.select_size_first'));
-      return;
-    }
-    
     setAddToCartLoading(true);
     try {
-      const cartItem = {
-        id: product._id,
-        name: getProductName(product, currentLang),
-        price: getFinalPrice(product),
-        image: getMainImage(product),
-        quantity: quantity,
-        color: selectedColor,
-        size: selectedSize,
-        // إضافة معلومات إضافية للمنتج
-        productId: product._id,
-        category: product.category,
-        specifications: {
-          color: selectedColor,
-          size: selectedSize
-        }
+      // تجميع جميع المواصفات المحددة
+      const selectedOptions = {
+        selectedColor,
+        quantity,
+        // إضافة جميع المواصفات الأخرى المحددة
+        ...selectedSpecs
       };
-      addToCart(cartItem);
+      
+      const success = await addToCart(product, selectedOptions);
+      
+      if (success) {
+        // يمكن إضافة رسالة نجاح إضافية هنا إذا لزم الأمر
+      }
     } catch (error) {
       console.error('Error adding to cart:', error);
     } finally {
@@ -182,14 +178,8 @@ const ProductDetail = () => {
     }
   };
 
-  const handleWishlistToggle = () => {
-    const wishlistItem = {
-      id: product._id,
-      name: getProductName(product, currentLang),
-      price: getFinalPrice(product),
-      image: getMainImage(product)
-    };
-    toggleWishlist(wishlistItem);
+  const handleWishlistToggle = async () => {
+    await toggleWishlist(product);
   };
 
   if (loading) {
@@ -275,8 +265,8 @@ const ProductDetail = () => {
               product={product}
               selectedColor={selectedColor}
               setSelectedColor={setSelectedColor}
-              selectedSize={selectedSize}
-              setSelectedSize={setSelectedSize}
+              selectedSpecs={selectedSpecs}
+              setSelectedSpecs={setSelectedSpecs}
               quantity={quantity}
               setQuantity={setQuantity}
               getColorLabel={getColorLabel}
@@ -299,10 +289,13 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        <RelatedProducts 
-          categoryId={product.category?._id}
-          currentProductId={product._id}
-        />
+        {/* Related Products */}
+        {product && (
+          <RelatedProducts 
+            currentProduct={product}
+            categoryId={product.category?._id || product.category}
+          />
+        )}
       </div>
     </div>
   );

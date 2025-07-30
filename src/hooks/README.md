@@ -4,6 +4,135 @@ This directory contains custom React hooks for the BringUs application.
 
 ## Available Hooks
 
+### useWishlistAPI
+
+A hook for managing wishlist functionality via the API without using Context.
+
+**API Endpoints:**
+- `GET /api/likes` - Fetch user's liked products
+- `POST /api/likes/:productId` - Like a product
+- `DELETE /api/likes/:productId` - Unlike a product
+- `DELETE /api/likes/:productId` (multiple) - Clear entire wishlist (deletes each item individually)
+
+**Features:**
+- Fetch liked products from API
+- Like/unlike products
+- Toggle like status
+- Clear entire wishlist
+- Loading states and error handling
+- Toast notifications
+- Authentication check
+- Automatic data refresh
+
+**Usage:**
+```jsx
+import useWishlistAPI from '../hooks/useWishlistAPI';
+
+const {
+  wishlistItems,
+  loading,
+  error,
+  addToWishlist,
+  removeFromWishlist,
+  isInWishlist,
+  toggleWishlist,
+  clearWishlist,
+  fetchWishlist,
+  toast,
+  showToast,
+  hideToast,
+} = useWishlistAPI();
+
+// Like a product
+const handleLikeProduct = async (product) => {
+  const success = await addToWishlist(product);
+  if (success) {
+    console.log('Product liked successfully');
+  }
+};
+
+// Unlike a product
+const handleUnlikeProduct = async (productId) => {
+  const success = await removeFromWishlist(productId);
+  if (success) {
+    console.log('Product unliked successfully');
+  }
+};
+
+// Toggle like status
+const handleToggleLike = async (product) => {
+  const success = await toggleWishlist(product);
+  if (success) {
+    console.log('Like status toggled');
+  }
+};
+
+// Clear entire wishlist
+const handleClearWishlist = async () => {
+  const success = await clearWishlist();
+  if (success) {
+    console.log('Wishlist cleared');
+  }
+};
+```
+
+**Parameters:**
+- `product` (object): Product object with `_id` or `id` field
+- `productId` (string): Product ID to unlike
+
+**Returns:**
+- `wishlistItems` (array): Array of liked products from API
+- `loading` (boolean): Loading state
+- `error` (string): Error message if any
+- `addToWishlist` (function): Like a product
+- `removeFromWishlist` (function): Unlike a product
+- `isInWishlist` (function): Check if product is liked
+- `toggleWishlist` (function): Toggle like status
+- `clearWishlist` (function): Clear entire wishlist
+- `fetchWishlist` (function): Manually fetch liked products
+- `toast` (object): Toast notification state
+- `showToast` (function): Show toast notification
+- `hideToast` (function): Hide toast notification
+
+**Authentication:**
+- Requires valid JWT token in localStorage
+- Automatically checks for authentication before API calls
+- Shows error message if user is not logged in
+
+**Error Handling:**
+- Network errors
+- Authentication errors
+- API validation errors
+- User-friendly error messages in Arabic and English
+
+**Toast Notifications:**
+- Success messages for successful operations
+- Error messages for failed operations
+- Info messages for duplicate items
+- Automatic hiding after user interaction
+
+**API Response Format:**
+The API returns liked products in the following format:
+```javascript
+{
+  success: true,
+  data: [
+    {
+      _id: "like_id",
+      productId: "product_id",
+      userId: "user_id",
+      product: {
+        _id: "product_id",
+        name: { ar: "اسم المنتج", en: "Product Name" },
+        price: 100,
+        images: [...],
+        // ... other product fields
+      }
+    }
+  ]
+}
+```
+
 ### useCreateUser
 
 A hook for creating new user accounts via the API.
@@ -145,65 +274,3 @@ const handleFetchStore = async () => {
   }
 };
 ```
-
-**Parameters:**
-- `storeId` (string, optional): Store ID to auto-fetch
-
-**Returns:**
-- `store` (object): Store information
-- `loading` (boolean): Loading state
-- `error` (string): Error message if any
-- `fetchStoreInfo` (function): Fetch store information
-- `loadStoredStoreInfo` (function): Load from localStorage
-- `saveStoreInfo` (function): Save to localStorage
-- `clearStoreInfo` (function): Clear from localStorage
-
-**Store Data Structure:**
-```javascript
-{
-  _id: "store_id",
-  nameAr: "اسم المتجر",
-  nameEn: "Store Name",
-  descriptionAr: "وصف المتجر",
-  descriptionEn: "Store Description",
-  logo: {
-    url: "logo_url",
-    public_id: "public_id"
-  },
-  settings: {
-    mainColor: "#140000",
-    language: "ar",
-    storeDiscount: 10,
-    // ... other settings
-  },
-  contact: {
-    address: { /* address info */ },
-    email: "contact@store.com",
-    phone: "+1234567890"
-  }
-}
-```
-
-## Store Configuration
-
-Both hooks are configured to work with:
-- **Store ID:** Fixed store ID (configured in backend)
-- **User Role:** "client" (for registration)
-- **API Base URL:** `/api/auth/`
-
-## Validation Rules
-
-### Registration Validation:
-- First/Last name: 2-50 characters
-- Email: Valid email format
-- Password: Minimum 6 characters
-- Phone: Must start with number or +
-- Required fields: area, address, city, country
-
-### Login Validation:
-- Email: Valid email format
-- Password: Minimum 6 characters
-
-## Error Messages
-
-The hooks provide user-friendly error messages in both English and Arabic, supporting the application's internationalization. 

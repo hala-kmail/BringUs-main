@@ -196,7 +196,16 @@ const handleSendWhatsApp = () => {
     items.forEach((item, index) => {
       message += `${index + 1}. ${item.name[currentLang]} x${item.quantity}`;
       if (item.selectedColor) message += ` (${getColorLabel(item.selectedColor, t)})`;
-      if (item.selectedSize) message += ` (${item.selectedSize})`;
+      // إضافة جميع المواصفات الأخرى
+      if (item.variant) {
+        const variantParts = item.variant.split('|');
+        variantParts.forEach(part => {
+          const [specName, specValue] = part.split(':');
+          if (specName && specValue && specName !== 'Color') {
+            message += ` (${specName}: ${specValue})`;
+          }
+        });
+      }
       message += ` - ₪${(item.finalPrice * item.quantity).toFixed(2)}\n`;
     });
     

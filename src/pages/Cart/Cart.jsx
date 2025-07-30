@@ -23,22 +23,22 @@ const Cart = () => {
 
   const cartTotals = getCartTotals();
 
-  const handleQuantityChange = (cartItemId, newQuantity) => {
+  const handleQuantityChange = async (product, newQuantity) => {
     if (newQuantity < 1) {
-      handleRemoveItem(cartItemId);
+      await handleRemoveItem(product);
     } else {
-      updateQuantity(cartItemId, newQuantity);
+      await updateQuantity(product._id || product.id, newQuantity);
     }
   };
 
-  const handleRemoveItem = (cartItemId) => {
-    setPendingDeleteItemId(cartItemId);
+  const handleRemoveItem = async (product) => {
+    setPendingDeleteItemId(product._id || product.id);
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDeleteItem = () => {
+  const handleConfirmDeleteItem = async () => {
     if (pendingDeleteItemId) {
-      removeFromCart(pendingDeleteItemId);
+      await removeFromCart(pendingDeleteItemId);
       setPendingDeleteItemId(null);
     }
     setShowDeleteModal(false);
@@ -53,8 +53,8 @@ const Cart = () => {
     setShowClearModal(true);
   };
 
-  const handleConfirmClearCart = () => {
-    clearCart();
+  const handleConfirmClearCart = async () => {
+    await clearCart();
     setShowClearModal(false);
   };
 
@@ -66,9 +66,9 @@ const Cart = () => {
     navigate('/checkout');
   };
 
-  const handleProductClick = (productId) => {
-    if (productId) {
-      navigate(`/product/${productId}`);
+  const handleProductClick = (product) => {
+    if (product && (product._id || product.id)) {
+      navigate(`/product/${product._id || product.id}`);
     } else {
       console.error('Product ID is missing');
     }
@@ -94,14 +94,44 @@ const Cart = () => {
   }
 
   function getColorLabel(hex, t) {
-    const colorKey = getColorKey(hex);
-    const translation = t(`filters.color_names.${colorKey}`);
-    if (!translation || translation === `filters.color_names.${colorKey}`) {
-      if (colorKey && colorKey !== hex) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+    if (!hex) return '';
+    try {
+      const colorName = namer(hex);
+      return colorName.ntc[0]?.name || hex;
+    } catch (e) {
       return hex;
     }
-    return translation;
   }
+
+  // دالة لتحليل variant string وعرض المواصفات بشكل منظم
+  const parseVariantSpecs = (variant) => {
+    if (!variant) return [];
+    
+    const specs = [];
+    const parts = variant.split('|');
+    
+    parts.forEach(part => {
+      const [specName, specValue] = part.split(':');
+      if (specName && specValue) {
+        // تحسين عرض اللون
+        if (specName === 'Color') {
+          specs.push({
+            name: currentLang === 'ar' ? 'اللون' : 'Color',
+            value: getColorLabel(specValue, t)
+          });
+        }
+        // باقي المواصفات (بما في ذلك الحجم)
+        else {
+          specs.push({
+            name: specName,
+            value: specValue
+          });
+        }
+      }
+    });
+    
+    return specs;
+  };
 
   return (
     <div className="cart-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
@@ -196,48 +226,40 @@ const Cart = () => {
                 <div key={item.cartItemId} className="cart-item">
                   {/* Desktop Layout (hidden on mobile) */}
                   <div 
-                    className="cart-item-image desktop-only" 
-                    onClick={() => handleProductClick(item.productId)}
+                    className="cart-item-image"
+                    onClick={() => handleProductClick(item.product)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <img src={item.image} alt={item.name[currentLang]} />
+                    <img src={item.product?.mainImage || item.product?.images?.[0]} alt={item.product?.nameAr || item.product?.nameEn} />
                   </div>
                   <div className="cart-item-details desktop-only">
                     <h3 
                       className="cart-item-name"
-                      onClick={() => handleProductClick(item.productId)}
+                      onClick={() => handleProductClick(item.product)}
                       style={{ cursor: 'pointer' }}
                     >
-                      {item.name[currentLang]}
+                      {currentLang === 'ar' ? item.product?.nameAr : item.product?.nameEn}
                     </h3>
                     {/* Selected Options */}
-                    {(item.selectedColor || item.selectedSize) && (
+                    {item.variant && (
                       <div className="cart-item-options">
-                        {item.selectedColor && (
-                          <span className="cart-option">
-                            {currentLang === 'ar' ? 'اللون' : 'Color'}: {getColorLabel(item.selectedColor, t)}
+                        {parseVariantSpecs(item.variant).map((spec, index) => (
+                          <span key={index} className="cart-option">
+                            {spec.name}: {spec.value}
                           </span>
-                        )}
-                        {item.selectedSize && (
-                          <span className="cart-option">
-                            {currentLang === 'ar' ? 'الحجم' : 'Size'}: {item.selectedSize}
-                          </span>
-                        )}
+                        ))}
                       </div>
                     )}
                     {/* Price */}
                     <div className="cart-item-price">
-                      <span className="current-price">₪{item.finalPrice.toFixed(2)}</span>
-                      {(item.originalPrice !== item.finalPrice) && (
-                        <span className="original-price">₪{item.originalPrice.toFixed(2)}</span>
-                       )} 
+                      <span className="current-price">₪{item.priceAtAdd.toFixed(2)}</span>
                     </div>
                   </div>
                   {/* Quantity Controls */}
                   <div className="cart-item-quantity desktop-only">
                     <button 
                       className="quantity-btn"
-                      onClick={() => handleQuantityChange(item.cartItemId, item.quantity - 1)}
+                      onClick={() => handleQuantityChange(item.product, item.quantity - 1)}
                       title={currentLang === 'ar' ? 'تقليل الكمية' : 'Decrease quantity'}
                     >
                       -
@@ -245,7 +267,7 @@ const Cart = () => {
                     <span className="quantity-display">{item.quantity}</span>
                     <button 
                       className="quantity-btn"
-                      onClick={() => handleQuantityChange(item.cartItemId, item.quantity + 1)}
+                      onClick={() => handleQuantityChange(item.product, item.quantity + 1)}
                       title={currentLang === 'ar' ? 'زيادة الكمية' : 'Increase quantity'}
                     >
                       +
@@ -253,12 +275,12 @@ const Cart = () => {
                   </div>
                   {/* Total Price */}
                   <div className="cart-item-total desktop-only">
-                    ₪{(item.finalPrice * item.quantity).toFixed(2)}
+                    ₪{((item.priceAtAdd || 0) * (item.quantity || 1)).toFixed(2)}
                   </div>
                   {/* Remove Button */}
                   <button 
                     className="remove-item-btn desktop-only"
-                    onClick={() => handleRemoveItem(item.cartItemId)}
+                    onClick={() => handleRemoveItem(item.product)}
                     title={currentLang === 'ar' ? 'حذف المنتج' : 'Remove item'}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -270,7 +292,7 @@ const Cart = () => {
                     {/* Remove Button - corner button */}
                     <button 
                       className="remove-item-btn mobile-remove-btn"
-                      onClick={() => handleRemoveItem(item.cartItemId)}
+                      onClick={() => handleRemoveItem(item.product)}
                       title={currentLang === 'ar' ? 'حذف المنتج' : 'Remove item'}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,40 +303,32 @@ const Cart = () => {
                     <div className="cart-item-main">
                       <div 
                         className="cart-item-image"
-                        onClick={() => handleProductClick(item.productId)}
+                        onClick={() => handleProductClick(item.product)}
                         style={{ cursor: 'pointer' }}
                       >
-                        <img src={item.image} alt={item.name[currentLang]} />
+                        <img src={item.product?.mainImage || item.product?.images?.[0]} alt={item.product?.nameAr || item.product?.nameEn} />
                       </div>
                       <div className="cart-item-details">
                         <h3 
                           className="cart-item-name"
-                          onClick={() => handleProductClick(item.productId)}
+                          onClick={() => handleProductClick(item.product)}
                           style={{ cursor: 'pointer' }}
                         >
-                          {item.name[currentLang]}
+                          {currentLang === 'ar' ? item.product?.nameAr : item.product?.nameEn}
                         </h3>
                         {/* Selected Options */}
-                        {(item.selectedColor || item.selectedSize) && (
+                        {item.variant && (
                           <div className="cart-item-options">
-                            {item.selectedColor && (
-                              <span className="cart-option">
-                                {currentLang === 'ar' ? 'اللون' : 'Color'}: {getColorLabel(item.selectedColor, t)}
+                            {parseVariantSpecs(item.variant).map((spec, index) => (
+                              <span key={index} className="cart-option">
+                                {spec.name}: {spec.value}
                               </span>
-                            )}
-                            {item.selectedSize && (
-                              <span className="cart-option">
-                                {currentLang === 'ar' ? 'الحجم' : 'Size'}: {item.selectedSize}
-                              </span>
-                            )}
+                            ))}
                           </div>
                         )}
                         {/* Price */}
                         <div className="cart-item-price">
-                          <span className="current-price">₪{item.finalPrice.toFixed(2)}</span>
-                          {isDiscountActive(item) && (
-                            <span className="original-price">₪{item.originalPrice.toFixed(2)}</span>
-                          )}
+                          <span className="current-price">₪{(item.priceAtAdd || 0).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -324,7 +338,7 @@ const Cart = () => {
                       <div className="cart-item-quantity">
                         <button 
                           className="quantity-btn"
-                          onClick={() => handleQuantityChange(item.cartItemId, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(item.product, item.quantity - 1)}
                           title={currentLang === 'ar' ? 'تقليل الكمية' : 'Decrease quantity'}
                         >
                           -
@@ -332,7 +346,7 @@ const Cart = () => {
                         <span className="quantity-display">{item.quantity}</span>
                         <button 
                           className="quantity-btn"
-                          onClick={() => handleQuantityChange(item.cartItemId, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(item.product, item.quantity + 1)}
                           title={currentLang === 'ar' ? 'زيادة الكمية' : 'Increase quantity'}
                         >
                           +
@@ -344,7 +358,7 @@ const Cart = () => {
                           {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
                         </span>
                         <div className="cart-item-total-price">
-                          ₪{(getEffectivePrice(item) * item.quantity).toFixed(2)}
+                          ₪{((item.priceAtAdd || 0) * (item.quantity || 1)).toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -357,21 +371,21 @@ const Cart = () => {
               <h3>{currentLang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h3>
               <div className="summary-row">
                 <span>{currentLang === 'ar' ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
-                <span>₪{cartTotals.subtotal}</span>
+                <span>₪{(cartTotals?.subtotal || 0).toFixed(2)}</span>
               </div>
               <div className="summary-row">
                 <span>{currentLang === 'ar' ? 'الشحن:' : 'Shipping:'}</span>
                 <span>
-                  {cartTotals.shipping === 0 
+                  {(cartTotals?.shipping || 0) === 0 
                     ? (currentLang === 'ar' ? 'مجاني' : 'Free') 
-                    : `₪${cartTotals.shipping}`
+                    : `₪${(cartTotals?.shipping || 0).toFixed(2)}`
                   }
                 </span>
               </div>
               <hr className="summary-divider" />
               <div className="summary-row summary-total">
                 <span>{currentLang === 'ar' ? 'الإجمالي:' : 'Total:'}</span>
-                <span>₪{cartTotals.total}</span>
+                <span>₪{(cartTotals?.total || 0).toFixed(2)}</span>
               </div>
               <button 
                 className="checkout-btn"
@@ -396,7 +410,7 @@ const Cart = () => {
             <span className="mobile-total-label">
               {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
             </span>
-            <span className="mobile-total-amount">₪{cartTotals.total}</span>
+            <span className="mobile-total-amount">₪{(cartTotals?.total || 0).toFixed(2)}</span>
           </div>
           <button 
             className="mobile-checkout-btn"

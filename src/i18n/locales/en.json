@@ -1,6 +1,7 @@
 {
   "common": {
-    "loading": "Loading"
+    "loading": "Loading",
+    "retry": "Retry"
   },
   "topbar": {
     "delivery_info": "We deliver daily from 7:00 AM to 11:00 PM"
@@ -353,7 +354,9 @@
     "remove": "Remove from wishlist",
     "empty_title": "Your wishlist is empty",
     "empty_description": "Start adding products you love to your wishlist",
-    "continue_shopping": "Continue Shopping"
+    "continue_shopping": "Continue Shopping",
+    "clear_all": "Clear All",
+    "confirm_clear": "Are you sure you want to clear all items from your wishlist?"
   },
   "filters": {
     "title": "Filters",

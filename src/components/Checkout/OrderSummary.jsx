@@ -26,13 +26,27 @@ const OrderSummary = ({
             </div>
             <div className="item-details">
               <h4 className="item-name">{item.name[currentLang]}</h4>
-              {(item.selectedColor || item.selectedSize) && (
+              {(item.selectedColor || item.variant) && (
                 <div className="item-options">
                   {item.selectedColor && (
                     <span>{currentLang === 'ar' ? 'اللون' : 'Color'}: {item.selectedColor}</span>
                   )}
-                  {item.selectedSize && (
-                    <span>{currentLang === 'ar' ? 'الحجم' : 'Size'}: {item.selectedSize}</span>
+                  {/* إضافة جميع المواصفات الأخرى */}
+                  {item.variant && (
+                    (() => {
+                      const variantParts = item.variant.split('|');
+                      return variantParts.map((part, index) => {
+                        const [specName, specValue] = part.split(':');
+                        if (specName && specValue && specName !== 'Color') {
+                          return (
+                            <span key={index}>
+                              {specName}: {specValue}
+                            </span>
+                          );
+                        }
+                        return null;
+                      });
+                    })()
                   )}
                 </div>
               )}

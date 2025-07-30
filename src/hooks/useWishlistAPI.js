@@ -1,30 +1,23 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import Toast from '../components/Toast/Toast';
 import { getToken, getBearerToken } from '../utils/tokenManager';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
-const WishlistContext = createContext();
-
-export const useWishlist = () => {
-  const context = useContext(WishlistContext);
-  if (!context) {
-    throw new Error('useWishlist must be used within a WishlistProvider');
-  }
-  return context;
-};
-
-export const WishlistProvider = ({ children }) => {
+const useWishlistAPI = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { i18n } = useTranslation();
+  const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
+  const { t, i18n } = useTranslation();
   const currentLang = i18n.language;
 
-  // جلب الأمنيات من API
+  //------------------------------------- جلب الأمنيات من API -------------------------------------
   const fetchWishlist = useCallback(async () => {
     const token = getToken();
     if (!token) {
+      console.log('No auth token found, cannot fetch wishlist');
       setWishlistItems([]);
       return;
     }
@@ -53,6 +46,7 @@ export const WishlistProvider = ({ children }) => {
 
       if (data.success && data.data) {
         setWishlistItems(data.data);
+      
       } else {
         setWishlistItems([]);
       }
@@ -64,11 +58,11 @@ export const WishlistProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
-
-  // إضافة منتج للأمنيات
+  //------------------------------------- إضافة منتج للأمنيات -------------------------------------
   const addToWishlist = useCallback(async (product) => {
     const token = getToken();
     if (!token) {
+    //   showToast(currentLang === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Please login first', 'error');
       return false;
     }
 
@@ -101,6 +95,7 @@ export const WishlistProvider = ({ children }) => {
       }
 
       if (data.success) {
+        // تحديث الحالة المحلية مباشرة بدلاً من إعادة جلب البيانات
         const newWishlistItem = {
           _id: data.data?._id || Date.now().toString(),
           productId: product._id || product.id,
@@ -109,21 +104,27 @@ export const WishlistProvider = ({ children }) => {
         };
         
         setWishlistItems(prev => [...prev, newWishlistItem]);
+        
+       
+        
+    //     showToast(message, 'success');
         return true;
       }
     } catch (err) {
       console.error('Error adding to wishlist:', err);
       setError(err.message);
+    //   showToast(err.message, 'error');
       return false;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentLang]);
 
-  // إزالة منتج من الأمنيات
+  //------------------------------------- إزالة منتج من الأمنيات -------------------------------------
   const removeFromWishlist = useCallback(async (productId) => {
     const token = getToken();
     if (!token) {
+    //   showToast(currentLang === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Please login first', 'error');
       return false;
     }
 
@@ -151,51 +152,67 @@ export const WishlistProvider = ({ children }) => {
       }
 
       if (data.success) {
-        setWishlistItems(prev => prev.filter(item => {
-          const itemProductId = item.productId || item._id || (item.product && item.product._id);
-          return itemProductId !== productId;
-        }));
+        // تحديث الحالة المحلية مباشرة بدلاً من إعادة جلب البيانات
+        setWishlistItems(prev => {
+          const updatedItems = prev.filter(item => {
+            const itemProductId = item.productId || item._id || (item.product && item.product._id);
+            return itemProductId !== productId;
+          });
+          
+          // الحصول على اسم المنتج قبل حذفه
+          const removedProduct = prev.find(item => {
+            const itemProductId = item.productId || item._id || (item.product && item.product._id);
+            return itemProductId === productId;
+          });
+          
+          const productName = removedProduct?.product?.name?.[currentLang] || removedProduct?.product?.name?.ar || removedProduct?.product?.name?.en || removedProduct?.product?.name;
+          const message = currentLang === 'ar' 
+            ? `تم إزالة ${productName} من المفضلة بنجاح!`
+            : `${productName} removed from wishlist successfully!`;
+          
+        //     showToast(message, 'success');
+          return updatedItems;
+        });
+        
         return true;
       }
     } catch (err) {
       console.error('Error removing from wishlist:', err);
       setError(err.message);
+    //   showToast(err.message, 'error');
       return false;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentLang]);
 
-  // التحقق من وجود منتج في الأمنيات
+  //-- التحقق من وجود منتج في الأمنيات
   const isInWishlist = useCallback((productId) => {
     const result = wishlistItems.some(item => {
-      const itemProductId = item.productId || item._id || (item.product && item.product._id);
+      // التحقق من مختلف أشكال البيانات من API
+      const itemProductId = item.productId || item._id || (item.product && item.product._id) || item.productId;
       return itemProductId === productId;
     });
+    
     return result;
   }, [wishlistItems]);
 
-  // تبديل حالة المنتج في الأمنيات
+  //------------------------------------- تبديل حالة المنتج في الأمنيات -------------------------------------
   const toggleWishlist = useCallback(async (product) => {
     const productId = product._id || product.id;
     
-    // التحقق من وجود المنتج في القائمة الحالية
-    const isCurrentlyInWishlist = wishlistItems.some(item => {
-      const itemProductId = item.productId || item._id || (item.product && item.product._id);
-      return itemProductId === productId;
-    });
-    
-    if (isCurrentlyInWishlist) {
+    if (isInWishlist(productId)) {
       return await removeFromWishlist(productId);
     } else {
       return await addToWishlist(product);
     }
-  }, [wishlistItems, removeFromWishlist, addToWishlist]);
+  }, [isInWishlist, removeFromWishlist, addToWishlist]);
 
-  // مسح جميع الأمنيات
+  //------------------------------------- مسح جميع الأمنيات (لا يوجد endpoint لهذا في الباك إند الحالي) -------------------------------------
   const clearWishlist = useCallback(async () => {
     const token = getToken();
     if (!token) {
+    //   showToast(currentLang === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Please login first', 'error');
       return false;
     }
 
@@ -204,8 +221,7 @@ export const WishlistProvider = ({ children }) => {
 
     try {
       // حذف كل منتج على حدة
-      const currentWishlistItems = [...wishlistItems];
-      const deletePromises = currentWishlistItems.map(item => {
+      const deletePromises = wishlistItems.map(item => {
         const productId = item.productId || item._id;
         return fetch(`${API_BASE_URL}/likes/${productId}`, {
           method: 'DELETE',
@@ -221,25 +237,31 @@ export const WishlistProvider = ({ children }) => {
       // تحديث الحالة المحلية مباشرة
       setWishlistItems([]);
       
+      const message = currentLang === 'ar' 
+        ? 'تم مسح جميع المفضلة بنجاح!'
+        : 'All wishlist items cleared successfully!';
+      
+    //   showToast(message, 'success');
       return true;
     } catch (err) {
       console.error('Error clearing wishlist:', err);
       setError(err.message);
+    //   showToast(err.message, 'error');
       return false;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [wishlistItems, currentLang]);
 
-  // جلب الأمنيات عند تحميل الصفحة
+  //------------------------------------- جلب الأمنيات عند تحميل الصفحة -------------------------------------
   useEffect(() => {
     const token = getToken();
     if (token) {
       fetchWishlist();
     }
-  }, []);
+  }, []); // إزالة fetchWishlist من dependencies
 
-  const value = {
+  return {
     wishlistItems,
     loading,
     error,
@@ -249,14 +271,10 @@ export const WishlistProvider = ({ children }) => {
     toggleWishlist,
     clearWishlist,
     fetchWishlist,
-    count: wishlistItems.length,
-    wishlist: wishlistItems,
-    items: wishlistItems,
+    count: wishlistItems.length, // إضافة count للتوافق مع المكونات
+    wishlist: wishlistItems, // إضافة wishlist للتوافق مع المكونات
+    items: wishlistItems, // إضافة items للتوافق مع المكونات
   };
+};
 
-  return (
-    <WishlistContext.Provider value={value}>
-      {children}
-    </WishlistContext.Provider>
-  );
-}; 
+export default useWishlistAPI; 

@@ -4,7 +4,22 @@
     gap: 1rem;
     margin-top: 1.5rem;
   }
-
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.3);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  .pulse {
+    animation: pulse 0.3s ease-in-out;
+  }
+  
 
 h3.product-top-name{
     margin: 0;
@@ -20,30 +35,18 @@ h3.product-top-name{
 }
 .product-price-container {
     display: flex;
-    flex: 5;
     flex-direction: column-reverse;
+    width: 100%;
+    margin-bottom: 0.5rem;
 }
 .product-price-container .original-price {
     margin: 0 !important;
 }
 .product-info-bottom {
     display: flex;
+    flex-direction: column;
     gap: 10px;
-    align-items: center;
-}
-.product-info-bottom  .add-to-cart-btn {
-    border: none;
-    border-radius: 12px;
-    flex: 1;
-    width: 45px;
-    height: 50px;
-}
-
-/* تعطيل زر الإضافة للسلة عند عدم توفر المنتج */
-.product-info-bottom .add-to-cart-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #9CA3AF;
+    align-items: flex-start;
 }
 
 .product-info-section {
@@ -67,6 +70,12 @@ h3.product-top-name{
     flex-direction: column;
     gap: 0.25rem;
     z-index: 2;
+}
+
+/* RTL Support - Move badges to right for Arabic */
+[dir="rtl"] .product-badges {
+    left: auto;
+    right: 0.5rem;
 }
 
 .product-badge {
@@ -126,14 +135,116 @@ h3.product-top-name{
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
     z-index: 3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* RTL Support - Move wishlist button to left for Arabic */
+[dir="rtl"] .wishlist-btn {
+    right: auto;
+    left: 0.5rem;
 }
 
 .wishlist-btn:hover {
     background-color: #f3f4f6;
     transform: scale(1.1);
+}
+
+/* ستايل نابض عند النقر لإخفاء التأخير */
+.wishlist-btn:active {
+    transform: scale(0.9);
+    background-color: #e5e7eb;
+    transition: all 0.1s ease;
+}
+
+/* ستايل خاص للمفضلة النشطة */
+.wishlist-btn.active {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid #ef4444;
+}
+
+.wishlist-btn.active:hover {
+    background: rgba(239, 68, 68, 0.2);
+    transform: scale(1.15);
+}
+
+.wishlist-btn.active:active {
+    transform: scale(0.85);
+    background: rgba(239, 68, 68, 0.3);
+}
+
+/* تأثير نبض عند النقر */
+@keyframes wishlistPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        transform: scale(0.9);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.wishlist-btn:active {
+    animation: wishlistPulse 0.2s ease;
+}
+
+/* تأثير نبض للمفضلة النشطة */
+@keyframes wishlistActivePulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+    50% {
+        transform: scale(0.85);
+        box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+}
+
+.wishlist-btn.active:active {
+    animation: wishlistActivePulse 0.2s ease;
+}
+
+/* Loading state للزر */
+.wishlist-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.wishlist-btn:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.wishlist-loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ef4444;
+    border-radius: 50%;
+    animation: wishlistSpin 0.8s linear infinite;
+}
+
+@keyframes wishlistSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* تحسين الأداء */
+.wishlist-btn {
+    will-change: transform;
+    backface-visibility: hidden;
 }
 
 /* معلومات المخزون */
@@ -284,4 +395,220 @@ h3.product-top-name{
         width: 100%;
         height: 200px;
     }
+}
+
+/* ألوان المنتج */
+.product-colors {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.colors-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+[dir="rtl"] .colors-label {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+.color-swatch {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.color-swatch:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 2;
+}
+
+.color-swatch-more {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-radius: 50%;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
+.color-swatch-more:hover {
+    background: #e5e7eb;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Product Specifications */
+.product-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.product-spec {
+  font-size: 0.75rem;
+  color: #6b7280;
+  background-color: #f9fafb;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Floating Add to Cart Button */
+.floating-add-to-cart-btn {
+  position: absolute;
+  bottom: 2rem;
+  right: 1rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--primary-color, #1e293b);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: translateY(10px);
+  z-index: 10;
+}
+
+/* RTL Support - Move button to left for Arabic */
+[dir="rtl"] .floating-add-to-cart-btn {
+  right: auto;
+  left: 1rem;
+}
+
+.floating-add-to-cart-btn:hover {
+  background-color: var(--primary-dark, #0f172a);
+  transform: translateY(0) scale(1.1);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.floating-add-to-cart-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #9CA3AF;
+}
+
+.floating-add-to-cart-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Loading spinner for add to cart button */
+.add-to-cart-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: addToCartSpin 1s linear infinite;
+}
+
+@keyframes addToCartSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.floating-add-to-cart-btn.loading {
+  pointer-events: none;
+}
+
+/* Show button on hover for desktop */
+@media (min-width: 768px) {
+  .product-card:hover .floating-add-to-cart-btn {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Always show button on mobile and small screens */
+@media (max-width: 767px) {
+  .floating-add-to-cart-btn {
+    opacity: 1;
+    transform: translateY(0);
+    width: 45px;
+    height: 45px;
+    bottom: 1rem;
+    right: 1rem;
+  }
+  
+  /* RTL Support for mobile */
+  [dir="rtl"] .floating-add-to-cart-btn {
+    right: auto;
+    left: 0.75rem;
+  }
+  
+  .floating-add-to-cart-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .floating-add-to-cart-btn {
+    width: 40px;
+    height: 40px;
+    bottom:1rem;
+    right: 1rem;
+  }
+  
+  /* RTL Support for extra small screens */
+  [dir="rtl"] .floating-add-to-cart-btn {
+    right: auto;
+    left: 0.5rem;
+  }
+  
+  .floating-add-to-cart-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.product-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
 }

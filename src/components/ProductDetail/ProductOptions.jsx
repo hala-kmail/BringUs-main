@@ -7,8 +7,8 @@ const ProductOptions = ({
   t,
   selectedColor,
   setSelectedColor,
-  selectedSize,
-  setSelectedSize,
+  selectedSpecs,
+  setSelectedSpecs,
   quantity,
   setQuantity,
   getColorLabel,
@@ -49,7 +49,6 @@ const ProductOptions = ({
 
   // إدارة اختيار المواصفات (حجم، طول، ...)
   // سنستخدم selectedSpecs ككائن: {title: value}
-  const [selectedSpecs, setSelectedSpecs] = React.useState({});
   React.useEffect(() => {
     // تعيين القيم الافتراضية عند تحميل المنتج
     if (organizedSpecs.length > 0) {
@@ -61,12 +60,12 @@ const ProductOptions = ({
       });
       setSelectedSpecs(initial);
     }
-  }, [product._id, organizedSpecs]);
+  }, [product._id, organizedSpecs, setSelectedSpecs]);
 
   const handleSpecSelect = (title, value) => {
     setSelectedSpecs(prev => ({ ...prev, [title]: value }));
     // إذا كان العنوان هو الحجم، حدث selectedSize القديم
-    if (title === 'الحجم' || title === 'Size') setSelectedSize(value);
+    // if (title === 'الحجم' || title === 'Size') setSelectedSize(value); // Removed
   };
 
   return (

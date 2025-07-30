@@ -97,12 +97,16 @@ right: auto;
   font-weight: 500;
   cursor: default;
 }
-
+.wishlist-button.active{
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  background-color: #fff0f0;
+}
 /* Product Detail Container */
 .product-detail-container {
  
     padding-top: 5vw;
-    max-width: 85%;
+    max-width: 70%;
     margin: 0 auto;
 }
     
@@ -120,7 +124,7 @@ right: auto;
 }
 
 .product-main-image {
-  height: 485px;
+  height: 600px;
   margin: 0 0.25rem;
   width: calc(100% - 0.5rem);
   max-width: calc(100% - 0.5rem);

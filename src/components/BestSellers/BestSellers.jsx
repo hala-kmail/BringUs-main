@@ -25,7 +25,7 @@ const BestSellers = () => {
   } = useProducts();
 
   const currentLang = i18n.language;
-
+  
   useEffect(() => {
     if (products && products.length > 0) {
       const sortedProducts = [...products]
@@ -49,15 +49,6 @@ const BestSellers = () => {
     }
   };
 
-  const handleWishlistToggle = (product) => {
-    toggleWishlist({
-      id: product._id,
-      name: getProductName(product, currentLang),
-      price: getFinalPrice(product),
-      image: getMainImage(product)
-    });
-  };
-
   return (
     <section className="best-sellers">
       <div className="best-sellers-container">
@@ -74,7 +65,7 @@ const BestSellers = () => {
             </svg>
           </Link>
         </div>
-
+        
         {/* Loading State */}
         {loading && bestSellerProducts.length === 0 && (
           <div className="best-sellers-loading">
@@ -99,7 +90,7 @@ const BestSellers = () => {
                   key={product._id}
                   product={product}
                   isInWishlist={isInWishlist}
-                  handleWishlistToggle={handleWishlistToggle}
+                  handleWishlistToggle={toggleWishlist}
                   handleAddToCart={handleAddToCart}
                 />
               ))

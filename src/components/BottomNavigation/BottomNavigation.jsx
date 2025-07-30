@@ -9,7 +9,7 @@ const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { wishlist } = useWishlist();
+  const { count: wishlistCount } = useWishlist();
   const { getCartTotals } = useCart();
 
   // Get real cart items count
@@ -54,7 +54,7 @@ const BottomNavigation = () => {
     {
       id: 'wishlist',
       label: t('navbar.wishlist'),
-      icon: wishlist.length > 0 ? (
+      icon: wishlistCount > 0 ? (
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
           <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
@@ -65,7 +65,7 @@ const BottomNavigation = () => {
       ),
       path: '/wishlist',
       isActive: location.pathname === '/wishlist',
-      badge: wishlist.length > 0 ? wishlist.length : null
+      badge: wishlistCount > 0 ? wishlistCount : null
     },
     {
       id: 'cart',

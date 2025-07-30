@@ -10,6 +10,7 @@ const ProductMediaGallery = ({
   currentLang,
   t
 }) => {
+
   const getCurrentMedia = () => {
     if (!mediaItems || mediaItems.length === 0) {
       return { type: 'image', url: '', thumbnail: '', title: '' };

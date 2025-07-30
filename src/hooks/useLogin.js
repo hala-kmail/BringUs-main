@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
+import { saveToken, getToken, removeToken } from '../utils/tokenManager';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 const STORE_ID = '687c9bb0a7b3f2a0831c4675';
@@ -32,8 +33,11 @@ const useLogin = () => {
         return null;
       }
 
-      console.log('Store info fetched successfully:', data.data);
-      return data.data; // Return store data
+      if (data.success && data.data) {
+        return data.data;
+      } else {
+        throw new Error('Failed to fetch store info');
+      }
     } catch (err) {
       console.error('Error fetching store info:', err);
       return null;
@@ -66,7 +70,7 @@ const useLogin = () => {
   }, []);
 //-----------------------------------loadStoreInfo------------------------------------------------
   const loadStoreInfo = useCallback(async (storeId = STORE_ID) => {
-    const token = localStorage.getItem('authToken');
+    const token = getToken();
     if (!token) {
       console.error('No auth token found');
       return null;
@@ -80,7 +84,7 @@ const useLogin = () => {
   }, [fetchStoreInfo, updateStore]);
 //-----------------------------------loadUserInfo------------------------------------------------
   const loadUserInfo = useCallback(async (userId = null) => {
-    const token = localStorage.getItem('authToken');
+    const token = getToken();
     if (!token) {
       console.error('No auth token found');
       return null;
@@ -110,7 +114,7 @@ const useLogin = () => {
   }, [fetchUserInfo, user, updateUser]);
 //-----------------------------------loadUserAndStoreInfo------------------------------------------------
   const loadUserAndStoreInfo = useCallback(async (userId = null) => {
-    const token = localStorage.getItem('authToken');
+    const token = getToken();
     if (!token) {
       console.error('No auth token found');
       return null;
@@ -118,7 +122,7 @@ const useLogin = () => {
 
     // Check if we already have the data
     if (user && store) {
-      console.log('User and store data already available, skipping API calls');
+    
       return { user, store };
     }
 
@@ -231,7 +235,22 @@ const useLogin = () => {
 
       // Store token in localStorage first
       if (data.token) {
-        localStorage.setItem('authToken', data.token);
+        const tokenSaved = saveToken(data.token);
+        if (tokenSaved) {
+          console.log('Token saved successfully to localStorage');
+          
+          // Verify token was saved
+          const savedToken = getToken();
+          if (savedToken === data.token) {
+            console.log('Token verification successful');
+          } else {
+            console.error('Token verification failed');
+          }
+        } else {
+          console.error('Failed to save token');
+        }
+      } else {
+        console.error('No token received from login response');
       }
 
       // Try to get complete user information
@@ -293,13 +312,51 @@ const useLogin = () => {
       setLoading(false);
     }
   }, [fetchStoreInfo, fetchUserInfo, updateUser, updateStore]);
+
+  // دالة لحذف التوكن
+  const removeAuthToken = useCallback(() => {
+    const success = removeToken();
+    if (success) {
+      console.log('Token removed from localStorage');
+    } else {
+      console.error('Failed to remove token');
+    }
+    return success;
+  }, []);
+
+  // دالة للتحقق من وجود التوكن
+  const checkAuthToken = useCallback(() => {
+    const token = getToken();
+    if (token) {
+      console.log('Auth token found in localStorage');
+    } else {
+      console.log('No auth token found in localStorage');
+    }
+    return token;
+  }, []);
+
+  // دالة لحفظ التوكن
+  const saveAuthToken = useCallback((token) => {
+    const success = saveToken(token);
+    if (success) {
+      console.log('Token saved successfully');
+    } else {
+      console.error('Failed to save token');
+    }
+    return success;
+  }, []);
+
 //-----------------------------------logout------------------------------------------------
   const logout = useCallback(() => {
     setError(null);
-    localStorage.removeItem('authToken');
+    const tokenRemoved = removeAuthToken();
     clearData();
-  }, [clearData]);
-
+    if (tokenRemoved) {
+      console.log('User logged out successfully');
+    } else {
+      console.error('Failed to remove token during logout');
+    }
+  }, [clearData, removeAuthToken]);
 
   return {
     login,
@@ -312,6 +369,9 @@ const useLogin = () => {
     loadStoreInfo,
     loadUserInfo,
     loadUserAndStoreInfo,
+    checkAuthToken,
+    saveAuthToken,
+    removeAuthToken,
   };
 };
 
