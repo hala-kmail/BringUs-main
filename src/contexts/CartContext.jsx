@@ -235,12 +235,12 @@ export const CartProvider = ({ children }) => {
         await fetchCart();
         
         // إظهار رسالة نجاح
-        const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
-        const message = currentLang === 'ar' 
-          ? `تم إضافة ${productName} إلى السلة بنجاح!`
-          : `${productName} added to cart successfully!`;
-        
-        showToast(message, 'success');
+    const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
+    const message = currentLang === 'ar' 
+      ? `تم إضافة ${productName} إلى السلة بنجاح!`
+      : `${productName} added to cart successfully!`;
+    
+    showToast(message, 'success');
         return true;
       }
     } catch (err) {

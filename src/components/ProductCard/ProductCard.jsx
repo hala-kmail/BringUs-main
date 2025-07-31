@@ -99,18 +99,52 @@ const ProductCard = ({
       return '#';
     }
     
+    // استخدام slug إذا كان متوفراً، وإلا استخدم _id
+    const categorySlug = category.slug || category.slugAr || category.slugEn || category._id;
+    return `/category/${categorySlug}`;
+  };
+
+  // دالة لفحص ما إذا كان المنتج جديداً
+  const isNewProduct = () => {
+    const now = new Date();
+    const twoWeeksAgo = new Date(now.getTime() - (14 * 24 * 60 * 60 * 1000)); // 14 يوم
+    const oneWeekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000)); // أسبوع واحد
     
+    // معيار 1: المنتجات المضافة حديثاً (في آخر 14 يوم)
+    const isRecentlyCreated = product.createdAt && new Date(product.createdAt) >= twoWeeksAgo;
     
-    // محاولة إيجاد slug مناسب
-    const slug = category.slug || category.slugAr || category.slugEn;
-    if (slug) {
+    // معيار 2: المنتجات التي زاد ستوكها (تم تحديث الستوك في آخر أسبوع)
+    const hasStockIncrease = product.stockUpdatedAt && 
+                            new Date(product.stockUpdatedAt) >= oneWeekAgo && 
+                            (product.stock > 0 || product.availableQuantity > 0);
     
-      return `/category/${slug}`;
+    const isNew = isRecentlyCreated || hasStockIncrease;
+    
+    // طباعة تفاصيل سبب اعتبار المنتج جديداً (مرة واحدة فقط)
+    if (isNew && !product._loggedAsNew) {
+      const productName = product.nameAr || product.nameEn || product.titleAr || product.titleEn || `منتج ${product._id?.slice(-6)}`;
+      const createdAt = product.createdAt ? new Date(product.createdAt).toLocaleDateString('en-US') : 'غير محدد';
+      const stockUpdatedAt = product.stockUpdatedAt ? new Date(product.stockUpdatedAt).toLocaleDateString('en-US') : 'غير محدد';
+      const stockQuantity = product.stock || product.availableQuantity || 0;
+      
+      console.log(`🏷️ ${productName} - يعرض شارة "جديد"`);
+      console.log(`   - تاريخ الإنشاء: ${createdAt}`);
+      console.log(`   - تاريخ تحديث الستوك: ${stockUpdatedAt}`);
+      console.log(`   - الكمية المتوفرة: ${stockQuantity}`);
+      console.log(`   - سبب الاعتبار:`);
+      if (isRecentlyCreated) {
+        console.log(`     • مضافة حديثاً (آخر 14 يوم)`);
+      }
+      if (hasStockIncrease) {
+        console.log(`     • زاد ستوكها (آخر أسبوع)`);
+      }
+      console.log('---');
+      
+      // وضع علامة لمنع التكرار
+      product._loggedAsNew = true;
     }
     
-    // إذا لم يوجد slug، استخدم _id
-    console.log('Using _id:', category._id);
-    return `/category/${category._id}`;
+    return isNew;
   };
   
   // دالة لتحديد حالة المخزون
@@ -260,7 +294,7 @@ const ProductCard = ({
 
         {/* Badges */}
         <div className="product-badges">
-          {hasNewLabel && (
+          {isNewProduct() && (
             <span className="product-badge product-new-badge">
               {currentLang === 'ar' ? 'جديد' : 'New'}
             </span>

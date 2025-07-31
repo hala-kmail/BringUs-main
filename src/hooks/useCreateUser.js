@@ -21,7 +21,7 @@ export const useCreateUser = () => {
         password: userData.password,
         phone: userData.phone,
         role: 'client', // ثابت للعملاء
-        store:{_id:STORE_ID}, // Store ID ثابت
+        store: STORE_ID, // Store ID كـ string
         addresses: [
           {
             type: 'home',
@@ -37,14 +37,14 @@ export const useCreateUser = () => {
       };
 
       console.log('=== API Request ===');
-      console.log('URL:', `${API_BASE_URL}/users`);
+      console.log('URL:', `${API_BASE_URL}/auth/register`);
       console.log('Method: POST');
       console.log('Headers:', {
         'Content-Type': 'application/json'
       });
       console.log('Body:', requestData);
 
-      const response = await fetch(`${API_BASE_URL}/users`, {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

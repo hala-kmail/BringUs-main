@@ -5,6 +5,7 @@ import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
+import { useNewArrivalsConfig } from '../../hooks/useNewArrivalsConfig';
 import ProductCard from '../ProductCard/ProductCard';
 import './NewArrivals.css';
 
@@ -15,6 +16,7 @@ const NewArrivals = () => {
   const navigate = useNavigate();
   const [newArrivalProducts, setNewArrivalProducts] = useState([]);
   const { categories } = useCategories();
+  const { filterNewArrivals, sortNewArrivals } = useNewArrivalsConfig();
 
   const { 
     products,
@@ -30,10 +32,51 @@ const NewArrivals = () => {
 
   useEffect(() => {
     if (products && products.length > 0) {
-      const sortedProducts = [...products]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 8);
+      // دالة لفلترة المنتجات الجديدة بناءً على معيارين فقط
+      const getNewArrivalProducts = () => {
+        const now = new Date();
+        const twoWeeksAgo = new Date(now.getTime() - (14 * 24 * 60 * 60 * 1000)); // 14 يوم
+        const oneWeekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000)); // أسبوع واحد
+       
+       
+        
+        const newArrivals = products.filter(product => {
+          // معيار 1: المنتجات المضافة حديثاً (في آخر 14 يوم)
+          const isRecentlyCreated = product.createdAt && new Date(product.createdAt) >= twoWeeksAgo;
+          
+          // معيار 2: المنتجات التي زاد ستوكها (تم تحديث الستوك في آخر أسبوع)
+          const hasStockIncrease = product.stockUpdatedAt && 
+                                  new Date(product.stockUpdatedAt) >= oneWeekAgo && 
+                                  (product.stock > 0 || product.availableQuantity > 0);
+          
+          // طباعة تفاصيل كل منتج
+          const productName = product.nameAr || product.nameEn || product.titleAr || product.titleEn || `منتج ${product._id?.slice(-6)}`;
+          const createdAt = product.createdAt ? new Date(product.createdAt).toLocaleDateString('en-US') : 'غير محدد';
+          const stockUpdatedAt = product.stockUpdatedAt ? new Date(product.stockUpdatedAt).toLocaleDateString('en-US') : 'غير محدد';
+          const stockQuantity = product.stock || product.availableQuantity || 0;
+          
+        
+          
+          // إرجاع المنتج إذا حقق أي من المعيارين
+          return isRecentlyCreated || hasStockIncrease;
+        });
+        
+       
+        
+        return newArrivals;
+      };
+      
+      const newArrivals = getNewArrivalProducts();
+      
+      // ترتيب المنتجات حسب الأحدث (تاريخ الإنشاء أولاً)
+      const sortedProducts = newArrivals.sort((a, b) => {
+        const aDate = new Date(a.createdAt || 0);
+        const bDate = new Date(b.createdAt || 0);
+        return bDate - aDate;
+      }).slice(0, 8); // أخذ أول 8 منتجات فقط
+      
       setNewArrivalProducts(sortedProducts);
+      
     }
   }, [products]);
 
@@ -52,42 +95,23 @@ const NewArrivals = () => {
   };
 
   return (
-    <section className="new-arrivals">
-      <div className="new-arrivals-container">
-        {/* Section Header */}
-        <div className="section-header">
-          <div className='section-header-title'>
-            <h2 className="section-title">{t('new_arrivals.title')}</h2>
-            <p className="section-subtitle">{t('new_arrivals.subtitle')}</p>
-          </div>
-          <Link to="/new-arrivals" className="view-all-btn">
-            {t('new_arrivals.view_all')}
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
+    <>
+      {/* إظهار القسم فقط إذا كان هناك منتجات جديدة */}
+      {newArrivalProducts.length > 0 && !loading && !error ? (
+        <section className="new-arrivals">
+          <div className="new-arrivals-container">
+            {/* Section Header */}
+            <div className="section-header">
+              <div className='section-header-title'>
+                <h2 className="section-title">{t('new_arrivals.title')}</h2>
+                <p className="section-subtitle">{t('new_arrivals.subtitle')}</p>
+              </div>
+             
+            </div>
 
-        {/* Loading State */}
-        {loading && newArrivalProducts.length === 0 && (
-          <div className="new-arrivals-loading">
-            <div className="loading-spinner"></div>
-            <p>{currentLang === 'ar' ? 'جاري تحميل أحدث المنتجات...' : 'Loading new arrivals...'}</p>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="new-arrivals-error">
-            <p>{currentLang === 'ar' ? 'خطأ في تحميل المنتجات' : 'Error loading products'}</p>
-          </div>
-        )}
-
-        {/* Products Grid */}
-        {!loading && !error && (
-          <div className="products-grid">
-            {newArrivalProducts.length > 0 ? (
-              newArrivalProducts.map((product) => (
+            {/* Products Grid */}
+            <div className="products-grid">
+              {newArrivalProducts.map((product) => (
                 <ProductCard
                   key={product._id}
                   product={product}
@@ -96,16 +120,12 @@ const NewArrivals = () => {
                   handleAddToCart={handleAddToCart}
                   categories={categories}
                 />
-              ))
-            ) : (
-              <div className="no-products">
-                <p>{currentLang === 'ar' ? 'لا توجد منتجات متاحة' : 'No products available'}</p>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-    </section>
+        </section>
+      ) : null}
+    </>
   );
 };
 

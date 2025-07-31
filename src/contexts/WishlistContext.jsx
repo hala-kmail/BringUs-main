@@ -353,4 +353,4 @@ export const WishlistProvider = ({ children }) => {
       {children}
     </WishlistContext.Provider>
   );
-}; 
+};

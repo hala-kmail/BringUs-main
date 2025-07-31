@@ -561,22 +561,12 @@ const Cart = () => {
             <div className="cart-summary">
               <h3>{currentLang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h3>
               <div className="summary-row">
-                <span>{currentLang === 'ar' ? 'المجموع الفرعي:' : 'Subtotal:'}</span>
+                <span>{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
                 <span>₪{(cartTotals?.subtotal || 0).toFixed(2)}</span>
-              </div>
-              <div className="summary-row">
-                <span>{currentLang === 'ar' ? 'الشحن:' : 'Shipping:'}</span>
-                <span>
-                  {(cartTotals?.shipping || 0) === 0 
-                    ? (currentLang === 'ar' ? 'مجاني' : 'Free') 
-                    : `₪${(cartTotals?.shipping || 0).toFixed(2)}`
-                  }
-                </span>
               </div>
               <hr className="summary-divider" />
               <div className="summary-row summary-total">
-                <span>{currentLang === 'ar' ? 'الإجمالي:' : 'Total:'}</span>
-                <span>₪{(cartTotals?.total || 0).toFixed(2)}</span>
+              
               </div>
               <button 
                 className="checkout-btn"
@@ -601,7 +591,7 @@ const Cart = () => {
             <span className="mobile-total-label">
               {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
             </span>
-            <span className="mobile-total-amount">₪{(cartTotals?.total || 0).toFixed(2)}</span>
+            <span className="mobile-total-amount">₪{(cartTotals?.subtotal || 0).toFixed(2)}</span>
           </div>
           <button 
             className="mobile-checkout-btn"

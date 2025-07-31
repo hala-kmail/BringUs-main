@@ -117,19 +117,19 @@
     background: #c7c9c829;
     color: var(--primary-color, #1e293b);
   }
-
+  
   .footer-support-label {
     font-size: 14px;
     color: #888;
     margin-bottom: 2px;
   }
-
+  
   .footer-support-value {
     font-weight: 700;
     font-size: 17px;
     color: var(--primary-color, #1e293b);
   }
-
+  
   .footer-support-value-email {
     font-weight: 700;
     font-size: 17px;
@@ -206,7 +206,7 @@
     margin-right: 8px;
     margin-bottom: 8px;
   }
-
+  
   .footer-social-icons a:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -363,4 +363,4 @@
 
 .footer-link-button:hover {
   color: var(--primary-color, #667eea);
-}
+  }

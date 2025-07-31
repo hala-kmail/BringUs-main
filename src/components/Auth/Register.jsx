@@ -5,7 +5,6 @@ import './Auth.css';
 import { validateRequired, validatePhone, validateEmail, validateMinLength, validateMatch } from '../../utils/validation';
 import { useCreateUser } from '../../hooks/useCreateUser';
 import { useCheckEmail } from '../../hooks/useCheckEmail';
-import { useDeliveryMethods } from '../../hooks/useDeliveryMethods';
 import { useAppData } from '../../contexts/AppDataContext';
 
 const Register = () => {
@@ -14,7 +13,6 @@ const Register = () => {
   const { createUser, loading, error, reset } = useCreateUser();
   const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();
   const { store } = useAppData();
-  const { deliveryMethods, loading: deliveryMethodsLoading } = useDeliveryMethods(store?._id);
   
   //---------------------form fields-------------------------------
   const [firstName, setFirstName] = useState('');
@@ -23,7 +21,6 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [deliveryMethodId, setDeliveryMethodId] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [zipCode, setZipCode] = useState('');
@@ -72,9 +69,6 @@ const Register = () => {
       errors.phone = t('auth.register.validation.phone_invalid');
     }
     
-    // التحقق من منطقة التوصيل
-    errors.deliveryMethodId = validateRequired(deliveryMethodId, currentLang === 'ar' ? 'يرجى اختيار منطقة التوصيل' : 'Please select a delivery area');
-    
     // التحقق من المدينة
     errors.city = validateRequired(city, t('auth.register.validation.city_required'));
     
@@ -91,7 +85,7 @@ const Register = () => {
     
     setFormErrors(errors);
     return Object.values(errors).every((err) => !err) && !emailExists;
-  }, [firstName, lastName, email, password, confirmPassword, phone, deliveryMethodId, city, address, country, zipCode, emailExists, t, currentLang]);
+  }, [firstName, lastName, email, password, confirmPassword, phone, city, address, country, zipCode, emailExists, t, currentLang]);
 
   // التحقق من صحة البيانات أثناء الكتابة
   useEffect(() => {
@@ -125,7 +119,6 @@ const Register = () => {
       localStorage.setItem('register_firstName', firstName);
       localStorage.setItem('register_lastName', lastName);
       localStorage.setItem('register_phone', phone);
-      localStorage.setItem('register_area', deliveryMethodId);
       localStorage.setItem('register_city', city);
       localStorage.setItem('register_address', address);
       localStorage.setItem('register_zipCode', zipCode);
@@ -192,26 +185,6 @@ const Register = () => {
           </div>
 
           {/* معلومات العنوان */}
-          <div className="form-group">
-            <label htmlFor="deliveryMethodId">{t('checkout.delivery_area')} <span className='required'>*</span></label>
-            <select 
-              id="deliveryMethodId" 
-              name="deliveryMethodId" 
-              value={deliveryMethodId} 
-              onChange={e => setDeliveryMethodId(e.target.value)}
-              className="form-input"
-              disabled={deliveryMethodsLoading}
-            >
-              <option value="">{deliveryMethodsLoading ? (currentLang === 'ar' ? 'جاري التحميل...' : 'Loading...') : (currentLang === 'ar' ? 'اختر منطقة التوصيل' : 'Select delivery area')}</option>
-              {deliveryMethods.map(method => (
-                <option key={method._id} value={method._id}>
-                  {currentLang === 'ar' ? method.locationAr : method.locationEn} - {method.price} ILS
-                  {method.estimatedDays && ` (${method.estimatedDays} ${currentLang === 'ar' ? 'يوم' : 'day'}${method.estimatedDays > 1 ? (currentLang === 'ar' ? 's' : 's') : ''})`}
-                </option>
-              ))}
-            </select>
-            {formErrors.deliveryMethodId && <span className="error-message">{formErrors.deliveryMethodId}</span>}
-          </div>
           <div className="form-group">
             <label className="form-label">{t('auth.register.country')} <span className='required'>*</span></label>
             <input
