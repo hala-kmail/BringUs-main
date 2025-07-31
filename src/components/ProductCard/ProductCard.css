@@ -103,6 +103,10 @@ h3.product-top-name{
     background-color: #6B7280; /* رمادي */
 }
 
+.low-stock-badge {
+    background-color: #F59E0B; /* برتقالي */
+}
+
 /* أنماط الصورة */
 .product-image {
     position: relative;
@@ -526,6 +530,21 @@ h3.product-top-name{
 .floating-add-to-cart-btn svg {
   width: 20px;
   height: 20px;
+}
+
+/* View Details Button Styling */
+.view-details-btn {
+  background-color: #3b82f6 !important; /* أزرق بدلاً من الأخضر */
+}
+
+.view-details-btn:hover {
+  background-color: #2563eb !important;
+  transform: translateY(-2px);
+}
+
+.view-details-btn:active {
+  background-color: #1d4ed8 !important;
+  transform: translateY(0);
 }
 
 /* Loading spinner for add to cart button */

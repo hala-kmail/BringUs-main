@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import useProducts from '../../hooks/useProducts';
+import useCategories from '../../hooks/useCategories';
 import ProductCard from '../ProductCard/ProductCard';
 import './BestSellers.css';
 
@@ -13,6 +14,7 @@ const BestSellers = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [bestSellerProducts, setBestSellerProducts] = useState([]);
+  const { categories } = useCategories();
 
   const { 
     products,
@@ -25,7 +27,7 @@ const BestSellers = () => {
   } = useProducts();
 
   const currentLang = i18n.language;
-  
+
   useEffect(() => {
     if (products && products.length > 0) {
       const sortedProducts = [...products]
@@ -65,7 +67,7 @@ const BestSellers = () => {
             </svg>
           </Link>
         </div>
-        
+
         {/* Loading State */}
         {loading && bestSellerProducts.length === 0 && (
           <div className="best-sellers-loading">
@@ -92,6 +94,7 @@ const BestSellers = () => {
                   isInWishlist={isInWishlist}
                   handleWishlistToggle={toggleWishlist}
                   handleAddToCart={handleAddToCart}
+                  categories={categories}
                 />
               ))
             ) : (

@@ -100,11 +100,11 @@ const MobileCategories = () => {
             <div className="loading-state">
               <div className="loading-spinner"></div>
               <p>{t('common.loading')}</p>
-            </div>
+        </div>
           ) : (
             <div className="categories-grid">
               {mainCategories.map((category) => (
-                <button
+                <button 
                   key={category._id}
                   className={`category-card ${selectedCategory?._id === category._id ? 'active' : ''}`}
                   onClick={() => handleCategorySelect(category)}
@@ -124,7 +124,7 @@ const MobileCategories = () => {
               ))}
             </div>
           )}
-        </div>
+              </div>
 
         {/* Products Grid */}
         {selectedCategory && (
@@ -132,13 +132,13 @@ const MobileCategories = () => {
             <div className="category-header">
               <h3>{currentLang === 'ar' ? selectedCategory.nameAr : selectedCategory.nameEn}</h3>
               <p>{filteredProducts.length} {t('products.count')}</p>
-            </div>
+                </div>
             
             {productsLoading ? (
               <div className="loading-state">
                 <div className="loading-spinner"></div>
                 <p>{t('common.loading')}</p>
-              </div>
+                </div>
             ) : productsError ? (
               <div className="error-state">
                 <p>{t('common.error')}</p>
@@ -146,25 +146,26 @@ const MobileCategories = () => {
             ) : filteredProducts.length > 0 ? (
               <div className="products-grid">
                 {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product._id}
-                    product={product}
-                    currentLang={currentLang}
-                    t={t}
-                    isInWishlist={isInWishlist}
-                    handleWishlistToggle={handleWishlistToggle}
-                    handleAddToCart={handleAddToCart}
-                    getFeatureById={getFeatureById}
-                    getCategoryById={getCategoryById}
-                  />
-                ))}
-              </div>
+                                  <ProductCard
+                  key={product._id}
+                  product={product}
+                  currentLang={currentLang}
+                  t={t}
+                  isInWishlist={isInWishlist}
+                  handleWishlistToggle={handleWishlistToggle}
+                  handleAddToCart={handleAddToCart}
+                  getFeatureById={getFeatureById}
+                  getCategoryById={getCategoryById}
+                  categories={categories}
+                />
+            ))}
+          </div>
             ) : (
               <div className="empty-state">
                 <p>{t('categories.no_products')}</p>
-              </div>
-            )}
-          </div>
+                </div>
+          )}
+        </div>
         )}
       </div>
     </div>

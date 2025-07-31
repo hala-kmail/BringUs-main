@@ -70,14 +70,14 @@ const ProductDetail = () => {
   useEffect(() => {
     const loadProduct = async () => {
               if (!productId) {
-          setError('Product ID not found');
-          setLoading(false);
-          return;
-        }
+        setError('Product ID not found');
+        setLoading(false);
+        return;
+      }
 
-        try {
-          setLoading(true);
-          setError(null);
+      try {
+        setLoading(true);
+        setError(null);
           const productData = await fetchProductById(productId);
         
         if (productData) {
@@ -146,13 +146,35 @@ const ProductDetail = () => {
 
 
   const handleAddToCart = async () => {
-    if (!isInStock(product)) return;
+    if (!isInStock(product)) {
+      // إظهار رسالة مناسبة حسب حالة المخزون
+      if (product.stockStatus === 'out_of_stock' || product.availableQuantity === 0) {
+        alert(currentLang === 'ar' ? 'المنتج غير متوفر في المخزون' : 'Product is out of stock');
+      } else {
+        alert(currentLang === 'ar' ? 'لا يمكن إضافة المنتج للكارت' : 'Cannot add product to cart');
+      }
+      return;
+    }
 
     // التحقق من صحة المنتج قبل الإضافة للسلة
-    const validationErrors = validateProductForCart(product, selectedColor);
+    const validationErrors = [];
+    
+    // التحقق من اللون إذا كان مطلوباً
+    if (product.allColors && product.allColors.length > 0 && !selectedColor) {
+      validationErrors.push('color_required');
+    }
     
     if (validationErrors.includes('color_required')) {
       alert(t('product_detail.select_color_first'));
+      return;
+    }
+    
+    // التحقق من الكمية المطلوبة مع المخزون المتوفر
+    if (product.availableQuantity && quantity > product.availableQuantity) {
+      alert(currentLang === 'ar' 
+        ? `الكمية المطلوبة (${quantity}) أكبر من المخزون المتوفر (${product.availableQuantity})`
+        : `Requested quantity (${quantity}) is greater than available stock (${product.availableQuantity})`
+      );
       return;
     }
     
@@ -169,7 +191,14 @@ const ProductDetail = () => {
       const success = await addToCart(product, selectedOptions);
       
       if (success) {
-        // يمكن إضافة رسالة نجاح إضافية هنا إذا لزم الأمر
+        // إظهار رسالة نجاح مع تحذير إذا كان المخزون منخفض
+        if (product.stockStatus === 'low_stock' || 
+            (product.availableQuantity && product.availableQuantity <= (product.lowStockThreshold || 10))) {
+          alert(currentLang === 'ar' 
+            ? `تم إضافة المنتج للكارت بنجاح! تحذير: المخزون منخفض (${product.availableQuantity} متبقي)`
+            : `Product added to cart successfully! Warning: Low stock (${product.availableQuantity} remaining)`
+          );
+        }
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -291,10 +320,10 @@ const ProductDetail = () => {
 
         {/* Related Products */}
         {product && (
-          <RelatedProducts 
+        <RelatedProducts 
             currentProduct={product}
             categoryId={product.category?._id || product.category}
-          />
+        />
         )}
       </div>
     </div>

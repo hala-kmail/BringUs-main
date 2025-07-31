@@ -13,7 +13,8 @@ const CheckoutForm = ({
   setPrivacyChecked,
   showPrivacyPopup,
   setShowPrivacyPopup,
-  deliveryAreas
+  deliveryMethods,
+  storeAddress
 }) => (
   <form className="checkout-form">
     {/* طريقة الاستلام */}
@@ -30,6 +31,33 @@ const CheckoutForm = ({
         </label>
       </div>
     </div>
+    
+    {/* عنوان المتجر إذا كان الاستلام من المتجر */}
+    {deliveryMethod === 'store' && storeAddress && (
+      <div className="form-group" style={{ 
+        background: '#f8f9fa', 
+        padding: '16px', 
+        borderRadius: '8px', 
+        border: '1px solid #e9ecef',
+        marginBottom: '20px'
+      }}>
+        <label style={{ fontWeight: 600, marginBottom: '8px', display: 'block' }}>
+          {currentLang === 'ar' ? 'عنوان المتجر' : 'Store Address'}
+        </label>
+        <div style={{ 
+          color: '#495057', 
+          fontSize: '14px', 
+          lineHeight: '1.5',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span style={{ fontSize: '16px', color: '#6c757d' }}>📍</span>
+          {storeAddress}
+        </div>
+      </div>
+    )}
+    
     {/* دائماً: الاسم، الهاتف */}
     <div className="form-row">
       <div className="form-group">
@@ -43,17 +71,29 @@ const CheckoutForm = ({
         {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
       </div>
     </div>
+    
     {/* إذا كان توصيل */}
     {deliveryMethod === 'delivery' && (
       <>
         {/* منطقة التوصيل */}
         <div className="form-group">
-          <label htmlFor="deliveryArea">{t('checkout.delivery_area')} *</label>
-          <select id="deliveryArea" name="deliveryArea" value={formData.deliveryArea} onChange={handleInputChange}>
-            {deliveryAreas.map(area => (
-              <option key={area.id} value={area.id}>{area.label[currentLang]}</option>
+          <label htmlFor="deliveryMethodId">{t('checkout.delivery_area')} *</label>
+          <select 
+            id="deliveryMethodId" 
+            name="deliveryMethodId" 
+            value={formData.deliveryMethodId} 
+            onChange={handleInputChange}
+            className={formErrors.deliveryMethodId ? 'error' : ''}
+          >
+            <option value="">{currentLang === 'ar' ? 'اختر منطقة التوصيل' : 'Select delivery area'}</option>
+            {deliveryMethods.map(method => (
+              <option key={method._id} value={method._id}>
+                {currentLang === 'ar' ? method.locationAr : method.locationEn} - {method.price} ILS
+                {method.estimatedDays && ` (${method.estimatedDays} ${currentLang === 'ar' ? 'يوم' : 'day'}${method.estimatedDays > 1 ? (currentLang === 'ar' ? 's' : 's') : ''})`}
+              </option>
             ))}
           </select>
+          {formErrors.deliveryMethodId && <span className="error-message">{formErrors.deliveryMethodId}</span>}
         </div>
         <div className="form-row">
           <div className="form-group">
@@ -118,15 +158,7 @@ const CheckoutForm = ({
         </div>
       </div>
     )}
-    {/* إذا كان استلام من المتجر */}
-    {deliveryMethod === 'store' && (
-      <div className="store-pickup-info" style={{ background: '#f3f4f6', borderRadius: 8, padding: 16, margin: '16px 0', color: '#444' }}>
-        <strong>{currentLang === 'ar' ? 'عنوان المتجر:' : 'Store Location:'}</strong>
-        <div>{currentLang === 'ar' ? 'رام الله - شارع الإرسال - بجانب البنك العربي' : 'Ramallah - Al-Irsal St. - Next to Arab Bank'}</div>
-        <div>{currentLang === 'ar' ? 'ساعات العمل: 9 صباحاً - 9 مساءً' : 'Working hours: 9am - 9pm'}</div>
-        <div>{currentLang === 'ar' ? 'يرجى الحضور خلال ساعات العمل لاستلام طلبك.' : 'Please come during working hours to pick up your order.'}</div>
-      </div>
-    )}
+   
   </form>
 );
 

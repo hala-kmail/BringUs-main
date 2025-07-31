@@ -112,15 +112,24 @@
     font-size: 28px;
     flex-shrink: 0;
   }
-  
+
+  .footer-support-icon-box.whatsapp-icon {
+    background: #c7c9c829;
+    color: var(--primary-color, #1e293b);
+  }
+
   .footer-support-label {
     font-size: 14px;
     color: #888;
     margin-bottom: 2px;
   }
-  
- 
-  
+
+  .footer-support-value {
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--primary-color, #1e293b);
+  }
+
   .footer-support-value-email {
     font-weight: 700;
     font-size: 17px;
@@ -262,6 +271,15 @@
   }
 
   .footer-contact-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+
+  .footer-contact-link.whatsapp-link {
+    color: inherit;
+  }
+
+  .footer-contact-link.whatsapp-link:hover {
     color: var(--primary-color);
     text-decoration: underline;
   }

@@ -121,6 +121,27 @@ const Footer = () => {
               </div>
             </div>
           )}
+          {/* WhatsApp */}
+          {contactInfo.whatsapp && (
+            <div className="footer-support-row">
+              <div className="footer-support-icon-box whatsapp-icon">
+                <FaPhone />
+              </div>
+              <div>
+                <div className="footer-support-label">{t('footer.whatsapp_label', 'تواصل معنا عبر واتساب')}</div>
+                <div className="footer-support-value">
+                  <a 
+                    href={`https://wa.me/${cleanPhoneNumber(contactInfo.whatsapp)}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="footer-contact-link whatsapp-link"
+                  >
+                    {contactInfo.whatsapp}
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Email */}
           {contactInfo.email && (
             <div className="footer-support-row">

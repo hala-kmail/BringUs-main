@@ -1,21 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import useWishlistAPI from '../../hooks/useWishlistAPI';
+import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import ProductCard from '../../components/ProductCard/ProductCard';
-import SidebarFilters from '../../components/Shop/SidebarFilters';
-import ProductsGrid from '../../components/Shop/ProductsGrid';
-import Pagination from '../../components/Shop/Pagination';
-import ShopToolbar from '../../components/Shop/ShopToolbar';
+import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import { useAppData } from '../../contexts/AppDataContext';
-import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 import './Category.css';
 
 const Category = () => {
@@ -23,48 +19,111 @@ const Category = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { isInWishlist, toggleWishlist } = useWishlistAPI();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   // Use dynamic data hooks
-  const { products, loading: productsLoading, error: productsError, searchProducts, fetchProductsByCategory } = useProducts();
-  const { categories, getMainCategories, getSubCategories, loading: categoriesLoading } = useCategories();
+  const { products, loading: productsLoading, error: productsError, searchProducts } = useProducts();
+  const { categories, loading: categoriesLoading, getSubCategories } = useCategories();
   const { store } = useAppData();
 
   // Derived data
   const allProducts = products || [];
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState(null);
+  const [subCategories, setSubCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null); // For breadcrumb
   
-  // Calculate dynamic max price
-  const getMaxProductPrice = () => {
-    if (!allProducts.length) return 1000;
-    return Math.max(...allProducts.map(product => 
-      Math.max(product.originalPrice || 0, product.salePrice || 0, product.price || 0)
-    ));
+  const currentLang = i18n.language;
+
+  // Scroll to top when category changes
+  useScrollToTopOnChange([categorySlug]);
+
+  // Find current category by slug
+  useEffect(() => {
+    if (categories && categorySlug) {
+      const category = categories.find(cat => 
+        cat.slug === categorySlug || 
+        cat.slugAr === categorySlug || 
+        cat.slugEn === categorySlug
+      );
+      setCurrentCategory(category);
+      if (category) {
+        setSelectedCategoryId(category._id);
+        setSelectedCategory(category); // Set initial selected category
+      }
+    }
+  }, [categories, categorySlug]);
+
+  // Get subcategories when current category changes
+  useEffect(() => {
+    if (currentCategory && getSubCategories) {
+      const subs = getSubCategories(currentCategory._id);
+      setSubCategories(subs);
+    }
+  }, [currentCategory, getSubCategories]);
+
+  // Get all descendant category IDs (including subcategories)
+  const getAllDescendantCategoryIds = (categoryId) => {
+    const descendantIds = [categoryId];
+    
+    if (getSubCategories) {
+      const subCats = getSubCategories(categoryId);
+      subCats.forEach(subCat => {
+        descendantIds.push(subCat._id);
+        // Recursively get sub-subcategories
+        const subSubCats = getSubCategories(subCat._id);
+        if (subSubCats) {
+          subSubCats.forEach(subSubCat => {
+            descendantIds.push(subSubCat._id);
+          });
+        }
+      });
+    }
+    
+    return descendantIds;
   };
 
-  const initialMaxPrice = getMaxProductPrice();
+  // Filter products by selected category (including all subcategories)
+  useEffect(() => {
+    if (!selectedCategoryId || !allProducts.length) {
+      setFilteredProducts([]);
+      return;
+    }
 
-  // Filter states
-  const [filters, setFilters] = useState({
-    priceRange: { min: 0, max: initialMaxPrice },
-    categories: [],
-    subcategories: [], 
-    features: [],
-    colors: [],
-    status: [],
-    sortBy: 'newest'
-  });
-
+    console.log('Filtering products for category ID:', selectedCategoryId);
+    console.log('Total products available:', allProducts.length);
+    
+    // Get all descendant category IDs (including subcategories)
+    const descendantCategoryIds = getAllDescendantCategoryIds(selectedCategoryId);
+    console.log('Descendant category IDs:', descendantCategoryIds);
+    
+    // Filter products by category ID (including all descendants)
+    const categoryProducts = allProducts.filter(product => {
+      const productCategoryId = product.category?._id || product.category?.id;
+      return descendantCategoryIds.includes(productCategoryId);
+    });
+    
+    console.log('Filtered products count:', categoryProducts.length);
+    setFilteredProducts(categoryProducts);
+  }, [selectedCategoryId, allProducts, getSubCategories]);
+      
   // API-based search function
-  const performAPISearch = useCallback(async (query) => {
+  const performAPISearch = async (query) => {
     if (!query.trim()) {
-      // If empty search, reset to all products
-      setFilteredProducts(allProducts);
+      // Reset to current category products (including subcategories)
+      if (selectedCategoryId && allProducts.length) {
+        const descendantCategoryIds = getAllDescendantCategoryIds(selectedCategoryId);
+        const categoryProducts = allProducts.filter(product => {
+          const productCategoryId = product.category?._id || product.category?.id;
+          return descendantCategoryIds.includes(productCategoryId);
+        });
+        setFilteredProducts(categoryProducts);
+      }
       return;
     }
 
@@ -73,7 +132,6 @@ const Category = () => {
       const result = await searchProducts(query);
       if (result && result.products) {
         setFilteredProducts(result.products);
-        console.log('Search results:', result.products.length, 'products found');
       } else {
         setFilteredProducts([]);
       }
@@ -83,202 +141,39 @@ const Category = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [searchProducts, allProducts]);
+  };
 
-  // API-based category filtering
-  const performCategoryFilter = useCallback(async (categoryIds) => {
-    if (!categoryIds.length) {
-      setFilteredProducts(allProducts);
-      return;
-    }
+  // Handle search
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    setSearchParams(query ? { search: query } : {});
+    await performAPISearch(query);
+  };
 
-    setIsSearching(true);
+  // Handle category click
+  const handleCategoryClick = (category) => {
+    console.log('Category clicked:', category);
+    
+    // تحديث الكاتيجوري المحددة
+    setSelectedCategoryId(category._id);
+    setSelectedCategory(category);
+    
+    // التنقل المباشر إلى صفحة الكاتيجوري
     try {
-      // For now, we'll use the first category ID
-      // In the future, this could be enhanced to support multiple categories
-      const result = await fetchProductsByCategory(categoryIds[0]);
-      if (result && result.products) {
-        setFilteredProducts(result.products);
-        console.log('Category filter results:', result.products.length, 'products found');
-      } else {
-        setFilteredProducts([]);
+      const slug = category.slug || category.slugAr || category.slugEn || category._id;
+      if (slug && slug !== categorySlug) {
+        navigate(`/category/${slug}`);
+        return; // الخروج من الدالة بعد التنقل
       }
     } catch (error) {
-      console.error('Category filter error:', error);
-      setFilteredProducts([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [fetchProductsByCategory, allProducts]);
-
-  // View mode
-  const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); 
-  
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-  const [paginatedProducts, setPaginatedProducts] = useState([]);
-
-  const currentLang = i18n.language;
-
-  // Handle window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Scroll to top when category changes
-  useScrollToTopOnChange([categorySlug]);
-
-  // Apply filters asynchronously
-  const applyFiltersAsync = async () => {
-    let filtered = [...allProducts];
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      await performAPISearch(searchQuery);
-      return; // Search will set filteredProducts
-    }
-
-    // Apply category filter
-    if (filters.categories.length > 0) {
-      await performCategoryFilter(filters.categories);
-      return; // Category filter will set filteredProducts
-    }
-
-    // Apply other filters locally
-    if (filters.priceRange) {
-      filtered = filtered.filter(product => {
-        const price = product.salePrice || product.price || 0;
-        return price >= filters.priceRange.min && price <= filters.priceRange.max;
-      });
-    }
-
-    if (filters.colors.length > 0) {
-      filtered = filtered.filter(product => {
-        const productColors = getProductColors(product);
-        return filters.colors.some(color => productColors.includes(color));
-      });
-    }
-
-    if (filters.status.length > 0) {
-      filtered = filtered.filter(product => {
-        if (filters.status.includes('in_stock') && !isInStock(product)) return false;
-        if (filters.status.includes('on_sale') && !product.salePrice) return false;
-        if (filters.status.includes('new') && !isNewProduct(product)) return false;
-        return true;
-      });
-    }
-
-    // Apply sorting
-    filtered = sortProducts(filtered, filters.sortBy);
-
-    setFilteredProducts(filtered);
-  };
-
-  // Apply pagination
-  const applyPagination = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    setPaginatedProducts(filteredProducts.slice(startIndex, endIndex));
-  };
-
-  // Apply filters
-  const applyFilters = async () => {
-    setCurrentPage(1); // Reset to first page when filters change
-    await applyFiltersAsync();
-  };
-
-  // Apply filters when dependencies change
-  useEffect(() => {
-    applyFilters();
-  }, [allProducts, searchQuery, filters]);
-
-  // Apply pagination when filtered products change
-  useEffect(() => {
-    applyPagination();
-  }, [filteredProducts, currentPage, itemsPerPage]);
-
-  // Get product colors
-  const getProductColors = (product) => {
-    if (!product.allColors) return [];
-    
-    if (Array.isArray(product.allColors)) {
-      return product.allColors.map(color => {
-        if (Array.isArray(color)) {
-          return color.map(c => getColorKey(c)).join(',');
-        }
-        return getColorKey(color);
-      });
+      console.error('Navigation error:', error);
     }
     
-    return [getColorKey(product.allColors)];
-  };
-
-  // Get all descendant category IDs
-  const getAllDescendantCategoryIds = (categoryId) => {
-    const descendants = [];
-    const addDescendants = (id) => {
-      descendants.push(id);
-      const subcategories = getSubCategories(id);
-      subcategories.forEach(sub => addDescendants(sub.id));
-    };
-    addDescendants(categoryId);
-    return descendants;
-  };
-
-  // Handle filter changes
-  const handleFilterChange = async (filterType, value, checked = null) => {
-    setFilters(prev => {
-      const newFilters = { ...prev };
-      
-      if (filterType === 'priceRange') {
-        newFilters.priceRange = value;
-      } else if (filterType === 'sortBy') {
-        newFilters.sortBy = value;
-      } else {
-        if (checked !== null) {
-          // Checkbox filter
-          if (checked) {
-            newFilters[filterType] = [...prev[filterType], value];
-          } else {
-            newFilters[filterType] = prev[filterType].filter(item => item !== value);
-          }
-        } else {
-          // Single value filter
-          newFilters[filterType] = [value];
-        }
-      }
-      
-      return newFilters;
-    });
-  };
-
-  // Clear all filters
-  const clearFilters = () => {
-    setFilters({
-      priceRange: { min: 0, max: initialMaxPrice },
-      categories: [],
-      subcategories: [],
-      features: [],
-      colors: [],
-      status: [],
-      sortBy: 'newest'
-    });
-    setSearchQuery('');
-  };
-
-  // Remove specific filter
-  const removeFilter = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: prev[filterType].filter(item => item !== value)
-    }));
+    // إذا لم يتم التنقل، تحديث الفروع الفرعية فقط
+    if (getSubCategories) {
+      const subs = getSubCategories(category._id);
+      setSubCategories(subs);
+    }
   };
 
   // Handle wishlist toggle
@@ -288,8 +183,7 @@ const Category = () => {
 
   // Handle add to cart
   const handleAddToCart = (product) => {
-    // Navigate to product details page
-    navigate(`/product/${product._id || product.id}`);
+    addToCart(product);
   };
 
   // Handle mobile search toggle
@@ -302,168 +196,10 @@ const Category = () => {
     setIsMobileSearchOpen(false);
   };
 
-  // Handle search
-  const handleSearch = async (query) => {
-    setSearchQuery(query);
-    
-    // Update URL params
-    if (query.trim()) {
-      setSearchParams(prev => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('search', query.trim());
-        return newParams;
-      });
-      
-      // Perform API search
-      await performAPISearch(query);
-    } else {
-      setSearchParams(prev => {
-        const newParams = new URLSearchParams(prev);
-        newParams.delete('search');
-        return newParams;
-      });
-      
-      // Reset to all products
-      setFilteredProducts(allProducts);
-    }
-  };
-
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-
-  // Handle page change
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Handle items per page change
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Get visible pages for pagination
-  const getVisiblePages = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i);
-    }
-
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
-
-    rangeWithDots.push(...range);
-
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
-  };
-
-  // Handle sort change
-  const handleSortChange = (newSortBy) => {
-    setFilters(prev => ({ ...prev, sortBy: newSortBy }));
-  };
-
-  // Get all colors
-  function getAllColors() {
-    const colors = new Set();
-    allProducts.forEach(product => {
-      const productColors = getProductColors(product);
-      productColors.forEach(color => colors.add(color));
-    });
-    return Array.from(colors).sort();
-  }
-
-  // Get feature by ID
-  const getFeatureById = (id) => {
-    return features.find(feature => feature.id === id);
-  };
-
-  // Get category by ID
-  const getCategoryById = (id) => {
-    return categories.find(category => category._id === id);
-  };
-
-  // Sort products
-  const sortProducts = (products, sortBy) => {
-    const sorted = [...products];
-    switch (sortBy) {
-      case 'price_low':
-        return sorted.sort((a, b) => (a.salePrice || a.price || 0) - (b.salePrice || b.price || 0));
-      case 'price_high':
-        return sorted.sort((a, b) => (b.salePrice || b.price || 0) - (a.salePrice || a.price || 0));
-      case 'name_az':
-        return sorted.sort((a, b) => {
-          const nameA = getProductName(a, currentLang).toLowerCase();
-          const nameB = getProductName(b, currentLang).toLowerCase();
-          return nameA.localeCompare(nameB);
-        });
-      case 'name_za':
-        return sorted.sort((a, b) => {
-          const nameA = getProductName(a, currentLang).toLowerCase();
-          const nameB = getProductName(b, currentLang).toLowerCase();
-          return nameB.localeCompare(nameA);
-        });
-      case 'newest':
-      default:
-        return sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-  };
-
-  // Check if product is in stock
-  const isInStock = (product) => {
-    return product.stockQuantity > 0;
-  };
-
-  // Check if product is new
-  const isNewProduct = (product) => {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    return new Date(product.createdAt) > thirtyDaysAgo;
-  };
-
-  // Get color key
-  const getColorKey = (color) => {
-    if (typeof color === 'string') return color;
-    if (color && color.name) return color.name;
-    return 'unknown';
-  };
-
-  // Get final price
-  const getFinalPrice = (product) => {
-    return product.salePrice || product.price || 0;
-  };
-
-  // Get main image
-  const getMainImage = (product) => {
-    if (product.images && product.images.length > 0) {
-      return product.images[0];
-    }
-    return '/placeholder-product.jpg';
-  };
-
-  // Get product name
-  const getProductName = (product, lang) => {
-    if (product.name && product.name[lang]) {
-      return product.name[lang];
-    }
-    if (product.name && product.name.ar) {
-      return product.name.ar;
-    }
-    if (product.name && product.name.en) {
-      return product.name.en;
-    }
-    return product.name || 'Product';
+  // Get category name
+  const getCategoryName = (category) => {
+    if (!category) return '';
+    return currentLang === 'ar' ? category.nameAr : category.nameEn;
   };
 
   // Get cart totals
@@ -471,8 +207,41 @@ const Category = () => {
   const cartTotals = getCartTotals();
   const cartItemsCount = cartTotals.itemsCount;
 
-  // Get features (placeholder)
-  const features = [];
+  if (categoriesLoading || productsLoading) {
+    return (
+      <div className="category-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="category-container">
+          <div className="category-main">
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>{currentLang === 'ar' ? 'جاري التحميل...' : 'Loading...'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentCategory) {
+    return (
+      <div className="category-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="category-container">
+          <div className="category-main">
+            <div className="error-container">
+              <h2>{currentLang === 'ar' ? 'الكاتيجوري غير موجودة' : 'Category not found'}</h2>
+              <button onClick={() => navigate('/')}>
+                {currentLang === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="category-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
@@ -487,92 +256,89 @@ const Category = () => {
       />
       
       <div className="category-container">
-        {/* Sidebar Filters */}
-        {!isMobile && (
-          <SidebarFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={clearFilters}
-            onRemoveFilter={removeFilter}
-            getAllColors={getAllColors}
-            getFeatureById={getFeatureById}
-            getCategoryById={getCategoryById}
-            currentLang={currentLang}
-            t={t}
-          />
+        <div className="category-main">
+        {/* Breadcrumb */}
+        <Breadcrumb
+            category={selectedCategory || currentCategory}
+          currentLang={currentLang}
+          t={t}
+            allCategories={categories}
+        />
+        
+        {/* Category Header */}
+        <div className="category-header">
+            {(selectedCategory || currentCategory).image && (
+              <div className="category-icon">
+                <img src={(selectedCategory || currentCategory).image} alt={getCategoryName(selectedCategory || currentCategory)} />
+              </div>
+            )}
+            <h1 className="category-title">{getCategoryName(selectedCategory || currentCategory)}</h1>
+            {(selectedCategory || currentCategory).descriptionAr && (
+              <p className="category-description">
+                {currentLang === 'ar' ? (selectedCategory || currentCategory).descriptionAr : (selectedCategory || currentCategory).descriptionEn}
+              </p>
+            )}
+        </div>
+        
+        {/* Subcategories */}
+          {subCategories.length > 0 && (
+            <div className="subcategories-section">
+              <h2 className="subcategories-title">
+                {currentLang === 'ar' ? 'الفروع الفرعية' : 'Subcategories'}
+              </h2>
+            <div className="subcategories-grid">
+                {subCategories.map((subCat) => (
+                  <div 
+                    key={subCat._id}
+                    className={`subcategory-item ${selectedCategoryId === subCat._id ? 'active' : ''}`}
+                    onClick={() => handleCategoryClick(subCat)}
+                >
+                    <div className="subcategory-content">
+                      {subCat.image && (
+                        <img src={subCat.image} alt={getCategoryName(subCat)} className="subcategory-logo" />
+                      )}
+                      <h3>{getCategoryName(subCat)}</h3>
+                  </div>
+                  </div>
+              ))}
+            </div>
+          </div>
         )}
 
-        {/* Main Content */}
-        <div className="category-main">
-          {/* Toolbar */}
-          <ShopToolbar
-            totalProducts={filteredProducts.length}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            onSortChange={handleSortChange}
-            currentSort={filters.sortBy}
-            onShowFilters={() => setShowFilters(true)}
-            isMobile={isMobile}
-            currentLang={currentLang}
-            t={t}
-          />
+          {/* Products Section */}
+          <div className="products-section">
+            <div className="products-header">
+              <h2 className="products-title">
+                {currentLang === 'ar' ? 'المنتجات' : 'Products'}
+              </h2>
+              <span className="products-count">
+                {filteredProducts.length} {currentLang === 'ar' ? 'منتج' : 'products'}
+              </span>
+            </div>
 
-          {/* Products Grid */}
-          <ProductsGrid
-            products={paginatedProducts}
-            viewMode={viewMode}
-            loading={productsLoading || isSearching}
-            error={productsError}
-            isInWishlist={isInWishlist}
-            handleWishlistToggle={handleWishlistToggle}
-            handleAddToCart={handleAddToCart}
-            getFeatureById={getFeatureById}
-            getCategoryById={getCategoryById}
-            currentLang={currentLang}
-            t={t}
-          />
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-              itemsPerPage={itemsPerPage}
-              totalItems={filteredProducts.length}
-              visiblePages={getVisiblePages()}
-              currentLang={currentLang}
-              t={t}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Mobile Filters Modal */}
-      {isMobile && showFilters && (
-        <div className="mobile-filters-overlay">
-          <div className="mobile-filters-modal">
-            <SidebarFilters
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              onClearFilters={clearFilters}
-              onRemoveFilter={removeFilter}
-              getAllColors={getAllColors}
-              getFeatureById={getFeatureById}
-              getCategoryById={getCategoryById}
-              currentLang={currentLang}
-              t={t}
-            />
-            <button 
-              className="close-filters-btn"
-              onClick={() => setShowFilters(false)}
-            >
-              {t('filters.close')}
-            </button>
+        {/* Products Grid */}
+            {filteredProducts.length > 0 ? (
+              <div className="products-grid">
+                {filteredProducts.map((product) => (
+              <ProductCard
+                    key={product._id}
+                product={product}
+                    isInWishlist={isInWishlist(product._id)}
+                    handleWishlistToggle={() => handleWishlistToggle(product)}
+                currentLang={currentLang}
+                    categories={categories}
+              />
+            ))}
+          </div>
+            ) : (
+          <div className="no-products">
+                <h3>{currentLang === 'ar' ? 'لا توجد منتجات' : 'No products found'}</h3>
+                <p>{currentLang === 'ar' ? 'لم يتم العثور على منتجات في هذه الكاتيجوري' : 'No products found in this category'}</p>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

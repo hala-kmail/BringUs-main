@@ -11,15 +11,23 @@ const ProductCard = ({
   product,
   isInWishlist,
   handleWishlistToggle,
+  handleAddToCart: externalHandleAddToCart, // إضافة prop اختياري
   showStockInfo = false,
   showDiscountInfo = false,
   isListView = false,
+  categories = [], // إضافة categories كـ prop
 }) => {
   const { t, i18n } = useTranslation();
   const { addToCart } = useCart();
   const currentLang = i18n.language;
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [isAddToCartLoading, setIsAddToCartLoading] = useState(false);
+  
+  // دالة للبحث عن الكاتيجوري في categories باستخدام _id
+  const findCategoryById = (categoryId) => {
+    if (!categoryId || !categories.length) return null;
+    return categories.find(cat => cat._id === categoryId);
+  };
   
   // دالة تحويل اللون إلى اسم
   const getColorName = (color) => {
@@ -74,7 +82,36 @@ const ProductCard = ({
     ? (product.descriptionAr || product.description?.ar || product.description) 
     : (product.descriptionEn || product.description?.en || product.description);
   const productImage = product.mainImage || (product.images && product.images[0]) || null;
-  const categoryName = product.category ? (currentLang === 'ar' ? product.category.nameAr : product.category.nameEn) : null;
+  
+  // البحث عن الكاتيجوري الكاملة في categories
+  const productCategoryId = product.category?._id || product.category?.id;
+  const fullCategory = findCategoryById(productCategoryId);
+  const categoryName = fullCategory ? (currentLang === 'ar' ? fullCategory.nameAr : fullCategory.nameEn) : null;
+  
+  // دالة لتوليد رابط الكاتيجوري الصحيح
+  const getCategoryLink = (categoryId) => {
+    if (!categoryId) return '#';
+    
+    // البحث عن الكاتيجوري في categories
+    const category = findCategoryById(categoryId);
+    if (!category) {
+      console.log('Category not found for ID:', categoryId);
+      return '#';
+    }
+    
+    
+    
+    // محاولة إيجاد slug مناسب
+    const slug = category.slug || category.slugAr || category.slugEn;
+    if (slug) {
+    
+      return `/category/${slug}`;
+    }
+    
+    // إذا لم يوجد slug، استخدم _id
+    console.log('Using _id:', category._id);
+    return `/category/${category._id}`;
+  };
   
   // دالة لتحديد حالة المخزون
   const getStockStatus = (product) => {
@@ -170,34 +207,17 @@ const ProductCard = ({
   };
 
   // دالة معالجة النقر على زر إضافة للسلة
-  const handleAddToCartClick = async () => {
-    if (isAddToCartLoading || product.stockStatus === 'out_of_stock') return;
+  const handleAddToCartClick = () => {
+    if (isAddToCartLoading || product.stockStatus === 'out_of_stock' || product.availableQuantity === 0) return;
     
-    setIsAddToCartLoading(true);
-    try {
-      // تجميع الخيارات المتاحة للمنتج
-      const options = { quantity: 1 };
-      
-      // إضافة اللون الأول إذا كان متوفراً
-      const colorsArray = product.colors || product.allColors || [];
-      if (colorsArray.length > 0) {
-        options.selectedColor = colorsArray[0];
-      }
-      
-      // إضافة المواصفات الأولى إذا كانت متوفرة
-      if (product.specificationValues) {
-        product.specificationValues.forEach(spec => {
-          if (spec.title && spec.value) {
-            const specName = currentLang === 'ar' ? spec.titleAr || spec.title : spec.titleEn || spec.title;
-            options[specName] = spec.value;
-          }
-        });
-      }
-      
-      await addToCart(product, options);
-    } finally {
-      setIsAddToCartLoading(false);
+    // إذا كان هناك دالة خارجية، استخدمها
+    if (externalHandleAddToCart) {
+      externalHandleAddToCart(product);
+      return;
     }
+    
+    // التنقل إلى صفحة تفاصيل المنتج
+    window.location.href = `/product/${product._id}`;
   };
   
   return (
@@ -265,6 +285,14 @@ const ProductCard = ({
               {currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock'}
             </span>
           )}
+          {(product.stockStatus === 'low_stock' || 
+            (product.availableQuantity && product.lowStockThreshold && 
+             product.availableQuantity <= product.lowStockThreshold && 
+             product.availableQuantity > 0)) && (
+            <span className="product-badge low-stock-badge">
+              {currentLang === 'ar' ? 'مخزون منخفض' : 'Low Stock'}
+            </span>
+          )}
         </div>
       </div>
 
@@ -278,9 +306,9 @@ const ProductCard = ({
             <h3 className="product-top-name">{productName}</h3>
           </Link>
           
-          {categoryName && (
+          {categoryName && product.category && (
             <Link 
-              to={`/category/${product.category?.slug}`}
+              to={getCategoryLink(product.category._id)}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <h4
@@ -393,11 +421,12 @@ const ProductCard = ({
          
         </div>
 
-        {/* Floating Add to Cart Button */}
+        {/* Floating View Details Button */}
         <button
-          className={`floating-add-to-cart-btn ${isAddToCartLoading ? 'loading' : ''}`}
+          className={`floating-add-to-cart-btn view-details-btn ${isAddToCartLoading ? 'loading' : ''}`}
           onClick={handleAddToCartClick}
           disabled={product.stockStatus === 'out_of_stock' || isAddToCartLoading}
+          title={currentLang === 'ar' ? 'عرض التفاصيل' : 'View Details'}
         >
           {isAddToCartLoading ? (
             <div className="add-to-cart-loading-spinner"></div>
@@ -412,7 +441,13 @@ const ProductCard = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
           )}

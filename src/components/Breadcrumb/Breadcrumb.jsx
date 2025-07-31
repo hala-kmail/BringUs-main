@@ -4,23 +4,67 @@ import { useNavigate } from 'react-router-dom';
 const Breadcrumb = ({ category, currentLang, t, allCategories = [] }) => {
   const navigate = useNavigate();
 
-  // دالة لإيجاد مسار الفئة من الجذر حتى الفئة الحالية
+  // دالة محسنة لإيجاد مسار الفئة من الجذر حتى الفئة الحالية
   function getCategoryPath(category, categories) {
     const path = [];
     let current = category;
     let safety = 0;
-    while (current && safety < 20) {
+    const visited = new Set(); // لتجنب الحلقات اللانهائية
+
+    while (current && safety < 20 && !visited.has(current._id)) {
+      visited.add(current._id);
       path.unshift(current);
-      if (!current.parent) break;
-      let parentId = typeof current.parent === 'object'
-        ? (current.parent._id || current.parent.id)
-        : current.parent;
-      if (!parentId) break;
-      current = categories.find(cat => cat._id === parentId || cat.id === parentId);
-      safety++;
+      
+      // محاولة إيجاد الأب من خلال علاقة parent
+      if (current.parent) {
+        let parentId = typeof current.parent === 'object'
+          ? (current.parent._id || current.parent.id)
+          : current.parent;
+        
+        if (parentId) {
+          const parent = categories.find(cat => cat._id === parentId || cat.id === parentId);
+          if (parent) {
+            current = parent;
+            continue;
+          }
+        }
+      }
+      
+      // إذا لم نجد أب من خلال parent، نحاول إيجاده من خلال slug
+      // هذا مفيد للكاتيجوريز التي لها علاقات معقدة
+      if (current.slug && current.slug.includes('/')) {
+        const slugParts = current.slug.split('/');
+        if (slugParts.length > 1) {
+          const parentSlug = slugParts.slice(0, -1).join('/');
+          const parent = categories.find(cat => 
+            cat.slug === parentSlug || 
+            cat.slugAr === parentSlug || 
+            cat.slugEn === parentSlug
+          );
+          if (parent) {
+            current = parent;
+            continue;
+          }
+        }
+      }
+      
+      break;
     }
+    
     return path;
   }
+
+  // دالة للتنقل الآمن إلى الكاتيجوري
+  const navigateToCategory = (cat) => {
+    try {
+      const slug = cat.slug || cat.slugAr || cat.slugEn || cat._id || cat.id;
+      navigate(`/category/${slug}`);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // fallback إلى الصفحة الرئيسية
+      navigate('/');
+    }
+  };
 
   if (!category) return null;
   const categoryPath = getCategoryPath(category, allCategories);
@@ -32,7 +76,7 @@ const Breadcrumb = ({ category, currentLang, t, allCategories = [] }) => {
         <React.Fragment key={cat._id || cat.id}>
           <span className="breadcrumb-separator">{t('product_detail.breadcrumb_sep')}</span>
           <span
-            onClick={() => navigate(`/category/${cat.slug || cat._id || cat.id}`)}
+            onClick={() => navigateToCategory(cat)}
             className={idx === categoryPath.length - 1 ? 'breadcrumb-current' : ''}
             style={{ cursor: idx === categoryPath.length - 1 ? 'default' : 'pointer' }}
           >

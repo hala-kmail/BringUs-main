@@ -11,7 +11,8 @@ const ProductsGrid = ({
   handleAddToCart,
   getFeatureById,
   getCategoryById,
-  showStockInfo
+  showStockInfo,
+  categories = []
 }) => {
   if (!Array.isArray(products)) {
     return <div>No products available</div>;
@@ -32,6 +33,7 @@ const ProductsGrid = ({
           getCategoryById={getCategoryById}
           showStockInfo={showStockInfo}
           isListView={viewMode === 'list' || viewMode === 'list-view'}
+          categories={categories}
         />
       ))}
     </div>

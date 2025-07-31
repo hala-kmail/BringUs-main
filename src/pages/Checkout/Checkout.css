@@ -5,7 +5,7 @@
 }
 
 .checkout-content {
-  max-width: 1200px;
+  max-width: 85%;
   margin: 0 auto;
   padding: 5rem 1rem;
 }
@@ -56,7 +56,7 @@
 .checkout-container {
   display: grid;
   grid-template-columns: 1fr 400px;
-  gap: 3rem;
+  gap: 1rem;
   align-items: start;
 }
 
@@ -612,4 +612,102 @@
 .checkout-form input[type="radio"] {
 
   cursor: pointer;
+} 
+
+/* Color swatch styling for order summary - matching cart page */
+.cart-color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+ 
+}
+
+.cart-color-option {
+  display: inline-block;
+  margin: 0.125rem;
+}
+
+.cart-color-option .color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cart-color-option .color-swatch:hover {
+  transform: scale(1.1);
+  border-color: #9ca3af;
+}
+
+
+/* Mobile responsive for color options */
+@media (max-width: 768px) {
+  .cart-color-option .color-swatch {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-color-option .color-swatch {
+    width: 16px;
+    height: 16px;
+  }
+} 
+
+/* Product Specifications - matching cart page */
+.cart-item-specifications {
+ 
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cart-spec-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.4;
+  font-family: 'Tajawal', sans-serif;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+
+[dir="rtl"] .cart-spec-text {
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* Mobile responsive for specifications */
+@media (max-width: 768px) {
+  .cart-item-specifications {
+    gap: 0.4rem;
+  }
+  
+  .cart-spec-text {
+    font-size: 0.7rem;
+    line-height: 1.3;
+    padding: 0.2rem 0.4rem;
+  }
+} 
+
+
+
+
+
+/* RTL support for expand button */
+[dir="rtl"] .expand-specs-btn {
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* Mobile responsive for expand button */
+@media (max-width: 768px) {
+  .expand-specs-btn {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
 } 

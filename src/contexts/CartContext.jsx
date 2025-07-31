@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getToken, getBearerToken } from '../utils/tokenManager';
+import { useAppData } from './AppDataContext';
 import Toast from '../components/Toast/Toast';
 import { getDefaultAreaIdFromLocalStorage, getShippingPriceByAreaId } from '../data/deliveryAreas';
 import { getEffectivePrice } from '../utils/productUtils';
-import { getToken, getBearerToken } from '../utils/tokenManager';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -22,8 +23,8 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
-  const { t, i18n } = useTranslation();
-
+  const { i18n } = useTranslation();
+  const { store } = useAppData();
   const currentLang = i18n.language;
 
   // جلب الكارت من API
@@ -34,11 +35,23 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      setCartItems([]);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/cart`, {
+      console.log('Fetching cart - Request details:', {
+        url: `${API_BASE_URL}/cart?storeId=${store._id}`,
+        method: 'GET',
+        storeId: store._id
+      });
+
+      const response = await fetch(`${API_BASE_URL}/cart?storeId=${store._id}`, {
         method: 'GET',
         headers: {
           'Authorization': getBearerToken(),
@@ -47,6 +60,11 @@ export const CartProvider = ({ children }) => {
       });
 
       const data = await response.json();
+
+      console.log('Fetching cart - Response:', {
+        status: response.status,
+        data: data
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -68,12 +86,15 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [store]);
 
   // جلب الكارت عند تحميل الصفحة
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    const token = getToken();
+    if (token && store && store._id) {
+      fetchCart();
+    }
+  }, [fetchCart, store]);
 
   // دالة لإظهار الإشعارات
   const showToast = (message, type = 'success') => {
@@ -85,12 +106,55 @@ export const CartProvider = ({ children }) => {
     setToast({ ...toast, isVisible: false });
   };
 
+  // دالة لتحويل المواصفات إلى التنسيق المطلوب
+  const formatSpecifications = (specs) => {
+    const selectedSpecifications = [];
+    
+    Object.entries(specs).forEach(([specificationId, specData]) => {
+      if (specData && specData !== '' && specificationId !== 'selectedColor' && specificationId !== 'quantity') {
+        // إذا كان specData كائن يحتوي على valueId (البنية الجديدة)
+        if (typeof specData === 'object' && specData.valueId) {
+          selectedSpecifications.push({
+            specificationId: specificationId, // هذا هو ObjectId
+            valueId: specData.valueId,
+            valueAr: specData.valueAr || specData.value,
+            valueEn: specData.valueEn || specData.value,
+            titleAr: specData.titleAr || specData.title || specificationId,
+            titleEn: specData.titleEn || specData.title || specificationId
+          });
+        } else if (typeof specData === 'object' && specData._id) {
+          // للتوافق مع البنية القديمة
+          selectedSpecifications.push({
+            specificationId: specData._id,
+            valueId: specData.value || specData.name || specData,
+            valueAr: specData.valueAr || specData.value || specData.name || specData,
+            valueEn: specData.valueEn || specData.value || specData.name || specData,
+            titleAr: specData.titleAr || specData.title || specificationId,
+            titleEn: specData.titleEn || specData.title || specificationId
+          });
+        } else {
+          // إذا كان specData نص عادي (للتوافق مع البنية القديمة)
+          selectedSpecifications.push({
+            specificationId: specificationId,
+            valueId: specData,
+            valueAr: specData,
+            valueEn: specData,
+            titleAr: specificationId,
+            titleEn: specificationId
+          });
+        }
+      }
+    });
+    
+    return selectedSpecifications;
+  };
+
   // إضافة منتج للكارت
   const addToCart = useCallback(async (product, options = {}) => {
     const { 
       selectedColor = '', 
       quantity = 1,
-      ...otherSpecs // جميع المواصفات الأخرى (بما في ذلك الحجم)
+      ...otherSpecs // جميع المواصفات الأخرى
     } = options;
 
     const token = getToken();
@@ -99,35 +163,49 @@ export const CartProvider = ({ children }) => {
       return false;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      console.log('Store object:', store);
+      showToast(currentLang === 'ar' ? 'معلومات المتجر غير متوفرة' : 'Store information not available', 'error');
+      return false;
+    }
+
+    console.log('Store information available:', {
+      storeId: store._id,
+      storeName: store.nameAr || store.nameEn,
+      storeSlug: store.slug
+    });
+
     setLoading(true);
     setError(null);
 
     try {
       const requestBody = {
         product: product._id || product.id,
-        quantity: quantity
+        quantity: quantity,
+        storeId: store._id
       };
 
-      // تجميع جميع المواصفات في variant
-      const variantParts = [];
-      
-      if (selectedColor) {
-        variantParts.push(`Color:${selectedColor}`);
-      }
-      
-      // إضافة جميع المواصفات الأخرى (بما في ذلك الحجم)
-      Object.entries(otherSpecs).forEach(([specName, specValue]) => {
-        if (specValue && specValue !== '') {
-          variantParts.push(`${specName}:${specValue}`);
-        }
-      });
-      
-      // إنشاء variant string
-      if (variantParts.length > 0) {
-        requestBody.variant = variantParts.join('|');
+      // إضافة المواصفات المختارة
+      const selectedSpecifications = formatSpecifications(otherSpecs);
+      if (selectedSpecifications.length > 0) {
+        requestBody.selectedSpecifications = selectedSpecifications;
       }
 
-      const response = await fetch(`${API_BASE_URL}/cart`, {
+      // إضافة الألوان المختارة
+      if (selectedColor) {
+        requestBody.selectedColors = [selectedColor];
+      }
+
+      console.log('Adding to cart - Request details:', {
+        url: `${API_BASE_URL}/cart?storeId=${store._id}`,
+        method: 'POST',
+        storeId: store._id,
+        productId: product._id || product.id,
+        requestBody: requestBody
+      });
+
+      const response = await fetch(`${API_BASE_URL}/cart?storeId=${store._id}`, {
         method: 'POST',
         headers: {
           'Authorization': getBearerToken(),
@@ -137,6 +215,11 @@ export const CartProvider = ({ children }) => {
       });
 
       const data = await response.json();
+
+      console.log('Adding to cart - Response:', {
+        status: response.status,
+        data: data
+      });
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -168,7 +251,7 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [currentLang, fetchCart]);
+  }, [currentLang, fetchCart, store]);
 
   // إزالة منتج من الكارت
   const removeFromCart = useCallback(async (productId) => {
@@ -177,11 +260,23 @@ export const CartProvider = ({ children }) => {
       return false;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      return false;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+      console.log('Removing from cart - Request details:', {
+        url: `${API_BASE_URL}/cart/${productId}?storeId=${store._id}`,
+        method: 'DELETE',
+        storeId: store._id,
+        productId: productId
+      });
+
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}?storeId=${store._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': getBearerToken(),
@@ -190,6 +285,11 @@ export const CartProvider = ({ children }) => {
       });
 
       const data = await response.json();
+
+      console.log('Removing from cart - Response:', {
+        status: response.status,
+        data: data
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -210,12 +310,22 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchCart]);
+  }, [fetchCart, store]);
 
   // تحديث كمية منتج في الكارت
-  const updateQuantity = useCallback(async (productId, newQuantity) => {
+  const updateQuantity = useCallback(async (productId, newQuantity, options = {}) => {
+    const { 
+      selectedColor = '', 
+      ...otherSpecs 
+    } = options;
+
     const token = getToken();
     if (!token) {
+      return false;
+    }
+
+    if (!store || !store._id) {
+      console.error('Store information not available');
       return false;
     }
 
@@ -223,16 +333,45 @@ export const CartProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+      const requestBody = { 
+        quantity: newQuantity,
+        storeId: store._id
+      };
+
+      // إضافة المواصفات المختارة إذا تم تمريرها
+      const selectedSpecifications = formatSpecifications(otherSpecs);
+      if (selectedSpecifications.length > 0) {
+        requestBody.selectedSpecifications = selectedSpecifications;
+      }
+
+      // إضافة الألوان المختارة إذا تم تمريرها
+      if (selectedColor) {
+        requestBody.selectedColors = [selectedColor];
+      }
+
+      console.log('Updating cart quantity - Request details:', {
+        url: `${API_BASE_URL}/cart/${productId}?storeId=${store._id}`,
+        method: 'PUT',
+        storeId: store._id,
+        productId: productId,
+        requestBody: requestBody
+      });
+
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}?storeId=${store._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': getBearerToken(),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ quantity: newQuantity }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
+
+      console.log('Updating cart quantity - Response:', {
+        status: response.status,
+        data: data
+      });
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -255,7 +394,7 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchCart]);
+  }, [fetchCart, store]);
 
   // مسح الكارت بالكامل
   const clearCart = useCallback(async () => {
@@ -264,11 +403,22 @@ export const CartProvider = ({ children }) => {
       return false;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      return false;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/cart`, {
+      console.log('Clearing cart - Request details:', {
+        url: `${API_BASE_URL}/cart?storeId=${store._id}`,
+        method: 'DELETE',
+        storeId: store._id
+      });
+
+      const response = await fetch(`${API_BASE_URL}/cart?storeId=${store._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': getBearerToken(),
@@ -277,6 +427,11 @@ export const CartProvider = ({ children }) => {
       });
 
       const data = await response.json();
+
+      console.log('Clearing cart - Response:', {
+        status: response.status,
+        data: data
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -296,7 +451,7 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [store]);
 
   // Get cart totals
   const getCartTotals = () => {
@@ -330,25 +485,27 @@ export const CartProvider = ({ children }) => {
         return matchesProduct;
       }
       
+      // التحقق من الألوان
+      if (selectedColor) {
+        const hasColor = item.selectedColors && item.selectedColors.includes(selectedColor);
+        if (!hasColor) return false;
+      }
+      
       // التحقق من المواصفات
-      if (!item.variant) return false;
-      
-      const variantParts = item.variant.split('|');
-      const variantSpecs = {};
-      
-      variantParts.forEach(part => {
-        const [specName, specValue] = part.split(':');
-        if (specName && specValue) {
-          variantSpecs[specName] = specValue;
+      if (Object.keys(otherSpecs).length > 0) {
+        if (!item.selectedSpecifications || item.selectedSpecifications.length === 0) {
+          return false;
         }
-      });
-      
-      // التحقق من اللون
-      if (selectedColor && variantSpecs.Color !== selectedColor) return false;
-      
-      // التحقق من باقي المواصفات (بما في ذلك الحجم)
-      for (const [specName, specValue] of Object.entries(otherSpecs)) {
-        if (specValue && variantSpecs[specName] !== specValue) return false;
+        
+        // التحقق من كل مواصفة
+        for (const [specName, specData] of Object.entries(otherSpecs)) {
+          // إذا كان specData كائن يحتوي على valueId
+          const valueId = typeof specData === 'object' && specData.valueId ? specData.valueId : specData;
+          const hasSpec = item.selectedSpecifications.some(spec => 
+            spec.specificationId === specName && spec.valueId === valueId
+          );
+          if (!hasSpec) return false;
+        }
       }
       
       return matchesProduct;
@@ -365,25 +522,27 @@ export const CartProvider = ({ children }) => {
         return matchesProduct;
       }
       
+      // التحقق من الألوان
+      if (selectedColor) {
+        const hasColor = item.selectedColors && item.selectedColors.includes(selectedColor);
+        if (!hasColor) return false;
+      }
+      
       // التحقق من المواصفات
-      if (!item.variant) return false;
-      
-      const variantParts = item.variant.split('|');
-      const variantSpecs = {};
-      
-      variantParts.forEach(part => {
-        const [specName, specValue] = part.split(':');
-        if (specName && specValue) {
-          variantSpecs[specName] = specValue;
+      if (Object.keys(otherSpecs).length > 0) {
+        if (!item.selectedSpecifications || item.selectedSpecifications.length === 0) {
+          return false;
         }
-      });
-      
-      // التحقق من اللون
-      if (selectedColor && variantSpecs.Color !== selectedColor) return false;
-      
-      // التحقق من باقي المواصفات (بما في ذلك الحجم)
-      for (const [specName, specValue] of Object.entries(otherSpecs)) {
-        if (specValue && variantSpecs[specName] !== specValue) return false;
+        
+        // التحقق من كل مواصفة
+        for (const [specName, specData] of Object.entries(otherSpecs)) {
+          // إذا كان specData كائن يحتوي على valueId
+          const valueId = typeof specData === 'object' && specData.valueId ? specData.valueId : specData;
+          const hasSpec = item.selectedSpecifications.some(spec => 
+            spec.specificationId === specName && spec.valueId === valueId
+          );
+          if (!hasSpec) return false;
+        }
       }
       
       return matchesProduct;
@@ -411,7 +570,7 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={value}>
       {children}
-      <Toast 
+      <Toast
         isVisible={toast.isVisible}
         message={toast.message}
         type={toast.type}

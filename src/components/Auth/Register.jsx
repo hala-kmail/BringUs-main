@@ -5,12 +5,17 @@ import './Auth.css';
 import { validateRequired, validatePhone, validateEmail, validateMinLength, validateMatch } from '../../utils/validation';
 import { useCreateUser } from '../../hooks/useCreateUser';
 import { useCheckEmail } from '../../hooks/useCheckEmail';
+import { useDeliveryMethods } from '../../hooks/useDeliveryMethods';
+import { useAppData } from '../../contexts/AppDataContext';
 
 const Register = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { createUser, loading, error, reset } = useCreateUser();
   const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();
+  const { store } = useAppData();
+  const { deliveryMethods, loading: deliveryMethodsLoading } = useDeliveryMethods(store?._id);
+  
   //---------------------form fields-------------------------------
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -18,7 +23,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [area, setArea] = useState('');
+  const [deliveryMethodId, setDeliveryMethodId] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [zipCode, setZipCode] = useState('');
@@ -27,11 +32,7 @@ const Register = () => {
   const [formErrors, setFormErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
   const currentLang = localStorage.getItem('i18nextLng');
-  const deliveryAreas = [
-    {id: 1, value: 'الضفة', label: currentLang === 'ar' ? 'الضفة (20₪)' : 'West Bank (20₪)', price: 20 },
-    {id: 2, value: 'الداخل', label: currentLang === 'ar' ? 'الداخل (70₪)' : 'the occupied interior (70₪)', price: 70 },
-    {id: 3, value: 'القدس', label: currentLang === 'ar' ? 'القدس (30₪)' : 'Jerusalem (30₪)', price: 30 },
-  ];
+  
 
   const validateForm = useCallback(() => {
     const errors = {};
@@ -71,8 +72,8 @@ const Register = () => {
       errors.phone = t('auth.register.validation.phone_invalid');
     }
     
-    // التحقق من المنطقة
-    errors.area = validateRequired(area, t('auth.register.validation.area_required'));
+    // التحقق من منطقة التوصيل
+    errors.deliveryMethodId = validateRequired(deliveryMethodId, currentLang === 'ar' ? 'يرجى اختيار منطقة التوصيل' : 'Please select a delivery area');
     
     // التحقق من المدينة
     errors.city = validateRequired(city, t('auth.register.validation.city_required'));
@@ -90,7 +91,7 @@ const Register = () => {
     
     setFormErrors(errors);
     return Object.values(errors).every((err) => !err) && !emailExists;
-  }, [firstName, lastName, email, password, confirmPassword, phone, area, city, address, country, zipCode, emailExists, t]);
+  }, [firstName, lastName, email, password, confirmPassword, phone, deliveryMethodId, city, address, country, zipCode, emailExists, t, currentLang]);
 
   // التحقق من صحة البيانات أثناء الكتابة
   useEffect(() => {
@@ -124,7 +125,7 @@ const Register = () => {
       localStorage.setItem('register_firstName', firstName);
       localStorage.setItem('register_lastName', lastName);
       localStorage.setItem('register_phone', phone);
-      localStorage.setItem('register_area', area);
+      localStorage.setItem('register_area', deliveryMethodId);
       localStorage.setItem('register_city', city);
       localStorage.setItem('register_address', address);
       localStorage.setItem('register_zipCode', zipCode);
@@ -192,20 +193,24 @@ const Register = () => {
 
           {/* معلومات العنوان */}
           <div className="form-group">
-            <label htmlFor="deliveryArea">{t('checkout.delivery_area')} <span className='required'>*</span></label>
+            <label htmlFor="deliveryMethodId">{t('checkout.delivery_area')} <span className='required'>*</span></label>
             <select 
-              id="deliveryArea" 
-              name="deliveryArea" 
-              value={area} 
-              onChange={e => setArea(e.target.value)}
+              id="deliveryMethodId" 
+              name="deliveryMethodId" 
+              value={deliveryMethodId} 
+              onChange={e => setDeliveryMethodId(e.target.value)}
               className="form-input"
+              disabled={deliveryMethodsLoading}
             >
-              <option value="">{t('auth.register.select_area')}</option>
-              {deliveryAreas.map(area => (
-                <option key={area.id} value={area.id}>{area.label}</option>
+              <option value="">{deliveryMethodsLoading ? (currentLang === 'ar' ? 'جاري التحميل...' : 'Loading...') : (currentLang === 'ar' ? 'اختر منطقة التوصيل' : 'Select delivery area')}</option>
+              {deliveryMethods.map(method => (
+                <option key={method._id} value={method._id}>
+                  {currentLang === 'ar' ? method.locationAr : method.locationEn} - {method.price} ILS
+                  {method.estimatedDays && ` (${method.estimatedDays} ${currentLang === 'ar' ? 'يوم' : 'day'}${method.estimatedDays > 1 ? (currentLang === 'ar' ? 's' : 's') : ''})`}
+                </option>
               ))}
             </select>
-            {formErrors.area && <span className="error-message">{formErrors.area}</span>}
+            {formErrors.deliveryMethodId && <span className="error-message">{formErrors.deliveryMethodId}</span>}
           </div>
           <div className="form-group">
             <label className="form-label">{t('auth.register.country')} <span className='required'>*</span></label>

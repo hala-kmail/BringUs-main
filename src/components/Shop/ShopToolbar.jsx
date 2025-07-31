@@ -25,6 +25,12 @@ const ShopToolbar = ({
 }) => {
   const { t } = useTranslation();
   const sortOpts = sortOptions || defaultSortOptions.map(opt => ({ value: opt.value, label: opt.label[currentLang] }));
+  
+  // التأكد من وجود filters
+  if (!filters) {
+    return null;
+  }
+  
   return (
     <div className="shop-toolbar desktop-only">
      
@@ -32,7 +38,7 @@ const ShopToolbar = ({
         <div className="sort-controls">
           <label>{currentLang === 'ar' ? 'ترتيب' : 'Sorting'}:</label>
           <select 
-            value={filters.sortBy}
+            value={filters.sortBy || 'default'}
             onChange={(e) => handleSortChange(e.target.value)}
             className="sort-select"
           >

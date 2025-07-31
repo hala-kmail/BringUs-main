@@ -8,6 +8,7 @@ import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import useProducts from '../../hooks/useProducts';
+import useCategories from '../../hooks/useCategories';
 import { useAppData } from '../../contexts/AppDataContext';
 import './AlmostFinishedSale.css';
 
@@ -18,6 +19,7 @@ const AlmostFinishedSale = () => {
   const navigate = useNavigate();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [almostFinishedProducts, setAlmostFinishedProducts] = useState([]);
+  const { categories } = useCategories();
 
   // Use dynamic data hooks
   const { products, loading: productsLoading, error: productsError } = useProducts();
@@ -153,6 +155,7 @@ const AlmostFinishedSale = () => {
                       handleAddToCart={handleAddToCart}
                       getFeatureById={getFeatureById}
                       getCategoryById={getCategoryById}
+                      categories={categories}
                     />
                   ))}
                 </div>

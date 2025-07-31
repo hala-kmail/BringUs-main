@@ -48,24 +48,42 @@ const ProductOptions = ({
   console.log('organizedSpecs:', organizedSpecs);
 
   // إدارة اختيار المواصفات (حجم، طول، ...)
-  // سنستخدم selectedSpecs ككائن: {title: value}
+  // سنستخدم selectedSpecs ككائن: {specificationId: {valueId, valueAr, valueEn, titleAr, titleEn}}
   React.useEffect(() => {
     // تعيين القيم الافتراضية عند تحميل المنتج
     if (organizedSpecs.length > 0) {
       const initial = {};
       organizedSpecs.forEach(group => {
-        if (group.values.length > 0) {
-          initial[group.title] = group.values[0].value;
+        if (group.values.length > 0 && group.meta) {
+          const firstValue = group.values[0];
+          initial[group.meta._id] = {
+            valueId: firstValue._id, // استخدام _id من API
+            valueAr: firstValue.valueAr || firstValue.value,
+            valueEn: firstValue.valueEn || firstValue.value,
+            titleAr: group.meta?.titleAr || group.title,
+            titleEn: group.meta?.titleEn || group.title
+          };
         }
       });
       setSelectedSpecs(initial);
     }
   }, [product._id, organizedSpecs, setSelectedSpecs]);
 
-  const handleSpecSelect = (title, value) => {
-    setSelectedSpecs(prev => ({ ...prev, [title]: value }));
-    // إذا كان العنوان هو الحجم، حدث selectedSize القديم
-    // if (title === 'الحجم' || title === 'Size') setSelectedSize(value); // Removed
+  const handleSpecSelect = (title, value, specificationId, valueId) => {
+    // البحث عن المواصفة في organizedSpecs للحصول على الترجمات
+    const specGroup = organizedSpecs.find(group => group.meta._id === specificationId);
+    const specValue = specGroup?.values.find(spec => spec._id === valueId);
+    
+    setSelectedSpecs(prev => ({ 
+      ...prev, 
+      [specificationId]: {
+        valueId: valueId, // هذا هو _id من API
+        valueAr: specValue?.valueAr || value,
+        valueEn: specValue?.valueEn || value,
+        titleAr: specGroup?.meta?.titleAr || title,
+        titleEn: specGroup?.meta?.titleEn || title
+      }
+    }));
   };
 
   return (
@@ -109,11 +127,12 @@ const ProductOptions = ({
             <div className="specification-options">
               {group.values.map((spec) => {
                 const value = currentLang === 'ar' ? (spec.valueAr || spec.value) : (spec.valueEn || spec.value);
+                const isSelected = selectedSpecs[group.meta._id]?.valueId === spec._id;
                 return (
                   <button
-                    key={spec.valueId}
-                    className={`specification-option${selectedSpecs[group.title] === spec.value ? ' selected' : ''}`}
-                    onClick={() => handleSpecSelect(group.title, spec.value)}
+                    key={spec._id}
+                    className={`specification-option${isSelected ? ' selected' : ''}`}
+                    onClick={() => handleSpecSelect(group.title, spec.value, group.meta._id, spec._id)}
                     type="button"
                   >
                     {value}

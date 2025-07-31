@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useWishlistAPI from '../../hooks/useWishlistAPI';
 import { useCart } from '../../contexts/CartContext';
 import useProducts from '../../hooks/useProducts';
+import useCategories from '../../hooks/useCategories';
 import ProductCard from '../ProductCard/ProductCard';
 import './RelatedProducts.css';
 
@@ -14,6 +15,7 @@ const RelatedProducts = ({ currentProduct, categoryId }) => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const { categories } = useCategories();
 
   const { 
     products,
@@ -34,7 +36,7 @@ const RelatedProducts = ({ currentProduct, categoryId }) => {
         product._id !== currentProduct._id && 
         product.category === categoryId
       );
-      
+
       // Sort by relevance (same category first, then by creation date)
       const sorted = filtered.sort((a, b) => {
         if (a.category === categoryId && b.category !== categoryId) return -1;
@@ -114,6 +116,7 @@ const RelatedProducts = ({ currentProduct, categoryId }) => {
               }}
               getFeatureById={() => null} // No longer needed
               getCategoryById={() => null} // Prevent category link from showing
+              categories={categories}
             />
           ))}
         </div>

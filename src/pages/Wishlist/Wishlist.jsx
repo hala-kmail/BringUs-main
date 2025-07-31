@@ -9,6 +9,7 @@ import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import BottomNavigation from '../../components/BottomNavigation/BottomNavigation';
 import ProductCard from '../../components/ProductCard/ProductCard';
+import useCategories from '../../hooks/useCategories';
 import { getFeatureById, getCategoryById } from '../../data/index';
 import './Wishlist.css';
 
@@ -17,6 +18,7 @@ const Wishlist = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const currentLang = i18n.language;
+  const { categories } = useCategories();
 
   // استخدام Context بدلاً من API hook
   const {
@@ -158,17 +160,18 @@ const Wishlist = () => {
               {wishlistItems.map((wishlistItem) => {
                 const product = getProductData(wishlistItem);
                 return (
-                  <ProductCard
+                <ProductCard
                     key={wishlistItem._id || wishlistItem.productId}
                     product={product}
-                    currentLang={currentLang}
-                    t={t}
-                    isInWishlist={() => true} // Always true since item is in wishlist
-                    handleWishlistToggle={handleWishlistToggle}
-                    handleAddToCart={handleAddToCart}
-                    getFeatureById={getFeatureById}
-                    getCategoryById={getCategoryById}
-                  />
+                  currentLang={currentLang}
+                  t={t}
+                  isInWishlist={() => true} // Always true since item is in wishlist
+                  handleWishlistToggle={handleWishlistToggle}
+                  handleAddToCart={handleAddToCart}
+                  getFeatureById={getFeatureById}
+                  getCategoryById={getCategoryById}
+                  categories={categories}
+                />
                 );
               })}
             </div>

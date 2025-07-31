@@ -8,7 +8,7 @@ import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import './Cart.css';
-import namer from 'color-namer';
+
 import { getEffectivePrice, isDiscountActive } from '../../utils/productUtils';
 
 const Cart = () => {
@@ -83,6 +83,8 @@ const Cart = () => {
     setIsMobileSearchOpen(false);
   };
 
+
+
   function getColorKey(hex) {
     if (!hex) return '';
     if (hex === 'mixed') return 'mixed';
@@ -95,42 +97,153 @@ const Cart = () => {
 
   function getColorLabel(hex, t) {
     if (!hex) return '';
-    try {
-      const colorName = namer(hex);
-      return colorName.ntc[0]?.name || hex;
-    } catch (e) {
-      return hex;
+    
+    // خريطة الألوان العربية
+    const colorMapAr = {
+      '#ef4444': 'أحمر',
+      '#22c55e': 'أخضر',
+      '#3b82f6': 'أزرق',
+      '#f59e0b': 'برتقالي',
+      '#8b5cf6': 'بنفسجي',
+      '#ec4899': 'وردي',
+      '#f97316': 'برتقالي',
+      '#eab308': 'أصفر',
+      '#84cc16': 'أخضر فاتح',
+      '#06b6d4': 'أزرق فاتح',
+      '#6366f1': 'أزرق غامق',
+      '#a855f7': 'بنفسجي فاتح',
+      '#f43f5e': 'أحمر فاتح',
+      '#14b8a6': 'أزرق مخضر',
+      '#fbbf24': 'أصفر ذهبي',
+      '#fb7185': 'وردي فاتح',
+      '#34d399': 'أخضر فاتح',
+      '#60a5fa': 'أزرق فاتح',
+      '#a78bfa': 'بنفسجي فاتح',
+      '#f472b6': 'وردي فاتح',
+      '#000000': 'أسود',
+      '#ffffff': 'أبيض',
+      '#fff': 'أبيض',
+      '#000': 'أسود',
+      '#ffd700': 'ذهبي',
+      '#a0522d': 'بني',
+      '#eab308': 'أصفر ذهبي',
+      '#9b9b9b': 'رمادي',
+      '#808080': 'رمادي غامق',
+      '#c0c0c0': 'فضي',
+      '#ff69b4': 'وردي غامق',
+      '#ff1493': 'وردي عميق',
+      '#dc143c': 'أحمر غامق',
+      '#b22222': 'أحمر ناري',
+      '#228b22': 'أخضر غابة',
+      '#32cd32': 'أخضر ليموني',
+      '#4169e1': 'أزرق ملكي',
+      '#1e90ff': 'أزرق دودجر',
+      '#9370db': 'بنفسجي متوسط',
+      '#8a2be2': 'بنفسجي أزرق',
+      '#ff4500': 'برتقالي أحمر',
+      '#ff8c00': 'برتقالي غامق',
+      '#ffd700': 'ذهبي',
+      '#daa520': 'ذهبي غامق',
+      '#cd853f': 'بني فاتح',
+      '#8b4513': 'بني غامق'
+    };
+    
+    // خريطة الألوان الإنجليزية
+    const colorMapEn = {
+      '#ef4444': 'Red',
+      '#22c55e': 'Green',
+      '#3b82f6': 'Blue',
+      '#f59e0b': 'Orange',
+      '#8b5cf6': 'Purple',
+      '#ec4899': 'Pink',
+      '#f97316': 'Orange',
+      '#eab308': 'Yellow',
+      '#84cc16': 'Light Green',
+      '#06b6d4': 'Light Blue',
+      '#6366f1': 'Dark Blue',
+      '#a855f7': 'Light Purple',
+      '#f43f5e': 'Light Red',
+      '#14b8a6': 'Teal',
+      '#fbbf24': 'Golden Yellow',
+      '#fb7185': 'Light Pink',
+      '#34d399': 'Light Green',
+      '#60a5fa': 'Light Blue',
+      '#a78bfa': 'Light Purple',
+      '#f472b6': 'Light Pink',
+      '#000000': 'Black',
+      '#ffffff': 'White',
+      '#fff': 'White',
+      '#000': 'Black',
+      '#ffd700': 'Gold',
+      '#a0522d': 'Brown',
+      '#eab308': 'Golden Yellow',
+      '#9b9b9b': 'Gray',
+      '#808080': 'Dark Gray',
+      '#c0c0c0': 'Silver',
+      '#ff69b4': 'Hot Pink',
+      '#ff1493': 'Deep Pink',
+      '#dc143c': 'Crimson',
+      '#b22222': 'Fire Brick',
+      '#228b22': 'Forest Green',
+      '#32cd32': 'Lime Green',
+      '#4169e1': 'Royal Blue',
+      '#1e90ff': 'Dodger Blue',
+      '#9370db': 'Medium Purple',
+      '#8a2be2': 'Blue Violet',
+      '#ff4500': 'Orange Red',
+      '#ff8c00': 'Dark Orange',
+      '#ffd700': 'Gold',
+      '#daa520': 'Golden Rod',
+      '#cd853f': 'Sandy Brown',
+      '#8b4513': 'Saddle Brown'
+    };
+    
+    if (currentLang === 'ar') {
+      return colorMapAr[hex] || hex;
+    } else {
+      return colorMapEn[hex] || hex;
     }
   }
 
-  // دالة لتحليل variant string وعرض المواصفات بشكل منظم
-  const parseVariantSpecs = (variant) => {
-    if (!variant) return [];
-    
+  // دالة لتحليل المواصفات المختارة وعرضها بشكل منظم
+  const parseSelectedSpecs = (selectedSpecifications, selectedColors) => {
     const specs = [];
-    const parts = variant.split('|');
     
-    parts.forEach(part => {
-      const [specName, specValue] = part.split(':');
-      if (specName && specValue) {
-        // تحسين عرض اللون
-        if (specName === 'Color') {
-          specs.push({
-            name: currentLang === 'ar' ? 'اللون' : 'Color',
-            value: getColorLabel(specValue, t)
-          });
-        }
-        // باقي المواصفات (بما في ذلك الحجم)
-        else {
-          specs.push({
-            name: specName,
-            value: specValue
-          });
-        }
-      }
-    });
+    // إضافة الألوان كأشياء منفصلة
+    const colors = [];
+    if (selectedColors && selectedColors.length > 0) {
+      selectedColors.forEach(color => {
+        colors.push({
+          type: 'color',
+          value: color,
+          name: currentLang === 'ar' ? 'اللون' : 'Color'
+        });
+      });
+    }
     
-    return specs;
+    // إضافة المواصفات الأخرى
+    const specifications = [];
+    if (selectedSpecifications && selectedSpecifications.length > 0) {
+      selectedSpecifications.forEach(spec => {
+        // تحديد العنوان حسب اللغة
+        let specTitle = currentLang === 'ar' ? (spec.titleAr || spec.specificationId) : (spec.titleEn || spec.specificationId);
+        
+        // تحديد القيمة حسب اللغة
+        let specValue = currentLang === 'ar' ? (spec.valueAr || spec.valueId) : (spec.valueEn || spec.valueId);
+        
+        specifications.push({
+          type: 'specification',
+          name: specTitle,
+          value: specValue
+        });
+      });
+    }
+    
+    return {
+      colors,
+      specifications,
+      all: [...colors, ...specifications]
+    };
   };
 
   return (
@@ -222,8 +335,8 @@ const Cart = () => {
           /* Cart Items */
           <div className="cart-items-container">
             <div className="cart-items">
-              {cartItems.map((item) => (
-                <div key={item.cartItemId} className="cart-item">
+              {cartItems.map((item, index) => (
+                <div key={`cart-item-${index}`} className="cart-item">
                   {/* Desktop Layout (hidden on mobile) */}
                   <div 
                     className="cart-item-image"
@@ -241,19 +354,58 @@ const Cart = () => {
                       {currentLang === 'ar' ? item.product?.nameAr : item.product?.nameEn}
                     </h3>
                     {/* Selected Options */}
-                    {item.variant && (
+                    {(item.selectedSpecifications || item.selectedColors) && (
                       <div className="cart-item-options">
-                        {parseVariantSpecs(item.variant).map((spec, index) => (
-                          <span key={index} className="cart-option">
-                            {spec.name}: {spec.value}
-                          </span>
-                        ))}
+                        {(() => {
+                          const specsData = parseSelectedSpecs(item.selectedSpecifications, item.selectedColors);
+                          
+                          return (
+                            <>
+                              {/* الألوان المرئية */}
+                              {specsData.colors.map((color, index) => (
+                                <div key={`color-${index}`} className="cart-color-option">
+                                  <span className="color-swatch" 
+                                    style={{
+                                      background: color.value.includes('+') 
+                                        ? `linear-gradient(45deg, ${color.value.split('+').join(', ')})`
+                                        : color.value,
+                                      border: color.value === '#fff' || color.value === '#ffffff' 
+                                        ? '1px solid #ccc' 
+                                        : undefined
+                                    }}
+                                    title={getColorLabel(color.value, t)}
+                                  ></span>
+                                </div>
+                              ))}
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
                     {/* Price */}
                     <div className="cart-item-price">
                       <span className="current-price">₪{item.priceAtAdd.toFixed(2)}</span>
                     </div>
+                    {/* Product Specifications - Simple Text */}
+                    {(item.selectedSpecifications || item.selectedColors) && (
+                      <div className="cart-item-specifications">
+                        {(() => {
+                          const specsData = parseSelectedSpecs(item.selectedSpecifications, item.selectedColors);
+                          
+                          return (
+                            <>
+                              {/* عرض جميع المواصفات كنص بسيط */}
+                              {specsData.specifications.map((spec, index) => (
+                                <div key={`spec-${index}`} className="cart-spec-text">
+                                  {spec.name}: {spec.value}
+                                </div>
+                              ))}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+                    
                   </div>
                   {/* Quantity Controls */}
                   <div className="cart-item-quantity desktop-only">
@@ -317,13 +469,52 @@ const Cart = () => {
                           {currentLang === 'ar' ? item.product?.nameAr : item.product?.nameEn}
                         </h3>
                         {/* Selected Options */}
-                        {item.variant && (
+                        {(item.selectedSpecifications || item.selectedColors) && (
                           <div className="cart-item-options">
-                            {parseVariantSpecs(item.variant).map((spec, index) => (
-                              <span key={index} className="cart-option">
-                                {spec.name}: {spec.value}
-                              </span>
-                            ))}
+                            {(() => {
+                              const specsData = parseSelectedSpecs(item.selectedSpecifications, item.selectedColors);
+                              
+                              return (
+                                <>
+                                  {/* الألوان المرئية */}
+                                  {specsData.colors.map((color, index) => (
+                                    <div key={`color-${index}`} className="cart-color-option">
+                                      <span className="color-swatch" 
+                                        style={{
+                                          background: color.value.includes('+') 
+                                            ? `linear-gradient(45deg, ${color.value.split('+').join(', ')})`
+                                            : color.value,
+                                          border: color.value === '#fff' || color.value === '#ffffff' 
+                                            ? '1px solid #ccc' 
+                                            : undefined
+                                        }}
+                                        title={getColorLabel(color.value, t)}
+                                      ></span>
+                                    </div>
+                                  ))}
+                                </>
+                              );
+                            })()}
+                          </div>
+                        )}
+                        
+                        {/* Product Specifications - Simple Text */}
+                        {(item.selectedSpecifications || item.selectedColors) && (
+                          <div className="cart-item-specifications">
+                            {(() => {
+                              const specsData = parseSelectedSpecs(item.selectedSpecifications, item.selectedColors);
+                              
+                              return (
+                                <>
+                                  {/* عرض جميع المواصفات كنص بسيط */}
+                                  {specsData.specifications.map((spec, index) => (
+                                    <div key={`spec-${index}`} className="cart-spec-text">
+                                      {spec.name}: {spec.value}
+                                    </div>
+                                  ))}
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
                         {/* Price */}

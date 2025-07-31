@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 // Remove static imports
 // import { getColorLabel, getAllColors } from '../../data/index';
@@ -37,8 +37,8 @@ const SidebarFilters = ({
   //-----------------------------------State for expanded categories (to show subcategories)------------------------------------------------  
   const [expandedCategories, setExpandedCategories] = useState({});
   
-  //-----------------------------------Filter counts state------------------------------------------------  
-  const [filterCounts, setFilterCounts] = useState({});
+  //-----------------------------------getAllColors from props or create fallback------------------------------------------------  
+  const colors = getAllColors ? getAllColors() : [];
 
   //-----------------------------------toggleSectionCollapse------------------------------------------------  
   const toggleSectionCollapse = (sectionName) => {
@@ -56,9 +56,6 @@ const SidebarFilters = ({
     }));
   };
 
-  //-----------------------------------getAllColors from props or create fallback------------------------------------------------  
-  const colors = getAllColors ? getAllColors() : [];
-
   //-----------------------------------statusOptions------------------------------------------------  
   const statusOptions = [];
   if (allProducts.some(p => (p.stock || 0) > 0)) statusOptions.push('in_stock');
@@ -67,7 +64,7 @@ const SidebarFilters = ({
   if (allProducts.some(p => p.isFeatured || p.isBestSeller)) statusOptions.push('featured');
 
   //-----------------------------------getAllDescendantCategoryIds------------------------------------------------
-  const getAllDescendantCategoryIds = (categoryId) => {
+  const getAllDescendantCategoryIds = useCallback((categoryId) => {
     if (!getSubCategories) return [categoryId];
     
     const directSubs = getSubCategories(categoryId);
@@ -76,19 +73,19 @@ const SidebarFilters = ({
       ids = ids.concat(getAllDescendantCategoryIds(sub._id || sub.id));
     });
     return ids;
-  };
+  }, [getSubCategories]);
 
   //-----------------------------------getCategoryProductCount------------------------------------------------
-  const getCategoryProductCount = (categoryId) => {
+  const getCategoryProductCount = useCallback((categoryId) => {
     const allIds = getAllDescendantCategoryIds(categoryId);
     return allProducts.filter(product => {
       const productCategoryId = product.category?._id || product.categoryId;
       return allIds.includes(productCategoryId);
     }).length;
-  };
+  }, [getAllDescendantCategoryIds, allProducts]);
 
   //-----------------------------------getColorCount------------------------------------------------  
-  const getColorCount = (color) => {
+  const getColorCount = useCallback((color) => {
     let baseProducts = [...allProducts];
     
     // Apply price filter
@@ -128,7 +125,7 @@ const SidebarFilters = ({
       const productColors = getSimpleColorsFromColorsField(product);
       return productColors.includes(color);
     }).length;
-  };
+  }, [filters, allProducts, getAllDescendantCategoryIds]);
 
   // Helper function to get product colors
   const getProductColors = (product) => {
@@ -137,7 +134,7 @@ const SidebarFilters = ({
   };
 
   //-----------------------------------getCategoryCount------------------------------------------------  
-  const getCategoryCount = (categoryId) => {
+  const getCategoryCount = useCallback((categoryId) => {
     let baseProducts = [...allProducts];
     
     // Apply price filter
@@ -174,7 +171,7 @@ const SidebarFilters = ({
       const productCategoryId = product.category?._id || product.categoryId;
       return getAllDescendantCategoryIds(categoryId).includes(productCategoryId);
     }).length;
-  };
+  }, [filters, allProducts, getProductColors, getAllDescendantCategoryIds]);
 
   //-----------------------------------updateFilterCounts------------------------------------------------
   const updateFilterCounts = (filteredProducts) => {
@@ -216,8 +213,13 @@ const SidebarFilters = ({
       }
       counts[`status_${status}`] = count;
     });
-    setFilterCounts(counts);
+    return counts;
   };
+
+  // Calculate filter counts using useMemo to avoid infinite loops
+  const filterCounts = useMemo(() => {
+    return updateFilterCounts(filteredProducts);
+  }, [getColorCount, getCategoryCount, filteredProducts, categories, colors, statusOptions]);
 
   //-----------------------------------getColorKey------------------------------------------------
   function getColorKey(hex) {
@@ -336,9 +338,9 @@ const SidebarFilters = ({
   };
 
   // Update filter counts when filters change
-  useEffect(() => {
-    updateFilterCounts(filteredProducts); // Pass the actual filtered products
-  }, [filters, filteredProducts, allProducts, categories]);
+  // useEffect(() => {
+  //   updateFilterCounts(filteredProducts); // Pass the actual filtered products
+  // }, [filteredProducts, allProducts, categories]);
 
   return (
     <aside className={`shop-sidebar`}>

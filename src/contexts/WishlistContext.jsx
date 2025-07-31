@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getToken, getBearerToken } from '../utils/tokenManager';
+import { useAppData } from './AppDataContext';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -19,6 +20,7 @@ export const WishlistProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { i18n } = useTranslation();
+  const { store } = useAppData();
   const currentLang = i18n.language;
 
   // جلب الأمنيات من API
@@ -29,11 +31,24 @@ export const WishlistProvider = ({ children }) => {
       return;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      console.log('Store object:', store);
+      setWishlistItems([]);
+      return;
+    }
+
+    console.log('Store information available:', {
+      storeId: store._id,
+      storeName: store.nameAr || store.nameEn,
+      storeSlug: store.slug
+    });
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/likes`, {
+      const response = await fetch(`${API_BASE_URL}/likes?storeId=${store._id}`, {
         method: 'GET',
         headers: {
           'Authorization': getBearerToken(),
@@ -63,7 +78,7 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [store]);
 
   // إضافة منتج للأمنيات
   const addToWishlist = useCallback(async (product) => {
@@ -72,20 +87,51 @@ export const WishlistProvider = ({ children }) => {
       return false;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      console.log('Store object:', store);
+      return false;
+    }
+
+    console.log('Store information available:', {
+      storeId: store._id,
+      storeName: store.nameAr || store.nameEn,
+      storeSlug: store.slug
+    });
+
     setLoading(true);
     setError(null);
 
     try {
       const productId = product._id || product.id;
-      const response = await fetch(`${API_BASE_URL}/likes/${productId}`, {
+      const requestBody = {
+        storeId: store._id
+      };
+
+      console.log('Adding to wishlist - Request details:', {
+        url: `${API_BASE_URL}/likes/${productId}`,
+        method: 'POST',
+        storeId: store._id,
+        productId: productId,
+        requestBody: requestBody
+      });
+
+      // محاولة إرسال storeId في query parameters بدلاً من body
+      const response = await fetch(`${API_BASE_URL}/likes/${productId}?storeId=${store._id}`, {
         method: 'POST',
         headers: {
           'Authorization': getBearerToken(),
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
+
+      console.log('Adding to wishlist - Response:', {
+        status: response.status,
+        data: data
+      });
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -118,7 +164,7 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [store]);
 
   // إزالة منتج من الأمنيات
   const removeFromWishlist = useCallback(async (productId) => {
@@ -127,19 +173,50 @@ export const WishlistProvider = ({ children }) => {
       return false;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      console.log('Store object:', store);
+      return false;
+    }
+
+    console.log('Store information available:', {
+      storeId: store._id,
+      storeName: store.nameAr || store.nameEn,
+      storeSlug: store.slug
+    });
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/likes/${productId}`, {
+      const requestBody = {
+        storeId: store._id
+      };
+
+      console.log('Removing from wishlist - Request details:', {
+        url: `${API_BASE_URL}/likes/${productId}?storeId=${store._id}`,
+        method: 'DELETE',
+        storeId: store._id,
+        productId: productId,
+        requestBody: requestBody
+      });
+
+      // محاولة إرسال storeId في query parameters بدلاً من body
+      const response = await fetch(`${API_BASE_URL}/likes/${productId}?storeId=${store._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': getBearerToken(),
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
+
+      console.log('Removing from wishlist - Response:', {
+        status: response.status,
+        data: data
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -164,7 +241,7 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [store]);
 
   // التحقق من وجود منتج في الأمنيات
   const isInWishlist = useCallback((productId) => {
@@ -199,6 +276,18 @@ export const WishlistProvider = ({ children }) => {
       return false;
     }
 
+    if (!store || !store._id) {
+      console.error('Store information not available');
+      console.log('Store object:', store);
+      return false;
+    }
+
+    console.log('Store information available:', {
+      storeId: store._id,
+      storeName: store.nameAr || store.nameEn,
+      storeSlug: store.slug
+    });
+
     setLoading(true);
     setError(null);
 
@@ -207,12 +296,17 @@ export const WishlistProvider = ({ children }) => {
       const currentWishlistItems = [...wishlistItems];
       const deletePromises = currentWishlistItems.map(item => {
         const productId = item.productId || item._id;
-        return fetch(`${API_BASE_URL}/likes/${productId}`, {
+        const requestBody = {
+          storeId: store._id
+        };
+        
+        return fetch(`${API_BASE_URL}/likes/${productId}?storeId=${store._id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': getBearerToken(),
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify(requestBody),
         });
       });
 
@@ -229,15 +323,15 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [wishlistItems, store]);
 
   // جلب الأمنيات عند تحميل الصفحة
   useEffect(() => {
     const token = getToken();
-    if (token) {
+    if (token && store && store._id) {
       fetchWishlist();
     }
-  }, []);
+  }, [fetchWishlist, store]);
 
   const value = {
     wishlistItems,

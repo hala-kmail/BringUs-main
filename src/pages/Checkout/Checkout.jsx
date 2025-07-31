@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
+import { useAppData } from '../../contexts/AppDataContext';
+import { useDeliveryMethods } from '../../hooks/useDeliveryMethods';
 import palpayImg from '../../assets/PALPAY.png';
 import paypalImg from '../../assets/Paypal_2014_logo.png';
 import reflectImg from '../../assets/reflect.jpg';
@@ -11,7 +13,6 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import './Checkout.css';
 import namer from 'color-namer';
-import deliveryAreas, { getShippingPriceByAreaId, getAreaLabelById, getDefaultAreaIdFromLocalStorage } from '../../data/deliveryAreas';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import CheckoutForm from '../../components/Checkout/CheckoutForm';
 import OrderSummary from '../../components/Checkout/OrderSummary';
@@ -21,11 +22,34 @@ const Checkout = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { cartItems, getCartTotals, clearCart } = useCart();
+  const { store } = useAppData();
   const currentLang = i18n.language;
+  
+  // جلب طرق التوصيل من API
+  const { deliveryMethods, loading: deliveryMethodsLoading, error: deliveryMethodsError } = useDeliveryMethods(store?._id);
+  
+  // دالة للحصول على عنوان المتجر
+  const getStoreAddress = () => {
+    if (!store?.contact?.address) return null;
+    
+    const address = store.contact.address;
+    const addressParts = [
+      address.street,
+      address.city,
+      address.state,
+      address.zipCode,
+      address.country
+    ].filter(part => part && part.trim() !== '');
+    
+    return addressParts.join(', ');
+  };
+  
+  const storeAddress = getStoreAddress();
+  
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    deliveryArea: getDefaultAreaIdFromLocalStorage(),
+    deliveryMethodId: '',
     address: '',
     city: '',
     district: '',
@@ -34,9 +58,7 @@ const Checkout = () => {
   const [formErrors, setFormErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const cartTotals = getCartTotals();
-  const defaultAreaId = localStorage.getItem('register_area') || 1; 
   const [deliveryMethod, setDeliveryMethod] = useState('delivery'); 
-  const [deliveryArea, setDeliveryArea] = useState(defaultAreaId);
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
@@ -78,23 +100,39 @@ const Checkout = () => {
       navigate('/cart');
     }
   }, [cartItems.length, navigate]);
-  //-----------------------------------useEffect------------------------------------------------  
-useEffect(() => {
-  setFormData(prev => ({
-    ...prev,
-    fullName: localStorage.getItem('register_name') || '',
-    phone: localStorage.getItem('register_phone') || '',
-    address: localStorage.getItem('register_address') || '',
-    district: localStorage.getItem('register_district') || '',
-    city: localStorage.getItem('register_city') || prev.city || '',
-    deliveryArea: localStorage.getItem('register_area') || '1',
-
-  }));
   
-}, []);
+  //-----------------------------------useEffect------------------------------------------------  
+  useEffect(() => {
+    // محاولة تحميل معلومات المستخدم من localStorage
+    try {
+      const userInfo = localStorage.getItem('userInfo');
+      if (userInfo) {
+        const user = JSON.parse(userInfo);
+        console.log('Loading user data for checkout:', user);
+        
+        // الحصول على العنوان الافتراضي
+        const defaultAddress = user.addresses?.find(addr => addr.isDefault) || user.addresses?.[0];
+        
+        setFormData(prev => ({
+          ...prev,
+          fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+          phone: user.phone || '',
+          address: defaultAddress?.street || '',
+          district: defaultAddress?.state || '',
+          city: defaultAddress?.city || '',
+          deliveryMethodId: user.deliveryMethodId || '', // Assuming userInfo includes deliveryMethodId
+        }));
+      }
+      // إذا لم تكن هناك معلومات مستخدم، تبقى الحقول فارغة
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      // في حالة الخطأ، تبقى الحقول فارغة
+    }
+  }, []);
 //-----------------------------------handleInputChange------------------------------------------------  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
     if (name === 'phone') {
       const { sanitized } = validateAndSanitizePhone(value, t('checkout.validation.phone_invalid'));
       setFormData(prev => ({
@@ -109,10 +147,12 @@ useEffect(() => {
       }
       return;
     }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -126,19 +166,23 @@ useEffect(() => {
     errors.fullName = validateRequired(formData.fullName, t('checkout.validation.name_required'));
     const phoneResult = validateAndSanitizePhone(formData.phone, t('checkout.validation.phone_invalid'));
     errors.phone = phoneResult.error || validateRequired(formData.phone, t('checkout.validation.phone_required'));
+    
     if (deliveryMethod === 'delivery') {
+      // التحقق من اختيار طريقة التوصيل
+      errors.deliveryMethodId = validateRequired(formData.deliveryMethodId, currentLang === 'ar' ? 'يرجى اختيار منطقة التوصيل' : 'Please select a delivery area');
       errors.address = validateRequired(formData.address, t('checkout.validation.address_required'));
       errors.city = validateRequired(formData.city, t('checkout.validation.city_required'));
     }
+    
     setFormErrors(errors);
     return Object.values(errors).every((err) => !err);
   };
   //-----------------------------------getShippingPrice------------------------------------------------  
   const getShippingPrice = () => {
     if (deliveryMethod === 'store') return 0;
-    const areaId = Number(formData.deliveryArea) || 1;
-    const price = getShippingPriceByAreaId(areaId);
-    return price !== undefined ? price : 20;
+    
+    const selectedMethod = deliveryMethods.find(dm => dm._id === formData.deliveryMethodId);
+    return selectedMethod?.price || 0;
   };
   //-----------------------------------handlePlaceOrderClick------------------------------------------------  
 const handlePlaceOrderClick = (e) => {
@@ -164,8 +208,8 @@ const handleSendWhatsApp = () => {
     items: cartItems,
     totals: { ...cartTotals, shipping: getShippingPrice(), total: cartTotals.subtotal + getShippingPrice() },
     orderDate: new Date().toISOString(),
-    deliveryMethod,
-    deliveryArea: deliveryMethod === 'delivery' ? deliveryArea : null,
+    deliveryMethod: deliveryMethod,
+    deliveryMethodId: formData.deliveryMethodId,
     paymentMethod: selectedPaymentMethod?.key
   };
   handleWhatsAppOrder(orderData);
@@ -194,19 +238,33 @@ const handleSendWhatsApp = () => {
     
     message += ` *المنتجات:*\n`;
     items.forEach((item, index) => {
-      message += `${index + 1}. ${item.name[currentLang]} x${item.quantity}`;
-      if (item.selectedColor) message += ` (${getColorLabel(item.selectedColor, t)})`;
+      // الحصول على اسم المنتج بشكل آمن
+      const getItemName = (item, lang) => {
+        if (item.name && item.name[lang]) {
+          return item.name[lang];
+        }
+        if (item.product && item.product.name && item.product.name[lang]) {
+          return item.product.name[lang];
+        }
+        return item.name || item.product?.name || 'N/A';
+      };
+      
+      message += `${index + 1}. ${getItemName(item, currentLang)} x${item.quantity}`;
+      if (item.selectedColor) {
+        // تحويل كود اللون إلى اسم مقروء
+        const colorName = getColorLabel(item.selectedColor, t);
+        message += ` (${currentLang === 'ar' ? 'اللون' : 'Color'}: ${colorName})`;
+      }
       // إضافة جميع المواصفات الأخرى
-      if (item.variant) {
-        const variantParts = item.variant.split('|');
-        variantParts.forEach(part => {
-          const [specName, specValue] = part.split(':');
-          if (specName && specValue && specName !== 'Color') {
-            message += ` (${specName}: ${specValue})`;
-          }
+      if (item.selectedSpecifications && item.selectedSpecifications.length > 0) {
+        item.selectedSpecifications.forEach(spec => {
+          const specTitle = currentLang === 'ar' ? (spec.titleAr || spec.title || spec.specificationId) : (spec.titleEn || spec.title || spec.specificationId);
+          const specValue = currentLang === 'ar' ? (spec.valueAr || spec.value || spec.valueId) : (spec.valueEn || spec.value || spec.valueId);
+          message += ` (${specTitle}: ${specValue})`;
         });
       }
-      message += ` - ₪${(item.finalPrice * item.quantity).toFixed(2)}\n`;
+      const itemPrice = item.finalPrice || item.priceAtAdd || 0;
+      message += ` - ₪${(itemPrice * item.quantity).toFixed(2)}\n`;
     });
     
     message += `\n *الفاتورة:*\n`;
@@ -262,7 +320,8 @@ const handleSendWhatsApp = () => {
               setPrivacyChecked={setPrivacyChecked}
               showPrivacyPopup={showPrivacyPopup}
               setShowPrivacyPopup={setShowPrivacyPopup}
-              deliveryAreas={deliveryAreas}
+              deliveryMethods={deliveryMethods}
+              storeAddress={storeAddress}
             />
           </div>
 

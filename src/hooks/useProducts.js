@@ -213,7 +213,10 @@ const useProducts = () => {
 
   // تحديد ما إذا كان المنتج في المخزون
   const isInStock = useCallback((product) => {
-    return product && product.stockStatus === 'in_stock' && product.availableQuantity > 0;
+    // السماح بإضافة المنتجات التي أوشكت على الانتهاء (منخفضة المخزون)
+    return product && 
+           (product.stockStatus === 'in_stock' || product.stockStatus === 'low_stock') && 
+           product.availableQuantity > 0;
   }, []);
 
   // حساب السعر النهائي مع الخصم
