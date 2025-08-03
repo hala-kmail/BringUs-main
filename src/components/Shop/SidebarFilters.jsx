@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-// Remove static imports
-// import { getColorLabel, getAllColors } from '../../data/index';
-// import { categories, features, getSubCategories, getMainCategories, allProducts } from '../../data/index';
 import namer from 'color-namer';
 import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 
@@ -77,55 +74,15 @@ const SidebarFilters = ({
 
   //-----------------------------------getCategoryProductCount------------------------------------------------
   const getCategoryProductCount = useCallback((categoryId) => {
-    const allIds = getAllDescendantCategoryIds(categoryId);
-    return allProducts.filter(product => {
-      const productCategoryId = product.category?._id || product.categoryId;
-      return allIds.includes(productCategoryId);
-    }).length;
-  }, [getAllDescendantCategoryIds, allProducts]);
+    // Return 0 to hide counts - show only names
+    return 0;
+  }, []);
 
   //-----------------------------------getColorCount------------------------------------------------  
   const getColorCount = useCallback((color) => {
-    let baseProducts = [...allProducts];
-    
-    // Apply price filter
-    baseProducts = baseProducts.filter(product => {
-      const price = product.salePrice || product.originalPrice || product.price || 0;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    // Apply category filter (شامل كل الفروع المتداخلة)
-    if (filters.categories.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        const productCategoryId = product.category?._id || product.categoryId;
-        return filters.categories.some(catId => {
-          return getAllDescendantCategoryIds(catId).includes(productCategoryId);
-        });
-      });
-    }
-
-    // Apply status filter
-    if (filters.status.includes('on_sale')) {
-      baseProducts = baseProducts.filter(product => {
-        return product.salePrice && product.salePrice < (product.originalPrice || product.price);
-      });
-    }
-    if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => (product.stock || 0) > 0);
-    }
-    if (filters.status.includes('new')) {
-      baseProducts = baseProducts.filter(product => product.isNew === true);
-    }
-    if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isFeatured === true || product.isBestSeller === true);
-    }
-
-    return baseProducts.filter(product => {
-      // التحقق من الألوان الفردية والمخلوطة (كلها سترينغ)
-      const productColors = getSimpleColorsFromColorsField(product);
-      return productColors.includes(color);
-    }).length;
-  }, [filters, allProducts, getAllDescendantCategoryIds]);
+    // Return 0 to hide counts - show only names
+    return 0;
+  }, []);
 
   // Helper function to get product colors
   const getProductColors = (product) => {
@@ -135,83 +92,30 @@ const SidebarFilters = ({
 
   //-----------------------------------getCategoryCount------------------------------------------------  
   const getCategoryCount = useCallback((categoryId) => {
-    let baseProducts = [...allProducts];
-    
-    // Apply price filter
-    baseProducts = baseProducts.filter(product => {
-      const price = product.salePrice || product.originalPrice || product.price || 0;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    // Apply color filter
-    if (filters.colors.length > 0) {
-      baseProducts = baseProducts.filter(product => {
-        const productColors = getProductColors(product);
-        return productColors.some(color => filters.colors.includes(color));
-      });
-    }
-
-    // Apply status filter
-    if (filters.status.includes('on_sale')) {
-      baseProducts = baseProducts.filter(product => {
-        return product.salePrice && product.salePrice < (product.originalPrice || product.price);
-      });
-    }
-    if (filters.status.includes('in_stock')) {
-      baseProducts = baseProducts.filter(product => (product.stock || 0) > 0);
-    }
-    if (filters.status.includes('new')) {
-      baseProducts = baseProducts.filter(product => product.isNew === true);
-    }
-    if (filters.status.includes('featured')) {
-      baseProducts = baseProducts.filter(product => product.isFeatured === true || product.isBestSeller === true);
-    }
-
-    return baseProducts.filter(product => {
-      const productCategoryId = product.category?._id || product.categoryId;
-      return getAllDescendantCategoryIds(categoryId).includes(productCategoryId);
-    }).length;
-  }, [filters, allProducts, getProductColors, getAllDescendantCategoryIds]);
+    // Return 0 to hide counts - show only names
+    return 0;
+  }, []);
 
   //-----------------------------------updateFilterCounts------------------------------------------------
   const updateFilterCounts = (filteredProducts) => {
     const counts = {};
     
-    // Count categories
+    // Count categories - return 0 to hide counts
     if (categories && categories.length > 0) {
       categories.forEach(category => {
         const categoryId = category._id || category.id;
-        counts[`category_${categoryId}`] = getCategoryCount(categoryId);
+        counts[`category_${categoryId}`] = 0;
       });
     }
     
-    // Count colors
+    // Count colors - return 0 to hide counts
     colors.forEach(color => {
-      counts[`color_${color}`] = getColorCount(color);
+      counts[`color_${color}`] = 0;
     });
     
-    // Count status options بناءً على المنتجات المعروضة فقط
+    // Count status options - return 0 to hide counts
     statusOptions.forEach(status => {
-      let count = 0;
-      switch (status) {
-        case 'in_stock':
-          count = filteredProducts.filter(p => (p.stock || 0) > 0).length;
-          break;
-        case 'on_sale':
-          count = filteredProducts.filter(p => {
-            return p.salePrice && p.salePrice < (p.originalPrice || p.price);
-          }).length;
-          break;
-        case 'new':
-          count = filteredProducts.filter(p => p.isNew).length;
-          break;
-        case 'featured':
-          count = filteredProducts.filter(p => p.isFeatured || p.isBestSeller).length;
-          break;
-        default:
-          count = 0;
-      }
-      counts[`status_${status}`] = count;
+      counts[`status_${status}`] = 0;
     });
     return counts;
   };
@@ -297,12 +201,11 @@ const SidebarFilters = ({
       <div className={`category-tree level-${level}`}>
         {cats.map(category => {
           const categoryId = category._id || category.id;
-          const count = getCategoryProductCount(categoryId);
           const hasChildren = getSubCategories(categoryId).length > 0;
           const isExpanded = expandedCategories[categoryId];
           const categoryName = category[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || category.name || 'Unknown Category';
           
-          return count > 0 ? (
+          return (
             <div key={categoryId} className="category-filter-item" style={{ marginLeft: level * 16 }}>
               <div className="category-main-filter">
                 <label className="filter-checkbox">
@@ -312,7 +215,7 @@ const SidebarFilters = ({
                     onChange={e => onFilterChange('categories', categoryId, e.target.checked)}
                   />
                   <span className="checkmark"></span>
-                  {categoryName} ({count})
+                  {categoryName}
                 </label>
                 {hasChildren && (
                   <button
@@ -331,7 +234,7 @@ const SidebarFilters = ({
                 </div>
               )}
             </div>
-          ) : null;
+          );
         })}
       </div>
     );
@@ -344,6 +247,112 @@ const SidebarFilters = ({
 
   return (
     <aside className={`shop-sidebar`}>
+      <style jsx>{`
+        .color-filters {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          padding: 8px ;
+        }
+        
+        .color-filter-circle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          position: relative;
+        }
+        
+        .color-filter-circle input[type="checkbox"] {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+        }
+        
+        .color-swatch-circle {
+          width: 25px;
+          height: 24px;
+          border-radius: 50%;
+          border: 2px solid #e5e7eb;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          position: relative;
+        }
+        
+        .color-filter-circle input[type="checkbox"]:checked + .color-swatch-circle {
+          border-color: var(--primary-color);
+          transform: scale(1.1);
+          box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.2);
+        }
+        
+        .color-filter-circle:hover .color-swatch-circle {
+          transform: scale(1.05);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .color-filter-circle input[type="checkbox"]:checked + .color-swatch-circle::after {
+          content: '✓';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
+          font-size: 14px;
+          font-weight: bold;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .active-filter-color {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          cursor: pointer;
+          background: none !important;
+          border: none !important;
+          padding: 0 !important;
+          margin: 2px;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          font-size: inherit !important;
+          color: inherit !important;
+        }
+        
+        .active-color-circle {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: 2px solid #e5e7eb;
+          display: inline-block;
+          position: relative;
+        }
+        
+        .active-filter-color .filter-close {
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          width: 16px;
+          height: 16px;
+          background: #ef4444;
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          font-weight: bold;
+          cursor: pointer;
+          z-index: 1;
+          border: 1px solid white;
+        }
+        
+        .active-filter-color:hover .filter-close {
+          background: #dc2626;
+        }
+      `}</style>
+      
       <div className="shop-sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3>{currentLang === 'ar' ? 'الفلاتر' : 'Filters'}</h3>
         {(filters.categories.length > 0  || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice || searchQuery) && (
@@ -401,11 +410,15 @@ const SidebarFilters = ({
           {filters.colors.map(color => (
             <span 
               key={color} 
-              className="active-filter"
+              className="active-filter active-filter-color"
               onClick={() => removeFilter('colors', color)}
-              title={`Remove ${color} filter`}
+              title={`Remove ${getColorLabelLocal(color, t)} filter`}
             >
-              <span className="filter-close">✕</span> {getColorLabelLocal(color, t)}
+              <span 
+                className="active-color-circle" 
+                style={getColorStyle(color)}
+              ></span>
+              <span className="filter-close">✕</span>
             </span>
           ))}
           {filters.status.map(status => (
@@ -499,23 +512,20 @@ const SidebarFilters = ({
           </div>
           {!collapsedSections.colors && (
             <div className="color-filters">
-              {colors.map(color => {
-                const colorCount = filterCounts[`color_${color}`] || 0;
-                return colorCount > 0 ? (
-                  <label key={color} className="color-filter">
-                    <input
-                      type="checkbox"
-                      checked={filters.colors.includes(color)}
-                      onChange={(e) => onFilterChange('colors', color, e.target.checked)}
-                    />
-                    <span 
-                      className={`color-swatch color-${getColorKey(color)}`} 
-                      style={getColorStyle(color)}
-                    ></span>
-                    {getColorLabelLocal(color, t)} ({colorCount})
-                  </label>
-                ) : null;
-              })}
+              {colors.map(color => (
+                <label key={color} className="color-filter-circle">
+                  <input
+                    type="checkbox"
+                    checked={filters.colors.includes(color)}
+                    onChange={(e) => onFilterChange('colors', color, e.target.checked)}
+                  />
+                  <span 
+                    className={`color-swatch-circle color-${getColorKey(color)}`} 
+                    style={getColorStyle(color)}
+                    title={getColorLabelLocal(color, t)}
+                  ></span>
+                </label>
+              ))}
             </div>
           )}
         </div>
@@ -532,20 +542,17 @@ const SidebarFilters = ({
           </div>
           {!collapsedSections.status && (
             <div className="status-filters">
-              {statusOptions.map(status => {
-                const statusCount = filterCounts[`status_${status}`] || 0;
-                return statusCount > 0 ? (
-                  <label key={status} className="filter-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={filters.status.includes(status)}
-                      onChange={(e) => onFilterChange('status', status, e.target.checked)}
-                    />
-                    <span className="checkmark"></span>
-                    {t(`filters.status_names.${status}`)} ({statusCount})
-                  </label>
-                ) : null;
-              })}
+              {statusOptions.map(status => (
+                <label key={status} className="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={filters.status.includes(status)}
+                    onChange={(e) => onFilterChange('status', status, e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  {t(`filters.status_names.${status}`)}
+                </label>
+              ))}
             </div>
           )}
         </div>

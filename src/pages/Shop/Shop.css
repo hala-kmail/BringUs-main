@@ -491,7 +491,7 @@
 /* Color Filters */
 .shop-sidebar .color-filters {
   display: flex;
-  flex-direction: column;
+ 
   gap: 8px;
 }
 

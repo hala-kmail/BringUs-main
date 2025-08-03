@@ -1,22 +1,76 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  categories, 
-  subcategories, 
-  features,
-  getProductsByCategory,
-  getSubcategoriesByCategory,
-  filterProducts,
-  getEnrichedProducts 
-} from '../../data/index.js';
+import { useAppData } from '../../contexts/AppDataContext';
+import { useCategories } from '../../hooks/useCategories';
+import { useProducts } from '../../hooks/useProducts';
 import './ProductCatalog.css';
 
 const ProductCatalog = ({ language = 'en' }) => {
+  const { features } = useAppData();
+  const { categories } = useCategories();
+  const { products } = useProducts();
+  
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [showBestSellers, setShowBestSellers] = useState(false);
   const [showNewProducts, setShowNewProducts] = useState(false);
   const [showDiscounted, setShowDiscounted] = useState(false);
+
+  // Helper functions to work with real API data
+  const getProductsByCategory = (categoryId) => {
+    return products?.filter(product => product.categoryId === categoryId) || [];
+  };
+
+  const getSubcategoriesByCategory = (categoryId) => {
+    return categories?.filter(cat => cat.parentCategoryId === categoryId) || [];
+  };
+
+  const filterProducts = (filters = {}) => {
+    return products?.filter(product => {
+      // Category filter
+      if (filters.categoryIds && filters.categoryIds.length > 0) {
+        if (!filters.categoryIds.includes(product.categoryId)) return false;
+      }
+
+      // Feature filter
+      if (filters.featureIds && filters.featureIds.length > 0) {
+        if (!filters.featureIds.includes(product.featureId)) return false;
+      }
+
+      // Best seller filter
+      if (filters.isBestSeller !== undefined) {
+        if (product.isBestSeller !== filters.isBestSeller) return false;
+      }
+
+      // New product filter
+      if (filters.isNew !== undefined) {
+        if (product.isNew !== filters.isNew) return false;
+      }
+
+      // Discount filter
+      if (filters.hasDiscount !== undefined) {
+        const hasDiscount = product.discountPercentage !== null;
+        if (hasDiscount !== filters.hasDiscount) return false;
+      }
+
+      return true;
+    }) || [];
+  };
+
+  const getEnrichedProducts = (productsToEnrich) => {
+    return productsToEnrich.map(product => {
+      const category = categories?.find(c => c._id === product.categoryId);
+      const feature = features?.find(f => f._id === product.featureId);
+
+      return {
+        ...product,
+        categoryName: category ? (category.nameAr || category.nameEn) : null,
+        featureName: feature ? (feature.nameAr || feature.nameEn) : null,
+        displayName: product.nameAr || product.nameEn,
+        displayDescription: product.descriptionAr || product.descriptionEn
+      };
+    });
+  };
 
   // Get filtered products based on current selections
   const filteredProducts = useMemo(() => {
@@ -35,20 +89,20 @@ const ProductCatalog = ({ language = 'en' }) => {
   // Get enriched products with category/subcategory/feature names
   const enrichedProducts = useMemo(() => {
     return filteredProducts.map(product => {
-      const category = categories.find(c => c.id === product.categoryId);
-      const subcategory = subcategories.find(s => s.id === product.subcategoryId);
-      const feature = features.find(f => f.id === product.featureId);
+      const category = categories?.find(c => c._id === product.categoryId);
+      const subcategory = categories?.find(s => s._id === product.subcategoryId); // Assuming subcategoryId is also a category ID or needs a different lookup
+      const feature = features?.find(f => f._id === product.featureId);
 
       return {
         ...product,
-        categoryName: category?.name[language],
-        subcategoryName: subcategory?.name[language],
-        featureName: feature?.name[language],
-        displayName: product.name[language],
-        displayDescription: product.description[language]
+        categoryName: category ? (category.nameAr || category.nameEn) : null,
+        subcategoryName: subcategory ? (subcategory.nameAr || subcategory.nameEn) : null,
+        featureName: feature ? (feature.nameAr || feature.nameEn) : null,
+        displayName: product.nameAr || product.nameEn,
+        displayDescription: product.descriptionAr || product.descriptionEn
       };
     });
-  }, [filteredProducts, language]);
+  }, [filteredProducts, categories, features]);
 
   // Get subcategories for selected category
   const availableSubcategories = useMemo(() => {
@@ -91,9 +145,9 @@ const ProductCatalog = ({ language = 'en' }) => {
             <option value="">
               {language === 'en' ? 'All Categories' : 'جميع الفئات'}
             </option>
-            {categories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name[language]}
+            {categories?.map(category => (
+              <option key={category._id} value={category._id}>
+                {category.nameAr || category.nameEn}
               </option>
             ))}
           </select>
@@ -110,8 +164,8 @@ const ProductCatalog = ({ language = 'en' }) => {
                 {language === 'en' ? 'All Subcategories' : 'جميع الفئات الفرعية'}
               </option>
               {availableSubcategories.map(subcategory => (
-                <option key={subcategory.id} value={subcategory.id}>
-                  {subcategory.name[language]}
+                <option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.nameAr || subcategory.nameEn}
                 </option>
               ))}
             </select>
@@ -127,9 +181,9 @@ const ProductCatalog = ({ language = 'en' }) => {
             <option value="">
               {language === 'en' ? 'All Features' : 'جميع الميزات'}
             </option>
-            {features.map(feature => (
-              <option key={feature.id} value={feature.id}>
-                {feature.name[language]}
+            {features?.map(feature => (
+              <option key={feature._id} value={feature._id}>
+                {feature.nameAr || feature.nameEn}
               </option>
             ))}
           </select>
@@ -172,7 +226,7 @@ const ProductCatalog = ({ language = 'en' }) => {
 
       <div className="products-grid">
         {enrichedProducts.map(product => (
-          <div key={product.id} className="product-card">
+          <div key={product._id} className="product-card">
             <div className="product-image">
               <img src={product.image} alt={product.displayName} />
               <div className="product-badges">

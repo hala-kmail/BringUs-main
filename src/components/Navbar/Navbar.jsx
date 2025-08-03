@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
-import { allProducts } from '../../data/products';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
 import { getEffectivePrice } from '../../utils/productUtils';

@@ -1,16 +1,15 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
-import TopBar from '../../components/TopBar/TopBar';
+import { useAppData } from '../../contexts/AppDataContext';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import BottomNavigation from '../../components/BottomNavigation/BottomNavigation';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import useCategories from '../../hooks/useCategories';
-import { getFeatureById, getCategoryById } from '../../data/index';
 import './Wishlist.css';
 
 const Wishlist = () => {
@@ -19,6 +18,7 @@ const Wishlist = () => {
   const navigate = useNavigate();
   const currentLang = i18n.language;
   const { categories } = useCategories();
+  const { features } = useAppData();
 
   // استخدام Context بدلاً من API hook
   const {
@@ -29,6 +29,15 @@ const Wishlist = () => {
     clearWishlist,
     toggleWishlist
   } = useWishlist();
+
+  // Helper functions to work with real API data
+  const getFeatureById = (featureId) => {
+    return features?.find(feature => feature._id === featureId) || null;
+  };
+
+  const getCategoryById = (categoryId) => {
+    return categories?.find(category => category._id === categoryId) || null;
+  };
 
   const handleMobileSearchToggle = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);

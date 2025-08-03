@@ -1549,8 +1549,8 @@ width: 100%;}
 }
 
 .color-option.selected {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #3b82f6;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--primary-color);
 }
 
 /* Mixed Color Options */

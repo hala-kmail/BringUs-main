@@ -2,16 +2,35 @@
 
 export const getSimpleColorsFromColorsField = (product) => {
   const colorsArray = product?.colors || [];
+  console.log('Raw colors array:', colorsArray);
+  
   if (!Array.isArray(colorsArray) || colorsArray.length === 0) return [];
 
-  return colorsArray.map(colorItem => {
+  const extractedColors = [];
+  
+  colorsArray.forEach(colorItem => {
+    console.log('Processing color item:', colorItem);
     if (Array.isArray(colorItem)) {
-      return colorItem.join('+'); // دمج الألوان المزدوجة
+      // إذا كان اللون مصفوفة (ألوان متعددة)
+      if (colorItem.length === 1) {
+        // لون واحد فقط
+        extractedColors.push(colorItem[0]);
+        console.log('Added single color:', colorItem[0]);
+      } else if (colorItem.length > 1) {
+        // ألوان متعددة - دمجها
+        const mixedColor = colorItem.join('+');
+        extractedColors.push(mixedColor);
+        console.log('Added mixed color:', mixedColor);
+      }
     } else if (typeof colorItem === 'string') {
-      return colorItem;
+      // لون واحد كسطر نصي
+      extractedColors.push(colorItem);
+      console.log('Added string color:', colorItem);
     }
-    return null;
-  }).filter(Boolean); // حذف null
+  });
+  
+  console.log('Final extracted colors:', extractedColors);
+  return extractedColors.filter(Boolean); // حذف القيم الفارغة
 };
 
 

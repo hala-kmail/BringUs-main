@@ -15,6 +15,7 @@ import ProductDetail from './pages/ProductDetail/ProductDetail';
 import Cart from './pages/Cart/Cart';
 import Checkout from './pages/Checkout/Checkout';
 import Wishlist from './pages/Wishlist/Wishlist';
+import Profile from './pages/Profile/Profile';
 import AlmostFinishedSale from './pages/AlmostFinishedSale/AlmostFinishedSale';
 import AnnouncementBar from './components/AnnouncementBar/AnnouncementBar';
 import BottomNavigation from './components/BottomNavigation/BottomNavigation';
@@ -45,6 +46,7 @@ const AppContent = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/almost-finished-sale" element={<AlmostFinishedSale />} />
         </Routes>
       </div>

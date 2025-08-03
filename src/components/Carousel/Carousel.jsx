@@ -10,9 +10,9 @@ const Carousel = () => {
   const { sliders, loading, error } = useStoreSliders();
 
   // Use API sliders if available, otherwise use fallback
-  // Filter only active sliders (include both sliders and videos)
+  // Filter only active sliders and exclude videos
   const slides = sliders && sliders.length > 0 
-    ? sliders.filter(slide => slide.isActive)
+    ? sliders.filter(slide => slide.isActive && slide.type !== 'video')
     : [];
 
   // Helper function to get slide data in the correct format
@@ -24,10 +24,7 @@ const Carousel = () => {
         image: slide.imageUrl || slide.thumbnailUrl,
         // title: slide.title || '',
         // description: slide.description || '',
-        link: slide.link || slide.url || slide.videoUrl || '#',
-        type: slide.type || 'slider',
-        videoUrl: slide.videoUrl || null,
-        youtubeId: slide.youtubeId || null
+        link: slide.link || slide.url || '#'
       };
     }
     // If it's already in the correct format (fallback slides)
@@ -113,25 +110,11 @@ const Carousel = () => {
             const slideData = getSlideData(slide);
             return (
               <div key={slideData.id} className="carousel-slide">
-                {slideData.type === 'video' ? (
-                  // Video slide
-                  <div className="slide-video">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${slideData.youtubeId}?autoplay=0&rel=0`}
-                      title={slideData.title}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                    <div className="slide-overlay"></div>
-                  </div>
-                ) : (
-                  // Image slide
-                  <a href={slideData.link} className="slide-image">
-                    <img src={slideData.image} alt={slideData.title} />
-                    <div className="slide-overlay"></div>
-                  </a>
-                )}
+                {/* Image slide only */}
+                <a href={slideData.link} className="slide-image">
+                  <img src={slideData.image} alt={slideData.title} />
+                  <div className="slide-overlay"></div>
+                </a>
                 <div className="slide-content">
                   {/* <h2 className="slide-title">{slideData.title}</h2> */}
                   {/* <p className="slide-subtitle">{slideData.description}</p> */}

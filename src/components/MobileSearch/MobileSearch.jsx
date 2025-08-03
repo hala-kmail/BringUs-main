@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { allProducts } from '../../data/index';
 import './MobileSearch.css';
 import { useAppData } from '../../contexts/AppDataContext';
 import useProducts from '../../hooks/useProducts';

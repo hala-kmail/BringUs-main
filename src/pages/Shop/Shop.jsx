@@ -6,8 +6,6 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import MobileFilters from '../../components/MobileFilters/MobileFilters';
-// Remove static imports
-// import { allProducts, categories, features, getSubCategories, getFeatureById, getCategoryById, getMainCategories, getMaxProductPrice  } from '../../data/index';
 import './Shop.css';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import SidebarFilters from '../../components/Shop/SidebarFilters';
@@ -35,7 +33,7 @@ const Shop = () => {
   // Use dynamic data hooks
   const { products, loading: productsLoading, error: productsError, searchProducts, fetchProductsByCategory } = useProducts();
   const { categories, getMainCategories, getSubCategories, loading: categoriesLoading } = useCategories();
-  const { store } = useAppData();
+  const { store, features } = useAppData();
 
   // Derived data
   const allProducts = products || [];
@@ -206,21 +204,34 @@ const Shop = () => {
   const applyFilters = async () => {
     let filtered = [...allProducts];
 
-    // If we have a search query, use API search results as base
+    // Apply search filter first (client-side search on all products)
     if (searchQuery.trim()) {
-      // API search is already performed in handleSearch
-      filtered = [...filteredProducts];
-    } else if (filters.categories.length > 0) {
-      // If category filter is applied, use API category results
-      await performCategoryFilter(filters.categories);
-      filtered = [...filteredProducts];
-    } else {
-      // Use all products as base
-      filtered = [...allProducts];
+      const searchTerm = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(product => {
+        const nameAr = (product.nameAr || '').toLowerCase();
+        const nameEn = (product.nameEn || '').toLowerCase();
+        const descriptionAr = (product.descriptionAr || '').toLowerCase();
+        const descriptionEn = (product.descriptionEn || '').toLowerCase();
+        const tags = (product.tags || []).map(tag => tag.toLowerCase());
+        
+        return nameAr.includes(searchTerm) || 
+               nameEn.includes(searchTerm) || 
+               descriptionAr.includes(searchTerm) || 
+               descriptionEn.includes(searchTerm) ||
+               tags.some(tag => tag.includes(searchTerm));
+      });
     }
 
-    // Apply client-side filters for remaining criteria
-    
+    // Apply category filter
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(product => {
+        const productCategoryId = product.category?._id || product.categoryId;
+        return filters.categories.some(catId => {
+          return getAllDescendantCategoryIds(catId).includes(productCategoryId);
+        });
+      });
+    }
+
     // Apply price filter
     filtered = filtered.filter(product => {
       const price = product.salePrice || product.originalPrice || product.price || 0;
@@ -229,10 +240,15 @@ const Shop = () => {
 
     // Apply color filter
     if (filters.colors.length > 0) {
+      console.log('Applying color filter:', filters.colors);
       filtered = filtered.filter(product => {
         const productColors = getProductColors(product);
-        return productColors.some(color => filters.colors.includes(color));
+        console.log(`Product ${product.nameAr || product.nameEn}:`, productColors);
+        const hasMatchingColor = productColors.some(color => filters.colors.includes(color));
+        console.log('Has matching color:', hasMatchingColor);
+        return hasMatchingColor;
       });
+      console.log('Products after color filter:', filtered.length);
     }
 
     // Apply status filters
@@ -309,20 +325,8 @@ const Shop = () => {
 
   // Helper function to get product colors
   const getProductColors = (product) => {
-    const colors = [];
-    
-    // إضافة الألوان الفردية
-    const individualColors = getSimpleColorsFromColorsField(product);
-    colors.push(...individualColors);
-    
-    // إضافة الألوان المدمجة
-    const simpleColors = getSimpleColorsFromColorsField(product);
-    simpleColors.forEach(colorGroup => {
-      const mixedColorKey = colorGroup.join('+');
-      colors.push(mixedColorKey);
-    });
-    
-    return colors;
+    // استخدم دالة getSimpleColorsFromColorsField من productUtils
+    return getSimpleColorsFromColorsField(product);
   };
 
 //----------------------------------getAllDescendantCategoryIds------------------------------------------------
@@ -352,11 +356,6 @@ const Shop = () => {
         ...prev,
         categories: newCategories
       }));
-      
-      // If categories changed and no search query, perform API category filter
-      if (!searchQuery.trim()) {
-        await performCategoryFilter(newCategories);
-      }
     } else if (filterType === 'priceRange') {
       // منع الأرقام السالبة وتصحيح القيم
       let min = Math.max(0, value.min);
@@ -366,7 +365,6 @@ const Shop = () => {
         max = min;
       }
       setFilters(prev => ({ ...prev, priceRange: { min, max } }));
-      return;
     } else if (checked !== null) {
       setFilters(prev => ({
         ...prev,
@@ -377,10 +375,13 @@ const Shop = () => {
     } else {
       setFilters(prev => ({ ...prev, [filterType]: value }));
     }
+    
+    // Apply all filters after any filter change
+    await applyFilters();
   };
 
 //----------------------------------clearFilters------------------------------------------------
-  const clearFilters = () => {
+  const clearFilters = async () => {
     setFilters({
       priceRange: { min: 0, max: getMaxProductPrice() },
       categories: [],
@@ -391,14 +392,20 @@ const Shop = () => {
       sortBy: 'newest'
     });
     setSearchQuery(''); // امسح نص البحث أيضاً
+    
+    // Apply filters after clearing
+    await applyFilters();
   };
 
 //----------------------------------removeFilter------------------------------------------------
-  const removeFilter = (filterType, value) => {
+  const removeFilter = async (filterType, value) => {
     setFilters(prev => ({
       ...prev,
       [filterType]: prev[filterType].filter(item => item !== value)
     }));
+    
+    // Apply filters after removing
+    await applyFilters();
   };
 
 //----------------------------------handleWishlistToggle------------------------------------------------
@@ -433,19 +440,16 @@ const Shop = () => {
         newParams.set('search', query.trim());
         return newParams;
       });
-      
-      // Perform API search
-      await performAPISearch(query);
     } else {
       setSearchParams(prev => {
         const newParams = new URLSearchParams(prev);
         newParams.delete('search');
         return newParams;
       });
-      
-      // Reset to all products
-      setFilteredProducts(allProducts);
     }
+    
+    // Apply all filters including search
+    await applyFilters();
   };
 
 //----------------------------------totalPages------------------------------------------------
@@ -498,8 +502,11 @@ const Shop = () => {
   };
 
 //----------------------------------handleSortChange------------------------------------------------
-  const handleSortChange = (newSortBy) => {
+  const handleSortChange = async (newSortBy) => {
     setFilters(prev => ({ ...prev, sortBy: newSortBy }));
+    
+    // Apply filters after changing sort
+    await applyFilters();
   };
 
 //----------------------------------useScrollToTopOnChange------------------------------------------------
@@ -510,20 +517,23 @@ const Shop = () => {
     const colorSet = new Set();
     allProducts.forEach(product => {
       const simpleColors = getSimpleColorsFromColorsField(product);
+      console.log(`Product ${product.nameAr || product.nameEn} colors:`, simpleColors);
       simpleColors.forEach(color => colorSet.add(color));
     });
-    return Array.from(colorSet);
+    const allColors = Array.from(colorSet);
+    console.log('All available colors:', allColors);
+    return allColors;
   }
 
-  // Helper functions for compatibility
+  // Helper functions to work with real API data
   const getFeatureById = (id) => {
-    // This can be implemented when features API is available
-    return { id, name: { ar: 'ميزة', en: 'Feature' } };
+    if (!features) return null;
+    return features.find(feature => (feature._id || feature.id) === id) || null;
   };
 
   const getCategoryById = (id) => {
     if (!categories) return null;
-    return categories.find(cat => (cat._id || cat.id) === id);
+    return categories.find(cat => (cat._id || cat.id) === id) || null;
   };
 
   // Loading state - include search loading

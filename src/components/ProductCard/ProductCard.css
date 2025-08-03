@@ -534,16 +534,16 @@ h3.product-top-name{
 
 /* View Details Button Styling */
 .view-details-btn {
-  background-color: #3b82f6 !important; /* أزرق بدلاً من الأخضر */
+  background-color: var(--primary-color) !important; /* أزرق بدلاً من الأخضر */
 }
 
 .view-details-btn:hover {
-  background-color: #2563eb !important;
+  background-color: var(--primary-color) !important;
   transform: translateY(-2px);
 }
 
 .view-details-btn:active {
-  background-color: #1d4ed8 !important;
+  background-color: var(--primary-color) !important;
   transform: translateY(0);
 }
 

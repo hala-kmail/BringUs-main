@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { getToken, getBearerToken } from '../utils/tokenManager';
 import { useAppData } from './AppDataContext';
 import Toast from '../components/Toast/Toast';
-import { getDefaultAreaIdFromLocalStorage, getShippingPriceByAreaId } from '../data/deliveryAreas';
 import { getEffectivePrice } from '../utils/productUtils';
 
 const API_BASE_URL = 'http://localhost:5001/api';
@@ -26,6 +25,17 @@ export const CartProvider = ({ children }) => {
   const { i18n } = useTranslation();
   const { store } = useAppData();
   const currentLang = i18n.language;
+
+  // Helper functions to work with real API data
+  const getDefaultAreaIdFromLocalStorage = () => {
+    return localStorage.getItem('defaultAreaId') || null;
+  };
+
+  const getShippingPriceByAreaId = (areaId) => {
+    // This should be implemented based on your delivery areas API
+    // For now, return a default value
+    return 0;
+  };
 
   // جلب الكارت من API
   const fetchCart = useCallback(async () => {
