@@ -376,6 +376,10 @@
     position: sticky;
     top: 0px;
   }
+  .category-container{
+    max-width: 95% !important;
+    padding: 2rem !important;
+  }
 
   .navbar-container {
     padding: 0 1rem;

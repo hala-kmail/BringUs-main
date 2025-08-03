@@ -1030,13 +1030,6 @@
   transform: scale(1.1);
 }
 
-/* Product Info */
-.product-info {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
 
 .product-link {
   text-decoration: none;
@@ -1428,9 +1421,7 @@
 
  
 
-  .product-info {
-    padding: 0.5rem;
-  }
+  
 
   .product-name {
     font-size: 0.7rem;
@@ -1632,9 +1623,7 @@
     height: 135px;
   }
   
-  .product-info {
-    padding: 0.4rem;
-  }
+ 
   
   .product-name {
     font-size: 0.65rem;

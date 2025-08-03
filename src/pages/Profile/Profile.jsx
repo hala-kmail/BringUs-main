@@ -140,13 +140,31 @@ const Profile = () => {
             </div>
 
             <div className="profile-stats">
-              <div className="stat-item">
+              <div 
+                className="stat-item clickable" 
+                onClick={() => navigate('/wishlist')}
+                title={t('profile.click_to_view') + ' ' + t('profile.wishlist')}
+              >
                 <div className="stat-number">{wishlistItems.length}</div>
-                <div className="stat-label">{t('profile.wishlist_items')}</div>
+                <div className="stat-label">
+                  {t('profile.wishlist_items')}
+                  {/* <svg className="stat-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg> */}
+                </div>
               </div>
-              <div className="stat-item">
+              <div 
+                className="stat-item clickable" 
+                onClick={() => navigate('/cart')}
+                title={t('profile.click_to_view') + ' ' + t('profile.cart_items')}
+              >
                 <div className="stat-number">{cartItems.length}</div>
-                <div className="stat-label">{t('profile.cart_items')}</div>
+                <div className="stat-label">
+                  {t('profile.cart_items')}
+                  {/* <svg className="stat-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg> */}
+                </div>
               </div>
             </div>
 
@@ -169,7 +187,7 @@ const Profile = () => {
                 </svg>
                 {t('profile.orders')}
               </button>
-              <button 
+              {/* <button 
                 className={`nav-item ${activeTab === 'wishlist' ? 'active' : ''}`}
                 onClick={() => setActiveTab('wishlist')}
               >
@@ -177,8 +195,8 @@ const Profile = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 {t('profile.wishlist')}
-              </button>
-              <button 
+              </button> */}
+              {/* <button 
                 className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('settings')}
               >
@@ -187,7 +205,7 @@ const Profile = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 {t('profile.settings')}
-              </button>
+              </button> */}
             </nav>
 
             <button className="logout-btn" onClick={handleLogout}>

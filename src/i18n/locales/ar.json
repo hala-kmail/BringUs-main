@@ -612,6 +612,7 @@
     "order_updates_desc": "إشعارات حول حالة طلباتك",
     "privacy": "الخصوصية",
     "profile_visibility": "رؤية الملف الشخصي",
-    "profile_visibility_desc": "السماح للآخرين برؤية ملفك الشخصي"
+    "profile_visibility_desc": "السماح للآخرين برؤية ملفك الشخصي",
+    "click_to_view": "انقر للعرض"
   }
 } 

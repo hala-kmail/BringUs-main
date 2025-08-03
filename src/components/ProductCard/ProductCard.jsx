@@ -319,14 +319,14 @@ const ProductCard = ({
               {currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock'}
             </span>
           )}
-          {(product.stockStatus === 'low_stock' || 
+          {/* {(product.stockStatus === 'low_stock' || 
             (product.availableQuantity && product.lowStockThreshold && 
              product.availableQuantity <= product.lowStockThreshold && 
              product.availableQuantity > 0)) && (
             <span className="product-badge low-stock-badge">
               {currentLang === 'ar' ? 'مخزون منخفض' : 'Low Stock'}
             </span>
-          )}
+          )} */}
         </div>
       </div>
 

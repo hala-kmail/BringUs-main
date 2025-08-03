@@ -186,9 +186,9 @@ const Footer = () => {
               {t('footer.terms', 'الشروط والأحكام')}
             </button></li>
             {/* <li><a href="/privacy">{t('footer.privacy', 'سياسة الخصوصية')}</a></li> */}
-            <li><a href="/help">{t('footer.help', 'مركز المساعدة')}</a></li>
+            {/* <li><a href="/help">{t('footer.help', 'مركز المساعدة')}</a></li>
             <li><a href="/about">{t('footer.about', 'عن المتجر')}</a></li>
-            <li><a href="/contact">{t('footer.contact', 'اتصل بنا')}</a></li>
+            <li><a href="/contact">{t('footer.contact', 'اتصل بنا')}</a></li> */}
           </ul>
         </div>
         {/* About */}

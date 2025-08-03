@@ -232,13 +232,7 @@
   left: 0.5rem;
 }
 
-/* Product Info */
-.product-info {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
+
 
 .product-name {
   font-size: 0.875rem;
@@ -356,9 +350,7 @@
     height: 120px;
   }
 
-  .product-info {
-    padding: 0.5rem;
-  }
+ 
 
   .product-name {
     font-size: 0.7rem;
@@ -426,9 +418,7 @@
     height: 135px;
   }
 
-  .product-info {
-    padding: 0.4rem;
-  }
+ 
 
   .product-name {
     font-size: 0.65rem;
@@ -472,9 +462,7 @@
     height: 90px;
   }
 
-  .product-info {
-    padding: 0.3rem;
-  }
+  
 
   .product-name {
     font-size: 0.6rem;

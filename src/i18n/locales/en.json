@@ -181,7 +181,8 @@
         "email_exists": "Email already exists",
         "password_min_length": "Password must be at least 6 characters"
     }
-  },
+  }
+},
   "validation": {
     "email_required": "Email is required",
     "email_invalid": "Invalid email format",
@@ -605,6 +606,8 @@
     "order_updates_desc": "Notifications about your order status",
     "privacy": "Privacy",
     "profile_visibility": "Profile Visibility",
-    "profile_visibility_desc": "Allow others to see your profile"
-  }
-}}
+    "profile_visibility_desc": "Allow others to see your profile",
+    "click_to_view": "Click to view"
+  
+}
+}

@@ -599,11 +599,12 @@ h3.product-top-name{
 
 /* Extra small screens */
 @media (max-width: 480px) {
-  .floating-add-to-cart-btn {
-    width: 40px;
+  .floating-add-to-cart-btn { display: none;
+    /* width: 40px;
     height: 40px;
+   
     bottom:1rem;
-    right: 1rem;
+    right: 1rem; */
   }
   
   /* RTL Support for extra small screens */

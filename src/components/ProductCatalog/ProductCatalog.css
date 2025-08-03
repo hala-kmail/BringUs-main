@@ -138,9 +138,7 @@
   color: white;
 }
 
-.product-info {
-  padding: 16px;
-}
+
 
 .product-name {
   margin: 0 0 8px 0;
@@ -270,9 +268,7 @@
     height: 120px;
   }
 
-  .product-info {
-    padding: 0.5rem;
-  }
+ 
 
   .product-name {
     font-size: 0.7rem;
@@ -318,9 +314,7 @@
     height: 135px;
   }
   
-  .product-info {
-    padding: 0.4rem;
-  }
+ 
 
   .product-name {
     font-size: 0.65rem;
