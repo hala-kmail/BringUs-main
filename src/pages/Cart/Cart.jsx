@@ -339,7 +339,7 @@ const Cart = () => {
                 <div key={`cart-item-${index}`} className="cart-item">
                   {/* Desktop Layout (hidden on mobile) */}
                   <div 
-                    className="cart-item-image"
+                    className="cart-item-image desktop-only"
                     onClick={() => handleProductClick(item.product)}
                     style={{ cursor: 'pointer' }}
                   >

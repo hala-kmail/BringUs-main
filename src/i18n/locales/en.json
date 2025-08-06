@@ -571,6 +571,17 @@
   "error_add": "Failed to add product to wishlist!",
   "error_remove": "Failed to remove product from wishlist!",
   "out_of_stock_soon": "Out of stock, coming soon",
+  "advertisement": {
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading advertisements...",
+    "error": "Failed to load advertisements",
+    "auto_close": "Auto-close in {{seconds}} seconds",
+    "retry": "Retry",
+    "no_json_response": "Server returned invalid data",
+    "api_failed": "Failed to connect to server"
+  },
   "profile": {
     "title": "Profile",
     "subtitle": "Manage your personal information and preferences",
@@ -608,6 +619,5 @@
     "profile_visibility": "Profile Visibility",
     "profile_visibility_desc": "Allow others to see your profile",
     "click_to_view": "Click to view"
-  
-}
+  }
 }

@@ -20,6 +20,7 @@ import AlmostFinishedSale from './pages/AlmostFinishedSale/AlmostFinishedSale';
 import AnnouncementBar from './components/AnnouncementBar/AnnouncementBar';
 import BottomNavigation from './components/BottomNavigation/BottomNavigation';
 import Footer from './components/Footer';
+import AdvertisementPopup from './components/AdvertisementPopup/AdvertisementPopup';
 
 import './App.css';
 
@@ -32,6 +33,7 @@ const AppContent = () => {
     <div className="App">
       <DynamicColors />
       {!isAuthPage && <AnnouncementBar />}
+      <AdvertisementPopup />
       <div className="main-content">
         <Routes>
           <Route path="/login" element={<Login />} />

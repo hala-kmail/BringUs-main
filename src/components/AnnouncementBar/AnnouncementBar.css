@@ -97,7 +97,18 @@
     overflow: hidden;
     position: relative;
   }
-
+  .navbar{
+    top: 0;
+  }
+  .carousel-container{
+    padding-top: 0;
+    
+  }
+  .secondary-navbar {
+   
+    top:  var(--navbar-height);
+    
+}
   .announcement-content {
     padding: 0;
     width: 100%;
@@ -106,6 +117,9 @@
     align-items: center;
   }
 
+  .category-container,.wishlist-container{
+    padding-top: 2rem;
+  }
   .marquee-content {
     gap: 1rem;
   }

@@ -127,18 +127,14 @@ const ProductCard = ({
       const stockUpdatedAt = product.stockUpdatedAt ? new Date(product.stockUpdatedAt).toLocaleDateString('en-US') : 'غير محدد';
       const stockQuantity = product.stock || product.availableQuantity || 0;
       
-      console.log(`🏷️ ${productName} - يعرض شارة "جديد"`);
-      console.log(`   - تاريخ الإنشاء: ${createdAt}`);
-      console.log(`   - تاريخ تحديث الستوك: ${stockUpdatedAt}`);
-      console.log(`   - الكمية المتوفرة: ${stockQuantity}`);
-      console.log(`   - سبب الاعتبار:`);
+     
       if (isRecentlyCreated) {
-        console.log(`     • مضافة حديثاً (آخر 14 يوم)`);
+        // console.log(`     • مضافة حديثاً (آخر 14 يوم)`);
       }
       if (hasStockIncrease) {
-        console.log(`     • زاد ستوكها (آخر أسبوع)`);
+        // console.log(`     • زاد ستوكها (آخر أسبوع)`);
       }
-      console.log('---');
+      // console.log('---');
       
       // وضع علامة لمنع التكرار
       product._loggedAsNew = true;
