@@ -1,8 +1,28 @@
 // src/utils/productUtils.js
 
 export const getSimpleColorsFromColorsField = (product) => {
-  const colorsArray = product?.colors || [];
-  console.log('Raw colors array:', colorsArray);
+  const colorsField = product?.colors;
+  console.log('Raw colors field:', colorsField);
+  
+  if (!colorsField) return [];
+
+  let colorsArray = [];
+  
+  // محاولة تحليل JSON إذا كان string
+  if (typeof colorsField === 'string') {
+    try {
+      colorsArray = JSON.parse(colorsField);
+      console.log('Parsed colors array:', colorsArray);
+    } catch (error) {
+      console.error('Error parsing colors JSON:', error);
+      return [];
+    }
+  } else if (Array.isArray(colorsField)) {
+    // إذا كان array مباشرة (للتوافق مع الكود القديم)
+    colorsArray = colorsField;
+  } else {
+    return [];
+  }
   
   if (!Array.isArray(colorsArray) || colorsArray.length === 0) return [];
 
@@ -73,15 +93,21 @@ export const getColorName = (hex) => {
   if (!hex) return '';
   
   // Handle mixed colors (JSON string)
-  if (hex.startsWith('[') || hex.startsWith('"[')) {
+  if (typeof hex === 'string' && (hex.startsWith('[') || hex.startsWith('"['))) {
     try {
       const colors = JSON.parse(hex);
       if (Array.isArray(colors)) {
         return colors.length > 1 ? 'متعدد الألوان' : colors[0];
       }
     } catch (e) {
+      // إذا فشل التحليل، اعرض النص كما هو
       return hex;
     }
+  }
+  
+  // Handle mixed colors with + separator
+  if (typeof hex === 'string' && hex.includes('+')) {
+    return 'متعدد الألوان';
   }
   
   return hex;
@@ -92,7 +118,8 @@ export const validateProductForCart = (product, selectedColor, selectedSize) => 
   const errors = [];
   
   // Check if color is required and selected
-  if (product.allColors && product.allColors.length > 0 && !selectedColor) {
+  const simpleColors = getSimpleColorsFromColorsField(product);
+  if (simpleColors && simpleColors.length > 0 && !selectedColor) {
     errors.push('color_required');
   }
   

@@ -60,9 +60,9 @@ const SecondaryNavbar = () => {
 
 {/*-----------------------------------Special Offers Section------------------------------------------------   */}
         <div className="secondary-nav-section offers-section">
-          <Link to="/trending" className="offer-link trending">
+          {/* <Link to="/trending" className="offer-link trending">
             <span className="offer-text">{t('secondary_nav.trending_products')}</span>
-          </Link>
+          </Link> */}
           
           <Link to="/almost-finished-sale" className="offer-link almost-finished">
             <span className="offer-text">{t('secondary_nav.almost_finished')}</span>

@@ -4,6 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useDeliveryMethods } from '../../hooks/useDeliveryMethods';
+import usePaymentMethods from '../../hooks/usePaymentMethods';
+import useOrders from '../../hooks/useOrders';
 import palpayImg from '../../assets/PALPAY.png';
 import paypalImg from '../../assets/Paypal_2014_logo.png';
 import reflectImg from '../../assets/reflect.jpg';
@@ -17,16 +19,23 @@ import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import CheckoutForm from '../../components/Checkout/CheckoutForm';
 import OrderSummary from '../../components/Checkout/OrderSummary';
 import { validateRequired, validateAndSanitizePhone } from '../../utils/validation';
+import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 //-----------------------------------Checkout------------------------------------------------  
 const Checkout = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { cartItems, getCartTotals, clearCart } = useCart();
-  const { store } = useAppData();
+  const { store, user } = useAppData();
   const currentLang = i18n.language;
   
   // جلب طرق التوصيل من API
   const { deliveryMethods, loading: deliveryMethodsLoading, error: deliveryMethodsError } = useDeliveryMethods(store?._id);
+  
+  // جلب طرق الدفع من API
+  const { paymentMethods: apiPaymentMethods, loading: paymentMethodsLoading, error: paymentMethodsError } = usePaymentMethods(store?._id);
+  
+  // إدارة الطلبات
+  const { createOrder, loading: orderLoading, error: orderError } = useOrders();
   
   // دالة للحصول على عنوان المتجر
   const getStoreAddress = () => {
@@ -65,15 +74,65 @@ const Checkout = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
-
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 //-----------------------------------paymentMethods------------------------------------------------  
-  const paymentMethods = [
-    { key: 'palpay', label: currentLang === 'ar' ? 'بال بي' : 'PalPay', img: `${palpayImg}` },
-    { key: 'paypal', label: currentLang === 'ar' ? 'باي بال' : 'PayPal', img: `${paypalImg}` },
-    { key: 'cash on delivery', label: currentLang === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery', img: `${cashImg}` },
-    { key: 'reflect', label: currentLang === 'ar' ? 'ريفليك' : 'Refill', img: `${reflectImg}` },
-    { key: 'visa', label: currentLang === 'ar' ? 'رابط دفع الكتروني' : 'SA Link', img: `${visaImg}` },
-  ];
+    // دالة لتحويل طرق الدفع من API إلى التنسيق المطلوب
+  const formatPaymentMethods = (apiMethods) => {
+
+
+    return apiMethods.map(method => ({
+      key: method._id,
+      label: currentLang === 'ar' ? method.titleAr : method.titleEn,
+      img: method.logoUrl || getDefaultPaymentImage(method.methodType),
+      methodType: method.methodType,
+      description: currentLang === 'ar' ? method.descriptionAr : method.descriptionEn,
+      qrCode: method.qrCode,
+      paymentImages: method.sortedPaymentImages || [],
+      originalMethod: method
+    }));
+  };
+
+  // دالة للحصول على الصورة الافتراضية حسب نوع طريقة الدفع
+  const getDefaultPaymentImage = (methodType) => {
+    switch (methodType) {
+      case 'cash':
+        return cashImg;
+      case 'qr_code':
+        return reflectImg;
+      case 'palpay':
+        return palpayImg;
+      case 'paypal':
+        return paypalImg;
+      case 'visa':
+        return visaImg;
+      default:
+        return reflectImg;
+    }
+  };
+
+  const paymentMethods = formatPaymentMethods(apiPaymentMethods);
+  
+  // دالة لتحويل نوع طريقة الدفع إلى القيمة المقبولة من API
+  const getPaymentMethodForAPI = (methodType) => {
+    console.log('Converting payment method:', methodType);
+    
+    switch (methodType) {
+      case 'cash':
+        return 'cash_on_delivery';
+      case 'qr_code':
+        return 'credit_card'; // أو أي قيمة مقبولة من API
+      case 'palpay':
+        return 'credit_card';
+      case 'paypal':
+        return 'paypal';
+      case 'visa':
+        return 'credit_card';
+      default:
+        console.log('Unknown payment method type:', methodType, 'using default: cash_on_delivery');
+        return 'cash_on_delivery';
+    }
+  };
+  
   //-----------------------------------getColorKey------------------------------------------------  
   function getColorKey(hex) {
     if (!hex) return '';
@@ -94,6 +153,8 @@ const Checkout = () => {
     }
     return translation;
   }
+
+
 //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -202,29 +263,236 @@ const handlePlaceOrderClick = (e) => {
   setPaymentDone(true);
 };
 //-----------------------------------handleSendWhatsApp------------------------------------------------  
-const handleSendWhatsApp = () => {
-  const orderData = {
-    customerInfo: formData,
-    items: cartItems,
-    totals: { ...cartTotals, shipping: getShippingPrice(), total: cartTotals.subtotal + getShippingPrice() },
-    orderDate: new Date().toISOString(),
-    deliveryMethod: deliveryMethod,
-    deliveryMethodId: formData.deliveryMethodId,
-    paymentMethod: selectedPaymentMethod?.key
-  };
-  handleWhatsAppOrder(orderData);
-  clearCart();
-  setShowPaymentConfirm(false);
-  setSelectedPaymentMethod(null);
-  setShowPaymentPopup(false);
-  setPaymentDone(false);
-  navigate('/');
+const handleSendWhatsApp = async () => {
+  try {
+    console.log('Selected payment method:', selectedPaymentMethod);
+    
+    // إضافة logging مفصل لـ cartItems
+    console.log('=== CART ITEMS DETAILED ANALYSIS ===');
+    cartItems.forEach((item, index) => {
+      console.log(`Item ${index + 1}:`, {
+        item,
+        keys: Object.keys(item),
+        productType: typeof item.product,
+        productValue: item.product,
+        productIdType: typeof item.productId,
+        productIdValue: item.productId,
+        nameAr: item.nameAr,
+        nameEn: item.nameEn,
+        name: item.name,
+        price: item.price,
+        finalPrice: item.finalPrice,
+        priceAtAdd: item.priceAtAdd,
+        quantity: item.quantity
+      });
+    });
+    console.log('=== END CART ITEMS ANALYSIS ===');
+    
+    // إنشاء الطلب أولاً
+    const orderData = {
+      store: {
+        _id: store?._id,
+        nameAr: store?.nameAr,
+        nameEn: store?.nameEn,
+        logo: store?.logo,
+        contact: store?.contact
+      }, // إضافة بيانات المتجر للتحقق من storeId
+      user: user?._id, // إرسال user ID فقط
+      items: cartItems.map(item => {
+        // بناءً على البيلود المقدم، يبدو أن البنية مختلفة
+        // البيلود يظهر: {product: "68804019a83b761668fda7a1", productId: "68804019a83b761668fda7a1",...}
+        
+        let productId = null;
+        
+        // الحصول على productId
+        if (item.productId) {
+          productId = item.productId;
+        } else if (item.product && typeof item.product === 'string') {
+          productId = item.product;
+        } else if (item.product && typeof item.product === 'object') {
+          productId = item.product._id || item.product.id;
+        } else if (item._id) {
+          productId = item._id;
+        }
+        
+        console.log('Processing cart item:', {
+          originalItem: item,
+          productId,
+          quantity: item.quantity,
+          selectedSpecifications: item.selectedSpecifications,
+          selectedColors: item.selectedColors
+        });
+        
+        return {
+          product: productId, // الكنترولر يتوقع 'product' وليس 'productId'
+          quantity: item.quantity
+        };
+      }),
+      // إضافة cartItems كمعامل منفصل لتمرير المواصفات والألوان
+      cartItems: cartItems.map(item => ({
+        product: item.productId || (item.product && typeof item.product === 'string' ? item.product : item.product?._id || item.product?.id || item._id),
+        quantity: item.quantity,
+        selectedSpecifications: item.selectedSpecifications || [],
+        selectedColors: item.selectedColors || []
+      })),
+      shippingAddress: {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        street: formData.address,
+        city: formData.city,
+        district: formData.district,
+        country: 'Palestine',
+        zipCode: ''
+      },
+      billingAddress: {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        street: formData.address,
+        city: formData.city,
+        district: formData.district,
+        country: 'Palestine',
+        zipCode: ''
+      },
+      paymentInfo: {
+        method: getPaymentMethodForAPI(selectedPaymentMethod?.methodType),
+        paymentMethodId: selectedPaymentMethod?.key,
+        status: 'pending'
+      },
+      shippingInfo: {
+        method: deliveryMethod === 'delivery' ? 'delivery' : 'pickup',
+        cost: getShippingPrice(),
+        deliveryMethodId: formData.deliveryMethodId || null
+      },
+      notes: {
+        customer: formData.notes || ''
+      },
+      isGift: false,
+      giftMessage: '',
+      deliveryArea: formData.deliveryMethodId || undefined, // إرسال deliveryArea ID فقط
+      currency: store?.settings.currency || 'ILS' // استخدام عملة المتجر أو الافتراضية
+    };
+
+    // إضافة logging للبيانات المعالجة
+    console.log('=== PROCESSED ORDER DATA ===');
+    console.log('Store:', orderData.store);
+    console.log('User ID:', orderData.user);
+    console.log('Items processed:', orderData.items.map((item, index) => ({
+      index: index + 1,
+      product: item.product,
+      quantity: item.quantity
+    })));
+    console.log('Cart Items with specifications:', orderData.cartItems.map((item, index) => ({
+      index: index + 1,
+      product: item.product,
+      quantity: item.quantity,
+      selectedSpecifications: item.selectedSpecifications,
+      selectedColors: item.selectedColors
+    })));
+    console.log('Delivery Area ID:', orderData.deliveryArea);
+    console.log('Currency:', orderData.currency);
+    console.log('Store Currency:', store?.settings.currency);
+    console.log('Shipping Address:', orderData.shippingAddress);
+    console.log('Payment Info:', orderData.paymentInfo);
+    console.log('=== END PROCESSED ORDER DATA ===');
+
+    console.log('Cart items:', cartItems);
+    console.log('Store ID:', store?._id);
+    console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
+    
+    // التحقق من وجود المتجر
+    if (!orderData.store._id) {
+      throw new Error('معلومات المتجر غير متوفرة');
+    }
+    
+    // التحقق من وجود المستخدم
+    if (!orderData.user) {
+      throw new Error('معلومات المستخدم غير متوفرة');
+    }
+    
+    // التحقق من أن جميع المنتجات تحتوي على ID صحيح
+    const invalidItems = orderData.items.filter(item => !item.product);
+    if (invalidItems.length > 0) {
+      console.error('Invalid items found:', invalidItems);
+      throw new Error('بعض المنتجات لا تحتوي على معرف صحيح');
+    }
+    
+    // التحقق من أن جميع المنتجات تحتوي على كمية صحيحة
+    const itemsWithInvalidQuantity = orderData.items.filter(item => !item.quantity || item.quantity <= 0);
+    if (itemsWithInvalidQuantity.length > 0) {
+      console.error('Items with invalid quantity:', itemsWithInvalidQuantity);
+      throw new Error('بعض المنتجات لا تحتوي على كمية صحيحة');
+    }
+    
+    // التحقق من وجود deliveryMethodId إذا كانت طريقة التوصيل هي delivery
+    if (deliveryMethod === 'delivery' && !formData.deliveryMethodId) {
+      throw new Error('يرجى اختيار طريقة التوصيل');
+    }
+    
+    console.log('All validations passed. Creating order...');
+    
+    // التحقق النهائي من أن جميع الحقول المطلوبة موجودة
+    const requiredFields = ['store', 'user', 'items'];
+    const missingFields = requiredFields.filter(field => !orderData[field]);
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      throw new Error(`الحقول المطلوبة مفقودة: ${missingFields.join(', ')}`);
+    }
+    
+    // التحقق من أن كل item يحتوي على الحقول المطلوبة
+    const requiredItemFields = ['product', 'quantity'];
+    const itemsMissingFields = orderData.items.filter(item => {
+      return requiredItemFields.some(field => !item[field]);
+    });
+    
+    if (itemsMissingFields.length > 0) {
+      console.error('Items missing required fields:', itemsMissingFields);
+      throw new Error('بعض المنتجات لا تحتوي على جميع البيانات المطلوبة');
+    }
+    
+    console.log('Final validation passed. Sending order to API...');
+    
+    // إنشاء الطلب في قاعدة البيانات
+    const createdOrder = await createOrder(orderData);
+    console.log('Order created successfully:', createdOrder);
+
+    // إرسال رسالة الواتساب مع معلومات الطلب
+    const whatsappOrderData = {
+      orderNumber: createdOrder.orderNumber,
+      customerInfo: formData,
+      items: cartItems,
+      totals: { ...cartTotals, shipping: getShippingPrice(), total: cartTotals.subtotal + getShippingPrice() },
+      orderDate: new Date().toISOString(),
+      deliveryMethod: deliveryMethod,
+      deliveryMethodId: formData.deliveryMethodId,
+      paymentMethod: selectedPaymentMethod?.label
+    };
+    
+    handleWhatsAppOrder(whatsappOrderData);
+    
+    // مسح السلة وإعادة التوجيه
+    clearCart();
+    setShowPaymentConfirm(false);
+    setSelectedPaymentMethod(null);
+    setShowPaymentPopup(false);
+    setPaymentDone(false);
+    
+    // إعادة التوجيه إلى صفحة تأكيد الطلب أو الصفحة الرئيسية
+    navigate('/');
+    
+  } catch (error) {
+    console.error('Error creating order:', error);
+    // إضافة رسالة خطأ للمستخدم
+    const errorMessage = currentLang === 'ar' 
+      ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
+      : 'Error creating order. Please try again.';
+    alert(errorMessage);
+  }
 };
 //-----------------------------------handleWhatsAppOrder------------------------------------------------  
   const handleWhatsAppOrder = (orderData) => {
-    const { customerInfo, items, totals } = orderData;
+    const { orderNumber, customerInfo, items, totals } = orderData;
     
-    let message = ` *طلب جديد من ${customerInfo.fullName}*\n\n`;
+    let message = ` *طلب جديد - رقم الطلب: ${orderNumber || 'N/A'}*\n\n`;
     message += ` الهاتف: ${customerInfo.phone}\n`;
     message += ` العنوان: ${customerInfo.address}, ${customerInfo.city}`;
     if (customerInfo.district) {
@@ -250,11 +518,15 @@ const handleSendWhatsApp = () => {
       };
       
       message += `${index + 1}. ${getItemName(item, currentLang)} x${item.quantity}`;
-      if (item.selectedColor) {
-        // تحويل كود اللون إلى اسم مقروء
-        const colorName = getColorLabel(item.selectedColor, t);
-        message += ` (${currentLang === 'ar' ? 'اللون' : 'Color'}: ${colorName})`;
+      
+      // إضافة الألوان المختارة
+      if (item.selectedColors && item.selectedColors.length > 0) {
+        item.selectedColors.forEach(color => {
+          const colorName = getColorLabel(color, t);
+          message += ` (${currentLang === 'ar' ? 'اللون' : 'Color'}: ${colorName})`;
+        });
       }
+      
       // إضافة جميع المواصفات الأخرى
       if (item.selectedSpecifications && item.selectedSpecifications.length > 0) {
         item.selectedSpecifications.forEach(spec => {
@@ -264,15 +536,18 @@ const handleSendWhatsApp = () => {
         });
       }
       const itemPrice = item.finalPrice || item.priceAtAdd || 0;
-      message += ` - ₪${(itemPrice * item.quantity).toFixed(2)}\n`;
+      const currencySymbol = getCurrencySymbol(store?.settings.currency || 'ILS');
+      message += ` - ${currencySymbol}${(itemPrice * item.quantity).toFixed(2)}\n`;
     });
     
     message += `\n *الفاتورة:*\n`;
-    message += `المجموع الفرعي: ₪${totals.subtotal}\n`;
-    message += `الشحن: ${totals.shipping === 0 ? 'مجاني' : `₪${totals.shipping}`}\n`;
-    message += `الإجمالي: ₪${totals.total}`;
+    const currencySymbol = getCurrencySymbol(store?.settings.currency || 'ILS');
+    message += `المجموع الفرعي: ${currencySymbol}${totals.subtotal}\n`;
+    message += `الشحن: ${totals.shipping === 0 ? 'مجاني' : `${currencySymbol}${totals.shipping}`}\n`;
+    message += `الإجمالي: ${currencySymbol}${totals.total}`;
     
-    const phoneNumber = "+970594056090"; // Replace with actual WhatsApp number
+    // Get WhatsApp number from store data or use fallback
+    const phoneNumber = store?.contact?.whatsapp || store?.contact?.phone;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -322,6 +597,8 @@ const handleSendWhatsApp = () => {
               setShowPrivacyPopup={setShowPrivacyPopup}
               deliveryMethods={deliveryMethods}
               storeAddress={storeAddress}
+              isTermsModalOpen={isTermsModalOpen}
+              setIsTermsModalOpen={setIsTermsModalOpen}
             />
           </div>
 
@@ -338,6 +615,7 @@ const handleSendWhatsApp = () => {
               onPlaceOrder={handlePlaceOrderClick}
               isProcessing={isProcessing}
               privacyChecked={privacyChecked}
+              store={store}
             />
          
         </div>
@@ -365,16 +643,57 @@ const handleSendWhatsApp = () => {
           <div className="privacy-popup" style={{ background: '#fff', borderRadius: 12, maxWidth: 600, width: '95%', padding: 60, boxShadow: '0 4px 24px rgba(0,0,0,0.15)', position: 'relative', maxHeight: '80vh', overflowY: 'auto', textAlign: 'center' }}>
             <button type="button" onClick={() => { setShowPaymentConfirm(false); setSelectedPaymentMethod(null); }} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }} aria-label="Close">×</button>
             <h3 style={{ color: 'var(--primary-color)', marginBottom: 16 }}>{t('checkout.payment_confirmation')}</h3>
+            
+            {/* Payment Method Info */}
+            {selectedPaymentMethod && (
+              <div style={{ marginBottom: 24, padding: 16, background: '#f8f9fa', borderRadius: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <img src={selectedPaymentMethod.img} alt={selectedPaymentMethod.label} style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                  <span style={{ fontWeight: 600, fontSize: 16 }}>{selectedPaymentMethod.label}</span>
+                </div>
+                {selectedPaymentMethod.description && (
+                  <p style={{ margin: 0, fontSize: 14, color: '#666' }}>{selectedPaymentMethod.description}</p>
+                )}
+              </div>
+            )}
+
             <div style={{ margin: '24px 0' }}>
               <div style={{ background: '#e6f9ed', borderRadius: '50%', width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
                 <svg width="32" height="32" fill="none" stroke="var(--primary-color)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="var(--primary-color)" strokeWidth="2" fill="#e6f9ed"/><path d="M9 12l2 2 4-4" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
               <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>{t('checkout.payment_successful')}</div>
-              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{cartTotals.subtotal + getShippingPrice()} ILS</div>
-              {/* QR code placeholder */}
-              <div style={{ margin: '16px 0' }}>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=order" alt="QR Code" style={{ width: 120, height: 120 }} />
-              </div>
+              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{getCurrencySymbol(store?.settings.currency || 'ILS')}{(cartTotals.subtotal + getShippingPrice()).toFixed(2)}</div>
+              
+              {/* QR Code - Show if payment method has QR code */}
+              {selectedPaymentMethod?.qrCode?.enabled && selectedPaymentMethod?.qrCode?.qrCodeImage && (
+                <div style={{ margin: '16px 0' }}>
+                  <p style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>{t('checkout.scan_qr_code')}</p>
+                  <img src={selectedPaymentMethod.qrCode.qrCodeImage} alt="QR Code" style={{ width: 120, height: 120, border: '1px solid #ddd', borderRadius: 8 }} />
+                </div>
+              )}
+              
+              {/* Payment Images - Show if payment method has additional images */}
+              {selectedPaymentMethod?.paymentImages && selectedPaymentMethod.paymentImages.length > 0 && (
+                <div style={{ margin: '16px 0' }}>
+                  <p style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>{t('checkout.payment_instructions')}</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                    {selectedPaymentMethod.paymentImages.map((image, index) => (
+                      <img 
+                        key={index}
+                        src={image.imageUrl} 
+                        alt={image.altText || 'Payment instruction'} 
+                        style={{ 
+                          width: 80, 
+                          height: 80, 
+                          objectFit: 'cover', 
+                          border: '1px solid #ddd', 
+                          borderRadius: 4 
+                        }} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             {!paymentDone ? (
               <>
@@ -387,9 +706,36 @@ const handleSendWhatsApp = () => {
                 </button>
               </>
             ) : (
-              <button onClick={handleSendWhatsApp} style={{ width: '100%', background: '#25D366', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24" style={{ marginLeft: 8 }}><path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/></svg>
-                  {t('checkout.send_whatsapp')} 
+              <button 
+                onClick={handleSendWhatsApp} 
+                disabled={orderLoading}
+                style={{ 
+                  width: '100%', 
+                  background: orderLoading ? '#ccc' : '#25D366', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: 8, 
+                  padding: '14px 0', 
+                  fontSize: 18, 
+                  fontWeight: 600, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  gap: 8,
+                  cursor: orderLoading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {orderLoading ? (
+                  <>
+                    <div className="loading-spinner" style={{ width: 20, height: 20, border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    {currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}
+                  </>
+                ) : (
+                  <>
+                    <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24" style={{ marginLeft: 8 }}><path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/></svg>
+                    {t('checkout.send_whatsapp')}
+                  </>
+                )}
               </button>
             )}
           </div>

@@ -7,27 +7,44 @@ import { useAppData } from '../../contexts/AppDataContext';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
 import { getEffectivePrice } from '../../utils/productUtils';
+import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 import useLogin from '../../hooks/useLogin';
 import useProducts from '../../hooks/useProducts';
-
 const searchPlaceholders = [
   {
-    en: "Search for fresh fruits...",
-    ar: "ابحث عن الملابس"
+    en: "Search for your favorite products...",
+    ar: "ابحث عن منتجاتك المفضلة..."
   },
   {
-    en: "Shop organic vegetables...",
-    ar: "تصفح المنتجات الصحية..."
+    en: "Looking for something specific?",
+    ar: "تبحث عن شيء معين؟"
   },
   {
-    en: "Find daily deals...",
-    ar: "اكتشف منتجات الألبان..."
+    en: "Find what you need in seconds...",
+    ar: "اعثر على ما تحتاجه خلال ثوانٍ..."
   },
   {
-    en: "Discover household care...",
-    ar: "تسوق الخضروات العضوية..."
+    en: "Explore our latest collections...",
+    ar: "تصفح أحدث مجموعاتنا..."
+  },
+  {
+    en: "Type here to start shopping...",
+    ar: "ابدأ التسوق بكتابة ما تريد..."
+  },
+  {
+    en: "Discover exclusive offers...",
+    ar: "اكتشف العروض الحصرية..."
+  },
+  {
+    en: "Shop top-rated products...",
+    ar: "تسوق المنتجات الأعلى تقييماً..."
+  },
+  {
+    en: "What are you shopping for today?",
+    ar: "ما الذي تبحث عنه اليوم؟"
   }
 ];
+
 
 const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const { t, i18n } = useTranslation();
@@ -293,9 +310,9 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                       }</p>
                       <div className="result-price">
                         {product.discountPercentage && product.discountPercentage > 0 && product.discountEndTime > new Date().toISOString() ? (
-                        <> <span className="original-price">₪{product.originalPrice?.toFixed(2)}</span>
-                         <span className="current-price">₪{getEffectivePrice(product).toFixed(2)}</span>  </>
-                        ) : (  <span className="current-price">₪{getEffectivePrice(product).toFixed(2)}</span> 
+                        <> <span className="original-price">{formatPrice(product.originalPrice, store?.settings?.currency || 'ILS')}</span>
+                         <span className="current-price">{formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}</span>  </>
+                        ) : (  <span className="current-price">{formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}</span> 
                         )}
                       </div>
                     </div>
@@ -384,13 +401,6 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 {t('navbar.orders')}
-              </Link>
-              <Link to="/settings" className="dropdown-item">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {t('navbar.settings')}
               </Link>
               <button className="dropdown-item logout" onClick={handleLogout}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>

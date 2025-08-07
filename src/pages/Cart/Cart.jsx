@@ -2,19 +2,22 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
-import TopBar from '../../components/TopBar/TopBar';
+import { useAppData } from '../../contexts/AppDataContext';
+
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import './Cart.css';
 
-import { getEffectivePrice, isDiscountActive } from '../../utils/productUtils';
+
+import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 
 const Cart = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotals } = useCart();
+  const { store } = useAppData();
   const currentLang = i18n.language;
   const [showClearModal, setShowClearModal] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -248,7 +251,7 @@ const Cart = () => {
 
   return (
     <div className="cart-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      {/* <TopBar /> */}
+     
       <Navbar 
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}
@@ -384,7 +387,7 @@ const Cart = () => {
                     )}
                     {/* Price */}
                     <div className="cart-item-price">
-                      <span className="current-price">₪{item.priceAtAdd.toFixed(2)}</span>
+                      <span className="current-price">{formatPrice(item.priceAtAdd, store?.settings?.currency || 'ILS')}</span>
                     </div>
                     {/* Product Specifications - Simple Text */}
                     {(item.selectedSpecifications || item.selectedColors) && (
@@ -427,7 +430,7 @@ const Cart = () => {
                   </div>
                   {/* Total Price */}
                   <div className="cart-item-total desktop-only">
-                    ₪{((item.priceAtAdd || 0) * (item.quantity || 1)).toFixed(2)}
+                    {formatPrice(((item.priceAtAdd || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
                   </div>
                   {/* Remove Button */}
                   <button 
@@ -519,7 +522,7 @@ const Cart = () => {
                         )}
                         {/* Price */}
                         <div className="cart-item-price">
-                          <span className="current-price">₪{(item.priceAtAdd || 0).toFixed(2)}</span>
+                          <span className="current-price">{formatPrice((item.priceAtAdd || 0), store?.settings?.currency || 'ILS')}</span>
                         </div>
                       </div>
                     </div>
@@ -549,7 +552,7 @@ const Cart = () => {
                           {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
                         </span>
                         <div className="cart-item-total-price">
-                          ₪{((item.priceAtAdd || 0) * (item.quantity || 1)).toFixed(2)}
+                          {formatPrice(((item.priceAtAdd || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
                         </div>
                       </div>
                     </div>
@@ -562,7 +565,7 @@ const Cart = () => {
               <h3>{currentLang === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h3>
               <div className="summary-row">
                 <span>{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
-                <span>₪{(cartTotals?.subtotal || 0).toFixed(2)}</span>
+                <span>{formatPrice(cartTotals?.subtotal || 0, store?.settings?.currency || 'ILS')}</span>
               </div>
               <hr className="summary-divider" />
               <div className="summary-row summary-total">
@@ -591,7 +594,7 @@ const Cart = () => {
             <span className="mobile-total-label">
               {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
             </span>
-            <span className="mobile-total-amount">₪{(cartTotals?.subtotal || 0).toFixed(2)}</span>
+            <span className="mobile-total-amount">{formatPrice(cartTotals?.subtotal || 0, store?.settings?.currency || 'ILS')}</span>
           </div>
           <button 
             className="mobile-checkout-btn"

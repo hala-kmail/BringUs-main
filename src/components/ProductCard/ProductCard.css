@@ -1,6 +1,6 @@
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
     margin-top: 1.5rem;
   }
@@ -50,7 +50,7 @@ h3.product-top-name{
 }
 
 .product-info-section {
-    gap: 1rem;
+    gap: 0.5rem;
     padding: 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -105,6 +105,53 @@ h3.product-top-name{
 
 .low-stock-badge {
     background-color: #F59E0B; /* برتقالي */
+}
+
+/* Stock Badge Styles for Almost Finished Sale */
+.stock-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: fit-content;
+}
+
+.stock-badge.critical {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    animation: criticalPulse 1s infinite;
+}
+
+.stock-badge.low {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fed7aa;
+}
+
+.stock-badge.limited {
+    background: #ddd6fe;
+    color: #7c3aed;
+    border: 1px solid #c4b5fd;
+}
+
+.stock-badge.available {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+@keyframes criticalPulse {
+    0%, 100% {
+        transform: scale(1);
+        background: #fef2f2;
+    }
+    50% {
+        transform: scale(1.02);
+        background: #fee2e2;
+    }
 }
 
 /* أنماط الصورة */
@@ -304,6 +351,10 @@ h3.product-top-name{
     background-color: #FCD34D;
 }
 
+.stock-fill.green {
+    background-color: #10B981;
+}
+
 /* أنماط الخصم */
 .discount-info {
     margin-top: 0.5rem;
@@ -375,7 +426,7 @@ h3.product-top-name{
     }
 }
 
-@media (max-width: 900px) {
+@media (min-width: 768px) and (max-width: 900px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -386,9 +437,9 @@ h3.product-top-name{
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .products-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .product-card.list-view {
@@ -404,9 +455,10 @@ h3.product-top-name{
 /* ألوان المنتج */
 .product-colors {
     display: flex;
+    flex-wrap: nowrap;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
-    flex-wrap: wrap;
+  
     align-items: center;
 }
 
@@ -618,17 +670,21 @@ h3.product-top-name{
     height: 16px;
   }
 }
-
 .product-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  overflow: hidden;
-  transition: all 0.3s ease;
-  position: relative;
-}
+    background: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
 
-.product-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  transform: translateY(-2px);
-}
+  .product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
+  }
+  

@@ -3,7 +3,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0.75rem 0;
   position: sticky;
-  top: calc(var(--announcement-bar-height) );
+  top: 0;
   z-index: 998;
   width: 100%;
   min-height: var(--navbar-height);
@@ -549,8 +549,6 @@
   }
 }
 
-/* Styles for Language and User Selectors in Navbar */
-/* Adapted from TopBar.css generic styles */
 
 .user-actions .selector-dropdown {
   position: relative;

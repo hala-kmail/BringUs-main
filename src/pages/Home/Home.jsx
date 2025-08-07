@@ -30,7 +30,7 @@ const Home = () => {
 //-----------------------------------return------------------------------------------------  
   return (
     <div className="home">
-      {/* <TopBar /> */}
+     
       <Navbar 
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}
@@ -42,7 +42,7 @@ const Home = () => {
         <Carousel />
         <CategoriesGrid />
         <div className="almost-finished-with-register">
-          <button
+          {/* <button
             className="wholesale-inline-btn"
             onClick={handleWholesaleModalOpen}
             title={t('wholesale.register_title')}
@@ -55,7 +55,7 @@ const Home = () => {
               <rect x="15" y="14" width="2" height="3" rx="1" fill="currentColor"/>
             </svg>
             <span style={{marginInlineStart: 8}}>{t('wholesale.register_title')}</span>
-          </button>
+          </button> */}
           <AlmostFinishedCard />
         </div>
         <WholesaleRegisterModal isOpen={isWholesaleModalOpen} onClose={handleWholesaleModalClose} />

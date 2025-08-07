@@ -89,7 +89,7 @@ const Wishlist = () => {
         availableQuantity: wishlistItem.availableQuantity,
         lowStockThreshold: wishlistItem.lowStockThreshold,
         productLabels: wishlistItem.productLabels || [],
-        allColors: wishlistItem.allColors || []
+        colors: wishlistItem.colors || '[]'
       };
     }
     
@@ -110,13 +110,13 @@ const Wishlist = () => {
       availableQuantity: 0,
       lowStockThreshold: 5,
       productLabels: [],
-      allColors: []
+      colors: '[]'
     };
   };
 
   return (
     <div className="wishlist-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      {/* <TopBar /> */}
+      
       <Navbar
         onMobileSearchToggle={handleMobileSearchToggle}
         isMobileSearchOpen={isMobileSearchOpen}
@@ -165,7 +165,7 @@ const Wishlist = () => {
         {/* Wishlist Content */}
         {!loading && !error && wishlistItems.length > 0 ? (
           <div className="wishlist-content">
-            <div className="wishlist-grid">
+            <div className="products-grid">
               {wishlistItems.map((wishlistItem) => {
                 const product = getProductData(wishlistItem);
                 return (

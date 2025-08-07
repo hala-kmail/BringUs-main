@@ -4,7 +4,11 @@
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   font-family: 'Tajawal', 'Segoe UI', sans-serif;
 }
-
+.almost-finished-sale-container {
+  padding: 5rem 0;
+  margin: 0 auto;
+  width: 85%;
+}
 /* Arabic Font Support */
 .almost-finished-sale-page[dir="rtl"] {
   font-family: 'Tajawal', 'Arial', sans-serif;
@@ -379,10 +383,7 @@
   text-decoration: line-through;
 }
 
-/* Stock Info */
-.almost-finished-sale-page .stock-info {
-  margin-bottom: 1.5rem;
-}
+
 
 .almost-finished-sale-page .stock-level {
   display: flex;
@@ -826,4 +827,119 @@
   0% { transform: scale(0.7); opacity: 0; }
   80% { transform: scale(1.08); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
+} 
+
+/* Stock Statistics */
+.stock-statistics {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+}
+
+.stat-item.critical {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 2px solid #fecaca;
+}
+
+.stat-item.low {
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  border: 2px solid #fed7aa;
+}
+
+.stat-item.limited {
+  background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+  border: 2px solid #c4b5fd;
+}
+
+.stat-item.total {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #bfdbfe;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.stat-item.critical .stat-number {
+  color: #dc2626;
+}
+
+.stat-item.low .stat-number {
+  color: #d97706;
+}
+
+.stat-item.limited .stat-number {
+  color: #7c3aed;
+}
+
+.stat-item.total .stat-number {
+  color: #2563eb;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Responsive adjustments for statistics */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .stat-item {
+    padding: 0.75rem;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-item {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+  
+  .stat-number {
+    margin-bottom: 0;
+    margin-right: 1rem;
+  }
 } 

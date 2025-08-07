@@ -15,6 +15,7 @@ import ProductOptions from '../../components/ProductDetail/ProductOptions';
 import ProductActions from '../../components/ProductDetail/ProductActions';
 import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
 import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
+import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 import './ProductDetail.css';
 import namer from 'color-namer';
 
@@ -83,8 +84,9 @@ const ProductDetail = () => {
         if (productData) {
           setProduct(productData);
           // تعيين اللون الأول كافتراضي إذا كان متوفراً
-          if (productData.allColors && productData.allColors.length > 0) {
-            setSelectedColor(productData.allColors[0]);
+          const simpleColors = getSimpleColorsFromColorsField(productData);
+          if (simpleColors && simpleColors.length > 0) {
+            setSelectedColor(simpleColors[0]);
           }
           // تعيين الحجم الأول كافتراضي إذا كان متوفراً
           if (productData.specificationValues) {
@@ -160,7 +162,8 @@ const ProductDetail = () => {
     const validationErrors = [];
     
     // التحقق من اللون إذا كان مطلوباً
-    if (product.allColors && product.allColors.length > 0 && !selectedColor) {
+    const simpleColors = getSimpleColorsFromColorsField(product);
+    if (simpleColors && simpleColors.length > 0 && !selectedColor) {
       validationErrors.push('color_required');
     }
     

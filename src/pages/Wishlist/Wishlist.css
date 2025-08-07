@@ -36,11 +36,7 @@
   margin-bottom: 2rem;
 }
 
-.wishlist-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
+
 
 /* Wishlist Item */
 .wishlist-item {
@@ -537,11 +533,7 @@
     font-size: 1.5rem;
   }
 
-  .wishlist-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
-
+ 
   .wishlist-item-image {
     height: 120px;
   }
@@ -650,11 +642,7 @@
     font-size: 1.25rem;
   }
 
-  .wishlist-grid {
-    padding-bottom: 3rem;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.4rem;
-  }
+
 
   .wishlist-item-image {
     height: 135px;
@@ -691,185 +679,4 @@
   }
 } 
 
-/* ProductCard في صفحة المفضلة */
-.wishlist-grid .product-card {
-  background: white;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
 
-.wishlist-grid .product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-}
-
-.wishlist-grid .product-image {
-  position: relative;
-  overflow: hidden;
-  height: 250px;
-  flex-shrink: 0;
-}
-
-.wishlist-grid .product-image-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.wishlist-grid .product-card:hover .product-image-img {
-  transform: scale(1.05);
-}
-
-.wishlist-grid .product-info-section {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  gap: 1rem;
-  justify-content: space-between;
-}
-
-.wishlist-grid .product-top-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 0.5rem 0;
-  line-height: 1.4;
-  transition: color 0.3s ease;
-  font-family: 'Tajawal', sans-serif;
-}
-
-.wishlist-grid .product-card:hover .product-top-name {
-  color: var(--primary-color);
-}
-
-.wishlist-grid .product-category-name {
-  font-size: 0.75rem;
-  font-weight: 300;
-  color: #6b7280;
-  margin: 0.25rem 0;
-  cursor: pointer;
-  transition: font-weight 0.3s ease;
-}
-
-.wishlist-grid .product-category-name:hover {
-  font-weight: 500 !important;
-}
-
-.wishlist-grid .product-price-container {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-}
-
-.wishlist-grid .current-price {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #ef4444;
-  font-family: 'Tajawal', sans-serif;
-}
-
-.wishlist-grid .original-price {
-  font-size: 1rem;
-  color: #9ca3af;
-  text-decoration: line-through;
-  margin: 0 !important;
-  font-family: 'Tajawal', sans-serif;
-}
-
-.wishlist-grid .product-info-bottom {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: auto;
-}
-
-.wishlist-grid .add-to-cart-btn {
-  border: none;
-  border-radius: 12px;
-  flex: 1;
-  width: 45px;
-  height: 50px;
-  background: var(--primary-color, #987811);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.wishlist-grid .add-to-cart-btn:hover {
-  background: var(--primary-dark, #6d5c0a);
-  transform: translateY(-1px);
-}
-
-.wishlist-grid .add-to-cart-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background-color: #9CA3AF;
-}
-
-/* Responsive Design for ProductCard in Wishlist */
-@media (max-width: 768px) {
-  .wishlist-grid .product-image {
-    height: 120px;
-  }
-
-  .wishlist-grid .product-info-section {
-    padding: 0.5rem;
-  }
-
-  .wishlist-grid .product-top-name {
-    font-size: 0.7rem;
-    margin: 0 0 0.25rem 0;
-  }
-
-  .wishlist-grid .current-price {
-    font-size: 0.8rem;
-  }
-
-  .wishlist-grid .original-price {
-    font-size: 0.65rem;
-  }
-
-  .wishlist-grid .add-to-cart-btn {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-  }
-}
-
-@media (max-width: 480px) {
-  .wishlist-grid .product-image {
-    height: 135px;
-  }
-
-  .wishlist-grid .product-info-section {
-    padding: 0.4rem;
-  }
-
-  .wishlist-grid .product-top-name {
-    font-size: 0.65rem;
-  }
-
-  .wishlist-grid .current-price {
-    font-size: 0.75rem;
-  }
-
-  .wishlist-grid .original-price {
-    font-size: 0.6rem;
-  }
-
-  .wishlist-grid .add-to-cart-btn {
-    width: 32px;
-    height: 32px;
-  }
-} 

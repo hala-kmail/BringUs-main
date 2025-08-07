@@ -286,9 +286,32 @@ const ProductCatalog = ({ language = 'en' }) => {
               </div>
               
               <div className="product-colors">
-                {product.colors.map(color => (
-                  <span key={color} className="color-tag">{color}</span>
-                ))}
+                {(() => {
+                  let colorsArray = [];
+                  if (product.colors) {
+                    if (typeof product.colors === 'string') {
+                      try {
+                        colorsArray = JSON.parse(product.colors);
+                      } catch (error) {
+                        console.error('Error parsing colors JSON:', error);
+                        colorsArray = [];
+                      }
+                    } else if (Array.isArray(product.colors)) {
+                      colorsArray = product.colors;
+                    }
+                  }
+                  
+                  return colorsArray.map(color => {
+                    if (Array.isArray(color)) {
+                      return color.map(c => (
+                        <span key={c} className="color-tag">{c}</span>
+                      ));
+                    } else if (typeof color === 'string') {
+                      return <span key={color} className="color-tag">{color}</span>;
+                    }
+                    return null;
+                  }).filter(Boolean);
+                })()}
               </div>
             </div>
           </div>

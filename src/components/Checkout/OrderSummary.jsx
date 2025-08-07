@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 
 const OrderSummary = ({
   cartItems,
@@ -9,7 +10,8 @@ const OrderSummary = ({
   currentLang,
   onPlaceOrder,
   isProcessing,
-  privacyChecked
+  privacyChecked,
+  store
 }) => {
   const [expandedItems, setExpandedItems] = useState({});
 
@@ -36,6 +38,8 @@ const OrderSummary = ({
       [itemId]: !prev[itemId]
     }));
   };
+
+  const currencySymbol = getCurrencySymbol(store?.settings?.currency || 'ILS');
 
   return (
     <div className="order-summary-section">
@@ -101,11 +105,11 @@ const OrderSummary = ({
                   </div>
                 )}
                 <div className="item-price">
-                  ₪{(item.finalPrice || item.priceAtAdd || 0).toFixed(2)} × {item.quantity}
+                  {currencySymbol}{(item.finalPrice || item.priceAtAdd || 0).toFixed(2)} × {item.quantity}
                 </div>
               </div>
               <div className="item-total">
-                ₪{((item.finalPrice || item.priceAtAdd || 0) * item.quantity).toFixed(2)}
+                {currencySymbol}{((item.finalPrice || item.priceAtAdd || 0) * item.quantity).toFixed(2)}
               </div>
             </div>
           ))}
@@ -114,18 +118,18 @@ const OrderSummary = ({
         <div className="order-totals">
           <div className="total-row">
             <span>{t('checkout.subtotal')}</span>
-            <span>₪{cartTotals.subtotal}</span>
+            <span>{currencySymbol}{cartTotals.subtotal}</span>
           </div>
           <div className="total-row">
             <span>{t('checkout.shipping')}</span>
             <span>
-              {deliveryMethod === 'store' ? t('checkout.free') : (getShippingPrice() === 0 ? t('checkout.free') : `₪${getShippingPrice()}`)}
+              {deliveryMethod === 'store' ? t('checkout.free') : (getShippingPrice() === 0 ? t('checkout.free') : `${currencySymbol}${getShippingPrice()}`)}
             </span>
           </div>
           <hr className="totals-divider" />
           <div className="total-row total-final">
             <span>{t('checkout.total')}</span>
-            <span>₪{(cartTotals.subtotal + getShippingPrice()).toFixed(2)}</span>
+            <span>{currencySymbol}{(cartTotals.subtotal + getShippingPrice()).toFixed(2)}</span>
           </div>
         </div>
         {/* Submit Button */}

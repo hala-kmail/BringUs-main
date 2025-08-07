@@ -6,6 +6,10 @@ import CountdownTimer from '../CountdownTimer/CountdownTimer';
 import { getSimpleColorsFromColorsField, isDiscountActive, getEffectivePrice } from '../../utils/productUtils';
 import { useCart } from '../../contexts/CartContext';
 import { namer } from 'color-namer';
+import { useAppData } from '../../contexts/AppDataContext';
+import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
+
+
 
 const ProductCard = ({
   product,
@@ -22,7 +26,7 @@ const ProductCard = ({
   const currentLang = i18n.language;
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [isAddToCartLoading, setIsAddToCartLoading] = useState(false);
-  
+  const { store } = useAppData();
   // دالة للبحث عن الكاتيجوري في categories باستخدام _id
   const findCategoryById = (categoryId) => {
     if (!categoryId || !categories.length) return null;
@@ -145,15 +149,17 @@ const ProductCard = ({
   
   // دالة لتحديد حالة المخزون
   const getStockStatus = (product) => {
-    if (product.stockStatus === 'out_of_stock' || product.availableQuantity === 0) return 'sold_out';
-    if (product.availableQuantity <= product.lowStockThreshold) return 'low-stock';
+    if (product.stockStatus === 'out_of_stock' || product.stock === 0) return 'sold_out';
+    if (product.stock <= product.lowStockThreshold) return 'low-stock';
     return 'in_stock';
   };
 
   const getStockStatusForAlmostFinishedSale = (quantity) => {
-    if (quantity <= 4) return 'red';
-    if (quantity <= 7) return 'orange';
-    return 'yellow';
+    const threshold = product.lowStockThreshold || 10;
+    
+    if (quantity <= threshold * 0.3) return 'red';      // critical
+    if (quantity <= threshold) return 'orange';         // low
+    return 'yellow';                                     // limited (shouldn't happen with current filter)
   };
 
   // التحقق من وجود تسميات للمنتج
@@ -190,7 +196,28 @@ const ProductCard = ({
   
   // معالجة الألوان - دعم كل من colors و allColors
   const processedColors = (() => {
-    const colorsArray = product.colors || product.allColors || [];
+    const colorsField = product.colors || product.allColors;
+    
+    if (!colorsField) {
+      return [];
+    }
+    
+    let colorsArray = [];
+    
+    // محاولة تحليل JSON إذا كان string
+    if (typeof colorsField === 'string') {
+      try {
+        colorsArray = JSON.parse(colorsField);
+      } catch (error) {
+        console.error('Error parsing colors JSON:', error);
+        return [];
+      }
+    } else if (Array.isArray(colorsField)) {
+      // إذا كان array مباشرة (للتوافق مع الكود القديم)
+      colorsArray = colorsField;
+    } else {
+      return [];
+    }
     
     if (!Array.isArray(colorsArray) || colorsArray.length === 0) {
       return [];
@@ -238,7 +265,7 @@ const ProductCard = ({
 
   // دالة معالجة النقر على زر إضافة للسلة
   const handleAddToCartClick = () => {
-    if (isAddToCartLoading || product.stockStatus === 'out_of_stock' || product.availableQuantity === 0) return;
+    if (isAddToCartLoading || product.stockStatus === 'out_of_stock' || product.stock === 0) return;
     
     // إذا كان هناك دالة خارجية، استخدمها
     if (externalHandleAddToCart) {
@@ -315,14 +342,29 @@ const ProductCard = ({
               {currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock'}
             </span>
           )}
-          {/* {(product.stockStatus === 'low_stock' || 
-            (product.availableQuantity && product.lowStockThreshold && 
-             product.availableQuantity <= product.lowStockThreshold && 
-             product.availableQuantity > 0)) && (
-            <span className="product-badge low-stock-badge">
-              {currentLang === 'ar' ? 'مخزون منخفض' : 'Low Stock'}
-            </span>
-          )} */}
+          {/* Stock Level Badge for Almost Finished Sale */}
+          {showStockInfo && product.stock > 0 && (
+            (() => {
+              const threshold = product.lowStockThreshold || 10;
+              const stockLevel = getStockStatusForAlmostFinishedSale(product.stock);
+              
+              // Only show badge for low stock products (stock <= threshold)
+              if (product.stock > threshold) {
+                return null;
+              }
+              
+              return (
+                <span className={`product-badge stock-badge ${stockLevel}`}>
+                  {stockLevel === 'red'
+                    ? (currentLang === 'ar' ? 'مخزون حرج' : 'Critical Stock')
+                    : stockLevel === 'orange'
+                      ? (currentLang === 'ar' ? 'مخزون منخفض' : 'Low Stock')
+                      : (currentLang === 'ar' ? 'مخزون محدود' : 'Limited Stock')
+                  }
+                </span>
+              );
+            })()
+          )}
         </div>
       </div>
 
@@ -370,15 +412,15 @@ const ProductCard = ({
                   {getStockStatus(product) === 'sold_out'
                     ? (currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock')
                     : getStockStatus(product) === 'low-stock'
-                      ? currentLang === 'ar' ? `${product.availableQuantity} متبقي فقط` : `${product.availableQuantity} Only left`
+                      ? currentLang === 'ar' ? `${product.stock} متبقي فقط` : `${product.stock} Only left`
                       : currentLang === 'ar' ? 'في المخزون' : 'In Stock'}
                 </span>
                 {getStockStatus(product) !== 'sold_out' && (
                   <div className="stock-bar">
                     <div 
-                      className={`stock-fill ${getStockStatusForAlmostFinishedSale(product.availableQuantity)}`} 
+                      className={`stock-fill ${getStockStatusForAlmostFinishedSale(product.stock)}`} 
                       style={{ 
-                        width: `${Math.min((product.availableQuantity / (product.lowStockThreshold * 2)) * 100, 100)}%` 
+                        width: `${Math.min((product.stock / product.lowStockThreshold) * 100, 100)}%` 
                       }}
                     ></div>
                   </div>
@@ -434,15 +476,15 @@ const ProductCard = ({
             {product.discountPercentage > 0 && product.compareAtPrice > 0 ? (
               <>
                 <span className="current-price">
-                  {getEffectivePrice(product).toFixed(2)} {currentLang === 'ar' ? 'ر.س' : 'SAR'}
+                  {formatPrice(getEffectivePrice(product), store?.settings?.currency || store?.settings?.currency || 'ILS')}
                 </span>
                 <span className="original-price">
-                  {product.compareAtPrice.toFixed(2)} {currentLang === 'ar' ? 'ر.س' : 'SAR'}
+                  {formatPrice(product.compareAtPrice, store?.settings?.currency || store?.settings?.currency || 'ILS')}
                 </span>
               </>
             ) : (
               <span className="current-price">
-                {getEffectivePrice(product).toFixed(2)} {currentLang === 'ar' ? 'ر.س' : 'SAR'}
+                {formatPrice(getEffectivePrice(product), store?.settings?.currency || store?.settings?.currency || 'ILS')}
               </span>
             )}
           </div>
@@ -489,7 +531,7 @@ const ProductCard = ({
             <div className="savings-amount">
               <span className="savings-label">{currentLang === 'ar' ? 'توفير' : 'Save'}</span>
               <span className="savings-value">
-                {(product.compareAtPrice - getEffectivePrice(product)).toFixed(2)} {currentLang === 'ar' ? 'ر.س' : 'SAR'}
+                {formatPrice((product.compareAtPrice - getEffectivePrice(product)), store?.settings?.currency || store?.settings?.currency || 'ILS')}
               </span>
             </div>
             <div className="discount-percentage-large">

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import namer from 'color-namer';
 import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
-
+import { formatPrice } from '../../utils/currencyUtils';
+import { useAppData } from '../../contexts/AppDataContext';
 const SidebarFilters = ({
   filters,
   onFilterChange,
@@ -21,7 +22,7 @@ const SidebarFilters = ({
 }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
-  
+  const { store } = useAppData();
   //-----------------------------------State for collapsed filter sections on desktop------------------------------------------------  
   const [collapsedSections, setCollapsedSections] = useState({
     price: false,
@@ -478,7 +479,7 @@ const SidebarFilters = ({
               />
             </div>
             <div className="price-display" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-             {currentLang === 'ar' ? 'السعر' : 'Price'}: ₪{filters.priceRange.min} — ₪{filters.priceRange.max}
+             {currentLang === 'ar' ? 'السعر' : 'Price'}: {formatPrice(filters.priceRange.min, store?.settings?.currency || 'ILS')} — {formatPrice(filters.priceRange.max, store?.settings?.currency || 'ILS')}
             </div>
           </div>
         )}

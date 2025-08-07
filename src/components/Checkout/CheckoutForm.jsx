@@ -1,4 +1,5 @@
 import React from 'react';
+import TermsModal from '../Footer/TermsModal';
 
 const CheckoutForm = ({
   t,
@@ -14,7 +15,9 @@ const CheckoutForm = ({
   showPrivacyPopup,
   setShowPrivacyPopup,
   deliveryMethods,
-  storeAddress
+  storeAddress,
+  isTermsModalOpen,
+  setIsTermsModalOpen
 }) => (
   <form className="checkout-form">
     {/* طريقة الاستلام */}
@@ -126,7 +129,7 @@ const CheckoutForm = ({
           checked={privacyChecked}
           onChange={e => {
             setPrivacyChecked(e.target.checked);
-            if (e.target.checked) setShowPrivacyPopup(true);
+            if (e.target.checked) setIsTermsModalOpen(true);
           }}
         />
         <span>
@@ -135,12 +138,14 @@ const CheckoutForm = ({
         <button
           type="button"
           style={{ background: 'none', border: 'none', color: 'var(--primary-color)', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
-          onClick={() => setShowPrivacyPopup(true)}
+          onClick={() => setIsTermsModalOpen(true)}
         >
           {t('checkout.view')}
         </button>
       </label>
     </div>
+
+    <TermsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} />
     {/* Popup لسياسة الخصوصية */}
     {showPrivacyPopup && (
       <div className="privacy-popup-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -65,29 +65,6 @@
 
 
 
-
-/* Products Grid */
-
-
-/* Product Card */
-.product-card {
-  background: white;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-  transition: all 0.3s ease;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
-}
-
 /* Product Image */
 .product-image {
   position: relative;

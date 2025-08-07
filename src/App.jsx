@@ -16,8 +16,10 @@ import Cart from './pages/Cart/Cart';
 import Checkout from './pages/Checkout/Checkout';
 import Wishlist from './pages/Wishlist/Wishlist';
 import Profile from './pages/Profile/Profile';
+import Orders from './pages/Orders/Orders';
+
+
 import AlmostFinishedSale from './pages/AlmostFinishedSale/AlmostFinishedSale';
-import AnnouncementBar from './components/AnnouncementBar/AnnouncementBar';
 import BottomNavigation from './components/BottomNavigation/BottomNavigation';
 import Footer from './components/Footer';
 import AdvertisementPopup from './components/AdvertisementPopup/AdvertisementPopup';
@@ -32,7 +34,7 @@ const AppContent = () => {
   return (
     <div className="App">
       <DynamicColors />
-      {!isAuthPage && <AnnouncementBar />}
+      
       <AdvertisementPopup />
       <div className="main-content">
         <Routes>
@@ -49,6 +51,8 @@ const AppContent = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
+         
           <Route path="/almost-finished-sale" element={<AlmostFinishedSale />} />
         </Routes>
       </div>

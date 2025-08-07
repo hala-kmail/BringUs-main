@@ -35,11 +35,35 @@ export const getColorLabel = (hex, t) => {
 }
 
 //----------------------------------getAllColors------------------------------------------------ 
-export const getAllColors = () => {
+export const getAllColors = (products = []) => {
   const colorSet = new Set();
-  allProducts.forEach(product => {
-    if (product.colors && Array.isArray(product.colors)) {
-      product.colors.forEach(color => colorSet.add(color));
+  products.forEach(product => {
+    if (product.colors) {
+      let colorsArray = [];
+      
+      // محاولة تحليل JSON إذا كان string
+      if (typeof product.colors === 'string') {
+        try {
+          colorsArray = JSON.parse(product.colors);
+        } catch (error) {
+          console.error('Error parsing colors JSON:', error);
+          return;
+        }
+      } else if (Array.isArray(product.colors)) {
+        // إذا كان array مباشرة (للتوافق مع الكود القديم)
+        colorsArray = product.colors;
+      }
+      
+      if (Array.isArray(colorsArray)) {
+        colorsArray.forEach(color => {
+          if (Array.isArray(color)) {
+            // إذا كان اللون مصفوفة، أضف كل لون منفرد
+            color.forEach(c => colorSet.add(c));
+          } else if (typeof color === 'string') {
+            colorSet.add(color);
+          }
+        });
+      }
     }
   });
   return Array.from(colorSet);

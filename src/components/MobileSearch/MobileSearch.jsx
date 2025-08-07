@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './MobileSearch.css';
 import { useAppData } from '../../contexts/AppDataContext';
 import useProducts from '../../hooks/useProducts';
+import { formatPrice } from '../../utils/currencyUtils';
 
 const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuery }) => {
   const { t, i18n } = useTranslation();
@@ -162,10 +163,10 @@ const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuer
                     <span className="suggestion-price">
                       {product.discountPercentage ? (
                         <>
-                          <span className="original-price">₪{product.originalPrice || product.price || product.finalPrice}</span>
+                          <span className="original-price">{formatPrice(product.originalPrice, store?.settings?.currency || 'ILS')}</span>
                         </>
                       ) : (
-                        <span className="current-price">₪{product.finalPrice || product.originalPrice || product.price}</span>
+                        <span className="current-price">{formatPrice(product.finalPrice, store?.settings?.currency || 'ILS')}</span>
                       )}
                     </span>
                   </div>

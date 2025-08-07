@@ -85,13 +85,19 @@ export const AppDataProvider = ({ children }) => {
 
   // Update user data
   const updateUser = (userData) => {
-    setUser(userData);
-    if (userData) {
+    console.log('updateUser called with:', userData);
+    
+    if (userData && (userData._id || userData.id)) {
+      setUser(userData);
       localStorage.setItem('userInfo', JSON.stringify(userData));
       console.log('AppData - User updated:', userData);
-    } else {
+    } else if (userData === null || userData === undefined) {
+      // Only clear user if explicitly passed null/undefined
+      setUser(null);
       localStorage.removeItem('userInfo');
       console.log('AppData - User cleared');
+    } else {
+      console.log('AppData - Invalid user data, keeping current user');
     }
   };
 
@@ -147,15 +153,43 @@ export const AppDataProvider = ({ children }) => {
   const clearData = () => {
     setUser(null);
     setStore(null);
-    setCategories(null); // إعادة التعيين إلى null
+    setCategories(null);
     setProducts([]);
-    setSliders(null); // إعادة التعيين إلى null
+    setSliders(null);
+    
+    // Clear all localStorage items from AppDataContext
     localStorage.removeItem('userInfo');
     localStorage.removeItem('storeInfo');
     localStorage.removeItem('categoriesInfo');
     localStorage.removeItem('productsInfo');
-    localStorage.removeItem('slidersInfo'); // حذف السلايدر عند تسجيل الخروج
-    console.log('AppData - All data cleared');
+    localStorage.removeItem('slidersInfo');
+    
+    // Clear items from tokenManager
+    localStorage.removeItem('authToken');
+    
+    // Clear items from Register component
+    localStorage.removeItem('register_firstName');
+    localStorage.removeItem('register_lastName');
+    localStorage.removeItem('register_phone');
+    localStorage.removeItem('register_city');
+    localStorage.removeItem('register_address');
+    localStorage.removeItem('register_zipCode');
+    localStorage.removeItem('register_country');
+    localStorage.removeItem('user');
+    
+    // Clear items from Navbar/LanguageSwitcher
+    localStorage.removeItem('i18nextLng');
+    
+    // Clear items from AdvertisementPopup
+    localStorage.removeItem('shownAdvertisements');
+    
+    // Clear any other potential items that might be stored
+    localStorage.removeItem('storeId');
+    localStorage.removeItem('storeLogo');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userAvatar');
+    
+    console.log('AppData - All data cleared from localStorage');
   };
 
   // Check if user is authenticated

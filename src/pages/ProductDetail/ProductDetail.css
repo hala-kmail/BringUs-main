@@ -2373,10 +2373,7 @@ border-bottom: 1px solid #f3f4f6;
 padding-bottom: 1rem;
 }
 
-/* مواصفات المنتج - تصميم عصري */
-.product-specification-selection {
-  margin-bottom: 1.2rem;
-}
+
 .specification-title {
   font-size: 1.08rem;
   font-weight: 700;
@@ -2391,13 +2388,12 @@ padding-bottom: 1rem;
 }
 .specification-option {
   min-width: 48px;
-  min-height: 38px;
-  padding: 0.4rem 1.1rem;
+  padding: 0.2rem 1.1rem;
   border-radius: 22px;
   border: 2px solid #e5e7eb;
   background: #fff;
   color: #374151;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-family: 'Tajawal', sans-serif;
   font-weight: 500;
   cursor: pointer;
@@ -2409,14 +2405,14 @@ padding-bottom: 1rem;
   outline: none;
 }
 .specification-option:hover {
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--primary-color, #c4c4c4);
   background: #f0f9ff;
-  color: var(--primary-color, #3b82f6);
+  color: var(--primary-color, #b2b3b5);
 }
 .specification-option.selected {
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--primary-color, #666666);
   background: linear-gradient(90deg, #e0e7ff 0%, #f0f9ff 100%);
-  color: #1e40af;
+  
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(59,130,246,0.08);
 }

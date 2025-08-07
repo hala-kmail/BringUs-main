@@ -76,29 +76,7 @@ const Footer = () => {
   return (
     <footer className="footer">
       {/* Newsletter Bar */}
-      <div className="footer-newsletter-bar">
-        <div className="footer-newsletter-text">
-          <h3 className="footer-newsletter-title">{t('footer.newsletter_title', 'اشترك في النشرة البريدية')}</h3>
-          <p className="footer-newsletter-desc">{t('footer.newsletter_desc', 'سجّل بريدك ليصلك كل جديد من العروض والخصومات. لا نرسل رسائل مزعجة!')}</p>
-        </div>
-        <form
-          className="footer-newsletter-form"
-          onSubmit={e => { e.preventDefault(); alert(t('footer.subscribed', 'تم الاشتراك بنجاح!')); }}
-        >
-          <input
-            type="email"
-            placeholder={t('footer.email_placeholder', 'أدخل بريدك الإلكتروني')}
-            required
-            className="footer-newsletter-input"
-          />
-          <button
-            type="submit"
-            className="footer-newsletter-button"
-          >
-            {t('footer.subscribe', 'اشترك')}
-          </button>
-        </form>
-      </div>
+      
       <hr className="footer-divider" />
 
       {/* Main Footer Columns */}
