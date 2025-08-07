@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { useAppData } from '../../contexts/AppDataContext';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import { useNewArrivalsConfig } from '../../hooks/useNewArrivalsConfig';
@@ -17,11 +18,12 @@ const NewArrivals = () => {
   const [newArrivalProducts, setNewArrivalProducts] = useState([]);
   const { categories } = useCategories();
   const { filterNewArrivals, sortNewArrivals } = useNewArrivalsConfig();
-
+  
+  // استخدام البيانات من الكونتكست بدلاً من useProducts
+  const { products, isLoading: loading } = useAppData();
+  
+  // استخدام الدوال من useProducts
   const { 
-    products,
-    loading, 
-    error,
     getFinalPrice,
     getMainImage,
     getProductName,
@@ -97,7 +99,7 @@ const NewArrivals = () => {
   return (
     <>
       {/* إظهار القسم فقط إذا كان هناك منتجات جديدة */}
-      {newArrivalProducts.length > 0 && !loading && !error ? (
+      {newArrivalProducts.length > 0 && !loading ? (
         <section className="new-arrivals">
           <div className="new-arrivals-container">
             {/* Section Header */}

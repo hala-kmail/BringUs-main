@@ -284,10 +284,10 @@ const ProductCard = ({
         <Link to={`/product/${product._id}`}>
           <img 
             className='product-image-img' 
-            src={productImage || '/placeholder-product.jpg'} 
+            src={productImage || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03NSA3NUM3NSA2OC4zNzMgODEuMzczIDYyIDg4IDYySDIxMkMyMTguNjI3IDYyIDIyNSA2OC4zNzMgMjI1IDc1VjIyNUM2MjUgMjMxLjYyNyAyMTguNjI3IDIzOCAyMTIgMjM4SDg4QzgxLjM3MyAyMzggNzUgMjMxLjYyNyA3NSAyMjVWNzVaIiBmaWxsPSIjOUNBMEE2Ii8+CjxwYXRoIGQ9Ik0xMTIuNSAxMTIuNUMxMTIuNSAxMDUuODczIDExOC44NzMgMTAwIDEyNS41IDEwMEgxNzQuNUMxODEuMTI3IDEwMCAxODcuNSAxMDUuODczIDE4Ny41IDExMi41VjE4Ny41QzE4Ny41IDE5NC4xMjcgMTgxLjEyNyAyMDAgMTc0LjUgMjAwSDEyNS41QzExOC44NzMgMjAwIDExMi41IDE5NC4xMjcgMTEyLjUgMTg3LjVWMTEyLjVaIiBmaWxsPSIjRkZGRkZGIi8+Cjwvc3ZnPgo='} 
             alt={productName}
             onError={(e) => {
-              e.target.src = '/placeholder-product.jpg';
+              e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03NSA3NUM3NSA2OC4zNzMgODEuMzczIDYyIDg4IDYySDIxMkMyMTguNjI3IDYyIDIyNSA2OC4zNzMgMjI1IDc1VjIyNUM2MjUgMjMxLjYyNyAyMTguNjI3IDIzOCAyMTIgMjM4SDg4QzgxLjM3MyAyMzggNzUgMjMxLjYyNyA3NSAyMjVWNzVaIiBmaWxsPSIjOUNBMEE2Ii8+CjxwYXRoIGQ9Ik0xMTIuNSAxMTIuNUMxMTIuNSAxMDUuODczIDExOC44NzMgMTAwIDEyNS41IDEwMEgxNzQuNUMxODEuMTI3IDEwMCAxODcuNSAxMDUuODczIDE4Ny41IDExMi41VjE4Ny41QzE4Ny41IDE5NC4xMjcgMTgxLjEyNyAyMDAgMTc0LjUgMjAwSDEyNS41QzExOC44NzMgMjAwIDExMi41IDE5NC4xMjcgMTEyLjUgMTg3LjVWMTEyLjVaIiBmaWxsPSIjRkZGRkZGIi8+Cjwvc3ZnPgo=';
             }}
           />
         </Link>
@@ -332,9 +332,9 @@ const ProductCard = ({
               {currentLang === 'ar' ? 'تخفيض' : 'Sale'}
             </span>
           )}
-          {product.discountPercentage > 0 && (
+          {product.salePercentage > 0 && (
             <span className="product-badge product-discount-badge">
-              -{product.discountPercentage}%
+              -{product.salePercentage}%
             </span>
           )}
           {product.stockStatus === 'out_of_stock' && (
@@ -473,18 +473,18 @@ const ProductCard = ({
 
           {/* Price */}
           <div className="product-price-container">
-            {product.discountPercentage > 0 && product.compareAtPrice > 0 ? (
+            {product.salePercentage > 0 && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) ? (
               <>
                 <span className="current-price">
-                  {formatPrice(getEffectivePrice(product), store?.settings?.currency || store?.settings?.currency || 'ILS')}
+                  {formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}
                 </span>
                 <span className="original-price">
-                  {formatPrice(product.compareAtPrice, store?.settings?.currency || store?.settings?.currency || 'ILS')}
+                  {formatPrice( product.price, store?.settings?.currency || 'ILS')}
                 </span>
               </>
             ) : (
               <span className="current-price">
-                {formatPrice(getEffectivePrice(product), store?.settings?.currency || store?.settings?.currency || 'ILS')}
+                {formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}
               </span>
             )}
           </div>
@@ -526,16 +526,16 @@ const ProductCard = ({
         </button>
         
         {/* Discount Info (خاص بصفحة AlmostFinishedSale) */}
-        {showDiscountInfo && product.discountPercentage > 0 && product.compareAtPrice > 0 && (
+        {showDiscountInfo && product.salePercentage > 0 && (
           <div className="discount-info">
             <div className="savings-amount">
               <span className="savings-label">{currentLang === 'ar' ? 'توفير' : 'Save'}</span>
               <span className="savings-value">
-                {formatPrice((product.compareAtPrice - getEffectivePrice(product)), store?.settings?.currency || store?.settings?.currency || 'ILS')}
+                {formatPrice((( product.price) - getEffectivePrice(product)), store?.settings?.currency || 'ILS')}
               </span>
             </div>
             <div className="discount-percentage-large">
-              <span className="discount-text">{product.discountPercentage}% {currentLang === 'ar' ? 'خصم' : 'Off'}</span>
+              <span className="discount-text">{product.salePercentage}% {currentLang === 'ar' ? 'خصم' : 'Off'}</span>
             </div>
           </div>
         )}

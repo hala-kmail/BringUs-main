@@ -6,7 +6,6 @@ import { formatPrice } from '../../utils/currencyUtils';
 import { useAppData } from '../../contexts/AppDataContext';
 import Toast from '../Toast/Toast';
 import './UserOrders.css';
-
 const UserOrders = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -19,6 +18,7 @@ const UserOrders = () => {
     error,
     pagination,
     getUserOrders,
+    filterOrdersByStatus,
     getOrderDetails,
     cancelOrder
   } = useUserOrders();
@@ -33,12 +33,14 @@ const UserOrders = () => {
 
   // جلب الطلبات عند تحميل المكون
   useEffect(() => {
-    getUserOrders(1, 10, selectedStatus);
-  }, [getUserOrders, selectedStatus]);
+    getUserOrders(1, 10);
+  }, [getUserOrders]);
 
   // دالة لتغيير حالة الفلتر
   const handleStatusFilter = (status) => {
     setSelectedStatus(status);
+    // فلترة الطلبات في الفرونت إند
+    filterOrdersByStatus(status);
   };
 
   // دالة لعرض تفاصيل الطلب
@@ -87,19 +89,18 @@ const UserOrders = () => {
 
   // دالة لتغيير الصفحة
   const handlePageChange = (page) => {
-    getUserOrders(page, pagination.itemsPerPage, selectedStatus);
+    getUserOrders(page, pagination.itemsPerPage);
   };
 
   // دالة للحصول على حالة الطلب المترجمة
   const getStatusText = (status) => {
     const statusMap = {
       pending: currentLang === 'ar' ? 'قيد المراجعة' : 'Pending',
-      confirmed: currentLang === 'ar' ? 'مؤكد' : 'Confirmed',
-      processing: currentLang === 'ar' ? 'قيد المعالجة' : 'Processing',
+      
       shipped: currentLang === 'ar' ? 'تم الشحن' : 'Shipped',
       delivered: currentLang === 'ar' ? 'تم التوصيل' : 'Delivered',
       cancelled: currentLang === 'ar' ? 'ملغي' : 'Cancelled',
-      refunded: currentLang === 'ar' ? 'مسترد' : 'Refunded'
+     
     };
     return statusMap[status] || status;
   };
@@ -128,12 +129,13 @@ const UserOrders = () => {
   // دالة لتنسيق التاريخ
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US', {
+    return date.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      calendar: 'gregory' // استخدام التقويم الميلادي
     });
   };
 
@@ -179,12 +181,7 @@ const UserOrders = () => {
         >
           {currentLang === 'ar' ? 'قيد المراجعة' : 'Pending'}
         </button>
-        <button
-          className={`filter-btn ${selectedStatus === 'confirmed' ? 'active' : ''}`}
-          onClick={() => handleStatusFilter('confirmed')}
-        >
-          {currentLang === 'ar' ? 'مؤكد' : 'Confirmed'}
-        </button>
+        
         <button
           className={`filter-btn ${selectedStatus === 'shipped' ? 'active' : ''}`}
           onClick={() => handleStatusFilter('shipped')}
@@ -221,7 +218,7 @@ const UserOrders = () => {
           </div>
         ) : (
           orders.map((order) => (
-            <div key={order.orderNumber} className="order-card">
+            <div key={order.orderNumber} className="order-card" onClick={() => handleViewOrderDetails(order.orderNumber)}>
               <div className="order-header">
                 <div className="order-info">
                   <div className="order-number-date">
@@ -239,23 +236,42 @@ const UserOrders = () => {
                 </div>
                 <div className="order-total">
                   <span className="total-amount">
-                    {formatPrice(order.price, store?.settings?.currency || 'ILS')}
+                    {formatPrice(
+                      (order.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0) + 
+                      (order.deliveryArea?.price || 0), 
+                      order.currency || store?.settings?.currency || 'USD'
+                    )}
                   </span>
                 </div>
               </div>
 
               <div className="order-items-preview">
-                <div className="items-count">
-                  {currentLang === 'ar' ? `${order.itemsCount} منتج` : `${order.itemsCount} items`}
+                <div className="items-info">
+                  <div className="items-count">
+                    {currentLang === 'ar' ? `${order.itemsCount} منتج` : `${order.itemsCount} items`}
+                  </div>
+                  {order.deliveryArea && (
+                    <div className="delivery-area">
+                      <span className="delivery-label">
+                        {currentLang === 'ar' ? 'منطقة التوصيل:' : 'Delivery Area:'}
+                      </span>
+                      <span className="delivery-name">
+                        {currentLang === 'ar' ? order.deliveryArea.locationAr : order.deliveryArea.locationEn}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="items-images">
                   {order.items.slice(0, 3).map((item, index) => (
-                    <img 
-                      key={index}
-                      src={item.image || '/placeholder-product.jpg'} 
-                      alt={item.name}
-                      className="item-image"
-                    />
+                                          <img 
+                        key={index}
+                        src={item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg=='} 
+                        alt={item.name}
+                        className="item-image"
+                        onError={(e) => {
+                          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg==';
+                        }}
+                      />
                   ))}
                   {order.items.length > 3 && (
                     <div className="more-items">
@@ -265,22 +281,8 @@ const UserOrders = () => {
                 </div>
               </div>
 
-              <div className="order-actions">
-                <button
-                  className="view-details-btn"
-                  onClick={() => handleViewOrderDetails(order.orderNumber)}
-                >
-                  {currentLang === 'ar' ? 'عرض التفاصيل' : 'View Details'}
-                </button>
-                {canCancelOrder(order) && (
-                  <button
-                    className="cancel-order-btn"
-                    onClick={() => openCancelModal(order)}
-                  >
-                    {currentLang === 'ar' ? 'إلغاء' : 'Cancel'}
-                  </button>
-                )}
-              </div>
+             
+              
             </div>
           ))
         )}
@@ -352,12 +354,56 @@ const UserOrders = () => {
                     {getStatusText(selectedOrder.status)}
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">{currentLang === 'ar' ? 'المجموع:' : 'Total:'}</span>
-                  <span className="detail-value">
-                    {formatPrice(selectedOrder.price, store?.settings?.currency || 'ILS')}
-                  </span>
-                </div>
+                
+                                 {/* معلومات التوصيل */}
+                 {selectedOrder.deliveryArea && (
+                   <div className="detail-row">
+                     <span className="detail-label">{currentLang === 'ar' ? 'منطقة التوصيل:' : 'Delivery Area:'}</span>
+                     <span className="detail-value">
+                       {currentLang === 'ar' ? selectedOrder.deliveryArea.locationAr : selectedOrder.deliveryArea.locationEn}
+                     </span>
+                   </div>
+                 )}
+                 
+                 {selectedOrder.deliveryArea && (
+                   <div className="detail-row">
+                     <span className="detail-label">{currentLang === 'ar' ? 'مدة التوصيل المتوقعة:' : 'Estimated Delivery:'}</span>
+                     <span className="detail-value">
+                       {selectedOrder.deliveryArea.estimatedDays} {currentLang === 'ar' ? 'يوم' : 'days'}
+                     </span>
+                   </div>
+                 )}
+                 
+                 {/* تفاصيل الأسعار */}
+                 <div className="detail-row">
+                   <span className="detail-label">{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
+                   <span className="detail-value">
+                     {formatPrice(
+                       selectedOrder.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0,
+                       selectedOrder.currency || store?.settings?.currency || 'USD'
+                     )}
+                   </span>
+                 </div>
+                 
+                 {selectedOrder.deliveryArea && selectedOrder.deliveryArea.price > 0 && (
+                   <div className="detail-row">
+                     <span className="detail-label">{currentLang === 'ar' ? 'رسوم التوصيل:' : 'Shipping Cost:'}</span>
+                     <span className="detail-value">
+                       {formatPrice(selectedOrder.deliveryArea.price, selectedOrder.currency || store?.settings?.currency || 'USD')}
+                     </span>
+                   </div>
+                 )}
+                 
+                 <div className="detail-row total-row">
+                   <span className="detail-label">{currentLang === 'ar' ? 'المجموع النهائي:' : 'Final Total:'}</span>
+                   <span className="detail-value total-amount">
+                     {formatPrice(
+                       (selectedOrder.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0) + 
+                       (selectedOrder.deliveryArea?.price || 0),
+                       selectedOrder.currency || store?.settings?.currency || 'USD'
+                     )}
+                   </span>
+                 </div>
               </div>
 
               <div className="order-items-details">
@@ -365,18 +411,57 @@ const UserOrders = () => {
                 {selectedOrder.items.map((item, index) => (
                   <div key={index} className="order-item-detail">
                     <img 
-                      src={item.image || '/placeholder-product.jpg'} 
+                      src={item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg=='} 
                       alt={item.name}
                       className="item-image"
+                      onError={(e) => {
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg==';
+                      }}
                     />
-                    <div className="item-info">
-                      <h5>{item.name}</h5>
-                      <p>{currentLang === 'ar' ? `الكمية: ${item.quantity}` : `Quantity: ${item.quantity}`}</p>
-                      <p>{formatPrice(item.pricePerUnit, store?.settings?.currency || 'ILS')}</p>
-                    </div>
-                    <div className="item-total">
-                      {formatPrice(item.total, store?.settings?.currency || 'ILS')}
-                    </div>
+                                         <div className="item-info">
+                       <h5>{currentLang === 'ar' ? item.productSnapshot.nameAr : item.productSnapshot.nameEn}</h5>
+                       <p className="quantity">{currentLang === 'ar' ? `الكمية: ${item.quantity}` : `Quantity: ${item.quantity}`}</p>
+                       
+                       {/* عرض الألوان المحددة */}
+                       {item.selectedColors && item.selectedColors.length > 0 && (
+                         <div className="item-colors">
+                           <span className="item-colors-label">
+                             {currentLang === 'ar' ? 'اللون:' : 'Color:'}
+                           </span>
+                           {item.selectedColors.map((color, colorIndex) => (
+                             <span key={colorIndex} className="color-preview" style={{ backgroundColor: color.split('+')[0] }}>
+                               {/* {color.split('+').length > 1 && (
+                                
+                               )} */}
+                             </span>
+                           ))}
+                         </div>
+                       )}
+                       
+                       {/* عرض المواصفات المحددة */}
+                       {item.selectedSpecifications && item.selectedSpecifications.length > 0 && (
+                         <div className="item-specifications">
+                           {item.selectedSpecifications.map((spec, specIndex) => (
+                             <span key={specIndex} className="specification-tag">
+                               {currentLang === 'ar' ? `${spec.titleAr}: ${spec.valueAr}` : `${spec.titleEn}: ${spec.valueEn}`}
+                             </span>
+                           ))}
+                         </div>
+                       )}
+                       
+                       <p className="item-price">
+                         {formatPrice(item.pricePerUnit, selectedOrder.currency || store?.settings?.currency || 'USD')} 
+                         {currentLang === 'ar' ? ' لكل قطعة' : ' per unit'}
+                       </p>
+                     </div>
+                     <div className="item-total">
+                       <span className="total-amount">
+                         {formatPrice(item.total, selectedOrder.currency || store?.settings?.currency || 'USD')}
+                       </span>
+                       <span className="total-label">
+                         {currentLang === 'ar' ? 'المجموع' : 'Total'}
+                       </span>
+                     </div>
                   </div>
                 ))}
               </div>
@@ -385,6 +470,7 @@ const UserOrders = () => {
         </div>
       )}
 
+    
       {/* نافذة إلغاء الطلب */}
       {showCancelModal && orderToCancel && (
         <div className="cancel-modal">

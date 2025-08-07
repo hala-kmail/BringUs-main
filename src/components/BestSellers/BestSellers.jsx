@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { useAppData } from '../../contexts/AppDataContext';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import ProductCard from '../ProductCard/ProductCard';
@@ -15,11 +16,12 @@ const BestSellers = () => {
   const navigate = useNavigate();
   const [bestSellerProducts, setBestSellerProducts] = useState([]);
   const { categories } = useCategories();
-
+  
+  // استخدام البيانات من الكونتكست بدلاً من useProducts
+  const { products, isLoading: loading } = useAppData();
+  
+  // استخدام الدوال من useProducts
   const { 
-    products,
-    loading, 
-    error,
     getFinalPrice,
     getMainImage,
     getProductName,
@@ -39,13 +41,7 @@ const BestSellers = () => {
 
   const handleAddToCart = (product) => {
     if (isInStock(product)) {
-      addToCart({
-        id: product._id,
-        name: getProductName(product, currentLang),
-        price: getFinalPrice(product),
-        image: getMainImage(product),
-        quantity: 1
-      });
+      addToCart(product, { quantity: 1 });
     } else {
       navigate(`/product/${product._id}`);
     }
@@ -71,15 +67,10 @@ const BestSellers = () => {
           </div>
         )}
 
-        {/* Error State */}
-        {error && (
-          <div className="best-sellers-error">
-            <p>{currentLang === 'ar' ? 'خطأ في تحميل المنتجات' : 'Error loading products'}</p>
-          </div>
-        )}
+        {/* Error State - لا نحتاج لهذا لأننا نستخدم البيانات من الكونتكست */}
 
         {/* Products Grid */}
-        {!loading && !error && (
+        {!loading && (
           <div className="products-grid">
             {bestSellerProducts.length > 0 ? (
               bestSellerProducts.map((product) => (

@@ -387,7 +387,12 @@ const Cart = () => {
                     )}
                     {/* Price */}
                     <div className="cart-item-price">
-                      <span className="current-price">{formatPrice(item.priceAtAdd, store?.settings?.currency || 'ILS')}</span>
+                      {item.product.salePercentage > 0 && (
+                        <span className="original-price">
+                          {formatPrice( item.product.price, store?.settings?.currency || 'ILS')}
+                        </span>
+                      )}
+                      <span className="current-price">{formatPrice( item.product.finalPrice, store?.settings?.currency || 'ILS')}</span>
                     </div>
                     {/* Product Specifications - Simple Text */}
                     {(item.selectedSpecifications || item.selectedColors) && (
@@ -430,7 +435,7 @@ const Cart = () => {
                   </div>
                   {/* Total Price */}
                   <div className="cart-item-total desktop-only">
-                    {formatPrice(((item.priceAtAdd || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
+                    {formatPrice((( item.product.finalPrice || item.price || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
                   </div>
                   {/* Remove Button */}
                   <button 
@@ -522,7 +527,12 @@ const Cart = () => {
                         )}
                         {/* Price */}
                         <div className="cart-item-price">
-                          <span className="current-price">{formatPrice((item.priceAtAdd || 0), store?.settings?.currency || 'ILS')}</span>
+                        {item.product.salePercentage > 0 && (
+                          <span className="original-price">
+                            {formatPrice( item.product.price, store?.settings?.currency || 'ILS')}
+                          </span>
+                        )}
+                          <span className="current-price">{formatPrice((item.product.finalPrice || item.price || 0), store?.settings?.currency || 'ILS')}</span>
                         </div>
                       </div>
                     </div>
@@ -552,7 +562,7 @@ const Cart = () => {
                           {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
                         </span>
                         <div className="cart-item-total-price">
-                          {formatPrice(((item.priceAtAdd || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
+                          {formatPrice(((item.product.finalPrice || item.price || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
                         </div>
                       </div>
                     </div>

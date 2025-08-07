@@ -4,7 +4,8 @@ import { getBearerToken } from '../utils/tokenManager';
 const API_BASE_URL = 'http://localhost:5001/api';
 
 const useUserOrders = () => {
-  const [orders, setOrders] = useState([]);
+  const [allOrders, setAllOrders] = useState([]); // جميع الطلبات
+  const [filteredOrders, setFilteredOrders] = useState([]); // الطلبات المفلترة
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
@@ -25,10 +26,8 @@ const useUserOrders = () => {
         throw new Error('No authentication token found');
       }
 
-      let url = `${API_BASE_URL}/orders/my-orders?page=${page}&limit=${limit}`;
-      if (status) {
-        url += `&status=${status}`;
-      }
+      // جلب جميع الطلبات بدون فلتر
+      const url = `${API_BASE_URL}/orders/my-orders?page=${page}&limit=${limit}`;
 
       console.log('🔍 Fetching user orders from:', url);
 
@@ -49,11 +48,25 @@ const useUserOrders = () => {
       }
 
       if (data.success) {
-        setOrders(data.data || []);
+        const allOrdersData = data.data || [];
+        setAllOrders(allOrdersData);
+        
+        // فلترة الطلبات حسب الحالة
+        let filteredData = allOrdersData;
+        if (status && status !== '') {
+          filteredData = allOrdersData.filter(order => order.status === status);
+        }
+        
+        setFilteredOrders(filteredData);
+        
+        // حساب الباجينيشن للطلبات المفلترة
+        const totalFilteredItems = filteredData.length;
+        const totalPages = Math.ceil(totalFilteredItems / limit);
+        
         setPagination({
           currentPage: page,
-          totalPages: data.pagination?.totalPages || 1,
-          totalItems: data.count || data.data?.length || 0,
+          totalPages: totalPages || 1,
+          totalItems: totalFilteredItems,
           itemsPerPage: limit
         });
       } else {
@@ -69,6 +82,28 @@ const useUserOrders = () => {
       setLoading(false);
     }
   }, []);
+
+  // دالة فلترة الطلبات حسب الحالة
+  const filterOrdersByStatus = useCallback((status) => {
+    let filteredData = allOrders;
+    
+    if (status && status !== '') {
+      filteredData = allOrders.filter(order => order.status === status);
+    }
+    
+    setFilteredOrders(filteredData);
+    
+    // إعادة حساب الباجينيشن
+    const totalFilteredItems = filteredData.length;
+    const totalPages = Math.ceil(totalFilteredItems / pagination.itemsPerPage);
+    
+    setPagination(prev => ({
+      ...prev,
+      currentPage: 1, // العودة للصفحة الأولى
+      totalPages: totalPages || 1,
+      totalItems: totalFilteredItems
+    }));
+  }, [allOrders, pagination.itemsPerPage]);
 
   // جلب تفاصيل طلب محدد
   const getOrderDetails = useCallback(async (orderId) => {
@@ -191,11 +226,13 @@ const useUserOrders = () => {
   }, []);
 
   return {
-    orders,
+    orders: filteredOrders, // استخدام الطلبات المفلترة
+    allOrders, // جميع الطلبات للاستخدام الداخلي
     loading,
     error,
     pagination,
     getUserOrders,
+    filterOrdersByStatus, // دالة الفلترة الجديدة
     getOrderDetails,
     cancelOrder,
     updateOrderStatus,

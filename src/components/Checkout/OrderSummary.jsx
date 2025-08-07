@@ -105,11 +105,11 @@ const OrderSummary = ({
                   </div>
                 )}
                 <div className="item-price">
-                  {currencySymbol}{(item.finalPrice || item.priceAtAdd || 0).toFixed(2)} × {item.quantity}
+                  {currencySymbol}{(item.product.finalPrice).toFixed(2)} × {item.quantity}
                 </div>
               </div>
               <div className="item-total">
-                {currencySymbol}{((item.finalPrice || item.priceAtAdd || 0) * item.quantity).toFixed(2)}
+                {currencySymbol}{((item.product.finalPrice) * item.quantity).toFixed(2)}
               </div>
             </div>
           ))}

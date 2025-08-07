@@ -50,13 +50,7 @@ const RelatedProducts = ({ currentProduct, categoryId }) => {
 
   const handleAddToCart = (product) => {
     if (isInStock(product)) {
-      addToCart({
-        id: product._id,
-        name: getProductName(product, currentLang),
-        price: getFinalPrice(product),
-        image: getMainImage(product),
-        quantity: 1
-      });
+      addToCart(product, { quantity: 1 });
     } else {
       navigate(`/product/${product._id}`);
     }

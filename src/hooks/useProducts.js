@@ -10,6 +10,7 @@ const useProducts = () => {
   const { store, products, updateProducts } = useAppData();
 
   const fetchProducts = useCallback(async (storeId, options = {}) => {
+    
     if (!storeId) {
       console.log('No store ID available for fetching products');
       return null;
@@ -68,8 +69,10 @@ const useProducts = () => {
 
   // جلب المنتجات تلقائياً عند توفر الستور
   useEffect(() => {
+    console.log(store?._id,'store?._idstore?._idstore?._id');
     // تجنب جلب البيانات إذا كانت متوفرة بالفعل
     if (products && products.length > 0) {
+      console.log('products already fetched');
       return;
     }
 
@@ -222,14 +225,19 @@ const useProducts = () => {
   // حساب السعر النهائي مع الخصم
   const getFinalPrice = useCallback((product) => {
     if (!product) return 0;
-    return product.finalPrice || product.price;
+    // إذا كان هناك finalPrice (سعر بعد الخصم)، استخدمه
+    if (product.finalPrice !== undefined && product.finalPrice !== null) {
+      return product.finalPrice;
+    }
+    // وإلا استخدم السعر العادي
+    return product.price || 0;
   }, []);
 
   // حساب نسبة الخصم
   const getDiscountPercentage = useCallback((product) => {
     if (!product) return 0;
-    return product.discountPercentage || 0;
-  }, []);
+    return product.salePercentage || 0;
+  }, []); 
 
   // الحصول على الصورة الرئيسية
   const getMainImage = useCallback((product) => {

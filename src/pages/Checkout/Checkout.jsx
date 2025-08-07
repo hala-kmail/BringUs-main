@@ -281,7 +281,7 @@ const handleSendWhatsApp = async () => {
         nameEn: item.nameEn,
         name: item.name,
         price: item.price,
-        finalPrice: item.finalPrice,
+        finalPrice: item.product.finalPrice,
         priceAtAdd: item.priceAtAdd,
         quantity: item.quantity
       });
@@ -492,59 +492,144 @@ const handleSendWhatsApp = async () => {
   const handleWhatsAppOrder = (orderData) => {
     const { orderNumber, customerInfo, items, totals } = orderData;
     
-    let message = ` *طلب جديد - رقم الطلب: ${orderNumber || 'N/A'}*\n\n`;
-    message += ` الهاتف: ${customerInfo.phone}\n`;
-    message += ` العنوان: ${customerInfo.address}, ${customerInfo.city}`;
+    // إنشاء رسالة باللغة المختارة فقط
+    const isArabic = currentLang === 'ar';
+    
+    let message = isArabic 
+      ? ` *طلب جديد*\n`
+      : ` *New Order*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+    
+    // معلومات الطلب - Order Information
+    message += isArabic 
+      ? ` *رقم الطلب:* ${orderNumber || 'غير محدد'}\n`
+      : ` *Order Number:* ${orderNumber || 'N/A'}\n`;
+    message += isArabic 
+      ? ` *التاريخ:* ${new Date().toLocaleDateString('ar-EG')}\n`
+      : ` *Date:* ${new Date().toLocaleDateString('en-US')}\n`;
+    message += isArabic 
+      ? ` *الوقت:* ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}\n\n`
+      : ` *Time:* ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}\n\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+    // معلومات العميل - Customer Information
+    message += isArabic 
+      ? ` *معلومات العميل:*\n`
+      : ` *Customer Information:*\n`;
+    message += isArabic 
+      ? ` *الاسم:* ${customerInfo.fullName || 'غير محدد'}\n`
+      : ` *Name:* ${customerInfo.fullName || 'N/A'}\n`;
+    message += isArabic 
+      ? ` الهاتف: ${customerInfo.phone || 'غير محدد'}\n`
+      : ` Phone: ${customerInfo.phone || 'N/A'}\n`;
+    message += isArabic 
+      ? ` العنوان: ${customerInfo.address || 'غير محدد'}, ${customerInfo.city || 'غير محدد'}`
+      : ` Address: ${customerInfo.address || 'N/A'}, ${customerInfo.city || 'N/A'}`;
     if (customerInfo.district) {
       message += `, ${customerInfo.district}`;
     }
     message += '\n\n';
     
+    // الملاحظات - Notes
     if (customerInfo.notes) {
-      message += ` ملاحظات: ${customerInfo.notes}\n\n`;
+      message += isArabic 
+        ? ` *ملاحظات:*\n${customerInfo.notes}\n\n`
+        : ` *Notes:*\n${customerInfo.notes}\n\n`;
     }
     
-    message += ` *المنتجات:*\n`;
+    // المنتجات - Products
+    message += isArabic 
+      ? ` *المنتجات المطلوبة:*\n`
+      : ` *Requested Products:*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    
     items.forEach((item, index) => {
       // الحصول على اسم المنتج بشكل آمن
       const getItemName = (item, lang) => {
-        if (item.name && item.name[lang]) {
-          return item.name[lang];
+        // محاولة الحصول على الاسم من الحقول المختلفة
+        if (item.nameAr && lang === 'ar') {
+          return item.nameAr;
         }
-        if (item.product && item.product.name && item.product.name[lang]) {
-          return item.product.name[lang];
+        if (item.nameEn && lang === 'en') {
+          return item.nameEn;
         }
-        return item.name || item.product?.name || 'N/A';
+        if (item.name && typeof item.name === 'string') {
+          return item.name;
+        }
+        if (item.product && item.product.nameAr && lang === 'ar') {
+          return item.product.nameAr;
+        }
+        if (item.product && item.product.nameEn && lang === 'en') {
+          return item.product.nameEn;
+        }
+        if (item.product && item.product.name && typeof item.product.name === 'string') {
+          return item.product.name;
+        }
+        // إذا لم نجد اسماً، نستخدم اسم افتراضي
+        return lang === 'ar' ? 'منتج غير محدد' : 'Undefined Product';
       };
       
-      message += `${index + 1}. ${getItemName(item, currentLang)} x${item.quantity}`;
+      const itemName = getItemName(item, currentLang);
+      const itemPrice = item.product.finalPrice || item.priceAtAdd || item.price || 0;
+      const currencySymbol = getCurrencySymbol(store?.settings.currency || 'ILS');
       
-      // إضافة الألوان المختارة
+      message += `\n${index + 1}. *${itemName}*\n`;
+      message += isArabic 
+        ? `  الكمية: ${item.quantity}\n`
+        : `  Quantity: ${item.quantity}\n`;
+      message += isArabic 
+        ? `  السعر: ${currencySymbol}${itemPrice.toFixed(2)}\n`
+        : `   Price: ${currencySymbol}${itemPrice.toFixed(2)}\n`;
+      
+      // إضافة الألوان المختارة - Colors
       if (item.selectedColors && item.selectedColors.length > 0) {
-        item.selectedColors.forEach(color => {
+        message += isArabic 
+          ? ` الألوان: `
+          : `  Colors: `;
+        item.selectedColors.forEach((color, colorIndex) => {
           const colorName = getColorLabel(color, t);
-          message += ` (${currentLang === 'ar' ? 'اللون' : 'Color'}: ${colorName})`;
+          message += `${colorName}${colorIndex < item.selectedColors.length - 1 ? ', ' : ''}`;
         });
+        message += '\n';
       }
       
-      // إضافة جميع المواصفات الأخرى
+      // إضافة المواصفات - Specifications
       if (item.selectedSpecifications && item.selectedSpecifications.length > 0) {
-        item.selectedSpecifications.forEach(spec => {
+        message += isArabic 
+          ? `    المواصفات: `
+          : `    Specifications: `;
+        item.selectedSpecifications.forEach((spec, specIndex) => {
           const specTitle = currentLang === 'ar' ? (spec.titleAr || spec.title || spec.specificationId) : (spec.titleEn || spec.title || spec.specificationId);
           const specValue = currentLang === 'ar' ? (spec.valueAr || spec.value || spec.valueId) : (spec.valueEn || spec.value || spec.valueId);
-          message += ` (${specTitle}: ${specValue})`;
+          message += `${specTitle}: ${specValue}${specIndex < item.selectedSpecifications.length - 1 ? ', ' : ''}`;
         });
+        message += '\n';
       }
-      const itemPrice = item.finalPrice || item.priceAtAdd || 0;
-      const currencySymbol = getCurrencySymbol(store?.settings.currency || 'ILS');
-      message += ` - ${currencySymbol}${(itemPrice * item.quantity).toFixed(2)}\n`;
+      
+      message += isArabic 
+        ? `    المجموع: ${currencySymbol}${(itemPrice * item.quantity).toFixed(2)}\n`
+        : `    Total: ${currencySymbol}${(itemPrice * item.quantity).toFixed(2)}\n`;
     });
     
-    message += `\n *الفاتورة:*\n`;
+    // الفاتورة - Invoice
+    message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+    message += isArabic 
+      ? ` *ملخص الفاتورة:*\n`
+      : ` *Invoice Summary:*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    
     const currencySymbol = getCurrencySymbol(store?.settings.currency || 'ILS');
-    message += `المجموع الفرعي: ${currencySymbol}${totals.subtotal}\n`;
-    message += `الشحن: ${totals.shipping === 0 ? 'مجاني' : `${currencySymbol}${totals.shipping}`}\n`;
-    message += `الإجمالي: ${currencySymbol}${totals.total}`;
+    message += isArabic 
+      ? ` المجموع الفرعي: ${currencySymbol}${totals.subtotal.toFixed(2)}\n`
+      : ` Subtotal: ${currencySymbol}${totals.subtotal.toFixed(2)}\n`;
+    message += isArabic 
+      ? ` رسوم الشحن: ${totals.shipping === 0 ? ' مجاني' : `${currencySymbol}${totals.shipping.toFixed(2)}`}\n`
+      : ` Shipping: ${totals.shipping === 0 ? ' Free' : `${currencySymbol}${totals.shipping.toFixed(2)}`}\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += isArabic 
+      ? ` *الإجمالي النهائي: ${currencySymbol}${totals.total.toFixed(2)}*\n`
+      : ` *Final Total: ${currencySymbol}${totals.total.toFixed(2)}*\n`;
+    
+
     
     // Get WhatsApp number from store data or use fallback
     const phoneNumber = store?.contact?.whatsapp || store?.contact?.phone;
@@ -665,7 +750,7 @@ const handleSendWhatsApp = async () => {
               <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{getCurrencySymbol(store?.settings.currency || 'ILS')}{(cartTotals.subtotal + getShippingPrice()).toFixed(2)}</div>
               
               {/* QR Code - Show if payment method has QR code */}
-              {selectedPaymentMethod?.qrCode?.enabled && selectedPaymentMethod?.qrCode?.qrCodeImage && (
+              { selectedPaymentMethod?.qrCode?.qrCodeImage && (
                 <div style={{ margin: '16px 0' }}>
                   <p style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>{t('checkout.scan_qr_code')}</p>
                   <img src={selectedPaymentMethod.qrCode.qrCodeImage} alt="QR Code" style={{ width: 120, height: 120, border: '1px solid #ddd', borderRadius: 8 }} />

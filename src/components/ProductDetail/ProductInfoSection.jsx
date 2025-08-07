@@ -24,7 +24,7 @@ const ProductInfoSection = ({
 
   const discountActive = isDiscountActive(product);
   const effectivePrice = getEffectivePrice(product);
-  const originalPrice = product.compareAtPrice || product.price;
+  const originalPrice =  product.price;
   const totalPrice = effectivePrice * quantity;
 
   const handleCopy = (barcode) => {

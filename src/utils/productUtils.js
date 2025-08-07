@@ -57,16 +57,21 @@ export const getSimpleColorsFromColorsField = (product) => {
 // Helper function to check if a discount is active
 export const isDiscountActive = (product) => {
   if ( 
-    product.discountPercentage === null ||
-    product.discountPercentage === undefined ||
-    Number(product.discountPercentage) <= 0
+    product.salePercentage === null ||
+    product.salePercentage === undefined ||
+    Number(product.salePercentage) <= 0
   ) return false;
   return true;
 };
 
 // Helper function to get the final price of a product
 export const getEffectivePrice = (product) => { 
-  return product.finalPrice || product.price || 0;
+  // إذا كان هناك finalPrice (سعر بعد الخصم)، استخدمه
+  if (product.finalPrice !== undefined && product.finalPrice !== null) {
+    return product.finalPrice;
+  }
+  // وإلا استخدم السعر العادي
+  return product.price || 0;
 };
 
 // Helper function to organize specifications by title

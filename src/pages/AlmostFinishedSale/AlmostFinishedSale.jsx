@@ -114,13 +114,7 @@ const AlmostFinishedSale = () => {
 
   const handleAddToCart = (product) => {
     if (product.stock > 0) {
-      addToCart({
-        id: product._id,
-        name: getProductName(product, currentLang),
-        price: getFinalPrice(product),
-        image: getMainImage(product),
-        quantity: 1
-      });
+      addToCart(product, { quantity: 1 });
     } else {
       navigate(`/product/${product._id}`);
     }
@@ -148,10 +142,8 @@ const AlmostFinishedSale = () => {
     return null;
   };
 
-  // Get final price
-  const getFinalPrice = (product) => {
-    return product.salePrice || product.price || 0;
-  };
+  // استخدام getFinalPrice من useProducts
+  const { getFinalPrice } = useProducts();
 
   // Get main image
   const getMainImage = (product) => {

@@ -467,7 +467,13 @@ const Profile = () => {
                     <div className="wishlist-grid">
                       {wishlistItems.map((item) => (
                         <div key={item.id} className="wishlist-item">
-                          <img src={item.image} alt={item.name} />
+                          <img 
+                            src={item.image || 'https://via.placeholder.com/80x80/f3f4f6/9ca0a6?text=No+Image'} 
+                            alt={item.name}
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/80x80/f3f4f6/9ca0a6?text=No+Image';
+                            }}
+                          />
                           <div className="item-details">
                             <h4>{item.name}</h4>
                             <p className="price">{formatPrice(item.price, store?.settings?.currency || 'ILS')}</p>

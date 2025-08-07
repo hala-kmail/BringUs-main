@@ -439,14 +439,13 @@
 }
 
 .item-details {
-  padding: 1rem;
+  padding:0 1rem;
 }
 
 .item-details h4 {
   font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
-  margin-bottom: 0.5rem;
 }
 
 .price {

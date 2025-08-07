@@ -73,7 +73,14 @@ export const CartProvider = ({ children }) => {
 
       console.log('Fetching cart - Response:', {
         status: response.status,
-        data: data
+        data: data,
+        items: data.data?.items?.map(item => ({
+          productId: item.product,
+          price: item.price,
+          finalPrice: item.product.finalPrice,
+          priceAtAdd: item.priceAtAdd,
+          quantity: item.quantity
+        }))
       });
 
       if (!response.ok) {
@@ -85,7 +92,18 @@ export const CartProvider = ({ children }) => {
       }
 
       if (data.success && data.data) {
-        setCartItems(data.data.items || []);
+        // إضافة finalPrice لكل عنصر إذا لم يكن موجوداً
+        const itemsWithFinalPrice = (data.data.items || []).map(item => {
+          if (!item.product.finalPrice && item.product) {
+            // إذا لم يكن هناك finalPrice، استخدم priceAtAdd أو price
+            return {
+              ...item,
+              finalPrice: item.priceAtAdd || item.price || 0
+            };
+          }
+          return item;
+        });
+        setCartItems(itemsWithFinalPrice);
       } else {
         setCartItems([]);
       }
@@ -190,10 +208,14 @@ export const CartProvider = ({ children }) => {
     setError(null);
 
     try {
+      // الحصول على السعر الصحيح (بعد الخصم)
+      const finalPrice = getEffectivePrice(product);
+      
       const requestBody = {
         product: product._id || product.id,
         quantity: quantity,
-        storeId: store._id
+        storeId: store._id,
+        price: finalPrice // إضافة السعر الصحيح للطلب
       };
 
       // إضافة المواصفات المختارة
@@ -212,7 +234,10 @@ export const CartProvider = ({ children }) => {
         method: 'POST',
         storeId: store._id,
         productId: product._id || product.id,
-        requestBody: requestBody
+        requestBody: requestBody,
+        productPrice: product.price,
+        productFinalPrice: product.finalPrice,
+        sentPrice: finalPrice
       });
 
       const response = await fetch(`${API_BASE_URL}/cart?storeId=${store._id}`, {
@@ -466,8 +491,9 @@ export const CartProvider = ({ children }) => {
   // Get cart totals
   const getCartTotals = () => {
     const subtotal = cartItems.reduce((total, item) => {
-      // استخدم priceAtAdd المخزن في السلة
-      return total + ((item.priceAtAdd || 0) * (item.quantity || 1));
+      // استخدم السعر الصحيح (بعد الخصم)
+      const itemPrice = item.product.finalPrice || item.price || 0;
+      return total + (itemPrice * (item.quantity || 1));
     }, 0);
 
     // Count unique products instead of total quantity
