@@ -20,7 +20,14 @@
     animation: pulse 0.3s ease-in-out;
   }
   
-
+.product-card.out-of-stock{
+    opacity: 0.5;
+    /* pointer-events: none; */
+}
+.add-to-cart-btn.out-of-stock{
+    opacity: 0.5;
+    pointer-events: none;
+}
 h3.product-top-name{
     margin: 0;
     white-space: nowrap;

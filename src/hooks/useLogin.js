@@ -237,8 +237,6 @@ const useLogin = () => {
       if (data.token) {
         const tokenSaved = saveToken(data.token);
         if (tokenSaved) {
-          console.log('Token saved successfully to localStorage');
-          
           // Verify token was saved
           const savedToken = getToken();
           if (savedToken === data.token) {

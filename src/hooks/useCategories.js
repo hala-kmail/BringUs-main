@@ -57,48 +57,44 @@ const useCategories = () => {
     }
   }, [categories, updateCategories]); // إضافة الاعتماديات
 
-  // useEffect(() => {
-  //   console.log('store', store);
-  //   console.log('categories', categories);
-  //   // جلب الأصناف فقط إذا كانت null
-  //   if (store && store._id && categories === null) {
-  //     console.log('Initial categories fetch for store ID:', store._id);
-  //     // استدعاء fetchCategories مباشرة بدلاً من إضافتها لل dependencies
-  //     const loadCategories = async () => {
-  //       try {
-  //         setLoading(true);
-  //         setError(null);
+  useEffect(() => {
+    if (store && store._id && categories === null) {
+      console.log('Initial categories fetch for store ID:', store._id);
+      const loadCategories = async () => {
+        try {
+          setLoading(true);
+          setError(null);
           
-  //         const url = `${API_BASE_URL}/categories/store/${store._id}`;
-  //         const response = await fetch(url);
+          const url = `${API_BASE_URL}/categories/store/${store._id}`;
+          const response = await fetch(url);
           
-  //         if (!response.ok) {
-  //           throw new Error(`HTTP error! status: ${response.status}`);
-  //         }
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
           
-  //         const result = await response.json();
+          const result = await response.json();
           
-  //         if (result.success && result.data) {
-  //           console.log('Categories fetched successfully:', result.data.length, 'categories');
-  //           updateCategories(result.data);
-  //         } else {
-  //           updateCategories([]);
-  //           console.log('No categories found or invalid format, setting to empty array.');
-  //         }
-  //       } catch (err) {
-  //         console.error('Error fetching categories:', err);
-  //         setError(err.message);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
+          if (result.success && result.data) {
+            console.log('Categories fetched successfully:', result.data.length, 'categories');
+            updateCategories(result.data);
+          } else {
+            updateCategories([]);
+            console.log('No categories found or invalid format, setting to empty array.');
+          }
+        } catch (err) {
+          console.error('Error fetching categories:', err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
       
-  //     loadCategories();
-  //   } else if (!store && categories !== null) {
-  //     console.log('No store available, clearing categories');
-  //     updateCategories(null); // مسح الأصناف
-  //   }
-  // }, [store?._id, categories === null]); // استخدام store._id و categories === null فقط
+      loadCategories();
+    } else if (!store && categories !== null) {
+      console.log('No store available, clearing categories');
+      updateCategories(null); // مسح الأصناف
+    }
+  }, []); // استخدام store._id و categories === null فقط
 
   const loadCategories = useCallback(async (storeId = null) => {
     const storeIdToUse = storeId || (store && store._id);

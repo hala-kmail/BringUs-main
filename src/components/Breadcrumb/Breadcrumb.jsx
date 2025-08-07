@@ -74,7 +74,7 @@ const Breadcrumb = ({ category, currentLang, t, allCategories = [] }) => {
       <span onClick={() => navigate('/')}>{t('product_detail.home')}</span>
       {categoryPath.map((cat, idx) => (
         <React.Fragment key={cat._id || cat.id}>
-          <span className="breadcrumb-separator">{t('product_detail.breadcrumb_sep')}</span>
+          <span className="breadcrumb-separator">›</span>
           <span
             onClick={() => navigateToCategory(cat)}
             className={idx === categoryPath.length - 1 ? 'breadcrumb-current' : ''}

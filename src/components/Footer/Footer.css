@@ -1,5 +1,5 @@
 .footer {
-    background: #F3F4F6;
+    background: #000000;
     color: #64748b;
     border-top: 1px solid #f3f4f6;
     font-size: 16px;
@@ -120,7 +120,7 @@
   
   .footer-support-label {
     font-size: 14px;
-    color: #888;
+    color: #f8fafc;
     margin-bottom: 2px;
   }
   
@@ -352,7 +352,7 @@
 .footer-link-button {
   background: none;
   border: none;
-  color: inherit;
+  color: #f8fafc;
   font-size: inherit;
   font-family: inherit;
   cursor: pointer;

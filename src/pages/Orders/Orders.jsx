@@ -13,17 +13,17 @@ const Orders = () => {
   const currentLang = i18n.language;
   const { user } = useAppData();
 
-  // التحقق من تسجيل الدخول
-  React.useEffect(() => {
-    if (!user || user === 'No user' || user === null) {
-      console.log('No user found, redirecting to login');
-      navigate('/login');
-    }
-  }, [user, navigate]);
+  // // التحقق من تسجيل الدخول
+  // React.useEffect(() => {
+  //   if (!user || user === 'No user' || user === null) {
+  //     console.log('No user found, redirecting to login');
+  //     navigate('/login');
+  //   }
+  // }, [user, navigate]);
 
-  if (!user || user === 'No user' || user === null) {
-    return null;
-  }
+  // if (!user || user === 'No user' || user === null) {
+  //   return null;
+  // }
 
   return (
     <div className="orders-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
@@ -35,18 +35,20 @@ const Orders = () => {
         
 
         {/* Breadcrumb */}
-        <div className="orders-breadcrumb">
-          <button 
-            className="breadcrumb-item"
-            onClick={() => navigate('/')}
+        <nav className="product-breadcrumb">
+      <span onClick={() => navigate('/')}>{t('product_detail.home')}</span>
+     
+          <span className="breadcrumb-separator">›</span>
+          <span
+            onClick={() => navigate('/orders')}
+            className={ 'breadcrumb-current' }
+            style={{ cursor: 'default' }}
           >
-            {currentLang === 'ar' ? 'الرئيسية' : 'Home'}
-          </button>
-          <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-item active">
             {currentLang === 'ar' ? 'طلباتي' : 'My Orders'}
           </span>
-        </div>
+     
+    </nav>
+       
 
         {/* Orders Content */}
         <div className="orders-content">

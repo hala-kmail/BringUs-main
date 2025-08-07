@@ -6,7 +6,7 @@
 .category-container {
   max-width: 85%;
   margin: 0 auto;
-  padding: 5rem 1rem;
+  padding: 0rem 1rem 5rem 1rem;
 }
 
 /* Breadcrumb styling is now handled by the Breadcrumb component */
@@ -302,7 +302,7 @@
 .no-products h3 {
   color: #6b7280;
   font-size: 1.25rem;
-  margin: 0 0 0.5rem 0;
+  margin: 0 ;
   font-family: 'Tajawal', sans-serif;
 }
 

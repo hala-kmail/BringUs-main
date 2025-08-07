@@ -26,7 +26,7 @@ const ProductBreadcrumb = ({ category, productName, currentLang, t, allCategorie
       <span onClick={() => navigate('/')}>{t('product_detail.home')}</span>
       {categoryPath.map((cat, idx) => (
         <React.Fragment key={cat._id || cat.id}>
-          <span className="breadcrumb-separator">{t('product_detail.breadcrumb_sep')}</span>
+          <span className="breadcrumb-separator">›</span>
           <span
             onClick={() => navigate(`/category/${cat.slug || cat._id || cat.id}`)}
             className={idx === categoryPath.length - 1 ? 'breadcrumb-current' : ''}
@@ -36,7 +36,7 @@ const ProductBreadcrumb = ({ category, productName, currentLang, t, allCategorie
           </span>
         </React.Fragment>
       ))}
-      <span className="breadcrumb-separator">{t('product_detail.breadcrumb_sep')}</span>
+      <span className="breadcrumb-separator">›</span>
       <span className="breadcrumb-current">{productName}</span>
     </nav>
   );

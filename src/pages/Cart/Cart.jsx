@@ -267,11 +267,11 @@ const Cart = () => {
           <Link to="/">
             <span>{currentLang === 'ar' ? 'الرئيسية' : 'Home'}</span>
           </Link>
-          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
+          <span className="breadcrumb-separator">›</span>
           <Link to="/shop">
             <span>{currentLang === 'ar' ? 'المتجر' : 'Shop'}</span>
           </Link>
-          <span className="breadcrumb-separator"> {currentLang === 'ar' ? '‹' : '›'}</span>
+          <span className="breadcrumb-separator">›</span>
           <span className="breadcrumb-current">
             {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
           </span>

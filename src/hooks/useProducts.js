@@ -109,7 +109,7 @@ const useProducts = () => {
       
       loadProducts();
     }
-  }, [store?._id]); // استخدام store._id فقط
+  }, []); // استخدام store._id فقط
 
   // جلب منتج واحد بالID
   const fetchProductById = useCallback(async (productId) => {
