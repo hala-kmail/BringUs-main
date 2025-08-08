@@ -1,7 +1,10 @@
 {
   "common": {
     "loading": "Loading",
-    "retry": "Retry"
+    "retry": "Retry",
+    "previous": "Previous",
+    "next": "Next",
+    "login": "Login"
   },
   "navbar": {
     "search_placeholder": "Search products...",
@@ -93,6 +96,22 @@
     "add_to_cart": "Add to Cart",
     "add_to_wishlist": "Add to Wishlist",
     "remove_from_wishlist": "Remove from Wishlist"
+  },
+  "social_comments": {
+    "title": "Customer Reviews",
+    "subtitle": "What our customers say about us",
+    "anonymous": "User",
+    "about_product": "About product:",
+    "load_more": "Load More Reviews",
+    "error": "Sorry, unable to load reviews at the moment",
+    "no_comments": "No reviews available at the moment",
+    "auth_required": "Please login to view comments",
+    "average_rating": "Average Rating",
+    "total_reviews": "Total Reviews",
+    "positive_reviews": "Positive Reviews",
+    "rating_breakdown": "Rating Breakdown",
+    "featured_reviews": "Featured Reviews",
+    "featured_subtitle": "Our best customer reviews"
   },
   "features": {
     "payment_online": {

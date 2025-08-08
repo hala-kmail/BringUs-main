@@ -1,7 +1,10 @@
 {
   "common": {
     "loading": "جاري التحميل",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "previous": "السابق",
+    "next": "التالي",
+    "login": "تسجيل الدخول"
   },
   "navbar": {
     "search_placeholder": "ابحث عن المنتجات...",
@@ -92,6 +95,22 @@
     "add_to_cart": "أضف للسلة",
     "add_to_wishlist": "أضف للمفضلة",
     "remove_from_wishlist": "إزالة من المفضلة"
+  },
+  "social_comments": {
+    "title": "آراء عملائنا",
+    "subtitle": "ماذا يقول عملاؤنا عنا",
+    "anonymous": "مستخدم",
+    "about_product": "عن المنتج:",
+    "load_more": "عرض المزيد من التعليقات",
+    "error": "عذراً، لا يمكن تحميل التعليقات في الوقت الحالي",
+    "no_comments": "لا توجد تعليقات متاحة حالياً",
+    "auth_required": "يرجى تسجيل الدخول لعرض التعليقات",
+    "average_rating": "متوسط التقييم",
+    "total_reviews": "إجمالي التعليقات",
+    "positive_reviews": "تقييمات إيجابية",
+    "rating_breakdown": "تفصيل التقييمات",
+    "featured_reviews": "التعليقات المميزة",
+    "featured_subtitle": "أفضل تقييمات عملائنا"
   },
   "features": {
     "payment_online": {

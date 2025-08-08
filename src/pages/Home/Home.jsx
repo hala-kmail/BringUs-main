@@ -8,6 +8,7 @@ import Features from '../../components/Features/Features';
 import NewArrivals from '../../components/NewArrivals/NewArrivals';
 import BestSellers from '../../components/BestSellers/BestSellers';
 import AlmostFinishedCard from '../../components/AlmostFinishedCard/AlmostFinishedCard';
+import SocialComments from '../../components/SocialComments/SocialComments';
 import WholesaleRegisterModal from '../../components/WholesaleRegisterModal';
 import './Home.css';
 import { useTranslation } from 'react-i18next';
@@ -62,6 +63,7 @@ const Home = () => {
         <Features />
         <NewArrivals />
         <BestSellers />
+        <SocialComments />
       </main>
     </div>
   );
