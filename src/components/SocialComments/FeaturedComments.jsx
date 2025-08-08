@@ -6,9 +6,38 @@ import './FeaturedComments.css';
 const FeaturedComments = ({ comments = [] }) => {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const commentsPerPage = 3;
+  // تحديد عدد التعليقات حسب حجم الشاشة
+  const getCommentsPerPage = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768 ? 1 : 3;
+    }
+    return 3;
+  };
+
+  const [commentsPerPage, setCommentsPerPage] = useState(getCommentsPerPage());
   const totalPages = Math.ceil(comments.length / commentsPerPage);
+
+  // مراقبة تغيير حجم الشاشة
+  useEffect(() => {
+    const handleResize = () => {
+      const newCommentsPerPage = getCommentsPerPage();
+      setCommentsPerPage(newCommentsPerPage);
+      setIsMobile(window.innerWidth <= 768);
+      
+      // إعادة تعيين الصفحة الحالية إذا تغير عدد التعليقات
+      if (newCommentsPerPage !== commentsPerPage) {
+        setCurrentPage(0);
+      }
+    };
+
+    // تحديد الحجم الأولي
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [commentsPerPage]);
 
   useEffect(() => {
     if (totalPages > 1) {
@@ -86,7 +115,7 @@ const FeaturedComments = ({ comments = [] }) => {
         </button>
         
         <div className="carousel-content">
-          <div className="comments-grid">
+          <div className={`comments-grid ${isMobile ? 'mobile-grid' : 'desktop-grid'}`}>
             {currentComments.map((comment, index) => (
               <div key={comment._id || index} className="featured-comment">
                 <div className="comment-content">
@@ -109,7 +138,7 @@ const FeaturedComments = ({ comments = [] }) => {
                         )}
                       </div>
                       
-                     
+                    
                     </div>
                     
                     <div className="comment-text-container">

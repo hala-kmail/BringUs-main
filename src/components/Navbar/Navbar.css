@@ -38,6 +38,10 @@
 }
 
 .logo-text {
+  max-width: 150px; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
   font-size: 1.5rem;
   font-weight: 700;
 }
@@ -378,7 +382,10 @@
   }
   .category-container{
     max-width: 95% !important;
-    padding: 2rem !important;
+    
+  }
+  .products-section{
+    padding: 0 !important;
   }
 
   .navbar-container {
@@ -502,6 +509,8 @@
   }
 
   .logo-text {
+    max-width: 80px; 
+   
     font-size: 1.125rem;
   }
 

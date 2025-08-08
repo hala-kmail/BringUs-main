@@ -95,7 +95,7 @@ button:focus-visible {
 /* Mobile Touch Improvements */
 @media (max-width: 768px) {
   /* Improve touch targets */
-  button, 
+
   .selector-button,
   .user-button,
   .search-button {
