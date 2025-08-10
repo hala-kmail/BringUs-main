@@ -140,7 +140,6 @@ const FeaturedComments = ({ comments = [] }) => {
                       
                     
                     </div>
-                    
                     <div className="comment-text-container">
                       <svg className="quote-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M3 21C3 17.6863 5.68629 15 9 15C10.6569 15 12 13.6569 12 12C12 10.3431 10.6569 9 9 9C6.23858 9 4 11.2386 4 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
