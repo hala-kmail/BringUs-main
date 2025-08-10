@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaTiktok } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaTiktok, FaStar, FaQuoteLeft } from 'react-icons/fa';
 import './FeaturedComments.css';
 
 const FeaturedComments = ({ comments = [] }) => {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // تحديد عدد التعليقات حسب حجم الشاشة
   const getCommentsPerPage = () => {
@@ -50,6 +51,14 @@ const FeaturedComments = ({ comments = [] }) => {
       return () => clearInterval(interval);
     }
   }, [totalPages]);
+
+  // محاكاة التحميل
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (comments.length === 0) {
     return null;
@@ -96,6 +105,29 @@ const FeaturedComments = ({ comments = [] }) => {
   const endIndex = startIndex + commentsPerPage;
   const currentComments = comments.slice(startIndex, endIndex);
 
+  if (isLoading) {
+    return (
+      <div className="featured-comments">
+        <div className="featured-header">
+          <h3>{t('social_comments.featured_reviews', 'التعليقات المميزة')}</h3>
+          <p>{t('social_comments.featured_subtitle', 'أفضل تقييمات عملائنا')}</p>
+        </div>
+        <div className={`loading-skeleton ${isMobile ? 'mobile-grid' : 'desktop-grid'}`}>
+          {[...Array(commentsPerPage)].map((_, index) => (
+            <div key={index} className="skeleton-card">
+              <div className="skeleton-avatar"></div>
+              <div className="skeleton-content">
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line short"></div>
+                <div className="skeleton-line"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="featured-comments">
       <div className="featured-header">
@@ -137,21 +169,17 @@ const FeaturedComments = ({ comments = [] }) => {
                           <p className="author-title">{comment.product.name}</p>
                         )}
                       </div>
-                      
-                    
                     </div>
+                    
                     <div className="comment-text-container">
-                      <svg className="quote-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 21C3 17.6863 5.68629 15 9 15C10.6569 15 12 13.6569 12 12C12 10.3431 10.6569 9 9 9C6.23858 9 4 11.2386 4 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M12 21C12 17.6863 14.6863 15 18 15C19.6569 15 21 13.6569 21 12C21 10.3431 19.6569 9 18 9C15.2386 9 13 11.2386 13 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <FaQuoteLeft className="quote-icon" />
                       <p className="comment-text">{comment.comment || comment.text || comment.content}</p>
                     </div>
                     
                     <div className="comment-footer">
                       <div className="rating">
                         {[...Array(5)].map((_, i) => (
-                          <span key={i} className="star filled">★</span>
+                          <FaStar key={i} className="star filled" />
                         ))}
                       </div>
                       {comment.platform && (

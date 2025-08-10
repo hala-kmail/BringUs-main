@@ -15,7 +15,7 @@
 }
 
 .shop-container {
-  max-width: 1200px;
+ 
   margin: 0 auto;
   padding: 0 16px;
 }
@@ -1379,10 +1379,7 @@
     display: block;
   }
   
-  /* .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-  } */
+  /* تم تحديث .products-grid في ProductCard.css لاستخدام Flexbox */
 }
 
 @media (max-width: 768px) {
@@ -1432,10 +1429,7 @@
     justify-content: center;
   }
 
-  /* .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  } */
+  /* تم تحديث .products-grid في ProductCard.css لاستخدام Flexbox */
 
  
 
@@ -2718,13 +2712,7 @@
   }
 } 
 
-/* Products Grid */
-/* .products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
-  margin: 20px 0;
-} */
+
 
 /* No Products Message */
 .no-products {

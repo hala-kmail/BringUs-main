@@ -210,10 +210,47 @@
 
 /* Products Grid */
 .almost-finished-sale-page .products-grid {
-  display: grid;
-  
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 3rem;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.almost-finished-sale-page .products-grid .product-card {
+  flex: 0 0 auto;
+  width: calc(25% - 0.75rem); /* 4 كروت في الصف */
+  min-width: 200px;
+  max-width: 280px;
+  height: auto;
+  min-height: 400px;
+  box-sizing: border-box;
+}
+
+/* للأحجام المتوسطة */
+@media (max-width: 1200px) {
+  .almost-finished-sale-page .products-grid .product-card {
+    width: calc(33.333% - 0.67rem); /* 3 كروت في الصف */
+    min-width: 180px;
+    max-width: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .almost-finished-sale-page .products-grid .product-card {
+    width: calc(50% - 0.5rem); /* 2 كروت في الصف */
+    min-width: 160px;
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .almost-finished-sale-page .products-grid .product-card {
+    width: calc(50% - 0.5rem); /* 2 كروت في الصف */
+    min-width: 140px;
+    max-width: 200px;
+  }
 }
 
 .almost-finished-sale-page .product-card {

@@ -253,7 +253,7 @@ const SidebarFilters = ({
   };
 
   return (
-    <div className="shop-sidebar">
+    <div >
       {/* Header */}
       <div className="shop-sidebar-header">
         <h3>{currentLang === 'ar' ? 'الفلاتر' : 'Filters'}</h3>

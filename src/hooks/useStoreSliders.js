@@ -89,14 +89,14 @@ const useStoreSliders = () => {
       hasInitialized.current = true;
       storeId.current = currentStoreId;
       fetchSliders(currentStoreId);
-    } else if (!currentStoreId && sliders !== null) {
+    } else if (!currentStoreId && hasInitialized.current) {
       // Clear sliders if no store is available
       console.log('No store available, clearing sliders');
       updateSliders(null);
       hasInitialized.current = false;
       storeId.current = null;
     }
-  }, [store?._id, getStoreId, fetchSliders, sliders, updateSliders]);
+  }, [store?._id, getStoreId, fetchSliders, updateSliders]);
 
   // Manual fetch function
   const loadSliders = useCallback((targetStoreId = null) => {

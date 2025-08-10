@@ -6,7 +6,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import logo from '../../assets/shopping-cart.png';
 import './Navbar.css';
-import { getEffectivePrice } from '../../utils/productUtils';
+import { getEffectivePrice, getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 import useLogin from '../../hooks/useLogin';
 import useProducts from '../../hooks/useProducts';
@@ -328,9 +328,9 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                       }</p>
                       <div className="result-price">
                         {product.discountPercentage && product.discountPercentage > 0 && product.discountEndTime > new Date().toISOString() ? (
-                        <> <span className="original-price">{formatPrice(product.originalPrice, storeData?.settings?.currency || 'ILS')}</span>
-                         <span className="current-price">{formatPrice(getEffectivePrice(product), storeData?.settings?.currency || 'ILS')}</span>  </>
-                        ) : (  <span className="current-price">{formatPrice(getEffectivePrice(product), storeData?.settings?.currency || 'ILS')}</span> 
+                        <> <span className="original-price">{formatPrice(getOriginalPriceByUserRole(product), storeData?.settings?.currency || 'ILS')}</span>
+                         <span className="current-price">{formatPrice(getPriceByUserRole(product), storeData?.settings?.currency || 'ILS')}</span>  </>
+                        ) : (  <span className="current-price">{formatPrice(getPriceByUserRole(product), storeData?.settings?.currency || 'ILS')}</span> 
                         )}
                       </div>
                     </div>

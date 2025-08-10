@@ -17,8 +17,10 @@
 
 .bestsellers-page {
   flex: 0 0 100%;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: #f8f9fa !important;
+  display:flex;
+  padding: 1rem;
+  flex-wrap: wrap;
   gap: 1rem;
   scroll-snap-align: start;
 }
@@ -495,9 +497,20 @@
  
 
   .products-grid.desktop-grid{
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.4rem;
   }
+
+  .products-grid.desktop-grid .product-card {
+  flex: 0 0 auto;
+  width: calc(50% - 0.2rem);
+  min-width: 140px;
+  max-width: 200px;
+  height: auto;
+  min-height: 400px;
+  box-sizing: border-box;
+}
 
   .product-image {
     height: 135px;

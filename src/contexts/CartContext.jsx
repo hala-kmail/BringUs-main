@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { getToken, getBearerToken } from '../utils/tokenManager';
 import { useAppData } from './AppDataContext';
 import Toast from '../components/Toast/Toast';
-import { getEffectivePrice } from '../utils/productUtils';
+import { getEffectivePrice, getPriceByUserRole } from '../utils/productUtils';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -372,8 +372,8 @@ export const CartProvider = ({ children }) => {
     setError(null);
 
     try {
-      // الحصول على السعر الصحيح (بعد الخصم)
-      const finalPrice = getEffectivePrice(product);
+      // الحصول على السعر الصحيح حسب دور المستخدم
+      const finalPrice = getPriceByUserRole(product);
       
       const requestBody = {
         product: product._id || product.id,

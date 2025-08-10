@@ -90,6 +90,25 @@ export const getOriginalColorsFromColorsField = (product) => {
   return extractedColors.filter(Boolean); // حذف القيم الفارغة
 };
 
+// دالة للتحقق من دور المستخدم
+export const getUserRole = () => {
+  try {
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
+      const user = JSON.parse(userInfo);
+      return user.role || null;
+    }
+  } catch (error) {
+    console.error('Error parsing user info:', error);
+  }
+  return null;
+};
+
+// دالة للتحقق من أن المستخدم هو تاجر جملة
+export const isWholesaler = () => {
+  const userRole = getUserRole();
+  return userRole === 'wholesaler';
+};
 
 // Helper function to check if a discount is active
 export const isDiscountActive = (product) => {
@@ -111,7 +130,33 @@ export const getEffectivePrice = (product) => {
   return product.price || 0;
 };
 
-// Helper function to organize specifications by title
+// دالة جديدة للحصول على السعر المناسب حسب دور المستخدم
+export const getPriceByUserRole = (product) => {
+  // إذا كان المستخدم تاجر جملة، استخدم سعر تاجر الجملة
+  if (isWholesaler()) {
+    // استخدم compareAtPrice كسعر أساسي لتاجر الجملة (بدون خصومات)
+    if (product.compareAtPrice !== undefined && product.compareAtPrice !== null && product.compareAtPrice > 0) {
+      return product.compareAtPrice;
+    }
+  }
+  
+  // للمستخدمين العاديين، استخدم السعر العادي مع الخصومات
+  return getEffectivePrice(product);
+};
+
+//---------------------------------getOriginalPriceByUserRole---------------------------------
+
+export const getOriginalPriceByUserRole = (product) => {
+  // إذا كان المستخدم تاجر جملة، استخدم compareAtPrice كسعر أصلي
+  if (isWholesaler()) {
+    if (product.compareAtPrice !== undefined && product.compareAtPrice !== null && product.compareAtPrice > 0) {
+      return product.compareAtPrice;
+    }
+  }
+    return product.price || 0;
+};
+
+//---------------------------------organizeSpecifications---------------------------------
 export const organizeSpecifications = (specifications) => {
   if (!specifications || !Array.isArray(specifications)) return [];
   
@@ -130,7 +175,7 @@ export const organizeSpecifications = (specifications) => {
   }));
 };
 
-// Helper function to convert hex color to color name
+//---------------------------------hexToColorName---------------------------------
 export const hexToColorName = (hex) => {
   if (!hex) return '';
   
@@ -222,7 +267,7 @@ export const hexToColorName = (hex) => {
   return hexToColorMap[cleanHex] || hex;
 };
 
-// Helper function to get color name from hex
+//---------------------------------getColorName---------------------------------
 export const getColorName = (hex) => {
   if (!hex) return '';
   
@@ -247,11 +292,10 @@ export const getColorName = (hex) => {
   return hexToColorName(hex);
 };
 
-// Helper function to validate product for cart
+//---------------------------------validateProductForCart---------------------------------
 export const validateProductForCart = (product, selectedColor, selectedSize) => {
   const errors = [];
   
-  // Check if color is required and selected
   const simpleColors = getSimpleColorsFromColorsField(product);
   if (simpleColors && simpleColors.length > 0 && !selectedColor) {
     errors.push('color_required');

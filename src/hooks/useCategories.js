@@ -96,7 +96,7 @@ const useCategories = () => {
       hasInitialized.current = true;
       storeId.current = currentStoreId;
       fetchCategories(currentStoreId);
-    } else if (!currentStoreId && categories !== null) {
+    } else if (!currentStoreId && hasInitialized.current) {
       // Clear categories if no store is available
       if (process.env.NODE_ENV === 'development') {
         console.log('No store available, clearing categories');
@@ -105,7 +105,7 @@ const useCategories = () => {
       hasInitialized.current = false;
       storeId.current = null;
     }
-  }, [store?._id, getStoreId, fetchCategories, categories, updateCategories]);
+  }, [store?._id, getStoreId, fetchCategories, updateCategories]);
 
   const loadCategories = useCallback(async (targetStoreId = null) => {
     const id = targetStoreId || getStoreId();
