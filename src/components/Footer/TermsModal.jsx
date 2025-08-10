@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaTimes, FaSpinner, FaSignInAlt } from 'react-icons/fa';
+import { FaTimes, FaSpinner } from 'react-icons/fa';
 import { useAppData } from '../../contexts/AppDataContext';
-import { getToken } from '../../utils/tokenManager';
 import './TermsModal.css';
 
 const TermsModal = ({ isOpen, onClose }) => {
@@ -14,16 +13,31 @@ const TermsModal = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Get store ID from localStorage or store context
+  const getStoreId = useCallback(() => {
+    if (store && store._id) {
+      return store._id;
+    }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore._id;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
   // جلب بيانات الشروط والأحكام من API
   const fetchTerms = async () => {
-    if (!store?._id) {
+    const storeId = getStoreId();
+    
+    if (!storeId) {
       setError('Store ID not found');
-      return;
-    }
-
-    const token = getToken();
-    if (!token) {
-      setError('unauthorized');
       return;
     }
 
@@ -31,19 +45,15 @@ const TermsModal = ({ isOpen, onClose }) => {
     setError(null);
 
     try {
-      const API_BASE_URL = 'http://localhost:5001/api';
-      const response = await fetch(`${API_BASE_URL}/terms-conditions/stores/${store._id}/terms`, {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/terms-conditions/stores/${storeId}/terms`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('unauthorized');
-        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -122,34 +132,17 @@ const TermsModal = ({ isOpen, onClose }) => {
           {error && (
             <div className="terms-error">
               <p className="error-message">
-                {error === 'unauthorized' 
-                  ? (currentLang === 'ar' 
-                      ? 'يرجى تسجيل الدخول للاطلاع على الشروط والأحكام.'
-                      : 'Please log in to view the terms and conditions.')
-                  : (currentLang === 'ar' 
-                      ? 'عذراً، حدث خطأ في التحميل. يرجى المحاولة مرة أخرى.'
-                      : 'Sorry, an error occurred while loading. Please try again.')
+                {currentLang === 'ar' 
+                  ? 'عذراً، حدث خطأ في التحميل. يرجى المحاولة مرة أخرى.'
+                  : 'Sorry, an error occurred while loading. Please try again.'
                 }
               </p>
-              {error === 'unauthorized' ? (
-                <button 
-                  className="login-button"
-                  onClick={() => {
-                    onClose();
-                    window.location.href = '/login';
-                  }}
-                >
-                  <FaSignInAlt />
-                  {currentLang === 'ar' ? 'تسجيل الدخول' : 'Login'}
-                </button>
-              ) : (
-                <button 
-                  className="retry-button"
-                  onClick={fetchTerms}
-                >
-                  {currentLang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
-                </button>
-              )}
+              <button 
+                className="retry-button"
+                onClick={fetchTerms}
+              >
+                {currentLang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+              </button>
             </div>
           )}
 
