@@ -24,9 +24,15 @@ import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 const Checkout = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { cartItems, getCartTotals, clearCart } = useCart();
+  const { cartItems, getCartTotals, clearCart, loading: cartLoading } = useCart();
   const { store, user } = useAppData();
   const currentLang = i18n.language;
+  
+  // Debug logging for store and user data
+  console.log('Checkout - Store from context:', store);
+  console.log('Checkout - User from context:', user);
+  console.log('Checkout - Store ID:', store?._id);
+  console.log('Checkout - User ID:', user?._id);
   
   // جلب طرق التوصيل من API
   const { deliveryMethods, loading: deliveryMethodsLoading, error: deliveryMethodsError } = useDeliveryMethods(store?._id);
@@ -157,10 +163,40 @@ const Checkout = () => {
 
 //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
-    if (cartItems.length === 0) {
-      navigate('/cart');
+    console.log('Checkout useEffect - cartItems:', cartItems);
+    console.log('Checkout useEffect - cartItems.length:', cartItems?.length);
+    console.log('Checkout useEffect - cartItems type:', typeof cartItems);
+    console.log('Checkout useEffect - cartLoading:', cartLoading);
+    
+    // لا نتحقق من السلة الفارغة أثناء التحميل
+    if (cartLoading) {
+      console.log('Cart is still loading, waiting...');
+      return;
     }
-  }, [cartItems.length, navigate]);
+    
+    // التحقق من أن cartItems موجود وليس فارغاً بعد انتهاء التحميل
+    // تأكد من أن cartItems ليس undefined أو null أولاً
+    // if (!cartItems) {
+    //   console.log('Cart items is null/undefined, waiting for data...');
+    //   return;
+    // }
+    
+    // // ثم تحقق من أنه array وليس فارغاً
+    // if (Array.isArray(cartItems) && cartItems.length === 0) {
+    //   console.log('Cart is empty after loading, redirecting to /cart');
+    //   navigate('/cart');
+    
+  }, [cartItems, cartLoading, navigate]);
+  
+  // Monitor cart changes for debugging
+  useEffect(() => {
+    console.log('🛒 Cart state changed:', {
+      cartItems: cartItems,
+      cartItemsLength: cartItems?.length,
+      cartLoading: cartLoading,
+      timestamp: new Date().toISOString()
+    });
+  }, [cartItems, cartLoading]);
   
   //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
@@ -297,7 +333,7 @@ const handleSendWhatsApp = async () => {
         logo: store?.logo,
         contact: store?.contact
       }, // إضافة بيانات المتجر للتحقق من storeId
-      user: user?._id, // إرسال user ID فقط
+      user: user?._id || null, // إرسال user ID فقط أو null للضيوف
       items: cartItems.map(item => {
         // بناءً على البيلود المقدم، يبدو أن البنية مختلفة
         // البيلود يظهر: {product: "68804019a83b761668fda7a1", productId: "68804019a83b761668fda7a1",...}
@@ -337,6 +373,9 @@ const handleSendWhatsApp = async () => {
       })),
       shippingAddress: {
         fullName: formData.fullName,
+        firstName: formData.fullName.split(' ')[0] || '',
+        lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
+        email: 'guest@example.com', // You might want to add email field to the form
         phone: formData.phone,
         street: formData.address,
         city: formData.city,
@@ -346,6 +385,9 @@ const handleSendWhatsApp = async () => {
       },
       billingAddress: {
         fullName: formData.fullName,
+        firstName: formData.fullName.split(' ')[0] || '',
+        lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
+        email: 'guest@example.com', // You might want to add email field to the form
         phone: formData.phone,
         street: formData.address,
         city: formData.city,
@@ -404,8 +446,8 @@ const handleSendWhatsApp = async () => {
       throw new Error('معلومات المتجر غير متوفرة');
     }
     
-    // التحقق من وجود المستخدم
-    if (!orderData.user) {
+    // التحقق من وجود المستخدم (يمكن أن يكون null للضيوف)
+    if (orderData.user === undefined) {
       throw new Error('معلومات المستخدم غير متوفرة');
     }
     
@@ -431,7 +473,7 @@ const handleSendWhatsApp = async () => {
     console.log('All validations passed. Creating order...');
     
     // التحقق النهائي من أن جميع الحقول المطلوبة موجودة
-    const requiredFields = ['store', 'user', 'items'];
+    const requiredFields = ['store', 'items'];
     const missingFields = requiredFields.filter(field => !orderData[field]);
     if (missingFields.length > 0) {
       console.error('Missing required fields:', missingFields);
@@ -637,7 +679,41 @@ const handleSendWhatsApp = async () => {
     window.open(whatsappUrl, '_blank');
   };
 //-----------------------------------if cartItems is empty------------------------------------------------  
+  console.log('Checkout render - cartItems:', cartItems);
+  console.log('Checkout render - cartItems.length:', cartItems?.length);
+  console.log('Checkout render - cartItems type:', typeof cartItems);
+  console.log('Checkout render - cartLoading:', cartLoading);
+  console.log('Checkout render - cartItems is Array:', Array.isArray(cartItems));
+  
+  // إظهار loading state أثناء تحميل السلة
+  if (cartLoading) {
+    return (
+      <div className="checkout-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="checkout-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div className="loading-spinner" style={{ width: 40, height: 40, border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary-color)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px auto' }}></div>
+            <p>{currentLang === 'ar' ? 'جاري تحميل السلة...' : 'Loading cart...'}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // التحقق من أن cartItems موجود وليس فارغاً بعد انتهاء التحميل
+  if (!cartItems) {
+    console.log('Cart items is null/undefined in render, returning null');
+    return null;
+  }
+  
+  if (!Array.isArray(cartItems)) {
+    console.log('Cart items is not an array in render, returning null');
+    return null;
+  }
+  
   if (cartItems.length === 0) {
+    console.log('Cart is empty in render after loading, returning null');
     return null; 
   }
 //-----------------------------------return------------------------------------------------  

@@ -16,7 +16,16 @@ import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 const Cart = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotals } = useCart();
+  const { 
+    cartItems, 
+    removeFromCart, 
+    updateQuantity, 
+    clearCart, 
+    getCartTotals,
+    canIncreaseQuantity,
+    canDecreaseQuantity,
+    getAvailableQuantityForCartItem
+  } = useCart();
   const { store } = useAppData();
   const currentLang = i18n.language;
   const [showClearModal, setShowClearModal] = useState(false);
@@ -26,12 +35,87 @@ const Cart = () => {
 
   const cartTotals = getCartTotals();
 
-  const handleQuantityChange = async (product, newQuantity) => {
+  const handleQuantityChange = async (product, newQuantity, selectedColor = '', selectedSpecs = {}) => {
     if (newQuantity < 1) {
       await handleRemoveItem(product);
     } else {
-      await updateQuantity(product._id || product.id, newQuantity);
+      // تحويل المواصفات إلى التنسيق المطلوب
+      const specsForUpdate = {};
+      if (selectedSpecs) {
+        Object.entries(selectedSpecs).forEach(([key, value]) => {
+          if (value && typeof value === 'object' && value.valueId) {
+            specsForUpdate[key] = value;
+          } else {
+            specsForUpdate[key] = value;
+          }
+        });
+      }
+      
+      // التحقق من الكمية المتوفرة قبل التحديث
+      const availableQuantity = getAvailableQuantityForCartItem(product._id || product.id, selectedColor, specsForUpdate);
+      if (newQuantity > availableQuantity) {
+        // إظهار رسالة أن الكمية المتوفرة محدودة
+        const message = currentLang === 'ar' 
+          ? `الكمية المتوفرة هي ${availableQuantity} فقط`
+          : `Only ${availableQuantity} items available`;
+        // يمكنك إضافة toast هنا إذا كان متوفراً
+        console.warn(message);
+        return;
+      }
+      
+      await updateQuantity(product._id || product.id, newQuantity, {
+        selectedColor,
+        ...specsForUpdate
+      });
     }
+  };
+
+  // دالة للحصول على المواصفات المختارة من عنصر الكارت
+  const getSelectedSpecsFromCartItem = (cartItem) => {
+    const specs = {};
+    if (cartItem.selectedSpecifications) {
+      cartItem.selectedSpecifications.forEach(spec => {
+        // استخدام valueId كمفتاح بدلاً من specificationId
+        specs[spec.valueId] = {
+          valueId: spec.valueId,
+          valueAr: spec.valueAr,
+          valueEn: spec.valueEn,
+          titleAr: spec.titleAr,
+          titleEn: spec.titleEn
+        };
+      });
+    }
+    return specs;
+  };
+
+  // دالة للحصول على اللون المختار من عنصر الكارت
+  const getSelectedColorFromCartItem = (cartItem) => {
+    return cartItem.selectedColors && cartItem.selectedColors.length > 0 
+      ? cartItem.selectedColors[0] 
+      : '';
+  };
+
+  // دالة للتحقق من إمكانية زيادة الكمية لعنصر معين
+  const canIncreaseItemQuantity = (cartItem) => {
+    const selectedColor = getSelectedColorFromCartItem(cartItem);
+    const selectedSpecs = getSelectedSpecsFromCartItem(cartItem);
+    
+    // Debug logging
+    console.log('Checking canIncreaseQuantity for cart item:', {
+      productId: cartItem.product._id || cartItem.product.id,
+      selectedColor,
+      selectedSpecs,
+      cartItemSelectedSpecs: cartItem.selectedSpecifications
+    });
+    
+    return canIncreaseQuantity(cartItem.product._id || cartItem.product.id, selectedColor, selectedSpecs);
+  };
+
+  // دالة للتحقق من إمكانية تقليل الكمية لعنصر معين
+  const canDecreaseItemQuantity = (cartItem) => {
+    const selectedColor = getSelectedColorFromCartItem(cartItem);
+    const selectedSpecs = getSelectedSpecsFromCartItem(cartItem);
+    return canDecreaseQuantity(cartItem.product._id || cartItem.product.id, selectedColor, selectedSpecs);
   };
 
   const handleRemoveItem = async (product) => {
@@ -419,16 +503,37 @@ const Cart = () => {
                   <div className="cart-item-quantity desktop-only">
                     <button 
                       className="quantity-btn"
-                      onClick={() => handleQuantityChange(item.product, item.quantity - 1)}
+                      onClick={() => handleQuantityChange(
+                        item.product, 
+                        item.quantity - 1,
+                        getSelectedColorFromCartItem(item),
+                        getSelectedSpecsFromCartItem(item)
+                      )}
                       title={currentLang === 'ar' ? 'تقليل الكمية' : 'Decrease quantity'}
+                      disabled={!canDecreaseItemQuantity(item)}
                     >
                       -
                     </button>
-                    <span className="quantity-display">{item.quantity}</span>
+                    <span className="quantity-display">
+                      {item.quantity}
+                      <span className="quantity-available">
+                        / {getAvailableQuantityForCartItem(
+                          item.product._id || item.product.id,
+                          getSelectedColorFromCartItem(item),
+                          getSelectedSpecsFromCartItem(item)
+                        )}
+                      </span>
+                    </span>
                     <button 
                       className="quantity-btn"
-                      onClick={() => handleQuantityChange(item.product, item.quantity + 1)}
+                      onClick={() => handleQuantityChange(
+                        item.product, 
+                        item.quantity + 1,
+                        getSelectedColorFromCartItem(item),
+                        getSelectedSpecsFromCartItem(item)
+                      )}
                       title={currentLang === 'ar' ? 'زيادة الكمية' : 'Increase quantity'}
+                      disabled={!canIncreaseItemQuantity(item)}
                     >
                       +
                     </button>
@@ -542,16 +647,37 @@ const Cart = () => {
                       <div className="cart-item-quantity">
                         <button 
                           className="quantity-btn"
-                          onClick={() => handleQuantityChange(item.product, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(
+                            item.product, 
+                            item.quantity - 1,
+                            getSelectedColorFromCartItem(item),
+                            getSelectedSpecsFromCartItem(item)
+                          )}
                           title={currentLang === 'ar' ? 'تقليل الكمية' : 'Decrease quantity'}
+                          disabled={!canDecreaseItemQuantity(item)}
                         >
                           -
                         </button>
-                        <span className="quantity-display">{item.quantity}</span>
+                        <span className="quantity-display">
+                          {item.quantity}
+                          <span className="quantity-available">
+                            / {getAvailableQuantityForCartItem(
+                              item.product._id || item.product.id,
+                              getSelectedColorFromCartItem(item),
+                              getSelectedSpecsFromCartItem(item)
+                            )}
+                          </span>
+                        </span>
                         <button 
                           className="quantity-btn"
-                          onClick={() => handleQuantityChange(item.product, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(
+                            item.product, 
+                            item.quantity + 1,
+                            getSelectedColorFromCartItem(item),
+                            getSelectedSpecsFromCartItem(item)
+                          )}
                           title={currentLang === 'ar' ? 'زيادة الكمية' : 'Increase quantity'}
+                          disabled={!canIncreaseItemQuantity(item)}
                         >
                           +
                         </button>

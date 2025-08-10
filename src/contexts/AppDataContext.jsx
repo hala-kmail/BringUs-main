@@ -10,9 +10,9 @@ export const useAppData = () => {
   return context;
 };
 
-export const AppDataProvider = ({ children }) => {
+export const AppDataProvider = ({ children, initialStoreData = null }) => {
   const [user, setUser] = useState(null);
-  const [store, setStore] = useState(null);
+  const [store, setStore] = useState(initialStoreData);
   const [categories, setCategories] = useState(null); // القيمة الأولية null
   const [products, setProducts] = useState([]);
   const [sliders, setSliders] = useState(null); // القيمة الأولية null
@@ -41,7 +41,7 @@ export const AppDataProvider = ({ children }) => {
         }
 
         // Load store data
-        const storedStore = localStorage.getItem('storeInfo');
+        const storedStore = localStorage.getItem('storeData');
         if (storedStore) {
           const storeData = JSON.parse(storedStore);
           setStore(storeData);
@@ -95,6 +95,17 @@ export const AppDataProvider = ({ children }) => {
     loadStoredData();
   }, []);
 
+  // Update store when initialStoreData changes
+  useEffect(() => {
+    if (initialStoreData && (!store || store._id !== initialStoreData._id)) {
+      setStore(initialStoreData);
+      localStorage.setItem('storeData', JSON.stringify(initialStoreData));
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Store updated from initialStoreData:', initialStoreData);
+      }
+    }
+  }, [initialStoreData, store]);
+
   // Update user data
   const updateUser = (userData) => {
     if (process.env.NODE_ENV === 'development') {
@@ -125,12 +136,12 @@ export const AppDataProvider = ({ children }) => {
   const updateStore = (storeData) => {
     setStore(storeData);
     if (storeData) {
-      localStorage.setItem('storeInfo', JSON.stringify(storeData));
+      localStorage.setItem('storeData', JSON.stringify(storeData));
       if (process.env.NODE_ENV === 'development') {
         console.log('AppData - Store updated:', storeData);
       }
     } else {
-      localStorage.removeItem('storeInfo');
+      localStorage.removeItem('storeData');
       if (process.env.NODE_ENV === 'development') {
         console.log('AppData - Store cleared');
       }
@@ -195,7 +206,7 @@ export const AppDataProvider = ({ children }) => {
     
     // Clear all localStorage items from AppDataContext
     localStorage.removeItem('userInfo');
-    localStorage.removeItem('storeInfo');
+    localStorage.removeItem('storeData');
     localStorage.removeItem('categoriesInfo');
     localStorage.removeItem('productsInfo');
     localStorage.removeItem('slidersInfo');

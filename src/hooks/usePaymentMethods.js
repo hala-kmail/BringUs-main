@@ -1,36 +1,55 @@
-import { useState, useCallback, useEffect } from 'react';
-import { getBearerToken } from '../utils/tokenManager';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useAppData } from '../contexts/AppDataContext';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
 
-const usePaymentMethods = (storeId) => {
+const usePaymentMethods = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const { store } = useAppData();
+  const hasInitialized = useRef(false);
+  const currentStoreId = useRef(null);
+
+  // Get store ID from localStorage or store context
+  const getStoreId = useCallback(() => {
+    if (store && store._id) {
+      return store._id;
+    }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore._id;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
   // Fetch payment methods for a specific store
-  const fetchPaymentMethods = useCallback(async (storeId, page = 1, limit = 10) => {
+  const fetchPaymentMethods = useCallback(async () => {
+    const storeId = getStoreId();
+    
     if (!storeId) {
-      console.log('No store ID provided for payment methods');
-      return [];
+      setLoading(false);
+      return;
     }
 
     try {
       setLoading(true);
       setError(null);
 
-      const token = getBearerToken();
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
       const response = await fetch(
-        `${API_BASE_URL}/payment-methods/store/${storeId}?page=${page}&limit=${limit}`,
+        `${API_BASE_URL}/payment-methods/store/${storeId}`,
         {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -46,39 +65,44 @@ const usePaymentMethods = (storeId) => {
         const activeMethods = data.data.filter(method => method.isActive);
         setPaymentMethods(activeMethods);
         console.log('Payment methods loaded:', activeMethods);
-        return activeMethods;
       } else {
         throw new Error('Invalid response format');
       }
     } catch (err) {
       console.error('Error fetching payment methods:', err);
       setError(err.message);
-      return [];
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getStoreId]);
 
-  // Load payment methods when storeId changes
   useEffect(() => {
-    if (storeId) {
-      fetchPaymentMethods(storeId);
+    const storeId = getStoreId();
+    
+    // Only fetch if we have a store ID and haven't initialized for this store
+    if (storeId && (!hasInitialized.current || currentStoreId.current !== storeId)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Initializing payment methods for store ID:', storeId);
+      }
+      hasInitialized.current = true;
+      currentStoreId.current = storeId;
+      fetchPaymentMethods();
+    } else if (!storeId && paymentMethods.length > 0) {
+      // Clear payment methods if no store is available
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No store available, clearing payment methods');
+      }
+      setPaymentMethods([]);
+      hasInitialized.current = false;
+      currentStoreId.current = null;
     }
-  }, [storeId, fetchPaymentMethods]);
-
-  // Refresh payment methods
-  const refreshPaymentMethods = useCallback(() => {
-    if (storeId) {
-      fetchPaymentMethods(storeId);
-    }
-  }, [storeId, fetchPaymentMethods]);
+  }, [store?._id, getStoreId, fetchPaymentMethods, paymentMethods.length]);
 
   return {
     paymentMethods,
     loading,
     error,
-    fetchPaymentMethods,
-    refreshPaymentMethods
+    refetch: fetchPaymentMethods
   };
 };
 

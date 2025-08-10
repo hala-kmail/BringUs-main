@@ -66,6 +66,18 @@
   color: white;
 }
 
+.cart-item-quantity.desktop-only .quantity-btn:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cart-item-quantity.desktop-only .quantity-btn:disabled:hover {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
 .cart-item-quantity.desktop-only .quantity-display {
   font-size: 14px;
   font-weight: 600;
@@ -78,6 +90,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.quantity-available {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+  margin-left: 4px;
 }
 
 /* Simple total price for desktop */
@@ -1028,6 +1047,18 @@
     background: #e5e7eb;
   }
 
+  .mobile-cart-item .quantity-btn:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .mobile-cart-item .quantity-btn:disabled:hover {
+    background: #f1f5f9;
+    color: #94a3b8;
+  }
+
   .mobile-cart-item .quantity-display {
     background: white;
     padding: 0 1rem;
@@ -1039,6 +1070,13 @@
     min-width: 3rem;
     text-align: center;
     justify-content: center;
+  }
+
+  .mobile-cart-item .quantity-available {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 400;
+    margin-left: 4px;
   }
 
   .mobile-cart-item .cart-item-total {
@@ -1141,6 +1179,11 @@
   font-weight: 800;
 }
 
+[dir="rtl"] .quantity-available {
+  margin-left: 0;
+  margin-right: 4px;
+}
+
 [dir="rtl"] .cart-item-total.desktop-only {
   font-family: 'Tajawal', 'Arial', sans-serif;
   font-weight: 800;
@@ -1218,6 +1261,11 @@
 
 [dir="rtl"] .mobile-cart-item .cart-item-specifications {
   flex-direction: row-reverse;
+}
+
+[dir="rtl"] .mobile-cart-item .quantity-available {
+  margin-left: 0;
+  margin-right: 4px;
 }
 
  
