@@ -169,6 +169,14 @@ const FeaturedComments = ({ comments = [] }) => {
                           <p className="author-title">{comment.product.name}</p>
                         )}
                       </div>
+                      
+                      {comment.platform && (
+                        <div className="platform-badge">
+                          <span className="platform-icon">
+                            {getPlatformIcon(comment.platform)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="comment-text-container">
@@ -183,11 +191,7 @@ const FeaturedComments = ({ comments = [] }) => {
                         ))}
                       </div>
                       {comment.platform && (
-                        <div className="platform-badge">
-                          <span className="platform-icon">
-                            {getPlatformIcon(comment.platform)}
-                          </span>
-                        </div>
+                        <span className="platform-name">{comment.platform}</span>
                       )}
                     </div>
                   </div>

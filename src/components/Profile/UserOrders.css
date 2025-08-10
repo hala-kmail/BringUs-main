@@ -28,6 +28,7 @@
   display: flex;
   justify-content: center;
   gap: 10px;
+  flex-direction: row ;
   margin-bottom: 30px;
   flex-wrap: wrap;
 }

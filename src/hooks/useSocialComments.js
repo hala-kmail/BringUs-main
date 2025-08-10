@@ -38,7 +38,11 @@ export const useSocialComments = () => {
       return;
     }
 
-  
+    const token = getBearerToken();
+    if (!token) {
+      setError('Authentication required. Please login to view comments.');
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -48,6 +52,7 @@ export const useSocialComments = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': token
         }
       });
       

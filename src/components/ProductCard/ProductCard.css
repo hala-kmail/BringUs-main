@@ -882,11 +882,11 @@ max-width: 300px;
 .discount-badge-new {
     position: absolute;
     top: 0;
-    left: 0;
+    right: 0;
     background: linear-gradient(135deg, #fa3737, #af2f20);
     color: #ffffff;
     padding: 6px 13px;
-    border-radius: 16px 0px  30px 0px;
+    border-radius: 0px 15px  0px 30px;
     font-size: 14px;
     font-weight: 700;
     z-index: 10;
@@ -895,9 +895,9 @@ max-width: 300px;
 }
 
 [dir="rtl"] .discount-badge-new {
-  left: auto;
-  border-radius: 0px 16px  0px 30px;
-   right: 0px;
+  right: auto;
+  border-radius: 16px 0px  30px 0px;
+   left: 0px;
 }
 
 
@@ -989,8 +989,8 @@ max-width: 300px;
 
 .add-to-cart-btn-new {
   flex: 1;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: #ffffff;
+  /* background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); */
+  color: #000000;
   border: none;
   padding: 14px 20px;
   border-radius: 12px;
@@ -1005,7 +1005,7 @@ max-width: 300px;
 }
 
 .add-to-cart-btn-new:hover {
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+  /* background: linear-gradient(135deg, var(--primary-dark), var(--primary-color)); */
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }

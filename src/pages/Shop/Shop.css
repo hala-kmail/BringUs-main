@@ -2812,12 +2812,12 @@
 }
 
 /* Filter checkbox styles (for features, status, etc.) */
-.feature-filters,
-.status-filters {
+.shop-sidebar div .feature-filters,
+.status-filters-shop-sidebar {
 font-size: 14px;
   display: flex;
   gap: 8px;
-  /* flex-direction: column; */
+  flex-direction: column;
 }
 
 
