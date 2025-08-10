@@ -2,7 +2,6 @@
 
 export const getSimpleColorsFromColorsField = (product) => {
   const colorsField = product?.colors;
-  console.log('Raw colors field:', colorsField);
   
   if (!colorsField) return [];
 
@@ -12,7 +11,6 @@ export const getSimpleColorsFromColorsField = (product) => {
   if (typeof colorsField === 'string') {
     try {
       colorsArray = JSON.parse(colorsField);
-      console.log('Parsed colors array:', colorsArray);
     } catch (error) {
       console.error('Error parsing colors JSON:', error);
       return [];
@@ -29,27 +27,66 @@ export const getSimpleColorsFromColorsField = (product) => {
   const extractedColors = [];
   
   colorsArray.forEach(colorItem => {
-    console.log('Processing color item:', colorItem);
+    if (Array.isArray(colorItem)) {
+      // إذا كان اللون مصفوفة (ألوان متعددة) فأضف كل لون منفرداً
+      colorItem.forEach(hex => {
+        const colorName = hexToColorName(hex);
+        extractedColors.push(colorName);
+      });
+    } else if (typeof colorItem === 'string') {
+      // لون واحد كسطر نصي - تحويل hex إلى اسم اللون
+      const colorName = hexToColorName(colorItem);
+      extractedColors.push(colorName);
+    }
+  });
+  
+  return extractedColors.filter(Boolean); // حذف القيم الفارغة
+};
+
+// دالة لاستخراج hex codes الأصلية للعرض في الواجهة
+export const getOriginalColorsFromColorsField = (product) => {
+  const colorsField = product?.colors;
+  
+  if (!colorsField) return [];
+
+  let colorsArray = [];
+  
+  // محاولة تحليل JSON إذا كان string
+  if (typeof colorsField === 'string') {
+    try {
+      colorsArray = JSON.parse(colorsField);
+    } catch (error) {
+      console.error('Error parsing colors JSON:', error);
+      return [];
+    }
+  } else if (Array.isArray(colorsField)) {
+    // إذا كان array مباشرة (للتوافق مع الكود القديم)
+    colorsArray = colorsField;
+  } else {
+    return [];
+  }
+  
+  if (!Array.isArray(colorsArray) || colorsArray.length === 0) return [];
+
+  const extractedColors = [];
+  
+  colorsArray.forEach(colorItem => {
     if (Array.isArray(colorItem)) {
       // إذا كان اللون مصفوفة (ألوان متعددة)
       if (colorItem.length === 1) {
         // لون واحد فقط
         extractedColors.push(colorItem[0]);
-        console.log('Added single color:', colorItem[0]);
       } else if (colorItem.length > 1) {
         // ألوان متعددة - دمجها
         const mixedColor = colorItem.join('+');
         extractedColors.push(mixedColor);
-        console.log('Added mixed color:', mixedColor);
       }
     } else if (typeof colorItem === 'string') {
       // لون واحد كسطر نصي
       extractedColors.push(colorItem);
-      console.log('Added string color:', colorItem);
     }
   });
   
-  console.log('Final extracted colors:', extractedColors);
   return extractedColors.filter(Boolean); // حذف القيم الفارغة
 };
 
@@ -93,6 +130,98 @@ export const organizeSpecifications = (specifications) => {
   }));
 };
 
+// Helper function to convert hex color to color name
+export const hexToColorName = (hex) => {
+  if (!hex) return '';
+  
+  // Remove # if present
+  const cleanHex = hex.replace('#', '').toLowerCase();
+  
+  // Map of hex codes to color names
+  const hexToColorMap = {
+    'ff0000': 'red',
+    'f00': 'red',
+    'ef4444': 'red',
+    'dc2626': 'red',
+    'b91c1c': 'red',
+    '00ff00': 'green',
+    '0f0': 'green',
+    '22c55e': 'green',
+    '16a34a': 'green',
+    '15803d': 'green',
+    '0000ff': 'blue',
+    '00f': 'blue',
+    '3b82f6': 'blue',
+    '2563eb': 'blue',
+    '1d4ed8': 'blue',
+    'ffff00': 'yellow',
+    'ff0': 'yellow',
+    'f8e71c': 'yellow',
+    'eab308': 'yellow',
+    'facc15': 'yellow',
+    'fbbf24': 'yellow',
+    'ffa500': 'orange',
+    'f97316': 'orange',
+    'ea580c': 'orange',
+    '800080': 'purple',
+    'a855f7': 'purple',
+    '9333ea': 'purple',
+    '7c3aed': 'purple',
+    'ffffff': 'white',
+    'fff': 'white',
+    'f9fafb': 'white',
+    '000000': 'black',
+    '000': 'black',
+    '1f2937': 'black',
+    '111827': 'black',
+    '964b00': 'brown',
+    '92400e': 'brown',
+    'a16207': 'brown',
+    'ffc0cb': 'pink',
+    'ec4899': 'pink',
+    'db2777': 'pink',
+    'be185d': 'pink',
+    '808080': 'grey',
+    '888': 'grey',
+    '6b7280': 'grey',
+    '4b5563': 'grey',
+    '374151': 'grey',
+    'f5f5dc': 'beige',
+    'ffd700': 'gold',
+    'f59e0b': 'gold',
+    'd97706': 'gold',
+    'c0c0c0': 'silver',
+    'd1d5db': 'silver',
+    '9ca3af': 'silver',
+    '00ffff': 'cyan',
+    '0ff': 'cyan',
+    '06b6d4': 'cyan',
+    '0891b2': 'cyan',
+    '008080': 'teal',
+    '14b8a6': 'teal',
+    '0d9488': 'teal',
+    '808000': 'olive',
+    '000080': 'navy',
+    '1e40af': 'navy',
+    '1e3a8a': 'navy',
+    '800000': 'maroon',
+    '00ff00': 'lime',
+    '84cc16': 'lime',
+    '65a30d': 'lime',
+    'ff7f50': 'coral',
+    'f87171': 'coral',
+    'ef4444': 'coral',
+    '4b0082': 'indigo',
+    '6366f1': 'indigo',
+    '4f46e5': 'indigo',
+    'ffbf00': 'amber',
+    'f59e0b': 'amber',
+    'd97706': 'amber'
+  };
+  
+  return hexToColorMap[cleanHex] || hex;
+};
+
 // Helper function to get color name from hex
 export const getColorName = (hex) => {
   if (!hex) return '';
@@ -102,7 +231,7 @@ export const getColorName = (hex) => {
     try {
       const colors = JSON.parse(hex);
       if (Array.isArray(colors)) {
-        return colors.length > 1 ? 'متعدد الألوان' : colors[0];
+        return colors.length > 1 ? 'متعدد الألوان' : hexToColorName(colors[0]);
       }
     } catch (e) {
       // إذا فشل التحليل، اعرض النص كما هو
@@ -115,7 +244,7 @@ export const getColorName = (hex) => {
     return 'متعدد الألوان';
   }
   
-  return hex;
+  return hexToColorName(hex);
 };
 
 // Helper function to validate product for cart

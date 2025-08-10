@@ -15,6 +15,19 @@
 
 }
 
+/* Reveal on scroll */
+.reveal-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 500ms ease, transform 500ms ease;
+  will-change: opacity, transform;
+}
+
+.reveal-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .best-sellers {
 
   padding: 0.5rem;

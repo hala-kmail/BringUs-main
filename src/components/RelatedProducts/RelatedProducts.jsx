@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import useWishlistAPI from '../../hooks/useWishlistAPI';
+import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
@@ -11,7 +11,7 @@ import './RelatedProducts.css';
 
 const RelatedProducts = ({ currentProduct, categoryId }) => {
   const { t, i18n } = useTranslation();
-  const { isInWishlist, toggleWishlist } = useWishlistAPI();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -72,8 +72,6 @@ const RelatedProducts = ({ currentProduct, categoryId }) => {
   if (relatedProducts.length === 0) {
     return null;
   }
-
-
 
   const categorySlug = currentProduct.category.slug['en']; // Assuming categorySlug is derived from currentProduct
 

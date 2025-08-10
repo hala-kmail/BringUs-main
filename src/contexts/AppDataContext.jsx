@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AppDataContext = createContext();
 
@@ -35,7 +35,9 @@ export const AppDataProvider = ({ children }) => {
         if (storedUser) {
           const userData = JSON.parse(storedUser);
           setUser(userData);
-          console.log('AppData - User loaded from localStorage:', userData);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AppData - User loaded from localStorage:', userData);
+          }
         }
 
         // Load store data
@@ -43,7 +45,9 @@ export const AppDataProvider = ({ children }) => {
         if (storedStore) {
           const storeData = JSON.parse(storedStore);
           setStore(storeData);
-          console.log('AppData - Store loaded from localStorage:', storeData);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AppData - Store loaded from localStorage:', storeData);
+          }
         }
 
         // Load categories data
@@ -51,7 +55,9 @@ export const AppDataProvider = ({ children }) => {
         if (storedCategories) {
           const categoriesData = JSON.parse(storedCategories);
           setCategories(categoriesData);
-          console.log('AppData - Categories loaded from localStorage:', categoriesData);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AppData - Categories loaded from localStorage:', categoriesData);
+          }
         }
 
         // Load products data
@@ -59,7 +65,9 @@ export const AppDataProvider = ({ children }) => {
         if (storedProducts) {
           const productsData = JSON.parse(storedProducts);
           setProducts(productsData);
-          console.log('AppData - Products loaded from localStorage:', productsData.length, 'products');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AppData - Products loaded from localStorage:', productsData.length, 'products');
+          }
         }
 
         // Load sliders data
@@ -67,12 +75,16 @@ export const AppDataProvider = ({ children }) => {
         if (storedSliders) {
           const slidersData = JSON.parse(storedSliders);
           setSliders(slidersData);
-          console.log('AppData - Sliders loaded from localStorage:', slidersData.length, 'sliders');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AppData - Sliders loaded from localStorage:', slidersData.length, 'sliders');
+          }
         }
 
         setIsLoading(false);
         setIsInitialized(true);
-        console.log('AppData - Initialization completed');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('AppData - Initialization completed');
+        }
       } catch (error) {
         console.error('AppData - Error loading stored data:', error);
         setIsLoading(false);
@@ -85,19 +97,27 @@ export const AppDataProvider = ({ children }) => {
 
   // Update user data
   const updateUser = (userData) => {
-    console.log('updateUser called with:', userData);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('updateUser called with:', userData);
+    }
     
     if (userData && (userData._id || userData.id)) {
       setUser(userData);
       localStorage.setItem('userInfo', JSON.stringify(userData));
-      console.log('AppData - User updated:', userData);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - User updated:', userData);
+      }
     } else if (userData === null || userData === undefined) {
       // Only clear user if explicitly passed null/undefined
       setUser(null);
       localStorage.removeItem('userInfo');
-      console.log('AppData - User cleared');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - User cleared');
+      }
     } else {
-      console.log('AppData - Invalid user data, keeping current user');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Invalid user data, keeping current user');
+      }
     }
   };
 
@@ -106,10 +126,14 @@ export const AppDataProvider = ({ children }) => {
     setStore(storeData);
     if (storeData) {
       localStorage.setItem('storeInfo', JSON.stringify(storeData));
-      console.log('AppData - Store updated:', storeData);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Store updated:', storeData);
+      }
     } else {
       localStorage.removeItem('storeInfo');
-      console.log('AppData - Store cleared');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Store cleared');
+      }
     }
   };
 
@@ -118,34 +142,46 @@ export const AppDataProvider = ({ children }) => {
     setCategories(categoriesData);
     if (categoriesData) {
       localStorage.setItem('categoriesInfo', JSON.stringify(categoriesData));
-      console.log('AppData - Categories updated:', categoriesData);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Categories updated:', categoriesData);
+      }
     } else {
       localStorage.removeItem('categoriesInfo');
-      console.log('AppData - Categories cleared');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Categories cleared');
+      }
     }
   };
 
   // Update products data
-  const updateProducts = (productsData) => {
+  const updateProducts = useCallback((productsData) => {
     setProducts(productsData);
     if (productsData) {
       localStorage.setItem('productsInfo', JSON.stringify(productsData));
-      console.log('AppData - Products updated:', productsData.length, 'products');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Products updated:', productsData.length, 'products');
+      }
     } else {
       localStorage.removeItem('productsInfo');
-      console.log('AppData - Products cleared');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Products cleared');
+      }
     }
-  };
+  }, []);
 
   // Update sliders data
   const updateSliders = (slidersData) => {
     setSliders(slidersData);
     if (slidersData) {
       localStorage.setItem('slidersInfo', JSON.stringify(slidersData));
-      console.log('AppData - Sliders updated:', slidersData.length, 'sliders');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Sliders updated:', slidersData.length, 'sliders');
+      }
     } else {
       localStorage.removeItem('slidersInfo');
-      console.log('AppData - Sliders cleared');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AppData - Sliders cleared');
+      }
     }
   };
 
@@ -189,7 +225,9 @@ export const AppDataProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('userAvatar');
     
-    console.log('AppData - All data cleared from localStorage');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('AppData - All data cleared from localStorage');
+    }
   };
 
   // Check if user is authenticated
@@ -212,18 +250,19 @@ export const AppDataProvider = ({ children }) => {
     clearData,
   };
 
-  console.log('AppDataContext - Current state:', {
-    user: user ? 'User exists' : 'No user',
-    store: store ? `Store ID: ${store._id}` : 'No store',
-    storeColor: store?.settings?.mainColor || 'No color',
-    storeSettings: store?.settings,
-    categories: categories ? `${categories.length} categories` : 'No categories (or not fetched)',
-    products: products.length > 0 ? `${products.length} products` : 'No products',
-    sliders: sliders ? `${sliders.length} sliders` : 'No sliders (or not fetched)',
-    isLoading,
-    isInitialized,
-    isAuthenticated
-  });
+  // Only log in development mode
+  if (process.env.NODE_ENV === 'development') {
+    console.log('AppDataContext - Current state:', {
+      user: user ? 'User exists' : 'No user',
+      store: store ? `Store ID: ${store._id}` : 'No store',
+      categories: categories ? `${categories.length} categories` : 'No categories',
+      products: products.length > 0 ? `${products.length} products` : 'No products',
+      sliders: sliders ? `${sliders.length} sliders` : 'No sliders',
+      isLoading,
+      isInitialized,
+      isAuthenticated
+    });
+  }
 
   return (
     <AppDataContext.Provider value={value}>

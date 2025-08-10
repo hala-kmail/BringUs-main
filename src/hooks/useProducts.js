@@ -1,5 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
+import { getBearerToken } from '../utils/tokenManager';
+import { getSimpleColorsFromColorsField, getOriginalColorsFromColorsField } from '../utils/productUtils';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -8,10 +10,80 @@ const useProducts = () => {
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
   const { store, products, updateProducts } = useAppData();
+  const hasInitialized = useRef(false);
+  const storeId = useRef(null);
+  const token = getBearerToken();
 
-  const fetchProducts = useCallback(async (storeId, options = {}) => {
+  // Get store ID from localStorage or store context
+  const getStoreId = useCallback(() => {
+    if (store && store._id) {
+      return store._id;
+    }
     
-    if (!storeId) {
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore._id;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
+  // Extract all available colors from products
+  const getAllAvailableColors = useCallback(() => {
+    if (!products || !Array.isArray(products)) return [];
+    
+    const colorSet = new Set();
+    products.forEach(product => {
+      const simpleColors = getSimpleColorsFromColorsField(product);
+      simpleColors.forEach(color => colorSet.add(color));
+    });
+    
+    return Array.from(colorSet).sort();
+  }, [products]);
+
+  // Extract all available product labels from products
+  const getAllAvailableProductLabels = useCallback(() => {
+    if (!products || !Array.isArray(products)) return [];
+    
+    const labelSet = new Set();
+    products.forEach(product => {
+      if (product.productLabels && Array.isArray(product.productLabels)) {
+        product.productLabels.forEach(label => {
+          if (label && label._id) {
+            labelSet.add(JSON.stringify({
+              _id: label._id,
+              nameAr: label.nameAr,
+              nameEn: label.nameEn,
+              color: label.color
+            }));
+          }
+        });
+      }
+    });
+    
+    return Array.from(labelSet).map(labelStr => JSON.parse(labelStr));
+  }, [products]);
+
+  // Extract all available colors for display (hex codes)
+  const getAllAvailableColorsForDisplay = useCallback(() => {
+    if (!products || !Array.isArray(products)) return [];
+    
+    const colorSet = new Set();
+    products.forEach(product => {
+      const originalColors = getOriginalColorsFromColorsField(product);
+      originalColors.forEach(color => colorSet.add(color));
+    });
+    
+    return Array.from(colorSet).sort();
+  }, [products]);
+
+  const fetchProducts = useCallback(async (targetStoreId, options = {}) => {
+    if (!targetStoreId) {
       console.log('No store ID available for fetching products');
       return null;
     }
@@ -20,22 +92,48 @@ const useProducts = () => {
       setLoading(true);
       setError(null);
 
-      // بناء parameters للAPI
-      const params = new URLSearchParams({
-        store: storeId
-      });
+      // Build parameters for the new API endpoint
+      const params = new URLSearchParams();
       
-      // إضافة category و search فقط إذا كانت موجودة
+      // Pagination parameters
+      if (options.page) {
+        params.append('page', options.page.toString());
+      }
+      if (options.limit) {
+        params.append('limit', options.limit.toString());
+      }
+      
+      // Filter parameters
       if (options.category) {
         params.append('category', options.category);
+      }
+      if (options.minPrice) {
+        params.append('minPrice', options.minPrice.toString());
+      }
+      if (options.maxPrice) {
+        params.append('maxPrice', options.maxPrice.toString());
+      }
+      if (options.sort) {
+        params.append('sort', options.sort);
       }
       if (options.search) {
         params.append('search', options.search);
       }
+      if (options.colors && options.colors.length > 0) {
+        options.colors.forEach((color) => params.append('colors[]', color));
+      }
+      if (options.productLabels && options.productLabels.length > 0) {
+        options.productLabels.forEach((labelId) => params.append('productLabels[]', labelId));
+      }
       
-      const url = `${API_BASE_URL}/products/by-store/${storeId}?${params}`;
-      
-      const response = await fetch(url);
+      const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?${params}`;
+ 
+      const response = await fetch(url, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': token
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -45,17 +143,14 @@ const useProducts = () => {
       
       // Extract data from the response
       if (result.success && result.data) {
-        console.log('Products fetched successfully:', result.data.length, 'products');
-        
-        // تحديث المنتجات في Context إذا لم تكن هناك خيارات تصفية محددة
-        if (!options.category && !options.search && !options.featured) {
+        // Update products in Context if no specific filtering options
+        if (!options.category && !options.search && !options.minPrice && !options.maxPrice && !options.colors && !options.productLabels) {
           updateProducts(result.data);
         }
         
         setPagination(result.pagination);
         return { products: result.data, pagination: result.pagination };
       } else {
-        console.log('Invalid response format:', result);
         throw new Error('Invalid response format');
       }
     } catch (err) {
@@ -65,27 +160,32 @@ const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [updateProducts]);
+  }, [updateProducts, token]);
 
-  // جلب المنتجات تلقائياً عند توفر الستور
+  // Auto-fetch products when store changes (only once per store)
   useEffect(() => {
-    console.log(store?._id,'store?._idstore?._idstore?._id');
-    // تجنب جلب البيانات إذا كانت متوفرة بالفعل
-    if (products && products.length > 0) {
-      console.log('products already fetched');
-      return;
-    }
-
-    if (store && store._id) {
-      console.log('Auto-fetching products for store:', store._id);
-      // استدعاء fetchProducts مباشرة بدلاً من إضافتها لل dependencies
+    const currentStoreId = getStoreId();
+    
+    // Only fetch if we have a store ID and haven't initialized for this store
+    if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Initializing products for store ID:', currentStoreId);
+      }
+      hasInitialized.current = true;
+      storeId.current = currentStoreId;
+      
       const loadProducts = async () => {
         try {
           setLoading(true);
           setError(null);
           
-          const url = `${API_BASE_URL}/products/by-store/${store._id}`;
-          const response = await fetch(url);
+          const url = `${API_BASE_URL}/products/${currentStoreId}/without-variants?page=1&limit=20&sort=newest`;
+          const response = await fetch(url, {
+            headers: {
+              'accept': 'application/json',
+              'Authorization': token
+            }
+          });
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -94,8 +194,8 @@ const useProducts = () => {
           const result = await response.json();
           
           if (result.success && result.data) {
-            console.log('Products fetched successfully:', result.data.length, 'products');
             updateProducts(result.data);
+            setPagination(result.pagination);
           } else {
             throw new Error('Failed to fetch products');
           }
@@ -108,10 +208,18 @@ const useProducts = () => {
       };
       
       loadProducts();
+    } else if (!currentStoreId && products !== null) {
+      // Clear products if no store is available
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No store available, clearing products');
+      }
+      updateProducts(null);
+      hasInitialized.current = false;
+      storeId.current = null;
     }
-  }, []); // استخدام store._id فقط
+  }, [store?._id, getStoreId, updateProducts, token, products]);
 
-  // جلب منتج واحد بالID
+  // Fetch single product by ID
   const fetchProductById = useCallback(async (productId) => {
     if (!productId) {
       console.log('No product ID provided');
@@ -146,126 +254,216 @@ const useProducts = () => {
     }
   }, []);
 
-  // جلب المنتجات حسب الفئة
+  // Fetch single product with its variants
+  const fetchProductWithVariants = useCallback(async (productId) => {
+    if (!productId) {
+      console.log('No product ID provided');
+      return null;
+    }
+
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
+      console.log('No store ID available for fetching product with variants');
+      return null;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const url = `${API_BASE_URL}/products/${currentStoreId}/${productId}/with-variants`;
+
+      const headers = {
+        accept: 'application/json',
+      };
+      if (token) {
+        headers.Authorization = token;
+      }
+
+      const response = await fetch(url, { headers });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // Expecting shape: { product, variants, variantsCount }
+        return {
+          product: result.data.product || result.data,
+          variants: result.data.variants || [],
+          variantsCount: result.data.variantsCount ?? (result.data.variants ? result.data.variants.length : 0),
+        };
+      } else {
+        throw new Error('Product not found');
+      }
+    } catch (err) {
+      console.error('Error fetching product with variants:', err);
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [getStoreId, token]);
+
+  // Fetch products by category with pagination and filters
   const fetchProductsByCategory = useCallback(async (categoryId, options = {}) => {
     if (!categoryId) {
       console.log('No category ID provided');
       return null;
     }
 
-    const storeId = store?._id;
-    if (!storeId) {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
       console.log('No store ID available');
       return null;
     }
 
-    return fetchProducts(storeId, { ...options, category: categoryId });
-  }, [store, fetchProducts]);
+    return fetchProducts(currentStoreId, { ...options, category: categoryId });
+  }, [getStoreId, fetchProducts]);
 
-  // جلب المنتجات المميزة
+  // Fetch featured products
   const fetchFeaturedProducts = useCallback(async (options = {}) => {
-    const storeId = store?._id;
-    if (!storeId) {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
       console.log('No store ID available');
       return null;
     }
     // API does not support featured flag, so we fetch all products
     // and let the frontend handle filtering if needed.
-    return fetchProducts(storeId, { ...options });
-  }, [store, fetchProducts]);
+    return fetchProducts(currentStoreId, { ...options });
+  }, [getStoreId, fetchProducts]);
 
-  // جلب أحدث المنتجات
+  // Fetch new arrivals
   const fetchNewArrivals = useCallback(async (options = {}) => {
-    const storeId = store?._id;
-    if (!storeId) {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
       console.log('No store ID available');
       return null;
     }
-    // API does not support sorting, so we fetch all products
-    // and let the frontend handle sorting if needed.
-    return fetchProducts(storeId, { ...options });
-  }, [store, fetchProducts]);
+    return fetchProducts(currentStoreId, { ...options, sort: 'newest' });
+  }, [getStoreId, fetchProducts]);
 
-  // جلب أفضل المنتجات مبيعاً
+  // Fetch best sellers
   const fetchBestSellers = useCallback(async (options = {}) => {
-    const storeId = store?._id;
-    if (!storeId) {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
       console.log('No store ID available');
       return null;
     }
-    // API does not support sorting, so we fetch all products
+    // API does not support best sellers sorting, so we fetch all products
     // and let the frontend handle sorting if needed.
-    return fetchProducts(storeId, { ...options });
-  }, [store, fetchProducts]);
+    return fetchProducts(currentStoreId, { ...options });
+  }, [getStoreId, fetchProducts]);
 
-  // البحث في المنتجات
+  // Search products with pagination
   const searchProducts = useCallback(async (query, options = {}) => {
     if (!query || query.trim() === '') {
       console.log('No search query provided');
       return null;
     }
 
-    const storeId = store?._id;
-    if (!storeId) {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
       console.log('No store ID available');
       return null;
     }
 
-    return fetchProducts(storeId, { ...options, search: query.trim() });
-  }, [store, fetchProducts]);
+    return fetchProducts(currentStoreId, { ...options, search: query.trim() });
+  }, [getStoreId, fetchProducts]);
 
-  // تحديد ما إذا كان المنتج في المخزون
+  // Fetch products with advanced filtering
+  const fetchProductsWithFilters = useCallback(async (filters = {}) => {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
+      console.log('No store ID available');
+      return null;
+    }
+
+    const options = {
+      page: filters.page || 1,
+      limit: filters.limit || 20,
+      sort: filters.sort || 'newest'
+    };
+
+    // Add filter parameters
+    if (filters.category) {
+      options.category = filters.category;
+    }
+    if (filters.minPrice !== undefined) {
+      options.minPrice = filters.minPrice;
+    }
+    if (filters.maxPrice !== undefined) {
+      options.maxPrice = filters.maxPrice;
+    }
+    if (filters.search) {
+      options.search = filters.search;
+    }
+    if (filters.colors && filters.colors.length > 0) {
+      options.colors = filters.colors;
+    }
+    if (filters.productLabels && filters.productLabels.length > 0) {
+      options.productLabels = filters.productLabels;
+    }
+
+    return fetchProducts(currentStoreId, options);
+  }, [getStoreId, fetchProducts]);
+
+  // Check if product is in stock
   const isInStock = useCallback((product) => {
-    // السماح بإضافة المنتجات التي أوشكت على الانتهاء (منخفضة المخزون)
+    // Allow adding products that are low stock or in stock
     return product && 
            (product.stockStatus === 'in_stock' || product.stockStatus === 'low_stock') && 
            product.availableQuantity > 0;
   }, []);
 
-  // حساب السعر النهائي مع الخصم
+  // Calculate final price with discount
   const getFinalPrice = useCallback((product) => {
     if (!product) return 0;
-    // إذا كان هناك finalPrice (سعر بعد الخصم)، استخدمه
+    // If there's finalPrice (price after discount), use it
     if (product.finalPrice !== undefined && product.finalPrice !== null) {
       return product.finalPrice;
     }
-    // وإلا استخدم السعر العادي
+    // Otherwise use regular price
     return product.price || 0;
   }, []);
 
-  // حساب نسبة الخصم
+  // Calculate discount percentage
   const getDiscountPercentage = useCallback((product) => {
     if (!product) return 0;
     return product.salePercentage || 0;
   }, []); 
 
-  // الحصول على الصورة الرئيسية
+  // Get main image
   const getMainImage = useCallback((product) => {
     if (!product) return null;
     return product.mainImage || (product.images && product.images[0]) || null;
   }, []);
 
-  // الحصول على اسم المنتج حسب اللغة
+  // Get product name by language
   const getProductName = useCallback((product, language = 'ar') => {
     if (!product) return '';
     return language === 'ar' ? product.nameAr : product.nameEn;
   }, []);
 
-  // الحصول على وصف المنتج حسب اللغة
+  // Get product description by language
   const getProductDescription = useCallback((product, language = 'ar') => {
     if (!product) return '';
     return language === 'ar' ? product.descriptionAr : product.descriptionEn;
   }, []);
 
-  // تحديث المنتجات
+  // Refresh products
   const refreshProducts = useCallback(() => {
-    if (store && store._id) {
-      // مسح المنتجات الحالية لإجبار التحديث
-      updateProducts([]);
-      return fetchProducts(store._id);
+    const currentStoreId = getStoreId();
+    if (currentStoreId) {
+      // Force refresh by clearing current products
+      updateProducts(null);
+      hasInitialized.current = false;
+      return fetchProducts(currentStoreId);
     }
     return null;
-  }, [store, fetchProducts, updateProducts]);
+  }, [getStoreId, fetchProducts, updateProducts]);
 
   return {
     products,
@@ -274,18 +472,23 @@ const useProducts = () => {
     pagination,
     fetchProducts,
     fetchProductById,
+    fetchProductWithVariants,
     fetchProductsByCategory,
     fetchFeaturedProducts,
     fetchNewArrivals,
     fetchBestSellers,
     searchProducts,
+    fetchProductsWithFilters,
     refreshProducts,
     isInStock,
     getFinalPrice,
     getDiscountPercentage,
     getMainImage,
     getProductName,
-    getProductDescription
+    getProductDescription,
+    getAllAvailableColors,
+    getAllAvailableColorsForDisplay,
+    getAllAvailableProductLabels
   };
 };
 

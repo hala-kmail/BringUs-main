@@ -37,7 +37,7 @@ const SocialComments = () => {
             <p className="section-subtitle">{t('social_comments.subtitle', 'ماذا يقول عملاؤنا عنا')}</p>
           </div>
           <div className={`comments-error ${isAuthError ? 'auth-error' : ''}`}>
-            {isAuthError ? (
+           
               <div className="auth-error-content">
                 <p>{t('social_comments.auth_required', 'يرجى تسجيل الدخول لعرض التعليقات')}</p>
                 <button 
@@ -47,9 +47,8 @@ const SocialComments = () => {
                   {t('common.login', 'تسجيل الدخول')}
                 </button>
               </div>
-            ) : (
-              <p>{t('social_comments.error', 'عذراً، لا يمكن تحميل التعليقات في الوقت الحالي')}</p>
-            )}
+          
+         
           </div>
         </div>
       </section>

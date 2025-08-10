@@ -294,6 +294,17 @@ const useLogin = () => {
       const storeInfo = await fetchStoreInfo(storeIdToUse, data.token);
       if (storeInfo) {
         updateStore(storeInfo);
+        // Persist slug to localStorage for routing/branding needs
+        try {
+          const slugFromStore = storeInfo.slug || storeInfo.slugAr || storeInfo.slugEn;
+          const slugFromUser = completeUserData?.store?.slug || (completeUserData?.stores?.[0]?.slug);
+          const slugToSave = slugFromStore || slugFromUser;
+          if (slugToSave) {
+            localStorage.setItem('storeSlug', slugToSave);
+          }
+        } catch (e) {
+          console.warn('Could not persist store slug:', e);
+        }
       }
 
       return { 
@@ -322,16 +333,7 @@ const useLogin = () => {
     return success;
   }, []);
 
-  // دالة للتحقق من وجود التوكن
-  const checkAuthToken = useCallback(() => {
-    const token = getToken();
-    if (token) {
-      console.log('Auth token found in localStorage');
-    } else {
-      console.log('No auth token found in localStorage');
-    }
-    return token;
-  }, []);
+
 
   // دالة لحفظ التوكن
   const saveAuthToken = useCallback((token) => {
@@ -349,6 +351,7 @@ const useLogin = () => {
     setError(null);
     const tokenRemoved = removeAuthToken();
     clearData();
+    try { localStorage.removeItem('storeSlug'); } catch {}
     if (tokenRemoved) {
       console.log('User logged out successfully');
     } else {
@@ -367,7 +370,6 @@ const useLogin = () => {
     loadStoreInfo,
     loadUserInfo,
     loadUserAndStoreInfo,
-    checkAuthToken,
     saveAuthToken,
     removeAuthToken,
   };

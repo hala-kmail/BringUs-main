@@ -17,7 +17,7 @@ import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import { useAppData } from '../../contexts/AppDataContext';
-import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
+import { getSimpleColorsFromColorsField, hexToColorName } from '../../utils/productUtils';
 import { useWishlist } from '../../contexts/WishlistContext';
 
 const Shop = () => {
@@ -31,19 +31,31 @@ const Shop = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   // Use dynamic data hooks
-  const { products, loading: productsLoading, error: productsError, searchProducts, fetchProductsByCategory } = useProducts();
+  const { 
+    products, 
+    loading: productsLoading, 
+    error: productsError, 
+    pagination,
+    searchProducts, 
+    fetchProductsByCategory,
+    fetchProductsWithFilters,
+    getAllAvailableColors,
+    getAllAvailableColorsForDisplay,
+    getAllAvailableProductLabels
+  } = useProducts();
   const { categories, getMainCategories, getSubCategories, loading: categoriesLoading } = useCategories();
   const { store, features } = useAppData();
 
-  // Derived data
-  const allProducts = products || [];
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
+  // API-based products state
+  const [apiProducts, setApiProducts] = useState([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [apiPagination, setApiPagination] = useState(null);
   
-  // Calculate dynamic max price
+  // Calculate dynamic max price from all products
   const getMaxProductPrice = () => {
-    if (!allProducts.length) return 1000;
-    return Math.max(...allProducts.map(product => 
+    if (!products || !products.length) return 1000;
+    return Math.max(...products.map(product => 
       Math.max(product.originalPrice || 0, product.salePrice || 0, product.price || 0)
     ));
   };
@@ -57,69 +69,18 @@ const Shop = () => {
     subcategories: [], 
     features: [],
     colors: [],
+    productLabels: [],
     status: [],
     sortBy: 'newest'
   });
 
-  // API-based search function
-  const performAPISearch = useCallback(async (query) => {
-    if (!query.trim()) {
-      // If empty search, reset to all products
-      setFilteredProducts(allProducts);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const result = await searchProducts(query);
-      if (result && result.products) {
-        setFilteredProducts(result.products);
-        console.log('Search results:', result.products.length, 'products found');
-      } else {
-        setFilteredProducts([]);
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      setFilteredProducts([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [searchProducts, allProducts]);
-
-  // API-based category filtering
-  const performCategoryFilter = useCallback(async (categoryIds) => {
-    if (!categoryIds.length) {
-      setFilteredProducts(allProducts);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      // For now, we'll use the first category ID
-      // In the future, this could be enhanced to support multiple categories
-      const result = await fetchProductsByCategory(categoryIds[0]);
-      if (result && result.products) {
-        setFilteredProducts(result.products);
-        console.log('Category filter results:', result.products.length, 'products found');
-      } else {
-        setFilteredProducts([]);
-      }
-    } catch (error) {
-      console.error('Category filter error:', error);
-      setFilteredProducts([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [fetchProductsByCategory, allProducts]);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   // View mode
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); 
-  
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-  const [paginatedProducts, setPaginatedProducts] = useState([]);
 
   const currentLang = i18n.language;
 
@@ -142,34 +103,109 @@ const Shop = () => {
         priceRange: { ...prev.priceRange, max: newMaxPrice }
       }));
     }
-  }, [allProducts]);
+  }, [products, initialMaxPrice]);
 
-  // Initialize filtered products
-  useEffect(() => {
-    if (allProducts.length > 0) {
-      setFilteredProducts(allProducts);
+  // API-based filtering function
+  const applyAPIFilters = useCallback(async () => {
+    if (!store?._id) return;
+
+    setApiLoading(true);
+    setApiError(null);
+
+    try {
+      const apiFilters = {
+        page: currentPage,
+        limit: itemsPerPage,
+        sort: filters.sortBy
+      };
+
+      // Add category filter
+      if (filters.categories.length > 0) {
+        apiFilters.category = filters.categories[0]; // API supports single category
+      }
+
+      // Add price filters
+      if (filters.priceRange.min > 0) {
+        apiFilters.minPrice = filters.priceRange.min;
+      }
+      if (filters.priceRange.max < initialMaxPrice) {
+        apiFilters.maxPrice = filters.priceRange.max;
+      }
+
+      // Add search filter
+      if (searchQuery.trim()) {
+        apiFilters.search = searchQuery.trim();
+      }
+
+      // Add color filters
+      if (filters.colors.length > 0) {
+        apiFilters.colors = filters.colors;
+      }
+
+      // Add product labels filters
+      if (filters.productLabels.length > 0) {
+        apiFilters.productLabels = filters.productLabels;
+      }
+
+      const result = await fetchProductsWithFilters(apiFilters);
+
+      if (result && result.products) {
+        setApiProducts(result.products);
+        setApiPagination(result.pagination);
+      } else {
+        setApiProducts([]);
+        setApiPagination(null);
+      }
+    } catch (error) {
+      console.error('API filter error:', error);
+      setApiError(error.message);
+      setApiProducts([]);
+    } finally {
+      setApiLoading(false);
     }
-  }, [allProducts]);
+  }, [store?._id, currentPage, itemsPerPage, filters, searchQuery, initialMaxPrice, fetchProductsWithFilters]);
 
-  // الآثار الجانبية والتبعيات
-  useEffect(() => {
-    // Use async function inside useEffect
-    const applyFiltersAsync = async () => {
-      await applyFilters();
-    };
-    applyFiltersAsync();
-    // eslint-disable-next-line
-  }, [filters, searchQuery, allProducts]);
+  // Update URL parameters based on current filters
+  const updateURLParams = useCallback(() => {
+    const newParams = new URLSearchParams();
+    
+    if (filters.categories.length > 0) {
+      newParams.set('category', filters.categories[0]);
+    }
+    if (filters.colors.length > 0) {
+      filters.colors.forEach((c) => newParams.append('colors[]', c));
+    }
+    if (filters.productLabels.length > 0) {
+      filters.productLabels.forEach((id) => newParams.append('productLabels[]', id));
+    }
+    if (filters.features.length > 0) {
+      newParams.set('feature', filters.features[0]);
+    }
+    if (searchQuery.trim()) {
+      newParams.set('search', searchQuery.trim());
+    }
+    
+    setSearchParams(newParams);
+  }, [filters, searchQuery, setSearchParams]);
 
+  // Apply filters when dependencies change
   useEffect(() => {
-    applyPagination();
-    // eslint-disable-next-line
-  }, [filteredProducts, currentPage, itemsPerPage]);
+    applyAPIFilters();
+  }, [applyAPIFilters]);
+
+  // Update URL parameters when filters change
+  useEffect(() => {
+    updateURLParams();
+  }, [updateURLParams]);
 
   // Initialize filters from URL params
   useEffect(() => {
     const category = searchParams.get('category');
     const feature = searchParams.get('feature');
+    const colorsArrayParams = searchParams.getAll('colors[]');
+    const colorsLegacy = searchParams.get('colors');
+    const productLabelsArrayParams = searchParams.getAll('productLabels[]');
+    const productLabelsLegacy = searchParams.get('productLabels');
     
     if (category) {
       const categoryId = parseInt(category);
@@ -190,250 +226,182 @@ const Shop = () => {
         }));
       }
     }
-    // eslint-disable-next-line
-  }, [allProducts.length]);
 
-//----------------------------------applyPagination------------------------------------------------
-  const applyPagination = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    setPaginatedProducts(filteredProducts.slice(startIndex, endIndex));
-  };
-
-//----------------------------------applyFilters------------------------------------------------
-  const applyFilters = async () => {
-    let filtered = [...allProducts];
-
-    // Apply search filter first (client-side search on all products)
-    if (searchQuery.trim()) {
-      const searchTerm = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(product => {
-        const nameAr = (product.nameAr || '').toLowerCase();
-        const nameEn = (product.nameEn || '').toLowerCase();
-        const descriptionAr = (product.descriptionAr || '').toLowerCase();
-        const descriptionEn = (product.descriptionEn || '').toLowerCase();
-        const tags = (product.tags || []).map(tag => tag.toLowerCase());
-        
-        return nameAr.includes(searchTerm) || 
-               nameEn.includes(searchTerm) || 
-               descriptionAr.includes(searchTerm) || 
-               descriptionEn.includes(searchTerm) ||
-               tags.some(tag => tag.includes(searchTerm));
-      });
-    }
-
-    // Apply category filter
-    if (filters.categories.length > 0) {
-      filtered = filtered.filter(product => {
-        const productCategoryId = product.category?._id || product.categoryId;
-        return filters.categories.some(catId => {
-          return getAllDescendantCategoryIds(catId).includes(productCategoryId);
+    // Parse colors (support both colors[] and legacy colors)
+    if ((colorsArrayParams && colorsArrayParams.length > 0) || colorsLegacy) {
+      const collected = [];
+      const source = colorsArrayParams && colorsArrayParams.length > 0
+        ? colorsArrayParams
+        : colorsLegacy.split(',').filter(Boolean);
+      source.forEach(item => {
+        const parts = item.split('+').map(s => s.trim()).filter(Boolean);
+        parts.forEach(p => {
+          const name = p.startsWith('#') ? hexToColorName(p) : p;
+          if (name && !collected.includes(name)) collected.push(name);
         });
       });
+      setFilters(prev => ({
+        ...prev,
+        colors: collected
+      }));
     }
 
-    // Apply price filter
-    filtered = filtered.filter(product => {
-      const price = product.salePrice || product.originalPrice || product.price || 0;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
-
-    // Apply color filter
-    if (filters.colors.length > 0) {
-      console.log('Applying color filter:', filters.colors);
-      filtered = filtered.filter(product => {
-        const productColors = getProductColors(product);
-        console.log(`Product ${product.nameAr || product.nameEn}:`, productColors);
-        const hasMatchingColor = productColors.some(color => filters.colors.includes(color));
-        console.log('Has matching color:', hasMatchingColor);
-        return hasMatchingColor;
-      });
-      console.log('Products after color filter:', filtered.length);
+    // Parse product labels (support both productLabels[] and legacy)
+    if ((productLabelsArrayParams && productLabelsArrayParams.length > 0) || productLabelsLegacy) {
+      const labels = productLabelsArrayParams && productLabelsArrayParams.length > 0
+        ? productLabelsArrayParams
+        : productLabelsLegacy.split(',').filter(Boolean);
+      setFilters(prev => ({
+        ...prev,
+        productLabels: labels
+      }));
     }
+  }, [searchParams]);
 
-    // Apply status filters
-    if (filters.status.includes('on_sale')) {
-      filtered = filtered.filter(product => {
-        return product.salePrice && product.salePrice < (product.originalPrice || product.price);
-      });
-    }
-
-    if (filters.status.includes('in_stock')) {
-      filtered = filtered.filter(product => (product.stock || 0) > 0);
-    }
-
-    if (filters.status.includes('new')) {
-      filtered = filtered.filter(product => product.isNew === true);
-    }
-
-    if (filters.status.includes('featured')) {
-      filtered = filtered.filter(product => product.isFeatured === true || product.isBestSeller === true);
-    }
-
-    // Apply sorting
-    switch (filters.sortBy) {
-      case 'price-low-high':
-        filtered.sort((a, b) => {
-          const priceA = a.salePrice || a.originalPrice || a.price || 0;
-          const priceB = b.salePrice || b.originalPrice || b.price || 0;
-          return priceA - priceB;
-        });
-        break;
-      case 'price-high-low':
-        filtered.sort((a, b) => {
-          const priceA = a.salePrice || a.originalPrice || a.price || 0;
-          const priceB = b.salePrice || b.originalPrice || b.price || 0;
-          return priceB - priceA;
-        });
-        break;
-      case 'name-a-z':
-        filtered.sort((a, b) => {
-          const nameA = a[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
-          const nameB = b[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
-          return nameA.localeCompare(nameB);
-        });
-        break;
-      case 'name-z-a':
-        filtered.sort((a, b) => {
-          const nameA = a[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
-          const nameB = b[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || '';
-          return nameB.localeCompare(nameA);
-        });
-        break;
-      case 'newest':
-        filtered.sort((a, b) => {
-          const dateA = new Date(a.createdAt || a.date || 0);
-          const dateB = new Date(b.createdAt || b.date || 0);
-          return dateB - dateA;
-        });
-        break;
-      case 'oldest':
-        filtered.sort((a, b) => {
-          const dateA = new Date(a.createdAt || a.date || 0);
-          const dateB = new Date(b.createdAt || b.date || 0);
-          return dateA - dateB;
-        });
-        break;
-      default:
-        // Default sorting - keep original order
-        break;
-    }
-
-    setFilteredProducts(filtered);
-    setCurrentPage(1); // Reset pagination when filters change
-  };
-
-  // Helper function to get product colors
-  const getProductColors = (product) => {
-    // استخدم دالة getSimpleColorsFromColorsField من productUtils
-    return getSimpleColorsFromColorsField(product);
-  };
-
-//----------------------------------getAllDescendantCategoryIds------------------------------------------------
-  // Helper: جلب كل معرفات الفروع المتداخلة لقسم معين (recursive)
-  const getAllDescendantCategoryIds = (categoryId) => {
-    if (!categories || !getSubCategories) return [categoryId];
-    
-    const directSubs = getSubCategories(categoryId);
-    let ids = [categoryId];
-    directSubs.forEach(sub => {
-      ids = ids.concat(getAllDescendantCategoryIds(sub._id || sub.id));
-    });
-    return ids;
-  };
-
-//----------------------------------handleFilterChange------------------------------------------------
+  // Handle filter changes
   const handleFilterChange = async (filterType, value, checked = null) => {
-    if (filterType === 'categories') {
-      let newCategories;
+    setCurrentPage(1); // Reset to first page when filters change
+
+    if (filterType === 'category') {
       if (checked) {
-        newCategories = Array.from(new Set([...filters.categories, value]));
+        setFilters(prev => ({
+          ...prev,
+          categories: [...prev.categories, value]
+        }));
       } else {
-        newCategories = filters.categories.filter(id => id !== value);
+        setFilters(prev => ({
+          ...prev,
+          categories: prev.categories.filter(cat => cat !== value)
+        }));
       }
-      
-      setFilters(prev => ({
-        ...prev,
-        categories: newCategories
-      }));
     } else if (filterType === 'priceRange') {
-      // منع الأرقام السالبة وتصحيح القيم
-      let min = Math.max(0, value.min);
-      let max = Math.max(0, value.max);
-      if (min > max) {
-        // إذا البداية أكبر من النهاية، اجعل النهاية تساوي البداية
-        max = min;
-      }
-      setFilters(prev => ({ ...prev, priceRange: { min, max } }));
-    } else if (checked !== null) {
       setFilters(prev => ({
         ...prev,
-        [filterType]: checked
-          ? [...prev[filterType], value]
-          : prev[filterType].filter(item => item !== value)
+        priceRange: value
       }));
-    } else {
-      setFilters(prev => ({ ...prev, [filterType]: value }));
+    } else if (filterType === 'color') {
+      if (checked) {
+        setFilters(prev => ({
+          ...prev,
+          colors: [...prev.colors, value]
+        }));
+      } else {
+        setFilters(prev => ({
+          ...prev,
+          colors: prev.colors.filter(color => color !== value)
+        }));
+      }
+    } else if (filterType === 'productLabel') {
+      if (checked) {
+        setFilters(prev => ({
+          ...prev,
+          productLabels: [...prev.productLabels, value]
+        }));
+      } else {
+        setFilters(prev => ({
+          ...prev,
+          productLabels: prev.productLabels.filter(id => id !== value)
+        }));
+      }
+    } else if (filterType === 'feature') {
+      if (checked) {
+        setFilters(prev => ({
+          ...prev,
+          features: [...prev.features, value]
+        }));
+      } else {
+        setFilters(prev => ({
+          ...prev,
+          features: prev.features.filter(feat => feat !== value)
+        }));
+      }
+    } else if (filterType === 'status') {
+      if (checked) {
+        setFilters(prev => ({
+          ...prev,
+          status: [...prev.status, value]
+        }));
+      } else {
+        setFilters(prev => ({
+          ...prev,
+          status: prev.status.filter(status => status !== value)
+        }));
+      }
     }
-    
-    // Apply all filters after any filter change
-    await applyFilters();
   };
 
-//----------------------------------clearFilters------------------------------------------------
+  // Clear all filters
   const clearFilters = async () => {
     setFilters({
-      priceRange: { min: 0, max: getMaxProductPrice() },
+      priceRange: { min: 0, max: initialMaxPrice },
       categories: [],
-      subcategories: [], // Clear subcategories too
+      subcategories: [],
       features: [],
       colors: [],
       status: [],
       sortBy: 'newest'
     });
-    setSearchQuery(''); // امسح نص البحث أيضاً
+    setCurrentPage(1);
+    setSearchQuery('');
     
-    // Apply filters after clearing
-    await applyFilters();
+    // Clear URL params
+    setSearchParams({});
   };
 
-//----------------------------------removeFilter------------------------------------------------
+  // Remove specific filter
   const removeFilter = async (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: prev[filterType].filter(item => item !== value)
-    }));
+    setCurrentPage(1);
     
-    // Apply filters after removing
-    await applyFilters();
+    if (filterType === 'category') {
+      setFilters(prev => ({
+        ...prev,
+        categories: prev.categories.filter(cat => cat !== value)
+      }));
+    } else if (filterType === 'color') {
+      setFilters(prev => ({
+        ...prev,
+        colors: prev.colors.filter(color => color !== value)
+      }));
+    } else if (filterType === 'feature') {
+      setFilters(prev => ({
+        ...prev,
+        features: prev.features.filter(feat => feat !== value)
+      }));
+    } else if (filterType === 'status') {
+      setFilters(prev => ({
+        ...prev,
+        status: prev.status.filter(status => status !== value)
+      }));
+    }
   };
 
-//----------------------------------handleWishlistToggle------------------------------------------------
+  // Handle wishlist toggle
   const handleWishlistToggle = async (product) => {
     await toggleWishlist(product);
   };
 
-//----------------------------------handleAddToCart------------------------------------------------
+  // Handle add to cart
   const handleAddToCart = (product) => {
-    // Navigate to product details page
-    navigate(`/product/${product._id || product.id}`);
+    // Implement add to cart logic
+    console.log('Adding to cart:', product);
   };
 
-//----------------------------------handleMobileSearchToggle------------------------------------------------
+  // Handle mobile search toggle
   const handleMobileSearchToggle = () => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
+    setIsMobileSearchOpen(true);
   };
 
-//----------------------------------handleMobileSearchClose------------------------------------------------       
+  // Handle mobile search close
   const handleMobileSearchClose = () => {
     setIsMobileSearchOpen(false);
   };
 
-//----------------------------------handleSearch------------------------------------------------
+  // Handle search
   const handleSearch = async (query) => {
     setSearchQuery(query);
+    setCurrentPage(1);
     
-    // تحديث URL params
+    // Update URL params
     if (query.trim()) {
       setSearchParams(prev => {
         const newParams = new URLSearchParams(prev);
@@ -447,28 +415,25 @@ const Shop = () => {
         return newParams;
       });
     }
-    
-    // Apply all filters including search
-    await applyFilters();
   };
 
-//----------------------------------totalPages------------------------------------------------
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-
-//----------------------------------handlePageChange------------------------------------------------
+  // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-//----------------------------------handleItemsPerPageChange------------------------------------------------
+  // Handle items per page change
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1); // Reset to first page
   };
 
-//----------------------------------getVisiblePages------------------------------------------------
+  // Get visible pages for pagination
   const getVisiblePages = () => {
+    if (!apiPagination) return [1];
+    
+    const totalPages = apiPagination.totalPages;
     if (totalPages <= 1) return [1];
     
     const maxVisiblePages = 5;
@@ -501,209 +466,232 @@ const Shop = () => {
     return rangeWithDots.filter((page, index, array) => array.indexOf(page) === index && page <= totalPages);
   };
 
-//----------------------------------handleSortChange------------------------------------------------
+  // Handle sort change
   const handleSortChange = async (newSortBy) => {
     setFilters(prev => ({ ...prev, sortBy: newSortBy }));
-    
-    // Apply filters after changing sort
-    await applyFilters();
+    setCurrentPage(1);
   };
 
-//----------------------------------useScrollToTopOnChange------------------------------------------------
+  // Use scroll to top on change
   useScrollToTopOnChange([currentPage, filters, itemsPerPage]);
 
-//----------------------------------Helper function for getAllColors------------------------------------------------
-  function getAllColors() {
-    const colorSet = new Set();
-    allProducts.forEach(product => {
-      const simpleColors = getSimpleColorsFromColorsField(product);
-      console.log(`Product ${product.nameAr || product.nameEn} colors:`, simpleColors);
-      simpleColors.forEach(color => colorSet.add(color));
-    });
-    const allColors = Array.from(colorSet);
-    console.log('All available colors:', allColors);
-    return allColors;
-  }
+  // Get all available colors from products (color names for filtering)
+  const allColors = getAllAvailableColors();
+  
+  // Get all available colors for display (hex codes for UI)
+  const allColorsForDisplay = getAllAvailableColorsForDisplay();
+
+  // Get all available product labels from products
+  const allProductLabels = getAllAvailableProductLabels();
+
+  const getLabelById = (id) => {
+    if (!allProductLabels || allProductLabels.length === 0) return null;
+    return allProductLabels.find(lbl => (lbl._id || lbl.id) === id);
+  };
 
   // Helper functions to work with real API data
   const getFeatureById = (id) => {
     if (!features) return null;
-    return features.find(feature => (feature._id || feature.id) === id) || null;
+    return features.find(feature => feature.id === id);
   };
 
   const getCategoryById = (id) => {
     if (!categories) return null;
-    return categories.find(cat => (cat._id || cat.id) === id) || null;
+    return categories.find(category => category.id === id);
   };
 
-  // Loading state - include search loading
-  if (productsLoading || categoriesLoading || isSearching) {
-    return (
-      <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-        <Navbar onMobileSearchToggle={handleMobileSearchToggle} />
-        <SecondaryNavbar />
-        <div className="shop-container">
-          <div className="loading-state" style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            minHeight: '400px',
-            fontSize: '18px',
-            color: '#666'
-          }}>
-            {isSearching 
-              ? (currentLang === 'ar' ? 'جاري البحث...' : 'Searching...') 
-              : (currentLang === 'ar' ? 'جاري التحميل...' : 'Loading...')
-            }
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Get product colors
+  const getProductColors = (product) => {
+    if (!product) return [];
+    return getSimpleColorsFromColorsField(product);
+  };
+
+  // Get all descendant category IDs
+  const getAllDescendantCategoryIds = (categoryId) => {
+    const category = getCategoryById(categoryId);
+    if (!category) return [categoryId];
+    
+    const descendants = [categoryId];
+    const subcategories = getSubCategories(categoryId);
+    
+    subcategories.forEach(sub => {
+      descendants.push(sub.id);
+      descendants.push(...getAllDescendantCategoryIds(sub.id));
+    });
+    
+    return descendants;
+  };
+
+  // Get active filters for display
+  const getActiveFilters = () => {
+    const active = [];
+    
+    filters.categories.forEach(catId => {
+      const category = getCategoryById(catId);
+      if (category) {
+        active.push({ type: 'category', value: catId, label: category.name });
+      }
+    });
+    
+    filters.colors.forEach(color => {
+      active.push({ type: 'color', value: color, label: color });
+    });
+
+    filters.productLabels.forEach(labelId => {
+      const label = getLabelById(labelId);
+      if (label) {
+        active.push({ type: 'productLabel', value: labelId, label: (currentLang === 'ar' ? label.nameAr : label.nameEn) || labelId });
+      } else {
+        active.push({ type: 'productLabel', value: labelId, label: labelId });
+      }
+    });
+    
+    filters.features.forEach(featId => {
+      const feature = getFeatureById(featId);
+      if (feature) {
+        active.push({ type: 'feature', value: featId, label: feature.name });
+      }
+    });
+    
+    return active;
+  };
+
+  // Loading state
+  const isLoading = productsLoading || categoriesLoading || apiLoading;
 
   // Error state
-  if (productsError) {
-    return (
-      <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-        <Navbar onMobileSearchToggle={handleMobileSearchToggle} />
-        <SecondaryNavbar />
-        <div className="shop-container">
-          <div className="error-state" style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            minHeight: '400px',
-            fontSize: '18px',
-            color: '#ef4444'
-          }}>
-            {currentLang === 'ar' ? 'خطأ في تحميل المنتجات' : 'Error loading products'}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const hasError = productsError || apiError;
 
-//----------------------------------return------------------------------------------------
+  // Products to display (use API products when available, fallback to all products)
+  const displayProducts = apiProducts.length > 0 ? apiProducts : (products || []);
+
+  // Total items for pagination
+  const totalItems = apiPagination ? apiPagination.totalItems : (products ? products.length : 0);
+
   return (
     <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      <Navbar onMobileSearchToggle={handleMobileSearchToggle} />
+      <Navbar />
       <SecondaryNavbar />
       
-      {isMobileSearchOpen && (
-        <MobileSearch
-          isOpen={isMobileSearchOpen}
-          onClose={handleMobileSearchClose}
-          searchQuery={searchQuery}
-          onSearch={handleSearch}
-          products={allProducts}
-          currentLang={currentLang}
-          t={t}
-        />
-      )}
+      {/* Mobile Search */}
+      <MobileSearch 
+        isOpen={isMobileSearchOpen}
+        onClose={handleMobileSearchClose}
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
+      />
 
       <div className="shop-container">
+        {/* Hero Section */}
+        <div className="shop-hero">
+          <div className="shop-hero-content">
+            <div className="shop-hero-badge">
+              {t('shop.hero.badge')}
+            </div>
+            <h1 className="shop-hero-title">
+              {t('shop.hero.title')}
+            </h1>
+            <p className="shop-hero-subtitle">
+              {t('shop.hero.subtitle')}
+            </p>
+            <Link to="/" className="shop-hero-btn">
+              {t('shop.hero.button')}
+            </Link>
+          </div>
+          <div className="shop-hero-image">
+            <img src="/images/shop-hero.jpg" alt="Shop Hero" />
+          </div>
+        </div>
+
         <div className="shop-main">
           {/* Sidebar Filters */}
-          <SidebarFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            clearFilters={clearFilters}
-            removeFilter={removeFilter}
-            initialMaxPrice={getMaxProductPrice()}
-            searchQuery={searchQuery}
-            handleSearch={handleSearch}
-            filteredProducts={filteredProducts}
-            allProducts={allProducts}
-            categories={categories || []}
-            getMainCategories={getMainCategories}
-            getSubCategories={getSubCategories}
-            getAllColors={getAllColors}
-          />
+          <div className="shop-sidebar">
+            <SidebarFilters
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={clearFilters}
+              onRemoveFilter={removeFilter}
+              activeFilters={getActiveFilters()}
+              categories={categories}
+              features={features}
+              allColors={allColorsForDisplay}
+              allProductLabels={allProductLabels}
+              maxPrice={initialMaxPrice}
+              loading={categoriesLoading}
+            />
+          </div>
 
           {/* Main Content */}
           <div className="shop-content">
-            {/* Mobile Filters Toggle */}
-            {isMobile && (
-              <button
-                className="mobile-filters-toggle"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                {t('shop.filters')} ({Object.values(filters).flat().length - 2})
-              </button>
-            )}
+            {/* Breadcrumb */}
+            <div className="shop-breadcrumb">
+              <Link to="/">{t('common.home')}</Link>
+              <span className="breadcrumb-separator">/</span>
+              <span>{t('shop.title')}</span>
+            </div>
 
-            {/* Mobile Filters */}
-            {isMobile && showFilters && (
-              <MobileFilters
-                isOpen={showFilters}
-                onClose={() => setShowFilters(false)}
-                filters={filters}
-                onFiltersChange={setFilters}
-                categories={categories || []}
-                features={[]} // Features can be added when API is available
-                colors={getAllColors()}
-                statusOptions={['in_stock', 'on_sale', 'new', 'featured']}
-                allProducts={allProducts}
-                clearFilters={clearFilters}
-                removeFilter={removeFilter}
-                initialMaxPrice={getMaxProductPrice()}
-                t={t}
-                currentLang={currentLang}
-              />
-            )}
-
-            {/* Shop Toolbar */}
+            {/* Toolbar */}
             <ShopToolbar
-              filters={filters}
-              handleSortChange={handleSortChange}
+              totalItems={totalItems}
+              currentPage={currentPage}
               itemsPerPage={itemsPerPage}
-              handleItemsPerPageChange={handleItemsPerPageChange}
               viewMode={viewMode}
-              setViewMode={setViewMode}
-              currentLang={currentLang}
-              filteredCount={filteredProducts.length}
-              totalCount={allProducts.length}
+              onViewModeChange={setViewMode}
+              onSortChange={handleSortChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              onMobileSearchToggle={handleMobileSearchToggle}
+              sortBy={filters.sortBy}
+              loading={isLoading}
             />
 
             {/* Products Grid */}
-            {filteredProducts.length > 0 ? (
-              <ProductsGrid
-                products={paginatedProducts}
-                viewMode={viewMode}
-                currentLang={currentLang}
-                t={t}
-                isInWishlist={isInWishlist}
-                handleWishlistToggle={handleWishlistToggle}
-                handleAddToCart={handleAddToCart}
-                getFeatureById={getFeatureById}
-                getCategoryById={getCategoryById}
-              />
-            ) : (
+            {isLoading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>{t('common.loading')}</p>
+              </div>
+            ) : hasError ? (
+              <div className="error-container">
+                <p>{t('common.error')}: {hasError}</p>
+                <button onClick={applyAPIFilters}>{t('common.retry')}</button>
+              </div>
+            ) : displayProducts.length === 0 ? (
               <div className="no-products">
-                <h3>{t('shop.no_products_title')}</h3>
-                <p>{t('shop.no_products_description')}</p>
-                <button onClick={clearFilters} className="clear-filters-btn">
-                  {t('shop.clear_filters')}
+                <h3>{t('shop.noProducts.title')}</h3>
+                <p>{t('shop.noProducts.description')}</p>
+                <button className="clear-filters-btn" onClick={clearFilters}>
+                  {t('shop.noProducts.clearFilters')}
                 </button>
               </div>
-            )}
+            ) : (
+              <>
+                <ProductsGrid
+                  products={displayProducts}
+                  viewMode={viewMode}
+                  onWishlistToggle={handleWishlistToggle}
+                  onAddToCart={handleAddToCart}
+                  isInWishlist={isInWishlist}
+                />
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination
-                totalPages={totalPages}
-                currentPage={currentPage}
-                handlePageChange={handlePageChange}
-                getVisiblePages={getVisiblePages}
-              />
+                {/* Pagination */}
+                {apiPagination && apiPagination.totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={apiPagination.totalPages}
+                    totalItems={apiPagination.totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                    visiblePages={getVisiblePages()}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
       </div>
     </div>
   );
-
- 
 };
 
 export default Shop; 

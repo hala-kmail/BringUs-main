@@ -11,7 +11,8 @@ const ProductActions = ({
   handleShare,
   handleWhatsAppOrder,
   key,
-  product
+  product,
+  canAddToCart
 }) => {
     
     const { t, i18n } = useTranslation();
@@ -21,9 +22,9 @@ const ProductActions = ({
       <div className="product-actions-row" style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%' }}>
       
       <button 
-        className={`add-to-cart-btn ${product.stockStatus === 'out_of_stock' ? 'out-of-stock' : ''}`} 
+        className={`add-to-cart-btn ${!canAddToCart ? 'out-of-stock' : ''}`} 
         onClick={handleAddToCart}
-        disabled={addToCartLoading || product.stockStatus === 'out_of_stock'}
+        disabled={addToCartLoading || !canAddToCart}
         style={{ width: '100%' }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

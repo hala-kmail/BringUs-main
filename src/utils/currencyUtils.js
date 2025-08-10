@@ -147,18 +147,23 @@ export const getCurrencySymbol = (currency) => {
 /**
  * تنسيق السعر مع رمز العملة
  * @param {number} price - السعر
- * @param {string} currency - رمز العملة
+ * @param {string} language - اللغة ('ar' أو 'en')
+ * @param {string} currency - رمز العملة (اختياري)
  * @param {number} decimals - عدد الكسور العشرية (افتراضي: 2)
  * @returns {string} السعر المنسق مع رمز العملة
  */
-export const formatPrice = (price, currency, decimals = 2) => {
+export const formatPrice = (price, language = 'ar', currency = 'ILS', decimals = 2) => {
+  if (price === null || price === undefined || isNaN(price)) {
+    return '0';
+  }
+
   const symbol = getCurrencySymbol(currency);
   const formattedPrice = Number(price).toFixed(decimals);
   
   // للعملات العربية، نضع الرمز بعد الرقم
   const arabicCurrencies = ['SAR', 'AED', 'EGP', 'JOD', 'KWD', 'QAR', 'BHD', 'OMR', 'ILS'];
   
-  if (arabicCurrencies.includes(currency)) {
+  if (arabicCurrencies.includes(currency) || language === 'ar') {
     return `${formattedPrice} ${symbol}`;
   }
   

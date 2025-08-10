@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 import { getBearerToken } from '../utils/tokenManager';
+
 const API_BASE_URL = 'http://localhost:5001/api';
 
 export const useSocialComments = () => {
@@ -8,28 +9,45 @@ export const useSocialComments = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const { store } = useAppData();
+  const hasInitialized = useRef(false);
+  const storeId = useRef(null);
 
-  const fetchComments = async () => {
-    if (!store?._id) {
+  // Get store ID from localStorage or store context
+  const getStoreId = useCallback(() => {
+    if (store && store._id) {
+      return store._id;
+    }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore._id;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
+  const fetchComments = useCallback(async () => {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
       setError('Store ID not available');
       return;
     }
 
-    const token = getBearerToken();
-    if (!token) {
-      setError('Authentication required. Please login to view comments.');
-      return;
-    }
+  
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/social-comments/by-store/${store._id}`, {
+      const response = await fetch(`${API_BASE_URL}/social-comments/by-store/${currentStoreId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token
         }
       });
       
@@ -69,13 +87,30 @@ export const useSocialComments = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getStoreId]);
 
+  // Auto-fetch comments when store changes (only once per store)
   useEffect(() => {
-    if (store?._id) {
+    const currentStoreId = getStoreId();
+    
+    // Only fetch if we have a store ID and haven't initialized for this store
+    if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Initializing social comments for store ID:', currentStoreId);
+      }
+      hasInitialized.current = true;
+      storeId.current = currentStoreId;
       fetchComments();
+    } else if (!currentStoreId && comments.length > 0) {
+      // Clear comments if no store is available
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No store available, clearing social comments');
+      }
+      setComments([]);
+      hasInitialized.current = false;
+      storeId.current = null;
     }
-  }, [store?._id]);
+  }, [store?._id, getStoreId, fetchComments, comments.length]);
 
   return {
     comments,

@@ -61,20 +61,29 @@ const AdvertisementPopup = () => {
 
   // Clear localStorage when user logs out (same tab)
   useEffect(() => {
+    let lastAuthStatus = null;
+    
     const checkAuthStatus = () => {
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        // User logged out, clear advertisement history
-        localStorage.removeItem('shownAdvertisements');
-        console.log('User logged out, cleared advertisement history');
+      const currentAuthStatus = !!token;
+      
+      // Only log and clear if auth status actually changed
+      if (lastAuthStatus !== null && lastAuthStatus !== currentAuthStatus) {
+        if (!currentAuthStatus) {
+          // User logged out, clear advertisement history
+          localStorage.removeItem('shownAdvertisements');
+          console.log('User logged out, cleared advertisement history');
+        }
       }
+      
+      lastAuthStatus = currentAuthStatus;
     };
 
     // Check on mount
     checkAuthStatus();
 
-    // Check every 10 seconds instead of 5
-    const interval = setInterval(checkAuthStatus, 10000);
+    // Check every 30 seconds instead of 10 to reduce frequency
+    const interval = setInterval(checkAuthStatus, 30000);
     
     return () => clearInterval(interval);
   }, []);

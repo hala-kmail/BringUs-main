@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
@@ -28,6 +28,51 @@ const Home = () => {
   };
 //-----------------------------------t------------------------------------------------  
   const { t } = useTranslation();
+  // Lazy reveal section using IntersectionObserver
+  const LazyRevealSection = ({
+    children,
+    rootMargin = '0px 0px -10% 0px',
+    threshold = 0.15,
+    once = true,
+    className = ''
+  }) => {
+    const containerRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
+    const [hasAppeared, setHasAppeared] = useState(false);
+
+    useEffect(() => {
+      const elem = containerRef.current;
+      if (!elem) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setIsVisible(true);
+              setHasAppeared(true);
+              if (once) observer.unobserve(entry.target);
+            } else if (!once) {
+              setIsVisible(false);
+            }
+          });
+        },
+        { root: null, rootMargin, threshold }
+      );
+
+      observer.observe(elem);
+      return () => observer.disconnect();
+    }, [rootMargin, threshold, once]);
+
+    return (
+      <section
+        ref={containerRef}
+        className={`reveal-section ${isVisible ? 'visible' : ''} ${className}`.trim()}
+      >
+        {children}
+      </section>
+    );
+  };
+
 //-----------------------------------return------------------------------------------------  
   return (
     <div className="home">
@@ -41,29 +86,34 @@ const Home = () => {
       <MobileSearch isOpen={isMobileSearchOpen} onClose={handleMobileSearchClose}/>
       <main className="home-content">
         <Carousel />
-        <CategoriesGrid />
-        <div className="almost-finished-with-register">
-          {/* <button
-            className="wholesale-inline-btn"
-            onClick={handleWholesaleModalOpen}
-            title={t('wholesale.register_title')}
-          >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 7L5 3H19L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M3 7H21V9C21 10.6569 19.6569 12 18 12C16.3431 12 15 10.6569 15 9C15 10.6569 13.6569 12 12 12C10.3431 12 9 10.6569 9 9C9 10.6569 7.65685 12 6 12C4.34315 12 3 10.6569 3 9V7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M5 21V19C5 17.8954 5.89543 17 7 17H17C18.1046 17 19 17.8954 19 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="7" y="14" width="2" height="3" rx="1" fill="currentColor"/>
-              <rect x="15" y="14" width="2" height="3" rx="1" fill="currentColor"/>
-            </svg>
-            <span style={{marginInlineStart: 8}}>{t('wholesale.register_title')}</span>
-          </button> */}
-          <AlmostFinishedCard />
-        </div>
+
+        <LazyRevealSection>
+          <CategoriesGrid />
+        </LazyRevealSection>
+
+        <LazyRevealSection>
+          <div className="almost-finished-with-register">
+            <AlmostFinishedCard />
+          </div>
+        </LazyRevealSection>
+
         <WholesaleRegisterModal isOpen={isWholesaleModalOpen} onClose={handleWholesaleModalClose} />
-        <Features />
-        <NewArrivals />
-        <BestSellers />
-        <SocialComments />
+
+        <LazyRevealSection>
+          <Features />
+        </LazyRevealSection>
+
+        <LazyRevealSection>
+          <NewArrivals />
+        </LazyRevealSection>
+
+        <LazyRevealSection>
+          <BestSellers />
+        </LazyRevealSection>
+
+        <LazyRevealSection>
+          <SocialComments />
+        </LazyRevealSection>
       </main>
     </div>
   );

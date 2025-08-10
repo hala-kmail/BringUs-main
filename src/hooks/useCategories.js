@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 
 const API_BASE_URL = 'http://localhost:5001/api';
@@ -7,26 +7,48 @@ const useCategories = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { store, categories, updateCategories } = useAppData();
+  const hasInitialized = useRef(false);
+  const storeId = useRef(null);
 
-  const fetchCategories = useCallback(async (storeId) => {
-    // 1. التحقق من السياق أولاً
-    if (categories !== null) {
-  
-      return categories;
+  // Get store ID from localStorage or store context
+  const getStoreId = useCallback(() => {
+    if (store && store._id) {
+      return store._id;
     }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore._id;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
 
-    if (!storeId) {
+  const fetchCategories = useCallback(async (targetStoreId) => {
+    if (!targetStoreId) {
       console.log('No store ID available for fetching categories');
       return null;
+    }
+
+    // Don't fetch if we already have categories and they're for the same store
+    if (categories !== null && storeId.current === targetStoreId) {
+      return categories;
     }
 
     try {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching categories for store ID:', storeId);
-      const url = `${API_BASE_URL}/categories/store/${storeId}`;
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Fetching categories for store ID:', targetStoreId);
+      }
       
+      const url = `${API_BASE_URL}/categories/store/${targetStoreId}`;
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -37,15 +59,20 @@ const useCategories = () => {
       
       // Extract data from the response
       if (result.success && result.data) {
-        console.log('Categories fetched successfully:', result.data.length, 'categories');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Categories fetched successfully:', result.data.length, 'categories');
+        }
         // Update categories in context
-        updateCategories(result.data); // 2. تحديث السياق
+        updateCategories(result.data);
+        storeId.current = targetStoreId;
         return result.data;
       } else {
-        // إذا لم تنجح العملية ولكن لا يوجد خطأ، ربما لا توجد أصناف
-        // نقوم بتحديث السياق بمصفوفة فارغة لمنع إعادة الجلب
+        // If no categories found, set empty array to prevent re-fetching
         updateCategories([]);
-        console.log('No categories found or invalid format, setting to empty array.');
+        storeId.current = targetStoreId;
+        if (process.env.NODE_ENV === 'development') {
+          console.log('No categories found or invalid format, setting to empty array.');
+        }
         return [];
       }
     } catch (err) {
@@ -55,91 +82,79 @@ const useCategories = () => {
     } finally {
       setLoading(false);
     }
-  }, [categories, updateCategories]); // إضافة الاعتماديات
+  }, [categories, updateCategories]);
 
+  // Auto-fetch categories when store changes (only once per store)
   useEffect(() => {
-    if (store && store._id && categories === null) {
-      console.log('Initial categories fetch for store ID:', store._id);
-      const loadCategories = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          
-          const url = `${API_BASE_URL}/categories/store/${store._id}`;
-          const response = await fetch(url);
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const result = await response.json();
-          
-          if (result.success && result.data) {
-            console.log('Categories fetched successfully:', result.data.length, 'categories');
-            updateCategories(result.data);
-          } else {
-            updateCategories([]);
-            console.log('No categories found or invalid format, setting to empty array.');
-          }
-        } catch (err) {
-          console.error('Error fetching categories:', err);
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      loadCategories();
-    } else if (!store && categories !== null) {
-      console.log('No store available, clearing categories');
-      updateCategories(null); // مسح الأصناف
-    }
-  }, []); // استخدام store._id و categories === null فقط
-
-  const loadCategories = useCallback(async (storeId = null) => {
-    const storeIdToUse = storeId || (store && store._id);
+    const currentStoreId = getStoreId();
     
-    if (!storeIdToUse) {
+    // Only fetch if we have a store ID and haven't initialized for this store
+    if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Initializing categories for store ID:', currentStoreId);
+      }
+      hasInitialized.current = true;
+      storeId.current = currentStoreId;
+      fetchCategories(currentStoreId);
+    } else if (!currentStoreId && categories !== null) {
+      // Clear categories if no store is available
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No store available, clearing categories');
+      }
+      updateCategories(null);
+      hasInitialized.current = false;
+      storeId.current = null;
+    }
+  }, [store?._id, getStoreId, fetchCategories, categories, updateCategories]);
+
+  const loadCategories = useCallback(async (targetStoreId = null) => {
+    const id = targetStoreId || getStoreId();
+    
+    if (!id) {
       console.log('No store ID available for loading categories');
       return null;
     }
 
-    const categoriesData = await fetchCategories(storeIdToUse);
+    const categoriesData = await fetchCategories(id);
     
     if (categoriesData) {
-      console.log('Categories loaded manually:', categoriesData.length, 'categories');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Categories loaded manually:', categoriesData.length, 'categories');
+      }
       return categoriesData;
     }
     return null;
-  }, [store, fetchCategories]);
+  }, [getStoreId, fetchCategories]);
 
   const refreshCategories = useCallback(() => {
-    if (store && store._id) {
-      // Clear existing categories to force refresh
-      updateCategories(null); // إعادة التعيين إلى null
-      return loadCategories(store._id);
+    const currentStoreId = getStoreId();
+    if (currentStoreId) {
+      // Force refresh by clearing current categories
+      updateCategories(null);
+      hasInitialized.current = false;
+      return loadCategories(currentStoreId);
     }
     return null;
-  }, [store, loadCategories, updateCategories]);
+  }, [getStoreId, loadCategories, updateCategories]);
 
   // Helper functions to get main categories and subcategories
   const getMainCategories = useCallback(() => {
-    if (!categories) return []; // حماية من null
+    if (!categories) return []; // Protection from null
     return categories.filter(cat => !cat.parent);
   }, [categories]);
 
   const getSubCategories = useCallback((parentId) => {
-    if (!categories) return []; // حماية من null
+    if (!categories) return []; // Protection from null
     return categories.filter(cat => cat.parent && cat.parent._id === parentId);
   }, [categories]);
 
   const getAllSubCategories = useCallback(() => {
-    if (!categories) return []; // حماية من null
+    if (!categories) return []; // Protection from null
     return categories.filter(cat => cat.parent);
   }, [categories]);
 
   return {
-    categories: categories || [], // إرجاع مصفوفة فارغة للمكونات
+    categories: categories || [], // Return empty array for components
     loading,
     error,
     fetchCategories,

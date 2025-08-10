@@ -71,7 +71,7 @@ const ProductMediaGallery = ({
           <h4>{getCurrentMedia().title}</h4>
         </div>
       )}
-      {mediaItems.length > 1 && (
+      {/* {mediaItems.length > 1 && (
         <div className="product-thumbnail-images">
           {mediaItems.map((item, index) => (
             <div
@@ -93,7 +93,7 @@ const ProductMediaGallery = ({
             </div>
           ))}
         </div>
-      )}
+      )} */}
     </div>
   );
 };

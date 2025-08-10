@@ -32,10 +32,13 @@ export const getToken = () => {
   try {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
-     
       return token;
     } else {
-      console.log('No token found in localStorage');
+      // Only log once per session to avoid spam
+      if (!window.tokenLogged) {
+        console.log('No token found in localStorage');
+        window.tokenLogged = true;
+      }
       return null;
     }
   } catch (error) {
