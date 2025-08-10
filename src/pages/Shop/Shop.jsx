@@ -602,6 +602,7 @@ const Shop = () => {
             />
           </div>
 
+
           {/* Main Content */}
           <div className="shop-content">
             {/* Breadcrumb */}
