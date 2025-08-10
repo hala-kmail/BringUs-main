@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import useProducts from '../../hooks/useProducts';
+import { useAppData } from '../../contexts/AppDataContext';
 import './AlmostFinishedCard.css';
 
 const AlmostFinishedCard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { products } = useProducts();
+  const { products } = useAppData();
   
   // Calculate almost finished products count using lowStockThreshold
   const almostFinishedCount = React.useMemo(() => {

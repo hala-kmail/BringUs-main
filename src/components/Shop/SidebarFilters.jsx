@@ -253,7 +253,7 @@ const SidebarFilters = ({
   };
 
   return (
-    <div className="shop-sidebar">
+    <div >
       {/* Header */}
       <div className="shop-sidebar-header">
         <h3>{currentLang === 'ar' ? 'الفلاتر' : 'Filters'}</h3>
@@ -474,7 +474,7 @@ const SidebarFilters = ({
         </div>
         
         {!collapsedSections.status && (
-          <div className="status-filters">
+          <div className="status-filters-shop-sidebar">
             {statusOptions.map(status => (
               <label key={status.value} className="filter-checkbox">
                 <input

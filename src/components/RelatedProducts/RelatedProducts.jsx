@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { useAppData } from '../../contexts/AppDataContext';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import ProductCard from '../ProductCard/ProductCard';
@@ -16,9 +17,9 @@ const RelatedProducts = ({ currentProduct, categoryId }) => {
   const navigate = useNavigate();
   const [relatedProducts, setRelatedProducts] = useState([]);
   const { categories } = useCategories();
+  const { products } = useAppData();
 
   const { 
-    products,
     loading, 
     error,
     getFinalPrice,

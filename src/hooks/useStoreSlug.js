@@ -223,7 +223,7 @@ const useStoreSlug = () => {
       hasInitialized.current = true;
       return { slug: '', storeData: null };
     }
-  }, [getCurrentUrl, hasUrlChanged, extractSlugFromPath, extractSlugFromSubdomain, fetchStoreBySlug, storeSlug, storeData]);
+  }, [getCurrentUrl, hasUrlChanged, extractSlugFromPath, extractSlugFromSubdomain, fetchStoreBySlug]);
 
   // Monitor URL changes
   useEffect(() => {
@@ -236,31 +236,19 @@ const useStoreSlug = () => {
             to: newUrl
           });
         }
-        initializeStore(true); // Force refresh
+        // استدعاء initializeStore بدون force refresh لتجنب الحلقة
+        initializeStore(false);
       }
     };
 
-    // Listen for popstate (back/forward navigation)
+    // Listen for popstate (back/forward navigation) only
     window.addEventListener('popstate', handleUrlChange);
     
-    // Listen for pushstate/replacestate (programmatic navigation)
-    const originalPushState = window.history.pushState;
-    const originalReplaceState = window.history.replaceState;
-    
-    window.history.pushState = function(...args) {
-      originalPushState.apply(this, args);
-      setTimeout(handleUrlChange, 0);
-    };
-    
-    window.history.replaceState = function(...args) {
-      originalReplaceState.apply(this, args);
-      setTimeout(handleUrlChange, 0);
-    };
+    // لا نستمع لـ pushstate/replacestate لتجنب الحلقة
+    // لأن هذه التغييرات تحدث من داخل التطبيق
 
     return () => {
       window.removeEventListener('popstate', handleUrlChange);
-      window.history.pushState = originalPushState;
-      window.history.replaceState = originalReplaceState;
     };
   }, [getCurrentUrl, hasUrlChanged, currentUrl, initializeStore]);
 
@@ -288,8 +276,18 @@ const useStoreSlug = () => {
       }
     };
     
-    loadFromStorage();
-  }, [storeSlug, storeData]);
+    // تشغيل مرة واحدة فقط عند التحميل
+    if (!hasInitialized.current) {
+      loadFromStorage();
+    }
+  }, []); // إزالة dependencies لتجنب الحلقة
+
+  // تهيئة المتجر عند التحميل
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      initializeStore(false);
+    }
+  }, [initializeStore]);
 
   // Update URL when slug changes (only for initial redirect)
   useEffect(() => {

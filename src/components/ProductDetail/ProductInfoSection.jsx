@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getEffectivePrice, isDiscountActive } from '../../utils/productUtils';
+import { getEffectivePrice, isDiscountActive, getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
 import { useAppData } from '../../contexts/AppDataContext';
 import { formatPrice } from '../../utils/currencyUtils';
 const ProductInfoSection = ({
@@ -23,8 +23,8 @@ const ProductInfoSection = ({
   );
 
   const discountActive = isDiscountActive(product);
-  const effectivePrice = getEffectivePrice(product);
-  const originalPrice =  product.price;
+  const effectivePrice = getPriceByUserRole(product);
+  const originalPrice = getOriginalPriceByUserRole(product);
   const totalPrice = effectivePrice * quantity;
 
   const handleCopy = (barcode) => {

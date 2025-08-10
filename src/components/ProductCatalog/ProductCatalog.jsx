@@ -1,13 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useCategories } from '../../hooks/useCategories';
-import { useProducts } from '../../hooks/useProducts';
 import './ProductCatalog.css';
 
 const ProductCatalog = ({ language = 'en' }) => {
-  const { features } = useAppData();
+  const { features, products } = useAppData();
   const { categories } = useCategories();
-  const { products } = useProducts();
   
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);

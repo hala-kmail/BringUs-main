@@ -3,30 +3,29 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './ProductCard.css';
 import CountdownTimer from '../CountdownTimer/CountdownTimer';
-import { getSimpleColorsFromColorsField, isDiscountActive, getEffectivePrice } from '../../utils/productUtils';
+import { getSimpleColorsFromColorsField, isDiscountActive, getEffectivePrice, getPriceByUserRole, getOriginalPriceByUserRole ,isWholesaler} from '../../utils/productUtils';
 import { useCart } from '../../contexts/CartContext';
 import { namer } from 'color-namer';
 import { useAppData } from '../../contexts/AppDataContext';
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 
-
-
 const ProductCard = ({
   product,
   isInWishlist,
   handleWishlistToggle,
-  handleAddToCart: externalHandleAddToCart, // إضافة prop اختياري
+  handleAddToCart: externalHandleAddToCart,
   showStockInfo = false,
   showDiscountInfo = false,
   isListView = false,
-  categories = [], // إضافة categories كـ prop
+  categories = [],
 }) => {
   const { t, i18n } = useTranslation();
-  const { addToCart } = useCart();
+  const { addToCart } = useAppData();
   const currentLang = i18n.language;
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [isAddToCartLoading, setIsAddToCartLoading] = useState(false);
   const { store } = useAppData();
+
   // دالة للبحث عن الكاتيجوري في categories باستخدام _id
   const findCategoryById = (categoryId) => {
     if (!categoryId || !categories.length) return null;
@@ -98,105 +97,56 @@ const ProductCard = ({
     
     // البحث عن الكاتيجوري في categories
     const category = findCategoryById(categoryId);
-    if (!category) {
-      console.log('Category not found for ID:', categoryId);
-      return '#';
-    }
+    if (!category) return '#';
     
-    // استخدام slug إذا كان متوفراً، وإلا استخدم _id
-    const categorySlug = category.slug || category.slugAr || category.slugEn || category._id;
+    // استخدام slug من الكاتيجوري
+    const categorySlug = currentLang === 'ar' ? category.slugAr : category.slugEn;
     return `/category/${categorySlug}`;
   };
 
-  // دالة لفحص ما إذا كان المنتج جديداً
+  // دالة تحديد إذا كان المنتج جديد
   const isNewProduct = () => {
+    if (!product.createdAt) return false;
+    const createdAt = new Date(product.createdAt);
     const now = new Date();
-    const twoWeeksAgo = new Date(now.getTime() - (14 * 24 * 60 * 60 * 1000)); // 14 يوم
-    const oneWeekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000)); // أسبوع واحد
-    
-    // معيار 1: المنتجات المضافة حديثاً (في آخر 14 يوم)
-    const isRecentlyCreated = product.createdAt && new Date(product.createdAt) >= twoWeeksAgo;
-    
-    // معيار 2: المنتجات التي زاد ستوكها (تم تحديث الستوك في آخر أسبوع)
-    const hasStockIncrease = product.stockUpdatedAt && 
-                            new Date(product.stockUpdatedAt) >= oneWeekAgo && 
-                            (product.stock > 0 || product.availableQuantity > 0);
-    
-    const isNew = isRecentlyCreated || hasStockIncrease;
-    
-    // طباعة تفاصيل سبب اعتبار المنتج جديداً (مرة واحدة فقط)
-    if (isNew && !product._loggedAsNew) {
-      const productName = product.nameAr || product.nameEn || product.titleAr || product.titleEn || `منتج ${product._id?.slice(-6)}`;
-      const createdAt = product.createdAt ? new Date(product.createdAt).toLocaleDateString('en-US') : 'غير محدد';
-      const stockUpdatedAt = product.stockUpdatedAt ? new Date(product.stockUpdatedAt).toLocaleDateString('en-US') : 'غير محدد';
-      const stockQuantity = product.stock || product.availableQuantity || 0;
-      
-     
-      if (isRecentlyCreated) {
-        // console.log(`     • مضافة حديثاً (آخر 14 يوم)`);
-      }
-      if (hasStockIncrease) {
-        // console.log(`     • زاد ستوكها (آخر أسبوع)`);
-      }
-      // console.log('---');
-      
-      // وضع علامة لمنع التكرار
-      product._loggedAsNew = true;
-    }
-    
-    return isNew;
+    const diffTime = Math.abs(now - createdAt);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 30; // منتج جديد إذا كان عمره 30 يوم أو أقل
   };
-  
-  // دالة لتحديد حالة المخزون
+
+  // دالة تحديد حالة المخزون
   const getStockStatus = (product) => {
     if (product.stockStatus === 'out_of_stock' || product.stock === 0) return 'sold_out';
-    if (product.stock <= product.lowStockThreshold) return 'low-stock';
+    if (product.stock <= (product.lowStockThreshold || 10)) return 'low-stock';
     return 'in_stock';
   };
 
+  // دالة تحديد حالة المخزون لصفحة AlmostFinishedSale
   const getStockStatusForAlmostFinishedSale = (quantity) => {
-    const threshold = product.lowStockThreshold || 10;
-    
-    if (quantity <= threshold * 0.3) return 'red';      // critical
-    if (quantity <= threshold) return 'orange';         // low
-    return 'yellow';                                     // limited (shouldn't happen with current filter)
+    if (quantity <= 3) return 'red';
+    if (quantity <= 7) return 'orange';
+    if (quantity <= 10) return 'yellow';
+    return 'green';
   };
 
-  // التحقق من وجود تسميات للمنتج
-  const hasNewLabel = product.productLabels?.some(label => 
-    (currentLang === 'ar' ? label.nameAr : label.nameEn)?.toLowerCase().includes(currentLang === 'ar' ? 'جديد' : 'new')
-  );
-  
-  const hasFeaturedLabel = product.productLabels?.some(label => 
-    (currentLang === 'ar' ? label.nameAr : label.nameEn)?.toLowerCase().includes(currentLang === 'ar' ? 'مميز' : 'featured')
-  );
-
-  const hasSaleLabel = product.productLabels?.some(label => 
-    (currentLang === 'ar' ? label.nameAr : label.nameEn)?.toLowerCase().includes(currentLang === 'ar' ? 'تخفيض' : 'sale')
-  );
-  
-  // دالة لتحليل المواصفات وعرضها
+  // دالة الحصول على المواصفات
   const getProductSpecs = () => {
-    if (!product.specificationValues || !Array.isArray(product.specificationValues)) {
+    if (!product.specifications || !Array.isArray(product.specifications)) {
       return [];
     }
-    
-    const specs = [];
-    product.specificationValues.forEach(spec => {
-      if (spec.title && spec.value) {
-        specs.push({
-          name: currentLang === 'ar' ? spec.titleAr || spec.title : spec.titleEn || spec.title,
-          value: currentLang === 'ar' ? spec.valueAr || spec.value : spec.valueEn || spec.value
-        });
-      }
-    });
-    
-    return specs.slice(0, 3); // عرض أول 3 مواصفات فقط
+
+    return product.specifications
+      .filter(spec => spec.name && spec.value)
+      .slice(0, 3) // عرض أول 3 مواصفات فقط
+      .map(spec => ({
+        name: currentLang === 'ar' ? spec.nameAr : spec.nameEn,
+        value: currentLang === 'ar' ? spec.valueAr : spec.valueEn
+      }));
   };
-  
-  // معالجة الألوان - دعم كل من colors و allColors
+
+  // معالجة الألوان
   const processedColors = (() => {
-    const colorsField = product.colors || product.allColors;
+    const colorsField = product.colors || product.colorsField;
     
     if (!colorsField) {
       return [];
@@ -277,14 +227,74 @@ const ProductCard = ({
     // التنقل إلى صفحة تفاصيل المنتج
     window.location.href = `/product/${product._id}`;
   };
+
+  // تحديد إذا كان المنتج مميز
+  const hasFeaturedLabel = product.featured || product.isFeatured || product.featuredLabel;
+  
+  // تحديد إذا كان المنتج في التخفيض
+  const hasSaleLabel = product.saleLabel || product.isOnSale || product.salePercentage > 0;
   
   return (
-    <div className={`product-card${isListView ? ' list-view' : ''}`} dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Product Image */}
-      <div className="product-image">
+    <div className={`product-card-new${isListView ? ' list-view' : ''}`} dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Product Labels - Top Right */}
+      <div className="product-labels-new">
+        {isNewProduct() && (
+          <span className="product-label-new product-new-label">
+            {currentLang === 'ar' ? 'جديد' : 'New'}
+          </span>
+        )}
+        {hasFeaturedLabel && (
+          <span className="product-label-new product-featured-label">
+            {currentLang === 'ar' ? 'مميز' : 'Featured'}
+          </span>
+        )}
+        {hasSaleLabel && (
+          <span className="product-label-new product-sale-label">
+            {currentLang === 'ar' ? 'تخفيض' : 'Sale'}
+          </span>
+        )}
+        {product.stockStatus === 'out_of_stock' && (
+          <span className="product-label-new product-out-of-stock-label">
+            {currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock'}
+          </span>
+        )}
+        {/* Stock Level Badge for Almost Finished Sale */}
+        {showStockInfo && product.stock > 0 && (
+          (() => {
+            const threshold = product.lowStockThreshold || 10;
+            const stockLevel = getStockStatusForAlmostFinishedSale(product.stock);
+            
+            // Only show badge for low stock products (stock <= threshold)
+            if (product.stock > threshold) {
+              return null;
+            }
+            
+            return (
+              <span className={`product-label-new product-stock-label ${stockLevel}`}>
+                {stockLevel === 'red'
+                  ? (currentLang === 'ar' ? 'مخزون حرج' : 'Critical Stock')
+                  : stockLevel === 'orange'
+                    ? (currentLang === 'ar' ? 'مخزون منخفض' : 'Low Stock')
+                    : (currentLang === 'ar' ? 'مخزون محدود' : 'Limited Stock')
+                }
+              </span>
+            );
+          })()
+        )}
+      </div>
+
+      {/* Discount Badge - Top Left */}
+      {product.salePercentage > 0 && (
+        <div className="discount-badge-new">
+          -{product.salePercentage}%
+        </div>
+      )}
+
+      {/* Product Image - Centered */}
+      <div className="product-image-new">
         <Link to={`/product/${product._id}`}>
           <img 
-            className='product-image-img' 
+            className='product-image-img-new' 
             src={productImage || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03NSA3NUM3NSA2OC4zNzMgODEuMzczIDYyIDg4IDYySDIxMkMyMTguNjI3IDYyIDIyNSA2OC4zNzMgMjI1IDc1VjIyNUM2MjUgMjMxLjYyNyAyMTguNjI3IDIzOCAyMTIgMjM4SDg4QzgxLjM3MyAyMzggNzUgMjMxLjYyNyA3NSAyMjVWNzVaIiBmaWxsPSIjOUNBMEE2Ii8+CjxwYXRoIGQ9Ik0xMTIuNSAxMTIuNUMxMTIuNSAxMDUuODczIDExOC44NzMgMTAwIDEyNS41IDEwMEgxNzQuNUMxODEuMTI3IDEwMCAxODcuNSAxMDUuODczIDE4Ny41IDExMi41VjE4Ny41QzE4Ny41IDE5NC4xMjcgMTgxLjEyNyAyMDAgMTc0LjUgMjAwSDEyNS41QzExOC44NzMgMjAwIDExMi41IDE5NC4xMjcgMTEyLjUgMTg3LjVWMTEyLjVaIiBmaWxsPSIjRkZGRkZGIi8+Cjwvc3ZnPgo='} 
             alt={productName}
             onError={(e) => {
@@ -292,10 +302,56 @@ const ProductCard = ({
             }}
           />
         </Link>
+      </div>
 
-        {/* Wishlist Heart Icon */}
-        <div
-          className={`wishlist-btn ${inWishlist ? 'active' : ''} ${isWishlistLoading ? 'loading' : ''}`}
+      {/* Product Description - Below Image */}
+      <div className="product-description-new">
+        <h3 className="product-title-new">{productName}</h3>
+        {productDescription && (
+          <p className="product-subtitle-new">{productDescription}</p>
+        )}
+      </div>
+
+      {/* Pricing Information */}
+      <div className="product-pricing-new">
+        {isWholesaler() ? (
+          // تاجر الجملة يرى سعر الجملة فقط بدون خصومات
+          <div className="current-price-new">
+            {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+          </div>
+        ) : (
+          // المستخدم العادي يرى السعر مع الخصومات والسعر السابق
+          <>
+            <div className="current-price-new">
+              {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+            </div>
+            {product.salePercentage > 0 && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && (
+              <div className="original-price-new">
+                {formatPrice(getOriginalPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Action Buttons - Bottom */}
+      <div className="action-buttons-new">
+        <button
+          className="add-to-cart-btn-new"
+          onClick={handleAddToCartClick}
+          disabled={product.stockStatus === 'out_of_stock' || isAddToCartLoading}
+        >
+          {isAddToCartLoading ? (
+            <div className="add-to-cart-loading-spinner"></div>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          )}
+        </button>
+        
+        <button
+          className={`wishlist-btn-new ${inWishlist ? 'active' : ''} ${isWishlistLoading ? 'loading' : ''}`}
           onClick={handleWishlistClick}
           title={inWishlist ? (currentLang === 'ar' ? 'إزالة من المفضلة' : 'Remove from wishlist') : (currentLang === 'ar' ? 'أضف إلى المفضلة' : 'Add to wishlist')}
         >
@@ -303,243 +359,17 @@ const ProductCard = ({
             <div className="wishlist-loading-spinner"></div>
           ) : (
             <svg
-              width="24"
-              height="24"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
-              fill={inWishlist ? '#ef4444' : 'none'}
-              stroke={inWishlist ? '#ef4444' : '#6b7280'}
+              fill={inWishlist ? '#ffffff' : 'none'}
+              stroke={inWishlist ? '#ffffff' : '#ffffff'}
               strokeWidth="2"
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           )}
-        </div>
-
-
-        {/* Badges */}
-        <div className="product-badges">
-          {isNewProduct() && (
-            <span className="product-badge product-new-badge">
-              {currentLang === 'ar' ? 'جديد' : 'New'}
-            </span>
-          )}
-          {hasFeaturedLabel && (
-            <span className="product-badge bestseller-badge">
-              {currentLang === 'ar' ? 'مميز' : 'Featured'}
-            </span>
-          )}
-          {hasSaleLabel && (
-            <span className="product-badge product-discount-badge">
-              {currentLang === 'ar' ? 'تخفيض' : 'Sale'}
-            </span>
-          )}
-          {product.salePercentage > 0 && (
-            <span className="product-badge product-discount-badge">
-              -{product.salePercentage}%
-            </span>
-          )}
-          {product.stockStatus === 'out_of_stock' && (
-            <span className="product-badge out-of-stock-badge">
-              {currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock'}
-            </span>
-          )}
-          {/* Stock Level Badge for Almost Finished Sale */}
-          {showStockInfo && product.stock > 0 && (
-            (() => {
-              const threshold = product.lowStockThreshold || 10;
-              const stockLevel = getStockStatusForAlmostFinishedSale(product.stock);
-              
-              // Only show badge for low stock products (stock <= threshold)
-              if (product.stock > threshold) {
-                return null;
-              }
-              
-              return (
-                <span className={`product-badge stock-badge ${stockLevel}`}>
-                  {stockLevel === 'red'
-                    ? (currentLang === 'ar' ? 'مخزون حرج' : 'Critical Stock')
-                    : stockLevel === 'orange'
-                      ? (currentLang === 'ar' ? 'مخزون منخفض' : 'Low Stock')
-                      : (currentLang === 'ar' ? 'مخزون محدود' : 'Limited Stock')
-                  }
-                </span>
-              );
-            })()
-          )}
-        </div>
-      </div>
-
-      {/* Product Info */}
-      <div className="product-info-section product-info">
-        <div className="product-info-top">
-          <Link
-            to={`/product/${product._id}`}
-            style={{ textDecoration: 'none', color: 'inherit' }}
-          >
-            <h3 className="product-top-name">{productName}</h3>
-          </Link>
-          
-          {categoryName && product.category && (
-            <Link 
-              to={getCategoryLink(product.category._id)}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <h4
-                className="product-category-name"
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: '300',
-                  color: '#6b7280',
-                  margin: '0.25rem 0',
-                  cursor: 'pointer'
-                }}
-              >
-                {categoryName}
-              </h4>
-            </Link>
-          )}
-          
-          {isListView && productDescription && (
-            <div className="product-description">
-              {productDescription}
-            </div>
-          )}
-          
-          {/* Stock Info (خاص بصفحة AlmostFinishedSale) */}
-          {showStockInfo && (
-            <div className="stock-info">
-              <div className={`stock-level ${getStockStatus(product)}`}>
-                <span className="stock-text">
-                  {getStockStatus(product) === 'sold_out'
-                    ? (currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock')
-                    : getStockStatus(product) === 'low-stock'
-                      ? currentLang === 'ar' ? `${product.stock} متبقي فقط` : `${product.stock} Only left`
-                      : currentLang === 'ar' ? 'في المخزون' : 'In Stock'}
-                </span>
-                {getStockStatus(product) !== 'sold_out' && (
-                  <div className="stock-bar">
-                    <div 
-                      className={`stock-fill ${getStockStatusForAlmostFinishedSale(product.stock)}`} 
-                      style={{ 
-                        width: `${Math.min((product.stock / product.lowStockThreshold) * 100, 100)}%` 
-                      }}
-                    ></div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <div className="product-info-bottom">
-          {/* Colors */}
-          {processedColors.length > 0 && (
-            <div className="product-colors">
-             
-              {processedColors.slice(0, 5).map((colorObj, index) => {
-                const colorName = currentLang === 'ar' 
-                  ? (colorObj.type === 'mixed' 
-                      ? colorObj.value.map(c => getColorNameAr(c)).join(' + ')
-                      : getColorNameAr(colorObj.value))
-                  : (colorObj.type === 'mixed'
-                      ? colorObj.value.map(c => getColorName(c)).join(' + ')
-                      : getColorName(colorObj.value));
-                
-                return (
-                  <span
-                    key={index}
-                    className="color-swatch"
-                    style={{
-                      background:
-                        colorObj.type === 'mixed'
-                          ? `linear-gradient(45deg, ${colorObj.value.join(', ')})`
-                          : colorObj.value,
-                      border:
-                        colorObj.type === 'single' &&
-                        (colorObj.value === '#fff' || colorObj.value === '#ffffff')
-                          ? '1px solid #ccc'
-                          : undefined
-                    }}
-                    title={colorName}
-                  ></span>
-                );
-              })}
-              {processedColors.length > 5 && (
-                <span className="color-swatch-more" title={currentLang === 'ar' ? 'المزيد من الألوان' : 'More colors'}>
-                  +{processedColors.length - 5}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Price */}
-          <div className="product-price-container">
-            {product.salePercentage > 0 && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) ? (
-              <>
-                <span className="current-price">
-                  {formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}
-                </span>
-                <span className="original-price">
-                  {formatPrice( product.price, store?.settings?.currency || 'ILS')}
-                </span>
-              </>
-            ) : (
-              <span className="current-price">
-                {formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}
-              </span>
-            )}
-          </div>
-
-       
-         
-        </div>
-
-        {/* Floating View Details Button */}
-        <button
-          className={`floating-add-to-cart-btn view-details-btn ${isAddToCartLoading ? 'loading' : ''}`}
-          onClick={handleAddToCartClick}
-          disabled={product.stockStatus === 'out_of_stock' || isAddToCartLoading}
-          title={currentLang === 'ar' ? 'عرض التفاصيل' : 'View Details'}
-        >
-          {isAddToCartLoading ? (
-            <div className="add-to-cart-loading-spinner"></div>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
-          )}
         </button>
-        
-        {/* Discount Info (خاص بصفحة AlmostFinishedSale) */}
-        {showDiscountInfo && product.salePercentage > 0 && (
-          <div className="discount-info">
-            <div className="savings-amount">
-              <span className="savings-label">{currentLang === 'ar' ? 'توفير' : 'Save'}</span>
-              <span className="savings-value">
-                {formatPrice((( product.price) - getEffectivePrice(product)), store?.settings?.currency || 'ILS')}
-              </span>
-            </div>
-            <div className="discount-percentage-large">
-              <span className="discount-text">{product.salePercentage}% {currentLang === 'ar' ? 'خصم' : 'Off'}</span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

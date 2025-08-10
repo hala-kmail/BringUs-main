@@ -5,6 +5,12 @@ import { getSimpleColorsFromColorsField, getOriginalColorsFromColorsField } from
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
+// Global flag to prevent multiple simultaneous fetches
+let isGlobalFetching = false;
+let lastFetchTime = 0;
+const FETCH_COOLDOWN = 1000; // 1 second cooldown between fetches
+let fetchTimeout = null;
+
 const useProducts = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,7 +37,7 @@ const useProducts = () => {
     }
     
     return null;
-  }, [store]);
+  }, [store?._id]); // Only depend on store._id, not the entire store object
 
   // Extract all available colors from products
   const getAllAvailableColors = useCallback(() => {
@@ -168,47 +174,77 @@ const useProducts = () => {
     
     // Only fetch if we have a store ID and haven't initialized for this store
     if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing products for store ID:', currentStoreId);
-      }
-      hasInitialized.current = true;
-      storeId.current = currentStoreId;
-      
-      const loadProducts = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          
-          const url = `${API_BASE_URL}/products/${currentStoreId}/without-variants?page=1&limit=20&sort=newest`;
-          const response = await fetch(url, {
-            headers: {
-              'accept': 'application/json',
-              'Authorization': token
-            }
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const result = await response.json();
-          
-          if (result.success && result.data) {
-            updateProducts(result.data);
-            setPagination(result.pagination);
-          } else {
-            throw new Error('Failed to fetch products');
-          }
-        } catch (err) {
-          console.error('Error fetching products:', err);
-          setError(err.message);
-        } finally {
-          setLoading(false);
+      // Prevent multiple simultaneous fetches and add cooldown
+      const now = Date.now();
+      if (isGlobalFetching || (now - lastFetchTime < FETCH_COOLDOWN)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Products fetch blocked - already in progress or cooldown active');
         }
-      };
+        return;
+      }
       
-      loadProducts();
-    } else if (!currentStoreId && products !== null) {
+      // Clear any existing timeout
+      if (fetchTimeout) {
+        clearTimeout(fetchTimeout);
+      }
+      
+      // Set a timeout to prevent rapid successive calls
+      fetchTimeout = setTimeout(() => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Initializing products for store ID:', currentStoreId);
+          console.log('Components using useProducts:', new Error().stack?.split('\n').slice(1, 6).join('\n'));
+        }
+        
+        hasInitialized.current = true;
+        storeId.current = currentStoreId;
+        isGlobalFetching = true;
+        lastFetchTime = now;
+        
+        const loadProducts = async () => {
+          try {
+            setLoading(true);
+            setError(null);
+            
+            const url = `${API_BASE_URL}/products/${currentStoreId}/without-variants?page=1&limit=20&sort=newest`;
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Fetching products from:', url);
+            }
+            
+            const response = await fetch(url, {
+              headers: {
+                'accept': 'application/json',
+                'Authorization': token
+              }
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+              updateProducts(result.data);
+              setPagination(result.pagination);
+              if (process.env.NODE_ENV === 'development') {
+                console.log('Products fetched successfully:', result.data.length, 'products');
+              }
+            } else {
+              throw new Error('Failed to fetch products');
+            }
+          } catch (err) {
+            console.error('Error fetching products:', err);
+            setError(err.message);
+          } finally {
+            setLoading(false);
+            isGlobalFetching = false;
+          }
+        };
+        
+        loadProducts();
+      }, 100); // Small delay to batch rapid calls
+      
+    } else if (!currentStoreId && hasInitialized.current) {
       // Clear products if no store is available
       if (process.env.NODE_ENV === 'development') {
         console.log('No store available, clearing products');
@@ -217,7 +253,14 @@ const useProducts = () => {
       hasInitialized.current = false;
       storeId.current = null;
     }
-  }, [store?._id, getStoreId, updateProducts, token, products]);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (fetchTimeout) {
+        clearTimeout(fetchTimeout);
+      }
+    };
+  }, [store?._id, getStoreId, updateProducts, token]);
 
   // Fetch single product by ID
   const fetchProductById = useCallback(async (productId) => {
@@ -457,9 +500,10 @@ const useProducts = () => {
   const refreshProducts = useCallback(() => {
     const currentStoreId = getStoreId();
     if (currentStoreId) {
-      // Force refresh by clearing current products
+      // Force refresh by clearing current products but don't reset hasInitialized
+      // to prevent triggering the useEffect again
       updateProducts(null);
-      hasInitialized.current = false;
+      // Don't reset hasInitialized here as it could cause loops
       return fetchProducts(currentStoreId);
     }
     return null;

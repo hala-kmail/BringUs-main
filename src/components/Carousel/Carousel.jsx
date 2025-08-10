@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStoreSliders from '../../hooks/useStoreSliders';
 import './Carousel.css';
@@ -7,7 +7,9 @@ const Carousel = () => {
   const { t, i18n } = useTranslation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [progress, setProgress] = useState(0);
   const { sliders, loading, error } = useStoreSliders();
+  const progressIntervalRef = useRef(null);
 
   // Use API sliders if available, otherwise use fallback
   // Filter only active sliders and exclude videos
@@ -30,39 +32,63 @@ const Carousel = () => {
     // If it's already in the correct format (fallback slides)
     return slide;
   };
-//-----------------------------------move--------------------------------------  
+
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setProgress(0);
   };
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setProgress(0);
   };
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
+    setProgress(0);
   };
-//-----------------------------------auto play--------------------------------------  
+
+  // Auto-play with progress bar
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || slides.length === 0) return;
 
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 5000);
+    // Reset progress when slide changes
+    setProgress(0);
 
-    return () => clearInterval(interval);
-  }, [currentSlide, isAutoPlaying]);
-//-----------------------------------auto play--------------------------------------  
+    // Start progress animation
+    const startTime = Date.now();
+    const duration = 5000; // 5 seconds
+
+    progressIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min((elapsed / duration) * 100, 100);
+      setProgress(newProgress);
+
+      if (newProgress >= 100) {
+        nextSlide();
+      }
+    }, 50);
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, [currentSlide, isAutoPlaying, slides.length]);
+
   const handleMouseEnter = () => {
     setIsAutoPlaying(false);
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
   };
 
   const handleMouseLeave = () => {
     setIsAutoPlaying(true);
   };
-//-----------------------------------current lang--------------------------------------  
+
   const currentLang = i18n.language;
-//-----------------------------------return--------------------------------------  
+
   // Show loading state
   if (loading) {
     return (
@@ -123,10 +149,12 @@ const Carousel = () => {
             );
           })}
         </div>
-{/*---------------------------Navigation Arrows-----------------------------------*/}
+
+        {/* Navigation Arrows */}
         <button 
           className="carousel-arrow carousel-arrow-prev" 
           onClick={currentLang === 'ar' ? nextSlide : prevSlide}
+          aria-label={currentLang === 'ar' ? 'السابق' : 'Previous'}
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -135,20 +163,31 @@ const Carousel = () => {
         <button 
           className="carousel-arrow carousel-arrow-next" 
           onClick={currentLang === 'ar' ? prevSlide : nextSlide}
+          aria-label={currentLang === 'ar' ? 'التالي' : 'Next'}
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-{/* //-----------------------------------dots indicator--------------------------------------   */}
+
+        {/* Dots Indicator */}
         <div className="carousel-dots">
           {slides.map((_, index) => (
             <button
               key={index}
               className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
               onClick={() => goToSlide(index)}
+              aria-label={`${currentLang === 'ar' ? 'انتقل إلى السلايد' : 'Go to slide'} ${index + 1}`}
             />
           ))}
+        </div>
+
+        {/* Progress Bar */}
+        <div className="carousel-progress">
+          <div 
+            className="carousel-progress-bar"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
     </div>

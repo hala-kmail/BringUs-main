@@ -244,9 +244,7 @@
   
  
   
-  .product-card {
-    max-width: 100%;
-  }
+  /* تم إزالة الأنماط المتضاربة - الأنماط الأساسية موجودة في ProductCard.css */
 
   .product-image {
     height: 120px;

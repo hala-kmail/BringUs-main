@@ -583,26 +583,7 @@ const Shop = () => {
 
       <div className="shop-container">
         {/* Hero Section */}
-        <div className="shop-hero">
-          <div className="shop-hero-content">
-            <div className="shop-hero-badge">
-              {t('shop.hero.badge')}
-            </div>
-            <h1 className="shop-hero-title">
-              {t('shop.hero.title')}
-            </h1>
-            <p className="shop-hero-subtitle">
-              {t('shop.hero.subtitle')}
-            </p>
-            <Link to="/" className="shop-hero-btn">
-              {t('shop.hero.button')}
-            </Link>
-          </div>
-          <div className="shop-hero-image">
-            <img src="/images/shop-hero.jpg" alt="Shop Hero" />
-          </div>
-        </div>
-
+       
         <div className="shop-main">
           {/* Sidebar Filters */}
           <div className="shop-sidebar">
@@ -621,14 +602,11 @@ const Shop = () => {
             />
           </div>
 
+
           {/* Main Content */}
           <div className="shop-content">
             {/* Breadcrumb */}
-            <div className="shop-breadcrumb">
-              <Link to="/">{t('common.home')}</Link>
-              <span className="breadcrumb-separator">/</span>
-              <span>{t('shop.title')}</span>
-            </div>
+           
 
             {/* Toolbar */}
             <ShopToolbar
