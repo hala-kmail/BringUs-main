@@ -11,48 +11,63 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { store } = useAppData();
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  
+  // Get store data from localStorage as fallback
+  const getStoreFromStorage = () => {
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        return JSON.parse(storedStore);
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    return null;
+  };
+  
+  const storeData = store || getStoreFromStorage();
 
   // الحصول على معلومات التواصل
   const getContactInfo = () => {
-    if (!store) return {};
+    if (!storeData) return {};
     
     return {
-      phone: store.contact?.phone || '',
-      email: store.contact?.email || '',
-      whatsapp: store.whatsappNumber || '',
-      facebook: store.settings?.storeSocials?.facebook || '',
-      instagram: store.settings?.storeSocials?.instagram || '',
-      twitter: store.settings?.storeSocials?.twitter || '',
-      youtube: store.settings?.storeSocials?.youtube || '',
-      linkedin: store.settings?.storeSocials?.linkedin || '',
-      tiktok: store.settings?.storeSocials?.tiktok || '',
-      telegram: store.settings?.storeSocials?.telegram || '',
-      snapchat: store.settings?.storeSocials?.snapchat || '',
-      pinterest: store.settings?.storeSocials?.pinterest || ''
+      phone: storeData.contact?.phone || '',
+      email: storeData.contact?.email || '',
+      whatsapp: storeData.whatsappNumber || '',
+      facebook: storeData.settings?.storeSocials?.facebook || '',
+      instagram: storeData.settings?.storeSocials?.instagram || '',
+      twitter: storeData.settings?.storeSocials?.twitter || '',
+      youtube: storeData.settings?.storeSocials?.youtube || '',
+      linkedin: storeData.settings?.storeSocials?.linkedin || '',
+      tiktok: storeData.settings?.storeSocials?.tiktok || '',
+      telegram: storeData.settings?.storeSocials?.telegram || '',
+      snapchat: storeData.settings?.storeSocials?.snapchat || '',
+      pinterest: storeData.settings?.storeSocials?.pinterest || ''
     };
   };
 
   // الحصول على اسم المتجر
   const getStoreName = () => {
-    if (!store) return 'BringUs';
-    return currentLang === 'ar' ? store.nameAr : store.nameEn;
+    if (!storeData) return 'BringUs';
+    return currentLang === 'ar' ? storeData.nameAr : storeData.nameEn;
   };
 
   // الحصول على وصف المتجر
   const getStoreDescription = () => {
-    if (!store) {
+    if (!storeData) {
       return currentLang === 'ar' 
         ? 'متجر إلكتروني تجريبي لعرض المنتجات والشراء بسهولة.'
         : 'Experimental e-commerce store for displaying products and easy shopping.';
     }
-    return currentLang === 'ar' ? store.descriptionAr : store.descriptionEn;
+    return currentLang === 'ar' ? storeData.descriptionAr : storeData.descriptionEn;
   };
 
   // الحصول على عنوان المتجر
   const getStoreAddress = () => {
-    if (!store?.contact?.address) return null;
+    if (!storeData?.contact?.address) return null;
     
-    const address = store.contact.address;
+    const address = storeData.contact.address;
     const addressParts = [
       address.street,
       address.city,

@@ -40,9 +40,13 @@ const ProductDetail = () => {
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [specMeta, setSpecMeta] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [baseProduct, setBaseProduct] = useState(null);
+  const [effectiveAvailable, setEffectiveAvailable] = useState(null);
 
   const { 
     fetchProductById, 
+    fetchProductWithVariants,
     getFinalPrice, 
     getMainImage, 
     getProductName, 
@@ -70,7 +74,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const loadProduct = async () => {
-              if (!productId) {
+      if (!productId) {
         setError('Product ID not found');
         setLoading(false);
         return;
@@ -79,29 +83,35 @@ const ProductDetail = () => {
       try {
         setLoading(true);
         setError(null);
-          const productData = await fetchProductById(productId);
-        
-        if (productData) {
-          setProduct(productData);
-          // تعيين اللون الأول كافتراضي إذا كان متوفراً
-          const simpleColors = getSimpleColorsFromColorsField(productData);
+
+        // Load product with its variants
+        const result = await fetchProductWithVariants(productId);
+        if (result && result.product) {
+          const loadedBase = result.product;
+          setBaseProduct(loadedBase);
+          setProduct(loadedBase);
+          setVariants(result.variants || []);
+
+          // Set default color if available
+          const simpleColors = getSimpleColorsFromColorsField(loadedBase);
           if (simpleColors && simpleColors.length > 0) {
             setSelectedColor(simpleColors[0]);
           }
-          // تعيين الحجم الأول كافتراضي إذا كان متوفراً
-          if (productData.specificationValues) {
-            const sizeSpecs = productData.specificationValues.filter(spec => 
+
+          // Optionally set default spec
+          if (loadedBase.specificationValues) {
+            const sizeSpecs = loadedBase.specificationValues.filter(spec =>
               spec.title === 'الحجم' || spec.title === 'Size'
             );
             if (sizeSpecs.length > 0) {
-              // سيتم تعيينه في selectedSpecs بدلاً من selectedSize
+              // keep selectedSpecs update if needed in the future
             }
           }
         } else {
           setError('Product not found');
         }
       } catch (err) {
-        console.error('Error loading product:', err);
+        console.error('Error loading product with variants:', err);
         setError('Failed to load product');
       } finally {
         setLoading(false);
@@ -109,7 +119,36 @@ const ProductDetail = () => {
     };
 
     loadProduct();
-  }, [productId, fetchProductById]);
+  }, [productId, fetchProductWithVariants]);
+
+  const handleVariantClick = useCallback((variant) => {
+    if (!variant) return;
+    setProduct(variant);
+    setSelectedImageIndex(0);
+    setSelectedMediaIndex(0);
+    const simpleColors = getSimpleColorsFromColorsField(variant);
+    setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+    setSelectedSpecs({});
+    // Scroll to top of gallery for better UX
+    try {
+      const container = document.querySelector('.product-detail-container');
+      if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (_) {}
+  }, []);
+
+  const handleParentClick = useCallback(() => {
+    if (!baseProduct) return;
+    setProduct(baseProduct);
+    setSelectedImageIndex(0);
+    setSelectedMediaIndex(0);
+    const simpleColors = getSimpleColorsFromColorsField(baseProduct);
+    setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+    setSelectedSpecs({});
+    try {
+      const container = document.querySelector('.product-detail-container');
+      if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (_) {}
+  }, [baseProduct]);
 
   function getColorKey(hex) {
     if (!hex) return '';
@@ -148,15 +187,8 @@ const ProductDetail = () => {
 
 
   const handleAddToCart = async () => {
-    if (!isInStock(product)) {
-      // إظهار رسالة مناسبة حسب حالة المخزون
-      if (product.stockStatus === 'out_of_stock' || product.availableQuantity === 0) {
-        alert(currentLang === 'ar' ? 'المنتج غير متوفر في المخزون' : 'Product is out of stock');
-      } else {
-        alert(currentLang === 'ar' ? 'لا يمكن إضافة المنتج للكارت' : 'Cannot add product to cart');
-      }
-      return;
-    }
+    console.log(product);
+
 
     // التحقق من صحة المنتج قبل الإضافة للسلة
     const validationErrors = [];
@@ -172,11 +204,12 @@ const ProductDetail = () => {
       return;
     }
     
-    // التحقق من الكمية المطلوبة مع المخزون المتوفر
-    if (product.availableQuantity && quantity > product.availableQuantity) {
+    // التحقق من الكمية المطلوبة مع المخزون المتوفر (حسب المواصفات المختارة)
+    const availableToUse = (effectiveAvailable ?? product.availableQuantity ?? 0);
+    if (quantity > availableToUse) {
       alert(currentLang === 'ar' 
-        ? `الكمية المطلوبة (${quantity}) أكبر من المخزون المتوفر (${product.availableQuantity})`
-        : `Requested quantity (${quantity}) is greater than available stock (${product.availableQuantity})`
+        ? `الكمية المطلوبة (${quantity}) أكبر من المخزون المتوفر (${availableToUse})`
+        : `Requested quantity (${quantity}) is greater than available stock (${availableToUse})`
       );
       return;
     }
@@ -267,18 +300,58 @@ const ProductDetail = () => {
         />
 
         <div className="product-detail-content">
-          <ProductMediaGallery
-            mediaItems={mediaItems}
-            productName={productName}
-            selectedImageIndex={selectedImageIndex}
-            setSelectedImageIndex={setSelectedImageIndex}
-            selectedMediaIndex={selectedMediaIndex}
-            setSelectedMediaIndex={setSelectedMediaIndex}
-            isZoomModalOpen={isZoomModalOpen}
-            setIsZoomModalOpen={setIsZoomModalOpen}
-            currentLang={currentLang}
-            t={t}
-          />
+          <div className="product-media-column">
+            <ProductMediaGallery
+              mediaItems={mediaItems}
+              productName={productName}
+              selectedImageIndex={selectedImageIndex}
+              setSelectedImageIndex={setSelectedImageIndex}
+              selectedMediaIndex={selectedMediaIndex}
+              setSelectedMediaIndex={setSelectedMediaIndex}
+              isZoomModalOpen={isZoomModalOpen}
+              setIsZoomModalOpen={setIsZoomModalOpen}
+              currentLang={currentLang}
+              t={t}
+            />
+
+            {/* Variant main-image thumbnails + base product thumbnail */}
+            {(variants && variants.length > 0) || baseProduct ? (
+              <div className="variant-thumbnails">
+                {/* Base product thumbnail first (only if not currently displayed) */}
+                {baseProduct && product?._id !== baseProduct._id && (
+                  <button
+                    key={`base-${baseProduct._id}`}
+                    type="button"
+                    className="variant-thumb"
+                    title={getProductName(baseProduct, currentLang)}
+                    onClick={handleParentClick}
+                  >
+                    <img
+                      src={baseProduct.mainImage || (baseProduct.images && baseProduct.images[0])}
+                      alt={getProductName(baseProduct, currentLang)}
+                    />
+                  </button>
+                )}
+                {/* Other variants except the currently displayed one */}
+                {variants && variants.length > 0 && variants
+                  .filter((v) => v._id !== product?._id)
+                  .map((v) => (
+                    <button
+                      key={v._id || v.id}
+                      type="button"
+                      className="variant-thumb"
+                      title={getProductName(v, currentLang)}
+                      onClick={() => handleVariantClick(v)}
+                    >
+                      <img
+                        src={v.mainImage || (v.images && v.images[0])}
+                        alt={getProductName(v, currentLang)}
+                      />
+                    </button>
+                  ))}
+              </div>
+            ) : null}
+          </div>
 
           <div className="product-info">
             <ProductInfoSection
@@ -305,6 +378,7 @@ const ProductDetail = () => {
               currentLang={currentLang}
               t={t}
               specificationsMeta={specMeta}
+              onAvailabilityChange={setEffectiveAvailable}
             />
 
             <ProductActions
@@ -317,6 +391,7 @@ const ProductDetail = () => {
               isInWishlist={isInWishlist}
               currentLang={currentLang}
               t={t}
+              canAddToCart={(effectiveAvailable ?? product.availableQuantity ?? 0) > 0}
             />
           </div>
         </div>

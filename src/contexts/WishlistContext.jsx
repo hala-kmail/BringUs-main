@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getToken, getBearerToken } from '../utils/tokenManager';
 import { useAppData } from './AppDataContext';
@@ -21,42 +21,162 @@ export const WishlistProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const { i18n } = useTranslation();
   const { store } = useAppData();
+  const hasInitialized = useRef(false);
+  const storeId = useRef(null);
   const currentLang = i18n.language;
+
+  // ===== Guest ID Management =====
+  
+  // Save Guest ID to localStorage
+  const saveGuestId = useCallback((guestId) => {
+    if (guestId) {
+      localStorage.setItem('guestId', guestId);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('💾 Guest ID saved to localStorage:', guestId);
+      }
+    }
+  }, []);
+
+  // Get Guest ID from localStorage
+  const getStoredGuestId = useCallback(() => {
+    const guestId = localStorage.getItem('guestId');
+    if (guestId && process.env.NODE_ENV === 'development') {
+      console.log('📂 Retrieved Guest ID from localStorage:', guestId);
+    }
+    return guestId;
+  }, []);
+
+  // Generate a stable Guest ID if none exists
+  const generateStableGuestId = useCallback(() => {
+    const existingGuestId = getStoredGuestId();
+    if (!existingGuestId) {
+      // Generate a stable guest ID using timestamp and random string
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 15);
+      const stableGuestId = `guest_${timestamp}_${randomStr}`;
+      saveGuestId(stableGuestId);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Generated stable Guest ID:', stableGuestId);
+      }
+      return stableGuestId;
+    }
+    return existingGuestId;
+  }, [getStoredGuestId, saveGuestId]);
+  
+  // Clear Guest ID from localStorage (when user logs in)
+  const clearGuestId = useCallback(() => {
+    localStorage.removeItem('guestId');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🗑️ Guest ID cleared from localStorage');
+    }
+  }, []);
+
+  // Get store ID from localStorage or store context
+  const getStoreId = useCallback(() => {
+    if (store && store._id) {
+      return store._id;
+    }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore._id;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
+  // Get store slug from localStorage or store context
+  const getStoreSlug = useCallback(() => {
+    if (store && store.slug) {
+      return store.slug;
+    }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore.slug;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
+  // Get headers based on authentication status and Guest ID
+  const getHeaders = useCallback(() => {
+    const token = getToken();
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Ensure we have a Guest ID (generate if needed)
+    const guestId = generateStableGuestId();
+    if (guestId) {
+      headers['X-Guest-ID'] = guestId;
+    }
+    
+    // Add authorization header if user is logged in
+    if (token) {
+      headers['Authorization'] = getBearerToken();
+    }
+    
+    return headers;
+  }, [generateStableGuestId]);
+
+  // Handle API response and extract Guest ID
+  const handleApiResponse = useCallback(async (response) => {
+    // Extract Guest ID from response headers
+    const guestId = response.headers.get('X-Guest-ID');
+    if (guestId) {
+      // Only save Guest ID if we don't already have one
+      const existingGuestId = getStoredGuestId();
+      if (!existingGuestId) {
+        saveGuestId(guestId);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🆕 New Guest ID received and saved:', guestId);
+        }
+      } else if (existingGuestId !== guestId) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
+        }
+      }
+    }
+    
+    return response.json();
+  }, [saveGuestId, getStoredGuestId]);
 
   // جلب الأمنيات من API
   const fetchWishlist = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for fetching wishlist');
+      }
       setWishlistItems([]);
       return;
     }
-
-    if (!store || !store._id) {
-      console.error('Store information not available');
-      console.log('Store object:', store);
-      setWishlistItems([]);
-      return;
-    }
-
-    console.log('Store information available:', {
-      storeId: store._id,
-      storeName: store.nameAr || store.nameEn,
-      storeSlug: store.slug
-    });
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/likes?storeId=${store._id}`, {
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+      const response = await fetch(`${API_BASE_URL}/likes?${queryParam}`, {
         method: 'GET',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
       });
 
-      const data = await response.json();
+      const data = await handleApiResponse(response);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -68,6 +188,9 @@ export const WishlistProvider = ({ children }) => {
 
       if (data.success && data.data) {
         setWishlistItems(data.data);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Wishlist fetched successfully:', data.data.length, 'items');
+        }
       } else {
         setWishlistItems([]);
       }
@@ -78,60 +201,42 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [store]);
+  }, [getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
   // إضافة منتج للأمنيات
   const addToWishlist = useCallback(async (product) => {
-    const token = getToken();
-    if (!token) {
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for adding to wishlist');
+      }
       return false;
     }
 
-    if (!store || !store._id) {
-      console.error('Store information not available');
-      console.log('Store object:', store);
-      return false;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Adding product to wishlist:', product._id, product.nameAr || product.nameEn);
     }
-
-    console.log('Store information available:', {
-      storeId: store._id,
-      storeName: store.nameAr || store.nameEn,
-      storeSlug: store.slug
-    });
 
     setLoading(true);
     setError(null);
 
     try {
       const productId = product._id || product.id;
-      const requestBody = {
-        storeId: store._id
-      };
-
-      console.log('Adding to wishlist - Request details:', {
-        url: `${API_BASE_URL}/likes/${productId}`,
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+      
+      const response = await fetch(`${API_BASE_URL}/likes/${productId}?${queryParam}`, {
         method: 'POST',
-        storeId: store._id,
-        productId: productId,
-        requestBody: requestBody
+        headers: getHeaders(),
       });
 
-      // محاولة إرسال storeId في query parameters بدلاً من body
-      const response = await fetch(`${API_BASE_URL}/likes/${productId}?storeId=${store._id}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const data = await handleApiResponse(response);
 
-      const data = await response.json();
-
-      console.log('Adding to wishlist - Response:', {
-        status: response.status,
-        data: data
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Add to wishlist response:', { status: response.status, data });
+      }
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -155,6 +260,9 @@ export const WishlistProvider = ({ children }) => {
         };
         
         setWishlistItems(prev => [...prev, newWishlistItem]);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Product added to wishlist successfully');
+        }
         return true;
       }
     } catch (err) {
@@ -164,59 +272,41 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [store]);
+  }, [getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
   // إزالة منتج من الأمنيات
   const removeFromWishlist = useCallback(async (productId) => {
-    const token = getToken();
-    if (!token) {
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for removing from wishlist');
+      }
       return false;
     }
 
-    if (!store || !store._id) {
-      console.error('Store information not available');
-      console.log('Store object:', store);
-      return false;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Removing product from wishlist:', productId);
     }
-
-    console.log('Store information available:', {
-      storeId: store._id,
-      storeName: store.nameAr || store.nameEn,
-      storeSlug: store.slug
-    });
 
     setLoading(true);
     setError(null);
 
     try {
-      const requestBody = {
-        storeId: store._id
-      };
-
-      console.log('Removing from wishlist - Request details:', {
-        url: `${API_BASE_URL}/likes/${productId}?storeId=${store._id}`,
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+      
+      const response = await fetch(`${API_BASE_URL}/likes/${productId}?${queryParam}`, {
         method: 'DELETE',
-        storeId: store._id,
-        productId: productId,
-        requestBody: requestBody
+        headers: getHeaders(),
       });
 
-      // محاولة إرسال storeId في query parameters بدلاً من body
-      const response = await fetch(`${API_BASE_URL}/likes/${productId}?storeId=${store._id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const data = await handleApiResponse(response);
 
-      const data = await response.json();
-
-      console.log('Removing from wishlist - Response:', {
-        status: response.status,
-        data: data
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Remove from wishlist response:', { status: response.status, data });
+      }
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -228,10 +318,17 @@ export const WishlistProvider = ({ children }) => {
       }
 
       if (data.success) {
-        setWishlistItems(prev => prev.filter(item => {
-          const itemProductId = item.productId || item._id || (item.product && item.product._id);
-          return itemProductId !== productId;
-        }));
+        setWishlistItems(prev => {
+          const updatedItems = prev.filter(item => {
+            const itemProductId = item.productId || item._id || (item.product && item.product._id);
+            return itemProductId !== productId;
+          });
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Product removed from wishlist successfully');
+          }
+          return updatedItems;
+        });
         return true;
       }
     } catch (err) {
@@ -241,7 +338,7 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [store]);
+  }, [getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
   // التحقق من وجود منتج في الأمنيات
   const isInWishlist = useCallback((productId) => {
@@ -271,22 +368,15 @@ export const WishlistProvider = ({ children }) => {
 
   // مسح جميع الأمنيات
   const clearWishlist = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for clearing wishlist');
+      }
       return false;
     }
-
-    if (!store || !store._id) {
-      console.error('Store information not available');
-      console.log('Store object:', store);
-      return false;
-    }
-
-    console.log('Store information available:', {
-      storeId: store._id,
-      storeName: store.nameAr || store.nameEn,
-      storeSlug: store.slug
-    });
 
     setLoading(true);
     setError(null);
@@ -296,17 +386,12 @@ export const WishlistProvider = ({ children }) => {
       const currentWishlistItems = [...wishlistItems];
       const deletePromises = currentWishlistItems.map(item => {
         const productId = item.productId || item._id;
-        const requestBody = {
-          storeId: store._id
-        };
+        // Use storeId if available, otherwise use storeSlug
+        const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
         
-        return fetch(`${API_BASE_URL}/likes/${productId}?storeId=${store._id}`, {
+        return fetch(`${API_BASE_URL}/likes/${productId}?${queryParam}`, {
           method: 'DELETE',
-          headers: {
-            'Authorization': getBearerToken(),
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
+          headers: getHeaders(),
         });
       });
 
@@ -315,6 +400,9 @@ export const WishlistProvider = ({ children }) => {
       // تحديث الحالة المحلية مباشرة
       setWishlistItems([]);
       
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Wishlist cleared successfully');
+      }
       return true;
     } catch (err) {
       console.error('Error clearing wishlist:', err);
@@ -323,15 +411,111 @@ export const WishlistProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [wishlistItems, store]);
+  }, [wishlistItems, getStoreId, getStoreSlug, getHeaders]);
 
-  // جلب الأمنيات عند تحميل الصفحة
-  useEffect(() => {
-    const token = getToken();
-    if (token && store && store._id) {
-      fetchWishlist();
+  // دمج guest likes مع user likes عند تسجيل الدخول
+  const mergeGuestLikesAfterLogin = useCallback(async () => {
+    try {
+      const guestId = getStoredGuestId();
+      if (!guestId) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ℹ️ No guest ID found, nothing to merge');
+        }
+        return;
+      }
+
+      const currentStoreId = getStoreId();
+      if (!currentStoreId) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ℹ️ No store ID found, cannot merge guest likes');
+        }
+        return;
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Merging guest likes to user account...');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/likes/merge-guest`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          guestId: guestId,
+          storeId: currentStoreId
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Guest likes merged successfully:', result.message);
+          console.log(`📊 Merged: ${result.mergedCount}, Skipped: ${result.skippedCount}`);
+        }
+        
+        // حذف Guest ID من localStorage بعد الدمج الناجح
+        clearGuestId();
+        
+        // إعادة جلب اللايكات المحدثة
+        await fetchWishlist();
+        
+        return result;
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Failed to merge guest likes:', result.message);
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error merging guest likes:', error);
+      return null;
     }
-  }, [fetchWishlist, store]);
+  }, [getStoredGuestId, getStoreId, getHeaders, clearGuestId, fetchWishlist]);
+
+  // تهيئة النظام عند تحميل الصفحة
+  const initializeGuestSystem = useCallback(async () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 Initializing guest system...');
+    }
+    
+    // Ensure we have a stable Guest ID
+    const guestId = generateStableGuestId();
+    if (guestId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👤 Guest session ready:', guestId);
+      }
+    }
+  }, [generateStableGuestId]);
+
+  // Auto-fetch wishlist when store changes (only once per store)
+  useEffect(() => {
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    const storeIdentifier = currentStoreId || currentStoreSlug;
+    
+    // Only fetch if we have a store identifier and haven't initialized for this store
+    if (storeIdentifier && (!hasInitialized.current || storeId.current !== storeIdentifier)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Initializing wishlist for store:', storeIdentifier);
+      }
+      hasInitialized.current = true;
+      storeId.current = storeIdentifier;
+      
+      // تهيئة نظام الضيوف أولاً
+      initializeGuestSystem().then(() => {
+        // ثم جلب اللايكات
+        fetchWishlist();
+      });
+    } else if (!storeIdentifier && wishlistItems.length > 0) {
+      // Clear wishlist if no store is available
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No store available, clearing wishlist');
+      }
+      setWishlistItems([]);
+      hasInitialized.current = false;
+      storeId.current = null;
+    }
+  }, [store?._id, store?.slug, getStoreId, getStoreSlug, fetchWishlist, wishlistItems.length, initializeGuestSystem]);
 
   const value = {
     wishlistItems,
@@ -343,6 +527,7 @@ export const WishlistProvider = ({ children }) => {
     toggleWishlist,
     clearWishlist,
     fetchWishlist,
+    mergeGuestLikesAfterLogin,
     count: wishlistItems.length,
     wishlist: wishlistItems,
     items: wishlistItems,

@@ -12,7 +12,8 @@ const ProductOptions = ({
   quantity,
   setQuantity,
   getColorLabel,
-  specificationsMeta = []
+  specificationsMeta = [],
+  onAvailabilityChange
 }) => {
   // استخدم فقط getSimpleColorsFromColorsField
   const simpleColors = getSimpleColorsFromColorsField(product);
@@ -86,6 +87,40 @@ const ProductOptions = ({
     }));
   };
 
+  // Compute effective availability for current selection
+  const effectiveAvailable = React.useMemo(() => {
+    // Start with product availableQuantity if provided, else a large number
+    let available = Number.isFinite(product?.availableQuantity) ? product.availableQuantity : Number.POSITIVE_INFINITY;
+    // Reduce by selected spec quantities (take the minimum among selected specs that have a defined quantity)
+    if (organizedSpecs.length > 0 && selectedSpecs) {
+      organizedSpecs.forEach(group => {
+        const selected = selectedSpecs[group.meta?._id];
+        if (selected) {
+          const match = group.values.find(v => v._id === selected.valueId);
+          if (typeof match?.quantity === 'number') {
+            available = Math.min(available, match.quantity);
+          }
+        }
+      });
+    }
+    // If still Infinity (no limits found), fallback to product.availableQuantity or 0
+    if (!Number.isFinite(available)) {
+      available = product?.availableQuantity ?? 0;
+    }
+    return Math.max(0, available);
+  }, [product?.availableQuantity, organizedSpecs, selectedSpecs]);
+
+  // Inform parent about availability changes
+  React.useEffect(() => {
+    if (typeof onAvailabilityChange === 'function') {
+      onAvailabilityChange(effectiveAvailable);
+    }
+    // Also clamp quantity if it exceeds current availability
+    if (quantity > effectiveAvailable) {
+      setQuantity(Math.max(1, effectiveAvailable));
+    }
+  }, [effectiveAvailable]);
+
   return (
     <div className="product-options-container">
       {/* Color Selection */}
@@ -128,14 +163,22 @@ const ProductOptions = ({
               {group.values.map((spec) => {
                 const value = currentLang === 'ar' ? (spec.valueAr || spec.value) : (spec.valueEn || spec.value);
                 const isSelected = selectedSpecs[group.meta._id]?.valueId === spec._id;
+                  const isOut = Number(spec.quantity) === 0;
+                  const isLow = Number(spec.quantity) > 0 && Number(spec.quantity) <= 3;
                 return (
                   <button
                     key={spec._id}
-                    className={`specification-option${isSelected ? ' selected' : ''}`}
-                    onClick={() => handleSpecSelect(group.title, spec.value, group.meta._id, spec._id)}
-                    type="button"
+                      className={`specification-option${isSelected ? ' selected' : ''}${isOut ? ' out-of-stock' : ''}${isLow ? ' low-stock' : ''}`}
+                      onClick={() => !isOut && handleSpecSelect(group.title, spec.value, group.meta._id, spec._id)}
+                      type="button"
+                      disabled={isOut}
                   >
-                    {value}
+                      <span className="spec-value-text">{value}</span>
+                      {/* {typeof spec.quantity === 'number' && (
+                        <span className="spec-qty-hint" aria-hidden>
+                          {spec.quantity}
+                        </span>
+                      )} */}
                   </button>
                 );
               })}
@@ -157,33 +200,33 @@ const ProductOptions = ({
           <button
             className="quantity-btn decrease"
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            disabled={quantity <= 1 || product.availableQuantity === 0}
+            disabled={quantity <= 1 || effectiveAvailable === 0}
           >
             -
           </button>
           <span className="quantity-display">{quantity}</span>
           <button
             className="quantity-btn increase"
-            onClick={() => setQuantity(quantity + 1)}
-            disabled={quantity >= (product.availableQuantity || 999) || product.availableQuantity === 0}
+            onClick={() => setQuantity(Math.min(effectiveAvailable, quantity + 1))}
+            disabled={quantity >= (effectiveAvailable || 0) || effectiveAvailable === 0}
           >
             +
           </button>
         </div>
-        {/* تحذير المخزون المنخفض */}
-        {product.availableQuantity && product.lowStockThreshold && product.availableQuantity <= product.lowStockThreshold && product.availableQuantity > 0 && (
+        {/* تحذير المخزون حسب المواصفة المختارة */}
+        {effectiveAvailable > 0 && effectiveAvailable <= 3 && (
           <div className="stock-info-low">
             <span className="stock-warning-icon" role="img" aria-label="low stock">⚠️</span>
             <span>
-              {t('product_detail.low_stock_warning', { count: product.availableQuantity })}
+              {currentLang === 'ar' ? `الكمية المتبقية: ${effectiveAvailable}` : `Only ${effectiveAvailable} left`}
             </span>
           </div>
         )}
-        {/* إذا كان المنتج منتهي */}
-        {product.availableQuantity === 0 && (
+        {/* إذا كانت المواصفة المختارة منتهية */}
+        {effectiveAvailable === 0 && (
           <div className="stock-info-out">
             <span className="stock-out-icon" role="img" aria-label="out of stock">⏳</span>
-            <span>{t('product_detail.out_of_stock_soon')}</span>
+            <span>{currentLang === 'ar' ? 'غير متوفر حالياً لهذه المواصفة' : 'Currently unavailable for this option'}</span>
           </div>
         )}
       </div>

@@ -66,7 +66,22 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const { logout } = useLogin();
-  const { user, store, isAuthenticated, isLoading, isInitialized } = useAppData(); 
+  const { user, store, isAuthenticated, isLoading, isInitialized } = useAppData();
+  
+  // Get store data from localStorage as fallback
+  const getStoreFromStorage = () => {
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        return JSON.parse(storedStore);
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    return null;
+  };
+  
+  const storeData = store || getStoreFromStorage(); 
   const { searchProducts, loading: productsLoading } = useProducts();
   
   // Get user name from user data or localStorage
@@ -122,12 +137,15 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
 
 //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
-    // Monitor changes in store and user data
-    console.log('Navbar - Store/User data changed:');
-    console.log('Store:', store);
-    console.log('User:', user);
-    console.log('Is Loading:', isLoading);
-    console.log('Is Initialized:', isInitialized);
+    // Monitor changes in store and user data - only log once per change
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Navbar - Store/User data changed:', {
+        hasStore: !!store,
+        hasUser: !!user,
+        isLoading,
+        isInitialized
+      });
+    }
   }, [store, user, isLoading, isInitialized]);
 
 //-----------------------------------useEffect------------------------------------------------  
@@ -254,13 +272,13 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
       <div className="navbar-container">
         {/*-----------------------------------Logo------------------------------------------------   */}
         <Link to="/home" className="navbar-logo">
-          {store && store.logo ? (
-            <img src={store.logo.url} alt={store.nameEn || store.nameAr || 'Store Logo'} />
+          {storeData && storeData.logo ? (
+            <img src={storeData.logo.url} alt={storeData.nameEn || storeData.nameAr || 'Store Logo'} />
           ) : (
             <img src={logo} alt="Hala Store" />
           )}
           <span className="logo-text">
-            {store ?currentLang==='ar'? (store.nameAr) : (store.nameEn) : 'Hala Store'}
+            {storeData ? currentLang==='ar'? (storeData.nameAr) : (storeData.nameEn) : 'Hala Store'}
           </span>
         </Link>
 
@@ -310,9 +328,9 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
                       }</p>
                       <div className="result-price">
                         {product.discountPercentage && product.discountPercentage > 0 && product.discountEndTime > new Date().toISOString() ? (
-                        <> <span className="original-price">{formatPrice(product.originalPrice, store?.settings?.currency || 'ILS')}</span>
-                         <span className="current-price">{formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}</span>  </>
-                        ) : (  <span className="current-price">{formatPrice(getEffectivePrice(product), store?.settings?.currency || 'ILS')}</span> 
+                        <> <span className="original-price">{formatPrice(product.originalPrice, storeData?.settings?.currency || 'ILS')}</span>
+                         <span className="current-price">{formatPrice(getEffectivePrice(product), storeData?.settings?.currency || 'ILS')}</span>  </>
+                        ) : (  <span className="current-price">{formatPrice(getEffectivePrice(product), storeData?.settings?.currency || 'ILS')}</span> 
                         )}
                       </div>
                     </div>
@@ -373,43 +391,52 @@ const Navbar = ({ onMobileSearchToggle, isMobileSearchOpen }) => {
             </div>}
           </div>
 
-          {/*-----------------------------------User Menu------------------------------------------------   */}
-          <div className="selector-dropdown user-menu" ref={userRef}>
-            <button
-              className="selector-button user-button"
-              onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-              aria-expanded={isUserDropdownOpen}
-              aria-controls="user-menu-items"
-            >
-              <div className="user-avatar">
-                {userName.charAt(0)}
-              </div>
-              <span className="user-name">{userName}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={`dropdown-arrow ${isUserDropdownOpen ? 'open' : ''}`}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {isUserDropdownOpen && <div  id="user-menu-items" className={`dropdown-menu ${isUserDropdownOpen ? 'open-programmatically' : ''}`}>
-              <Link to="/profile" className="dropdown-item">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          {/*-----------------------------------User Menu / Login Button------------------------------------------------   */}
+          {isAuthenticated ? (
+            <div className="selector-dropdown user-menu" ref={userRef}>
+              <button
+                className="selector-button user-button"
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                aria-expanded={isUserDropdownOpen}
+                aria-controls="user-menu-items"
+              >
+                <div className="user-avatar">
+                  {userName.charAt(0)}
+                </div>
+                <span className="user-name">{userName}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={`dropdown-arrow ${isUserDropdownOpen ? 'open' : ''}`}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-                {t('navbar.profile')}
-              </Link>
-              <Link to="/orders" className="dropdown-item">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                {t('navbar.orders')}
-              </Link>
-              <button className="dropdown-item logout" onClick={handleLogout}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                {t('navbar.logout')}
               </button>
-            </div>}
-          </div>
+              {isUserDropdownOpen && <div  id="user-menu-items" className={`dropdown-menu ${isUserDropdownOpen ? 'open-programmatically' : ''}`}>
+                <Link to="/profile" className="dropdown-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  {t('navbar.profile')}
+                </Link>
+                <Link to="/orders" className="dropdown-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  {t('navbar.orders')}
+                </Link>
+                <button className="dropdown-item logout" onClick={handleLogout}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  {t('navbar.logout')}
+                </button>
+              </div>}
+            </div>
+          ) : (
+            <Link to="/login" className="login-button">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              {currentLang === 'ar' ? 'تسجيل الدخول' : 'Login'}
+            </Link>
+          )}
 
           {/*-----------------------------------Wishlist------------------------------------------------   */}
           <Link to="/wishlist" className="action-item">

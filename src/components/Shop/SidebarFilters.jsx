@@ -1,44 +1,39 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import namer from 'color-namer';
-import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
+import { getSimpleColorsFromColorsField, hexToColorName } from '../../utils/productUtils';
 import { formatPrice } from '../../utils/currencyUtils';
-import { useAppData } from '../../contexts/AppDataContext';
+
 const SidebarFilters = ({
   filters,
   onFilterChange,
-  clearFilters,
-  removeFilter,
-  initialMaxPrice,
-  searchQuery,
-  handleSearch,
-  filteredProducts = [],
-  // New props from Shop page
-  allProducts = [],
+  onClearFilters,
+  onRemoveFilter,
+  activeFilters = [],
   categories = [],
-  getMainCategories,
-  getSubCategories,
-  getAllColors
+  features = [],
+  allColors = [],
+  allProductLabels = [],
+  maxPrice = 1000,
+  loading = false
 }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
-  const { store } = useAppData();
-  //-----------------------------------State for collapsed filter sections on desktop------------------------------------------------  
+  
+  // State for collapsed filter sections on desktop
   const [collapsedSections, setCollapsedSections] = useState({
     price: false,
     categories: false,
     colors: false,
     features: false,
+    productLabels: false,
     status: false
   });
 
-  //-----------------------------------State for expanded categories (to show subcategories)------------------------------------------------  
+  // State for expanded categories (to show subcategories)
   const [expandedCategories, setExpandedCategories] = useState({});
   
-  //-----------------------------------getAllColors from props or create fallback------------------------------------------------  
-  const colors = getAllColors ? getAllColors() : [];
-
-  //-----------------------------------toggleSectionCollapse------------------------------------------------  
+  // Toggle section collapse
   const toggleSectionCollapse = (sectionName) => {
     setCollapsedSections(prev => ({
       ...prev,
@@ -46,7 +41,7 @@ const SidebarFilters = ({
     }));
   };
 
-  //-----------------------------------toggleCategoryExpansion------------------------------------------------  
+  // Toggle category expansion
   const toggleCategoryExpansion = (categoryId) => {
     setExpandedCategories(prev => ({
       ...prev,
@@ -54,474 +49,335 @@ const SidebarFilters = ({
     }));
   };
 
-  //-----------------------------------statusOptions------------------------------------------------  
-  const statusOptions = [];
-  if (allProducts.some(p => (p.stock || 0) > 0)) statusOptions.push('in_stock');
-  if (allProducts.some(p => p.salePrice && p.salePrice < (p.originalPrice || p.price))) statusOptions.push('on_sale');
-  if (allProducts.some(p => p.isNew)) statusOptions.push('new');
-  if (allProducts.some(p => p.isFeatured || p.isBestSeller)) statusOptions.push('featured');
-
-  //-----------------------------------getAllDescendantCategoryIds------------------------------------------------
-  const getAllDescendantCategoryIds = useCallback((categoryId) => {
-    if (!getSubCategories) return [categoryId];
-    
-    const directSubs = getSubCategories(categoryId);
-    let ids = [categoryId];
-    directSubs.forEach(sub => {
-      ids = ids.concat(getAllDescendantCategoryIds(sub._id || sub.id));
-    });
-    return ids;
-  }, [getSubCategories]);
-
-  //-----------------------------------getCategoryProductCount------------------------------------------------
-  const getCategoryProductCount = useCallback((categoryId) => {
-    // Return 0 to hide counts - show only names
-    return 0;
-  }, []);
-
-  //-----------------------------------getColorCount------------------------------------------------  
-  const getColorCount = useCallback((color) => {
-    // Return 0 to hide counts - show only names
-    return 0;
-  }, []);
+  // Status options
+  const statusOptions = [
+    { value: 'in_stock', label: { ar: 'متوفر', en: 'In Stock' } },
+    { value: 'on_sale', label: { ar: 'على الخصم', en: 'On Sale' } },
+    { value: 'new', label: { ar: 'جديد', en: 'New' } },
+    { value: 'featured', label: { ar: 'مميز', en: 'Featured' } }
+  ];
 
   // Helper function to get product colors
   const getProductColors = (product) => {
-    // استخدم دالة getProcessedColors من productUtils للحصول على الألوان المعالجة
     return getSimpleColorsFromColorsField(product);
   };
 
-  //-----------------------------------getCategoryCount------------------------------------------------  
-  const getCategoryCount = useCallback((categoryId) => {
-    // Return 0 to hide counts - show only names
-    return 0;
-  }, []);
-
-  //-----------------------------------updateFilterCounts------------------------------------------------
-  const updateFilterCounts = (filteredProducts) => {
-    const counts = {};
-    
-    // Count categories - return 0 to hide counts
-    if (categories && categories.length > 0) {
-      categories.forEach(category => {
-        const categoryId = category._id || category.id;
-        counts[`category_${categoryId}`] = 0;
-      });
-    }
-    
-    // Count colors - return 0 to hide counts
-    colors.forEach(color => {
-      counts[`color_${color}`] = 0;
-    });
-    
-    // Count status options - return 0 to hide counts
-    statusOptions.forEach(status => {
-      counts[`status_${status}`] = 0;
-    });
-    return counts;
+  // Get category by ID
+  const getCategoryById = (id) => {
+    return categories.find(category => category.id === id || category._id === id);
   };
 
-  // Calculate filter counts using useMemo to avoid infinite loops
-  const filterCounts = useMemo(() => {
-    return updateFilterCounts(filteredProducts);
-  }, [getColorCount, getCategoryCount, filteredProducts, categories, colors, statusOptions]);
+  // Get feature by ID
+  const getFeatureById = (id) => {
+    return features.find(feature => feature.id === id || feature._id === id);
+  };
 
-  //-----------------------------------getColorKey------------------------------------------------
+  // Get subcategories for a category
+  const getSubCategories = (categoryId) => {
+    return categories.filter(cat => 
+      cat.parentId === categoryId || cat.parent === categoryId
+    );
+  };
+
+  // Get all descendant category IDs
+  const getAllDescendantCategoryIds = useCallback((categoryId) => {
+    const subcategories = getSubCategories(categoryId);
+    let ids = [categoryId];
+    subcategories.forEach(sub => {
+      ids = ids.concat(getAllDescendantCategoryIds(sub.id || sub._id));
+    });
+    return ids;
+  }, [categories]);
+
+  // Get category product count (placeholder for now)
+  const getCategoryProductCount = useCallback((categoryId) => {
+    return 0; // Hide counts for now
+  }, []);
+
+  // Get color count (placeholder for now)
+  const getColorCount = useCallback((color) => {
+    return 0; // Hide counts for now
+  }, []);
+
+  // Get category count (placeholder for now)
+  const getCategoryCount = useCallback((categoryId) => {
+    return 0; // Hide counts for now
+  }, []);
+
+  // Color utility functions
   function getColorKey(hex) {
-    if (!hex) return '';
-    // تحقق إذا كان اللون مختلطاً (مثل "color1+color2")
-    if (hex.includes('+')) {
-      return 'mixed';
-    }
-    // تحقق إذا كان اللون مختلطاً (JSON string)
-    if (hex.startsWith('[')) {
+    if (typeof hex === 'string' && hex.includes('+')) {
       return 'mixed';
     }
     try {
-      return namer(hex).ntc[0].name.toLowerCase();
-    } catch {
+      const colorName = namer(hex);
+      return colorName.ntc[0]?.name || hex;
+    } catch (error) {
       return hex;
     }
   }
 
-  //-----------------------------------getColorLabel------------------------------------------------
   function getColorLabelLocal(color, t) {
-    // تحقق إذا كان اللون مختلطاً (مثل "color1+color2")
-    if (color.includes('+')) {
-      return t('filters.color_names.mixed');
+    if (typeof color === 'string' && color.includes('+')) {
+      return currentLang === 'ar' ? 'متعدد الألوان' : 'Mixed';
     }
-    
-    // تحقق إذا كان اللون مختلطاً (JSON string)
-    if (color.startsWith('[')) {
-      return t('filters.color_names.mixed');
-    }
-    
     const colorKey = getColorKey(color);
-    const translation = t(`filters.color_names.${colorKey}`);
-    if (!translation || translation === `filters.color_names.${colorKey}`) {
-      if (colorKey && colorKey !== color) return colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
-      return color;
-    }
-    return translation;
-  }
-  
-  //-----------------------------------getColorStyle------------------------------------------------
-  function getColorStyle(color) {
-    // التحقق من الألوان المدمجة (مثل "color1+color2")
-    if (color.includes('+')) {
-      const colors = color.split('+');
-      if (colors.length > 1) {
-        return { background: `linear-gradient(135deg, ${colors.join(', ')})` };
-      }
-    }
+    const colorMap = {
+      'red': { ar: 'أحمر', en: 'Red' },
+      'green': { ar: 'أخضر', en: 'Green' },
+      'blue': { ar: 'أزرق', en: 'Blue' },
+      'yellow': { ar: 'أصفر', en: 'Yellow' },
+      'orange': { ar: 'برتقالي', en: 'Orange' },
+      'purple': { ar: 'بنفسجي', en: 'Purple' },
+      'white': { ar: 'أبيض', en: 'White' },
+      'black': { ar: 'أسود', en: 'Black' },
+      'brown': { ar: 'بني', en: 'Brown' },
+      'pink': { ar: 'وردي', en: 'Pink' },
+      'grey': { ar: 'رمادي', en: 'Grey' },
+      'gray': { ar: 'رمادي', en: 'Gray' },
+      'beige': { ar: 'بيج', en: 'Beige' },
+      'gold': { ar: 'ذهبي', en: 'Gold' },
+      'silver': { ar: 'فضي', en: 'Silver' },
+      'cyan': { ar: 'سماوي', en: 'Cyan' },
+      'teal': { ar: 'فيروزي', en: 'Teal' },
+      'olive': { ar: 'زيتوني', en: 'Olive' },
+      'navy': { ar: 'كحلي', en: 'Navy' },
+      'maroon': { ar: 'كستنائي', en: 'Maroon' },
+      'lime': { ar: 'ليموني', en: 'Lime' },
+      'coral': { ar: 'مرجاني', en: 'Coral' },
+      'indigo': { ar: 'نيلي', en: 'Indigo' },
+      'amber': { ar: 'كهرماني', en: 'Amber' },
+      'golden': { ar: 'ذهبي', en: 'Golden' },
+      'mixed': { ar: 'متعدد الألوان', en: 'Mixed' }
+    };
     
-    // التحقق من الألوان المدمجة (JSON string)
-    if (color.startsWith('[')) {
-      try {
-        const colors = JSON.parse(color);
-        if (colors.length > 1) {
-          return { background: `linear-gradient(135deg, ${colors.join(', ')})` };
-        }
-      } catch (e) {
-        // Fallback for invalid JSON
-        return { backgroundColor: '#ccc' };
-      }
-    }
-    
-    return { backgroundColor: color };
+    const colorName = colorKey.toLowerCase();
+    return colorMap[colorName]?.[currentLang] || colorKey;
   }
 
-  //-----------------------------------renderCategoryTree------------------------------------------------
+  function getColorStyle(color) {
+    if (typeof color === 'string' && color.includes('+')) {
+      const parts = color.split('+').map(c => c.trim());
+      const segment = 100 / parts.length;
+      const stops = parts
+        .map((c, idx) => {
+          const start = Math.round(idx * segment);
+          const end = Math.round((idx + 1) * segment);
+          return `${c} ${start}%, ${c} ${end}%`;
+        })
+        .join(', ');
+      const borderNeeded = parts.some(p => {
+        const lower = p.toLowerCase();
+        return lower === '#ffffff' || lower === '#fff' || lower === 'white';
+      });
+      return {
+        background: `linear-gradient(90deg, ${stops})`,
+        border: borderNeeded ? '2px solid #e2e8f0' : 'none'
+      };
+    }
+    return {
+      backgroundColor: color,
+      border: color.toLowerCase() === '#ffffff' || color.toLowerCase() === '#fff' ? '2px solid #e2e8f0' : 'none'
+    };
+  }
+
+  // Render category tree
   const renderCategoryTree = (parentId = null, level = 0) => {
-    if (!getMainCategories || !getSubCategories) return null;
-    
-    const cats = parentId === null ? getMainCategories() : getSubCategories(parentId);
-    if (!cats || !cats.length) return null;
-    
-    return (
-      <div className={`category-tree level-${level}`}>
-        {cats.map(category => {
-          const categoryId = category._id || category.id;
-          const hasChildren = getSubCategories(categoryId).length > 0;
-          const isExpanded = expandedCategories[categoryId];
-          const categoryName = category[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || category.name || 'Unknown Category';
-          
-          return (
-            <div key={categoryId} className="category-filter-item" style={{ marginLeft: level * 16 }}>
-              <div className="category-main-filter">
-                <label className="filter-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={filters.categories.includes(categoryId)}
-                    onChange={e => onFilterChange('categories', categoryId, e.target.checked)}
-                  />
-                  <span className="checkmark"></span>
-                  {categoryName}
-                </label>
-                {hasChildren && (
-                  <button
-                    className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
-                    onClick={() => toggleCategoryExpansion(categoryId)}
-                    type="button"
-                  >
-                    {isExpanded ? '−' : '+'}
-                  </button>
-                )}
-              </div>
-              {/* الفروع - شجري */}
-              {hasChildren && isExpanded && (
-                <div className="subcategory-filters">
-                  {renderCategoryTree(categoryId, level + 1)}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+    const mainCategories = categories.filter(cat => 
+      (cat.parentId === parentId || cat.parent === parentId) && 
+      (!parentId && !cat.parentId && !cat.parent)
     );
+
+    return mainCategories.map(category => {
+      const categoryId = category.id || category._id;
+      const subcategories = getSubCategories(categoryId);
+      const isExpanded = expandedCategories[categoryId];
+      const isSelected = filters.categories.includes(categoryId);
+      const hasSubcategories = subcategories.length > 0;
+
+      return (
+        <div key={categoryId} className="category-filter-item">
+          <div className="category-main-filter">
+            <label className="filter-checkbox">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => onFilterChange('category', categoryId, e.target.checked)}
+                disabled={loading}
+              />
+              <span className="checkmark"></span>
+              <span className="category-name">
+                {currentLang === 'ar' ? category.nameAr : category.nameEn}
+              </span>
+            </label>
+            
+            {hasSubcategories && (
+              <button
+                className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
+                onClick={() => toggleCategoryExpansion(categoryId)}
+                disabled={loading}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          {hasSubcategories && isExpanded && (
+            <div className="subcategory-filters">
+              {subcategories.map(sub => {
+                const subId = sub.id || sub._id;
+                const isSubSelected = filters.categories.includes(subId);
+                
+                return (
+                  <label key={subId} className="subcategory-filter filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={isSubSelected}
+                      onChange={(e) => onFilterChange('category', subId, e.target.checked)}
+                      disabled={loading}
+                    />
+                    <span className="checkmark"></span>
+                    <span className="category-name">
+                      {currentLang === 'ar' ? sub.nameAr : sub.nameEn}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
-  // Update filter counts when filters change
-  // useEffect(() => {
-  //   updateFilterCounts(filteredProducts); // Pass the actual filtered products
-  // }, [filteredProducts, allProducts, categories]);
-
   return (
-    <aside className={`shop-sidebar`}>
-      <style jsx>{`
-        .color-filters {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          padding: 8px ;
-        }
-        
-        .color-filter-circle {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          position: relative;
-        }
-        
-        .color-filter-circle input[type="checkbox"] {
-          position: absolute;
-          opacity: 0;
-          cursor: pointer;
-          height: 0;
-          width: 0;
-        }
-        
-        .color-swatch-circle {
-          width: 25px;
-          height: 24px;
-          border-radius: 50%;
-          border: 2px solid #e5e7eb;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          position: relative;
-        }
-        
-        .color-filter-circle input[type="checkbox"]:checked + .color-swatch-circle {
-          border-color: var(--primary-color);
-          transform: scale(1.1);
-          box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.2);
-        }
-        
-        .color-filter-circle:hover .color-swatch-circle {
-          transform: scale(1.05);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .color-filter-circle input[type="checkbox"]:checked + .color-swatch-circle::after {
-          content: '✓';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          color: white;
-          font-size: 14px;
-          font-weight: bold;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        
-        .active-filter-color {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          cursor: pointer;
-          background: none !important;
-          border: none !important;
-          padding: 0 !important;
-          margin: 2px;
-          box-shadow: none !important;
-          border-radius: 0 !important;
-          font-size: inherit !important;
-          color: inherit !important;
-        }
-        
-        .active-color-circle {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          border: 2px solid #e5e7eb;
-          display: inline-block;
-          position: relative;
-        }
-        
-        .active-filter-color .filter-close {
-          position: absolute;
-          top: -6px;
-          right: -6px;
-          width: 16px;
-          height: 16px;
-          background: #ef4444;
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 10px;
-          font-weight: bold;
-          cursor: pointer;
-          z-index: 1;
-          border: 1px solid white;
-        }
-        
-        .active-filter-color:hover .filter-close {
-          background: #dc2626;
-        }
-      `}</style>
-      
-      <div className="shop-sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="shop-sidebar">
+      {/* Header */}
+      <div className="shop-sidebar-header">
         <h3>{currentLang === 'ar' ? 'الفلاتر' : 'Filters'}</h3>
-        {(filters.categories.length > 0  || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice || searchQuery) && (
-          <button className="clear-filters-btn" onClick={clearFilters} style={{ marginRight: currentLang === 'ar' ? 0 : 8, marginLeft: currentLang === 'ar' ? 8 : 0, background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '4px 12px', fontSize: 13, color: '#ef4444', cursor: 'pointer' }}>
-            {currentLang === 'ar' ? 'مسح الفلاتر' : 'Clear Filters'}
-          </button>
-        )}
-      </div>
-      <div className="sidebar-search-box" style={{ position: 'relative', marginBottom: 16 }}>
-        <input
-          type="text"
-          className="sidebar-search-input"
-          placeholder={currentLang === 'ar' ? 'ابحث عن منتج...' : 'Search for a product...'}
-          value={searchQuery}
-          onChange={e => handleSearch(e.target.value)}
-          style={{ width: '100%', padding: '8px 32px 8px 8px', borderRadius: 6, border: '1px solid #e5e7eb', marginBottom: 0, fontFamily: 'Tajawal, sans-serif' }}
-        />
-        <button
-          className="sidebar-search-clear"
-          onClick={() => searchQuery ? handleSearch('') : null}
-          style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: searchQuery ? 'pointer' : 'default', fontSize: 18, color: '#aaa', padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          title={searchQuery ? currentLang === 'ar' ? 'مسح البحث' : 'Clear Search' : currentLang === 'ar' ? 'بحث' : 'Search'}
-          tabIndex={-1}
-          type="button"
+        <button 
+          className="clear-filters-btn" 
+          onClick={onClearFilters}
+          disabled={loading}
         >
-          {searchQuery ? (
-            '✕'
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="9" cy="9" r="7" stroke="#aaa" strokeWidth="2" />
-              <line x1="14.1213" y1="14.1213" x2="18" y2="18" stroke="#aaa" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          )}
+          {currentLang === 'ar' ? 'مسح الكل' : 'Clear All'}
         </button>
       </div>
-      
-      {/* Active Filters */}
-      {(filters.categories.length > 0 || filters.features.length > 0 || filters.colors.length > 0 || filters.status.length > 0) && (
-        <div className="active-filters">
-          {filters.categories.map(categoryId => {
-            const category = categories.find(cat => (cat._id || cat.id) === categoryId);
-            const categoryName = category ? (category[`name${currentLang === 'ar' ? 'Ar' : 'En'}`] || category.name) : categoryId;
-            return (
-              <span 
-                key={categoryId} 
-                className="active-filter"
-                onClick={() => removeFilter('categories', categoryId)}
-                title={`Remove ${categoryName} filter`}
-              >
-                <span className="filter-close">✕</span> {categoryName}
-              </span>
-            );
-          })}
 
-          {filters.colors.map(color => (
-            <span 
-              key={color} 
-              className="active-filter active-filter-color"
-              onClick={() => removeFilter('colors', color)}
-              title={`Remove ${getColorLabelLocal(color, t)} filter`}
-            >
-              <span 
-                className="active-color-circle" 
-                style={getColorStyle(color)}
-              ></span>
-              <span className="filter-close">✕</span>
-            </span>
-          ))}
-          {filters.status.map(status => (
-            <span 
-              key={status} 
-              className="active-filter"
-              onClick={() => removeFilter('status', status)}
-              title={`Remove ${status} filter`}
-            >
-              <span className="filter-close">✕</span> {t(`filters.status_names.${status}`)}
-            </span>
+      {/* Active Filters */}
+      {activeFilters.length > 0 && (
+        <div className="active-filters">
+          {activeFilters.map((filter, index) => (
+            <div key={`${filter.type}-${filter.value}`} className="active-filter">
+              <span>{filter.label}</span>
+              <button
+                className="filter-close"
+                onClick={() => onRemoveFilter(filter.type, filter.value)}
+                disabled={loading}
+              >
+                ×
+              </button>
+            </div>
           ))}
         </div>
       )}
-      
-      {/* Price Filter */}
+
+      {/* Price Range Filter */}
       <div className="filter-section">
-        <div className="filter-section-header" onClick={() => toggleSectionCollapse('price')}>
+        <div 
+          className="filter-section-header"
+          onClick={() => toggleSectionCollapse('price')}
+        >
           <h4>{currentLang === 'ar' ? 'السعر' : 'Price'}</h4>
           <button className={`section-collapse-btn ${collapsedSections.price ? 'collapsed' : 'expanded'}`}>
-            {collapsedSections.price ? '+' : '−'}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
           </button>
         </div>
+        
         {!collapsedSections.price && (
           <div className="price-range">
             <div className="price-inputs">
               <input
                 type="number"
-                placeholder={t('shop.min_price')}
+                placeholder={currentLang === 'ar' ? 'من' : 'From'}
                 value={filters.priceRange.min}
-                onChange={(e) => onFilterChange('priceRange', { ...filters.priceRange, min: Number(e.target.value) })}
+                onChange={(e) => onFilterChange('priceRange', {
+                  ...filters.priceRange,
+                  min: parseFloat(e.target.value) || 0
+                })}
+                disabled={loading}
               />
               <span>-</span>
               <input
                 type="number"
-                placeholder={t('shop.max_price')}
+                placeholder={currentLang === 'ar' ? 'إلى' : 'To'}
                 value={filters.priceRange.max}
-                onChange={(e) => onFilterChange('priceRange', { ...filters.priceRange, max: Number(e.target.value) })}
+                onChange={(e) => onFilterChange('priceRange', {
+                  ...filters.priceRange,
+                  max: parseFloat(e.target.value) || maxPrice
+                })}
+                disabled={loading}
               />
             </div>
-            <div className="price-range-slider">
-              <input
-                type="range"
-                min="0"
-                max={initialMaxPrice}
-                value={filters.priceRange.min}
-                onChange={(e) => onFilterChange('priceRange', { ...filters.priceRange, min: Number(e.target.value) })}
-                className="range-min"
-              />
-              <input
-                type="range"
-                min="0"
-                max={initialMaxPrice}
-                value={filters.priceRange.max}
-                onChange={(e) => onFilterChange('priceRange', { ...filters.priceRange, max: Number(e.target.value) })}
-                className="range-max"
-              />
-            </div>
-            <div className="price-display" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
-             {currentLang === 'ar' ? 'السعر' : 'Price'}: {formatPrice(filters.priceRange.min, store?.settings?.currency || 'ILS')} — {formatPrice(filters.priceRange.max, store?.settings?.currency || 'ILS')}
+            <div className="price-display">
+              {formatPrice(filters.priceRange.min, currentLang)} - {formatPrice(filters.priceRange.max, currentLang)}
             </div>
           </div>
         )}
       </div>
 
-      {/* Category Filter */}
-      {categories && categories.length > 0 && (
-        <div className="filter-section">
-          <div className="filter-section-header" onClick={() => toggleSectionCollapse('categories')}>
-            <h4>{currentLang === 'ar' ? 'الفئات' : 'Categories'}</h4>
-            <button className={`section-collapse-btn ${collapsedSections.categories ? 'collapsed' : 'expanded'}`}>
-              {collapsedSections.categories ? '+' : '−'}
-            </button>
-          </div>
-          {!collapsedSections.categories && (
-            <div className="category-list">
-              {renderCategoryTree()}
-            </div>
-          )}
+      {/* Categories Filter */}
+      <div className="filter-section">
+        <div 
+          className="filter-section-header"
+          onClick={() => toggleSectionCollapse('categories')}
+        >
+          <h4>{currentLang === 'ar' ? 'الفئات' : 'Categories'}</h4>
+          <button className={`section-collapse-btn ${collapsedSections.categories ? 'collapsed' : 'expanded'}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
         </div>
-      )}
+        
+        {!collapsedSections.categories && (
+          <div className="category-list">
+            {renderCategoryTree()}
+          </div>
+        )}
+      </div>
 
-      {/* Color Filter */}
-      {colors && colors.length > 0 && (
+      {/* Colors Filter */}
+      {allColors.length > 0 && (
         <div className="filter-section">
-          <div className="filter-section-header" onClick={() => toggleSectionCollapse('colors')}>
-            <h4>{currentLang === 'ar' ? 'اللون' : 'Color'}</h4>
+          <div 
+            className="filter-section-header"
+            onClick={() => toggleSectionCollapse('colors')}
+          >
+            <h4>{currentLang === 'ar' ? 'الألوان' : 'Colors'}</h4>
             <button className={`section-collapse-btn ${collapsedSections.colors ? 'collapsed' : 'expanded'}`}>
-              {collapsedSections.colors ? '+' : '−'}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
             </button>
           </div>
+          
           {!collapsedSections.colors && (
             <div className="color-filters">
-              {colors.map(color => (
-                <label key={color} className="color-filter-circle">
+              {allColors.map(color => (
+                <label key={color} className="color-filter">
                   <input
                     type="checkbox"
-                    checked={filters.colors.includes(color)}
-                    onChange={(e) => onFilterChange('colors', color, e.target.checked)}
+                    checked={filters.colors.includes(hexToColorName(color))}
+                    onChange={(e) => onFilterChange('color', hexToColorName(color), e.target.checked)}
+                    disabled={loading}
                   />
                   <span 
-                    className={`color-swatch-circle color-${getColorKey(color)}`} 
+                    className={`color-swatch color-${getColorKey(color).toLowerCase()}`}
                     style={getColorStyle(color)}
                     title={getColorLabelLocal(color, t)}
                   ></span>
@@ -532,33 +388,109 @@ const SidebarFilters = ({
         </div>
       )}
 
-      {/* Status Filter */}
-      {statusOptions.length > 0 && (
+      {/* Product Labels Filter */}
+      {allProductLabels.length > 0 && (
         <div className="filter-section">
-          <div className="filter-section-header" onClick={() => toggleSectionCollapse('status')}>
-            <h4>{currentLang === 'ar' ? 'الحالة' : 'Status'}</h4>
-            <button className={`section-collapse-btn ${collapsedSections.status ? 'collapsed' : 'expanded'}`}>
-              {collapsedSections.status ? '+' : '−'}
+          <div 
+            className="filter-section-header"
+            onClick={() => toggleSectionCollapse('productLabels')}
+          >
+            <h4>{currentLang === 'ar' ? 'الملصقات' : 'Labels'}</h4>
+            <button className={`section-collapse-btn ${collapsedSections.productLabels ? 'collapsed' : 'expanded'}`}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
             </button>
           </div>
-          {!collapsedSections.status && (
-            <div className="status-filters">
-              {statusOptions.map(status => (
-                <label key={status} className="filter-checkbox">
+
+          {!collapsedSections.productLabels && (
+            <div className="feature-filters">
+              {allProductLabels.map(label => (
+                <label key={label._id} className="filter-checkbox">
                   <input
                     type="checkbox"
-                    checked={filters.status.includes(status)}
-                    onChange={(e) => onFilterChange('status', status, e.target.checked)}
+                    checked={filters.productLabels.includes(label._id)}
+                    onChange={(e) => onFilterChange('productLabel', label._id, e.target.checked)}
+                    disabled={loading}
                   />
                   <span className="checkmark"></span>
-                  {t(`filters.status_names.${status}`)}
+                  <span>{currentLang === 'ar' ? label.nameAr : label.nameEn}</span>
                 </label>
               ))}
             </div>
           )}
         </div>
       )}
-    </aside>
+
+      {/* Features Filter */}
+      {features.length > 0 && (
+        <div className="filter-section">
+          <div 
+            className="filter-section-header"
+            onClick={() => toggleSectionCollapse('features')}
+          >
+            <h4>{currentLang === 'ar' ? 'المميزات' : 'Features'}</h4>
+            <button className={`section-collapse-btn ${collapsedSections.features ? 'collapsed' : 'expanded'}`}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          
+          {!collapsedSections.features && (
+            <div className="feature-filters">
+              {features.map(feature => {
+                const featureId = feature.id || feature._id;
+                return (
+                  <label key={featureId} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={filters.features.includes(featureId)}
+                      onChange={(e) => onFilterChange('feature', featureId, e.target.checked)}
+                      disabled={loading}
+                    />
+                    <span className="checkmark"></span>
+                    <span>{currentLang === 'ar' ? feature.nameAr : feature.nameEn}</span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Status Filter */}
+      <div className="filter-section">
+        <div 
+          className="filter-section-header"
+          onClick={() => toggleSectionCollapse('status')}
+        >
+          <h4>{currentLang === 'ar' ? 'الحالة' : 'Status'}</h4>
+          <button className={`section-collapse-btn ${collapsedSections.status ? 'collapsed' : 'expanded'}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+        </div>
+        
+        {!collapsedSections.status && (
+          <div className="status-filters">
+            {statusOptions.map(status => (
+              <label key={status.value} className="filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filters.status.includes(status.value)}
+                  onChange={(e) => onFilterChange('status', status.value, e.target.checked)}
+                  disabled={loading}
+                />
+                <span className="checkmark"></span>
+                <span>{status.label[currentLang]}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

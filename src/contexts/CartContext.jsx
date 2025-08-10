@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getToken, getBearerToken } from '../utils/tokenManager';
 import { useAppData } from './AppDataContext';
@@ -25,6 +25,135 @@ export const CartProvider = ({ children }) => {
   const { i18n } = useTranslation();
   const { store } = useAppData();
   const currentLang = i18n.language;
+  const hasInitialized = useRef(false);
+  const storeId = useRef(null);
+
+  // ===== Guest ID Management =====
+  
+  // Save Guest ID to localStorage
+  const saveGuestId = useCallback((guestId) => {
+    if (guestId) {
+      localStorage.setItem('guestId', guestId);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('💾 Guest ID saved to localStorage:', guestId);
+      }
+    }
+  }, []);
+
+  // Get Guest ID from localStorage
+  const getStoredGuestId = useCallback(() => {
+    const guestId = localStorage.getItem('guestId');
+    if (guestId && process.env.NODE_ENV === 'development') {
+      console.log('📂 Retrieved Guest ID from localStorage:', guestId);
+    }
+    return guestId;
+  }, []);
+
+  // Generate a stable Guest ID if none exists
+  const generateStableGuestId = useCallback(() => {
+    const existingGuestId = getStoredGuestId();
+    if (!existingGuestId) {
+      // Generate a stable guest ID using timestamp and random string
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 15);
+      const stableGuestId = `guest_${timestamp}_${randomStr}`;
+      saveGuestId(stableGuestId);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Generated stable Guest ID:', stableGuestId);
+      }
+      return stableGuestId;
+    }
+    return existingGuestId;
+  }, [getStoredGuestId, saveGuestId]);
+  
+  // Clear Guest ID from localStorage (when user logs in)
+  const clearGuestId = useCallback(() => {
+    localStorage.removeItem('guestId');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🗑️ Guest ID cleared from localStorage');
+    }
+  }, []);
+
+  // Get store ID from localStorage or store context
+  const getStoreId = useCallback(() => {
+    if (store && store._id) {
+      return store._id;
+    }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore._id;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
+  // Get store slug from localStorage or store context
+  const getStoreSlug = useCallback(() => {
+    if (store && store.slug) {
+      return store.slug;
+    }
+    
+    try {
+      const storedStore = localStorage.getItem('storeData');
+      if (storedStore) {
+        const parsedStore = JSON.parse(storedStore);
+        return parsedStore.slug;
+      }
+    } catch (err) {
+      console.warn('Could not parse stored store data:', err);
+    }
+    
+    return null;
+  }, [store]);
+
+  // Get headers based on authentication status and Guest ID
+  const getHeaders = useCallback(() => {
+    const token = getToken();
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Ensure we have a Guest ID (generate if needed)
+    const guestId = generateStableGuestId();
+    if (guestId) {
+      headers['X-Guest-ID'] = guestId;
+    }
+    
+    // Add authorization header if user is logged in
+    if (token) {
+      headers['Authorization'] = getBearerToken();
+    }
+    
+    return headers;
+  }, [generateStableGuestId]);
+
+  // Handle API response and extract Guest ID
+  const handleApiResponse = useCallback(async (response) => {
+    // Extract Guest ID from response headers
+    const guestId = response.headers.get('X-Guest-ID');
+    if (guestId) {
+      // Only save Guest ID if we don't already have one
+      const existingGuestId = getStoredGuestId();
+      if (!existingGuestId) {
+        saveGuestId(guestId);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🆕 New Guest ID received and saved:', guestId);
+        }
+      } else if (existingGuestId !== guestId) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
+        }
+      }
+    }
+    
+    return response.json();
+  }, [saveGuestId, getStoredGuestId]);
 
   // Helper functions to work with real API data
   const getDefaultAreaIdFromLocalStorage = () => {
@@ -39,14 +168,13 @@ export const CartProvider = ({ children }) => {
 
   // جلب الكارت من API
   const fetchCart = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
-      setCartItems([]);
-      return;
-    }
-
-    if (!store || !store._id) {
-      console.error('Store information not available');
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for fetching cart');
+      }
       setCartItems([]);
       return;
     }
@@ -55,21 +183,22 @@ export const CartProvider = ({ children }) => {
     setError(null);
 
     try {
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+      
       console.log('Fetching cart - Request details:', {
-        url: `${API_BASE_URL}/cart?storeId=${store._id}`,
+        url: `${API_BASE_URL}/cart?${queryParam}`,
         method: 'GET',
-        storeId: store._id
+        storeId: currentStoreId,
+        storeSlug: currentStoreSlug
       });
 
-      const response = await fetch(`${API_BASE_URL}/cart?storeId=${store._id}`, {
+      const response = await fetch(`${API_BASE_URL}/cart?${queryParam}`, {
         method: 'GET',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
       });
 
-      const data = await response.json();
+      const data = await handleApiResponse(response);
 
       console.log('Fetching cart - Response:', {
         status: response.status,
@@ -114,15 +243,52 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [store]);
+  }, [getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
   // جلب الكارت عند تحميل الصفحة
   useEffect(() => {
-    const token = getToken();
-    if (token && store && store._id) {
-      fetchCart();
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    const storeIdentifier = currentStoreId || currentStoreSlug;
+    
+    // Only fetch if we have a store identifier and haven't initialized for this store
+    if (storeIdentifier && (!hasInitialized.current || storeId.current !== storeIdentifier)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Initializing cart for store:', storeIdentifier);
+      }
+      hasInitialized.current = true;
+      storeId.current = storeIdentifier;
+      
+      // تهيئة نظام الضيوف أولاً
+      initializeGuestSystem().then(() => {
+        // ثم جلب الكارت
+        fetchCart();
+      });
+    } else if (!storeIdentifier && cartItems.length > 0) {
+      // Clear cart if no store is available
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No store available, clearing cart');
+      }
+      setCartItems([]);
+      hasInitialized.current = false;
+      storeId.current = null;
     }
-  }, [fetchCart, store]);
+  }, [store?._id, store?.slug, getStoreId, getStoreSlug, fetchCart, cartItems.length]);
+
+  // تهيئة النظام عند تحميل الصفحة
+  const initializeGuestSystem = useCallback(async () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 Initializing guest cart system...');
+    }
+    
+    // Ensure we have a stable Guest ID
+    const guestId = generateStableGuestId();
+    if (guestId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👤 Guest cart session ready:', guestId);
+      }
+    }
+  }, [generateStableGuestId]);
 
   // دالة لإظهار الإشعارات
   const showToast = (message, type = 'success') => {
@@ -185,23 +351,21 @@ export const CartProvider = ({ children }) => {
       ...otherSpecs // جميع المواصفات الأخرى
     } = options;
 
-    const token = getToken();
-    if (!token) {
-      showToast(currentLang === 'ar' ? 'يرجى تسجيل الدخول أولاً' : 'Please login first', 'error');
-      return false;
-    }
-
-    if (!store || !store._id) {
-      console.error('Store information not available');
-      console.log('Store object:', store);
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for adding to cart');
+      }
       showToast(currentLang === 'ar' ? 'معلومات المتجر غير متوفرة' : 'Store information not available', 'error');
       return false;
     }
 
     console.log('Store information available:', {
-      storeId: store._id,
-      storeName: store.nameAr || store.nameEn,
-      storeSlug: store.slug
+      storeId: currentStoreId,
+      storeSlug: currentStoreSlug,
+      storeName: store?.nameAr || store?.nameEn
     });
 
     setLoading(true);
@@ -214,9 +378,15 @@ export const CartProvider = ({ children }) => {
       const requestBody = {
         product: product._id || product.id,
         quantity: quantity,
-        storeId: store._id,
         price: finalPrice // إضافة السعر الصحيح للطلب
       };
+
+      // إضافة storeId أو storeSlug
+      if (currentStoreId) {
+        requestBody.storeId = currentStoreId;
+      } else if (currentStoreSlug) {
+        requestBody.storeSlug = currentStoreSlug;
+      }
 
       // إضافة المواصفات المختارة
       const selectedSpecifications = formatSpecifications(otherSpecs);
@@ -229,10 +399,14 @@ export const CartProvider = ({ children }) => {
         requestBody.selectedColors = [selectedColor];
       }
 
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+
       console.log('Adding to cart - Request details:', {
-        url: `${API_BASE_URL}/cart?storeId=${store._id}`,
+        url: `${API_BASE_URL}/cart?${queryParam}`,
         method: 'POST',
-        storeId: store._id,
+        storeId: currentStoreId,
+        storeSlug: currentStoreSlug,
         productId: product._id || product.id,
         requestBody: requestBody,
         productPrice: product.price,
@@ -240,16 +414,13 @@ export const CartProvider = ({ children }) => {
         sentPrice: finalPrice
       });
 
-      const response = await fetch(`${API_BASE_URL}/cart?storeId=${store._id}`, {
+      const response = await fetch(`${API_BASE_URL}/cart?${queryParam}`, {
         method: 'POST',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      const data = await handleApiResponse(response);
 
       console.log('Adding to cart - Response:', {
         status: response.status,
@@ -270,12 +441,12 @@ export const CartProvider = ({ children }) => {
         await fetchCart();
         
         // إظهار رسالة نجاح
-    const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
-    const message = currentLang === 'ar' 
-      ? `تم إضافة ${productName} إلى السلة بنجاح!`
-      : `${productName} added to cart successfully!`;
-    
-    showToast(message, 'success');
+        const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
+        const message = currentLang === 'ar' 
+          ? `تم إضافة ${productName} إلى السلة بنجاح!`
+          : `${productName} added to cart successfully!`;
+        
+        showToast(message, 'success');
         return true;
       }
     } catch (err) {
@@ -286,17 +457,17 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [currentLang, fetchCart, store]);
+  }, [currentLang, fetchCart, getStoreId, getStoreSlug, getHeaders, handleApiResponse, store]);
 
   // إزالة منتج من الكارت
   const removeFromCart = useCallback(async (productId) => {
-    const token = getToken();
-    if (!token) {
-      return false;
-    }
-
-    if (!store || !store._id) {
-      console.error('Store information not available');
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for removing from cart');
+      }
       return false;
     }
 
@@ -304,22 +475,23 @@ export const CartProvider = ({ children }) => {
     setError(null);
 
     try {
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+
       console.log('Removing from cart - Request details:', {
-        url: `${API_BASE_URL}/cart/${productId}?storeId=${store._id}`,
+        url: `${API_BASE_URL}/cart/${productId}?${queryParam}`,
         method: 'DELETE',
-        storeId: store._id,
+        storeId: currentStoreId,
+        storeSlug: currentStoreSlug,
         productId: productId
       });
 
-      const response = await fetch(`${API_BASE_URL}/cart/${productId}?storeId=${store._id}`, {
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}?${queryParam}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
       });
 
-      const data = await response.json();
+      const data = await handleApiResponse(response);
 
       console.log('Removing from cart - Response:', {
         status: response.status,
@@ -345,7 +517,7 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchCart, store]);
+  }, [fetchCart, getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
   // تحديث كمية منتج في الكارت
   const updateQuantity = useCallback(async (productId, newQuantity, options = {}) => {
@@ -354,13 +526,13 @@ export const CartProvider = ({ children }) => {
       ...otherSpecs 
     } = options;
 
-    const token = getToken();
-    if (!token) {
-      return false;
-    }
-
-    if (!store || !store._id) {
-      console.error('Store information not available');
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for updating cart');
+      }
       return false;
     }
 
@@ -369,8 +541,7 @@ export const CartProvider = ({ children }) => {
 
     try {
       const requestBody = { 
-        quantity: newQuantity,
-        storeId: store._id
+        quantity: newQuantity
       };
 
       // إضافة المواصفات المختارة إذا تم تمريرها
@@ -384,24 +555,25 @@ export const CartProvider = ({ children }) => {
         requestBody.selectedColors = [selectedColor];
       }
 
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+
       console.log('Updating cart quantity - Request details:', {
-        url: `${API_BASE_URL}/cart/${productId}?storeId=${store._id}`,
+        url: `${API_BASE_URL}/cart/${productId}?${queryParam}`,
         method: 'PUT',
-        storeId: store._id,
+        storeId: currentStoreId,
+        storeSlug: currentStoreSlug,
         productId: productId,
         requestBody: requestBody
       });
 
-      const response = await fetch(`${API_BASE_URL}/cart/${productId}?storeId=${store._id}`, {
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}?${queryParam}`, {
         method: 'PUT',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      const data = await handleApiResponse(response);
 
       console.log('Updating cart quantity - Response:', {
         status: response.status,
@@ -429,17 +601,17 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchCart, store]);
+  }, [fetchCart, getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
   // مسح الكارت بالكامل
   const clearCart = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
-      return false;
-    }
-
-    if (!store || !store._id) {
-      console.error('Store information not available');
+    const currentStoreId = getStoreId();
+    const currentStoreSlug = getStoreSlug();
+    
+    if (!currentStoreId && !currentStoreSlug) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Store ID and slug not available for clearing cart');
+      }
       return false;
     }
 
@@ -447,21 +619,22 @@ export const CartProvider = ({ children }) => {
     setError(null);
 
     try {
+      // Use storeId if available, otherwise use storeSlug
+      const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
+
       console.log('Clearing cart - Request details:', {
-        url: `${API_BASE_URL}/cart?storeId=${store._id}`,
+        url: `${API_BASE_URL}/cart?${queryParam}`,
         method: 'DELETE',
-        storeId: store._id
+        storeId: currentStoreId,
+        storeSlug: currentStoreSlug
       });
 
-      const response = await fetch(`${API_BASE_URL}/cart?storeId=${store._id}`, {
+      const response = await fetch(`${API_BASE_URL}/cart?${queryParam}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': getBearerToken(),
-          'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
       });
 
-      const data = await response.json();
+      const data = await handleApiResponse(response);
 
       console.log('Clearing cart - Response:', {
         status: response.status,
@@ -486,7 +659,66 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [store]);
+  }, [getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
+
+  // دمج guest cart مع user cart عند تسجيل الدخول
+  const mergeGuestCartAfterLogin = useCallback(async () => {
+    try {
+      const guestId = getStoredGuestId();
+      if (!guestId) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ℹ️ No guest ID found, nothing to merge');
+        }
+        return;
+      }
+
+      const currentStoreId = getStoreId();
+      if (!currentStoreId) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ℹ️ No store ID found, cannot merge guest cart');
+        }
+        return;
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Merging guest cart to user account...');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/cart/merge-guest`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          guestId: guestId,
+          storeId: currentStoreId
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Guest cart merged successfully:', result.message);
+          console.log(`📊 Merged: ${result.mergedCount}, Updated: ${result.updatedCount}`);
+        }
+        
+        // حذف Guest ID من localStorage بعد الدمج الناجح
+        clearGuestId();
+        
+        // إعادة جلب الكارت المحدث
+        await fetchCart();
+        
+        return result;
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Failed to merge guest cart:', result.message);
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error merging guest cart:', error);
+      return null;
+    }
+  }, [getStoredGuestId, getStoreId, getHeaders, clearGuestId, fetchCart]);
 
   // Get cart totals
   const getCartTotals = () => {
@@ -600,7 +832,8 @@ export const CartProvider = ({ children }) => {
     fetchCart,
     showToast,
     hideToast,
-    toast
+    toast,
+    mergeGuestCartAfterLogin
   };
 
   return (

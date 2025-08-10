@@ -254,7 +254,8 @@ const ProductCard = ({
   // دالة معالجة النقر على زر المفضلة
   const handleWishlistClick = async () => {
     if (isWishlistLoading || !handleWishlistToggle) return;
-    
+    console.log('handleWishlistClick', product);
+
     setIsWishlistLoading(true);
     try {
       await handleWishlistToggle(product);
@@ -278,7 +279,7 @@ const ProductCard = ({
   };
   
   return (
-    <div className={`product-card${isListView ? ' list-view' : ''} ${product.stockStatus === 'out_of_stock' ? 'out-of-stock' : ''} ${product.stock === 0 ? 'out-of-stock' : ''}`} dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`product-card${isListView ? ' list-view' : ''}`} dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Product Image */}
       <div className="product-image">
         <Link to={`/product/${product._id}`}>
@@ -415,7 +416,16 @@ const ProductCard = ({
                       ? currentLang === 'ar' ? `${product.stock} متبقي فقط` : `${product.stock} Only left`
                       : currentLang === 'ar' ? 'في المخزون' : 'In Stock'}
                 </span>
-               
+                {getStockStatus(product) !== 'sold_out' && (
+                  <div className="stock-bar">
+                    <div 
+                      className={`stock-fill ${getStockStatusForAlmostFinishedSale(product.stock)}`} 
+                      style={{ 
+                        width: `${Math.min((product.stock / product.lowStockThreshold) * 100, 100)}%` 
+                      }}
+                    ></div>
+                  </div>
+                )}
               </div>
             </div>
           )}
