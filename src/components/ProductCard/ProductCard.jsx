@@ -333,6 +333,7 @@ const ProductCard = ({
           </>
         )}
       </div>
+      
 
       {/* Action Buttons - Bottom */}
       <div className="action-buttons-new">
