@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
-
+import MobileSearch from '../MobileSearch/MobileSearch';
 import { getPriceByUserRole, getPriceWithUserDiscount, getUserDiscountPercentage, getCartTotalDiscount } from '../../utils/productUtils';
 import { formatPrice } from '../../utils/currencyUtils';
 import logo from '../../assets/logo_arabic-1.png';
@@ -21,7 +21,7 @@ const Navbar = () => {
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
   const { searchProducts, loading: productsLoading, products,variants, allProducts } = useProducts();
-  
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   // Mobile search modal state
   const [isMobileSearchModalOpen, setIsMobileSearchModalOpen] = useState(false);
   
@@ -177,9 +177,32 @@ const Navbar = () => {
     };
   };
   
+  const handleMobileSearchToggle = () => {
+    setIsMobileSearchOpen(true);
+  };
+  const handleMobileSearchClose = () => {
+    setIsMobileSearchOpen(false);
+  };
 
-
-
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    
+    
+    // Update URL params
+    if (query.trim()) {
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('search', query.trim());
+        return newParams;
+      });
+    } else {
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('search');
+        return newParams;
+      });
+    }
+  };
 
   // Handle search submit
   const handleSearchSubmit = (e) => {
@@ -394,6 +417,12 @@ const Navbar = () => {
   const cartTotals = getCartTotals();
   const cartItemsCount = cartTotals.itemsCount;
   return (
+    <>   <MobileSearch 
+    isOpen={isMobileSearchOpen}
+    onClose={handleMobileSearchClose}
+    onSearch={handleSearch}
+    searchQuery={searchQuery}
+  />
     <nav className="navbar">
       <div className="navbar-container">
         {/*-----------------------------------Logo------------------------------------------------   */}
@@ -494,7 +523,7 @@ const Navbar = () => {
         {/*-----------------------------------User Actions------------------------------------------------   */}
         <div className="user-actions">
           {/*-----------------------------------Mobile Search Button------------------------------------------------   */}
-          <button className="mobile-search-trigger" onClick={() => setIsMobileSearchModalOpen(true)}>
+          <button className="mobile-search-trigger" onClick={handleMobileSearchToggle}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -626,15 +655,19 @@ const Navbar = () => {
                 </button>
               </div>
             </form>
-            {showSearchDropdown && searchResults.length > 0 && (
+            {/* {showSearchDropdown && searchResults.length > 0 && (
               <div className="mobile-search-results">
                 {searchResults.map((product) => (
                   <div
-                    key={product._id || product.id}
+                    key={`mobile-search-result-${product._id || product.id}`}
                     className="mobile-search-result-item"
+                    
                     onClick={() => {
-                      handleProductClick(product._id || product.id);
-                      setIsMobileSearchModalOpen(false);
+                      console.log('product clicked', product);
+                      // setIsMobileSearchModalOpen(false);
+                      // navigate(`/product/${product._id || product.id}`);
+                      // handleProductClick(product._id || product.id);
+                      
                     }}
                   >
                     <div className="mobile-result-image">
@@ -661,7 +694,7 @@ const Navbar = () => {
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
           </div>
         </div>
       )}
@@ -673,6 +706,7 @@ const Navbar = () => {
         onSwitchToRegister={handleSwitchToRegister}
       />
     </nav>
+    </>
   );
 };
 

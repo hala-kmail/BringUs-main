@@ -8,15 +8,19 @@ import { formatPrice } from '../../utils/currencyUtils';
 
 const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuery }) => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); const {allProducts} = useAppData();
   const [searchQuery, setSearchQuery] = useState(parentSearchQuery || '');
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [allProductsSearch, setAllProductsSearch] = useState(allProducts);
   const language = i18n.language === 'ar' ? 'ar' : 'en';
   const { searchProducts } = useProducts();
+ const {store} = useAppData();
 
   useEffect(() => {
     if (isOpen) {
       // Prevent body scroll when search is open
+      console.log('search is open');
+      console.log('allProducts', allProducts);
+      setAllProductsSearch(allProducts);
       document.body.style.overflow = 'hidden';
     } else {
       // Restore body scroll when search is closed
@@ -29,49 +33,139 @@ const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuer
     };
   }, [isOpen]);
 
+  // useEffect(() => {
+  //   if (!searchQuery.trim()) {
+  //     setAllProductsSearch([]);
+  //     return;
+  //   }
+  //   let ignore = false;
+  //   const doSearch = async () => {
+  //     const result = await searchProducts(searchQuery);
+  //     let filtered = [];
+  //     if (result && result.products) {
+  //       const query = searchQuery.trim().toLowerCase();
+  //       filtered = result.products.filter(product => {
+  //         // الاسم
+  //         const nameAr = product.nameAr?.toLowerCase() || '';
+  //         const nameEn = product.nameEn?.toLowerCase() || '';
+  //         const nameObjAr = product.name?.ar?.toLowerCase() || '';
+  //         const nameObjEn = product.name?.en?.toLowerCase() || '';
+  //         // الوصف
+  //         const descAr = product.descriptionAr?.toLowerCase() || '';
+  //         const descEn = product.descriptionEn?.toLowerCase() || '';
+  //         const descObjAr = product.description?.ar?.toLowerCase() || '';
+  //         const descObjEn = product.description?.en?.toLowerCase() || '';
+  //         // السعر
+  //         const price = (product.finalPrice || product.originalPrice || product.price || '').toString();
+  //         return (
+  //           nameAr.includes(query) ||
+  //           nameEn.includes(query) ||
+  //           nameObjAr.includes(query) ||
+  //           nameObjEn.includes(query) ||
+  //           descAr.includes(query) ||
+  //           descEn.includes(query) ||
+  //           descObjAr.includes(query) ||
+  //           descObjEn.includes(query) ||
+  //           price.includes(query)
+  //         );
+  //       });
+  //     }
+  //     if (!ignore) setAllProductsSearch(filtered.slice(0, 10));
+  //   };
+  //   doSearch();
+  //   return () => { ignore = true; };
+  // }, [searchQuery]);
+
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredProducts([]);
-      return;
-    }
     let ignore = false;
     const doSearch = async () => {
-      const result = await searchProducts(searchQuery);
-      let filtered = [];
-      if (result && result.products) {
-        const query = searchQuery.trim().toLowerCase();
-        filtered = result.products.filter(product => {
-          // الاسم
-          const nameAr = product.nameAr?.toLowerCase() || '';
-          const nameEn = product.nameEn?.toLowerCase() || '';
-          const nameObjAr = product.name?.ar?.toLowerCase() || '';
-          const nameObjEn = product.name?.en?.toLowerCase() || '';
-          // الوصف
-          const descAr = product.descriptionAr?.toLowerCase() || '';
-          const descEn = product.descriptionEn?.toLowerCase() || '';
-          const descObjAr = product.description?.ar?.toLowerCase() || '';
-          const descObjEn = product.description?.en?.toLowerCase() || '';
-          // السعر
-          const price = (product.finalPrice || product.originalPrice || product.price || '').toString();
-          return (
-            nameAr.includes(query) ||
-            nameEn.includes(query) ||
-            nameObjAr.includes(query) ||
-            nameObjEn.includes(query) ||
-            descAr.includes(query) ||
-            descEn.includes(query) ||
-            descObjAr.includes(query) ||
-            descObjEn.includes(query) ||
-            price.includes(query)
-          );
-        });
+      if (searchQuery.trim().length > 0) {
+        setAllProductsSearch([]);
+       
+        
+        try {
+          // Search locally in existing products
+          // console.log('🔍 Searching locally for:', searchQuery.trim());
+          // console.log('🔍 Current language:', currentLang);
+          // console.log('🔍 Available products count:', products?.length || 0);
+          // console.log('🔍 All products:', allProducts);
+          if (allProducts && Array.isArray(allProducts) ) {
+            const filteredProducts = allProducts.filter(product => {
+              const nameAr = product.nameAr?.toLowerCase() || '';
+              const nameEn = product.nameEn?.toLowerCase() || '';
+              const descriptionAr = product.descriptionAr?.toLowerCase() || '';
+              const descriptionEn = product.descriptionEn?.toLowerCase() || '';
+              
+              // Clean search term by trimming spaces and converting to lowercase
+              const searchTerm = searchQuery.trim().toLowerCase();
+              
+              // Search in basic product fields
+              const basicMatch = nameAr.includes(searchTerm) || 
+                                nameEn.includes(searchTerm) || 
+                                descriptionAr.includes(searchTerm) || 
+                                descriptionEn.includes(searchTerm);
+              
+              // Search in specifications
+              let specMatch = false;
+              if (product.specificationValues && Array.isArray(product.specificationValues)) {
+                specMatch = product.specificationValues.some(spec => {
+                  const specTitleAr = spec.titleAr?.toLowerCase() || '';
+                  const specTitleEn = spec.titleEn?.toLowerCase() || '';
+                  const specValueAr = spec.valueAr?.toLowerCase() || '';
+                  const specValueEn = spec.valueEn?.toLowerCase() || '';
+                  
+                  return specTitleAr.includes(searchTerm) || 
+                         specTitleEn.includes(searchTerm) || 
+                         specValueAr.includes(searchTerm) || 
+                         specValueEn.includes(searchTerm);
+                });
+              }
+              
+              // Search in variants if they exist
+              let variantMatch = false;
+              if (product.variants && Array.isArray(product.variants)) {
+                variantMatch = product.variants.some(variant => {
+                  const variantNameAr = variant.nameAr?.toLowerCase() || '';
+                  const variantNameEn = variant.nameEn?.toLowerCase() || '';
+                  const variantDescAr = variant.descriptionAr?.toLowerCase() || '';
+                  const variantDescEn = variant.descriptionEn?.toLowerCase() || '';
+                  
+                  return variantNameAr.includes(searchTerm) || 
+                         variantNameEn.includes(searchTerm) || 
+                         variantDescAr.includes(searchTerm) || 
+                         variantDescEn.includes(searchTerm);
+                });
+              }
+              
+              return basicMatch || specMatch || variantMatch;
+            });
+            
+            // console.log('🔍 Found products locally:', filteredProducts.length);
+            setAllProductsSearch(filteredProducts.slice(0, 8));
+          } else {
+            // console.log('🔍 No products available for local search');
+            setAllProductsSearch([]);
+          }
+        } catch (error) {
+          console.error('🔍 Local search error:', error);
+          setAllProductsSearch([]);
+        }
+      } else {
+        setAllProductsSearch([]);
+       
       }
-      if (!ignore) setFilteredProducts(filtered.slice(0, 10));
     };
-    doSearch();
-    return () => { ignore = true; };
-  }, [searchQuery]);
-
+    
+    // Debounce search to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      doSearch();
+    }, 300);
+    
+    return () => { 
+      ignore = true; 
+      clearTimeout(timeoutId);
+    };
+  }, [searchQuery, allProducts]);
   const handleClose = () => {
     setSearchQuery('');
     onClose();
@@ -139,9 +233,9 @@ const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuer
       {/* Search Results Area */}
       <div className="mobile-search-results">
         {searchQuery ? (
-          filteredProducts.length > 0 ? (
+          allProductsSearch.length > 0 ? (
             <div className="search-suggestions">
-              {filteredProducts.map(product => (
+              {allProductsSearch.map(product => (
                 <div 
                   className="suggestion-item" 
                   key={product.id || product._id}

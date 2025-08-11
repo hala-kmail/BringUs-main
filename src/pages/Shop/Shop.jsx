@@ -26,9 +26,9 @@ const Shop = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  // const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   // Use dynamic data hooks
   const { 
@@ -133,10 +133,7 @@ const Shop = () => {
         apiFilters.maxPrice = filters.priceRange.max;
       }
 
-      // Add search filter
-      if (searchQuery.trim()) {
-        apiFilters.search = searchQuery.trim();
-      }
+      
 
       // Add color filters
       if (filters.colors.length > 0) {
@@ -164,7 +161,7 @@ const Shop = () => {
     } finally {
       setApiLoading(false);
     }
-  }, [store?._id, currentPage, itemsPerPage, filters, searchQuery, initialMaxPrice, fetchProductsWithFilters]);
+  }, [store?._id, currentPage, itemsPerPage, filters, initialMaxPrice, fetchProductsWithFilters]);
 
   // Update URL parameters based on current filters
   const updateURLParams = useCallback(() => {
@@ -182,12 +179,9 @@ const Shop = () => {
     if (filters.features.length > 0) {
       newParams.set('feature', filters.features[0]);
     }
-    if (searchQuery.trim()) {
-      newParams.set('search', searchQuery.trim());
-    }
-    
+   
     setSearchParams(newParams);
-  }, [filters, searchQuery, setSearchParams]);
+  }, [filters, setSearchParams]);
 
   // Apply filters when dependencies change
   useEffect(() => {
@@ -343,7 +337,6 @@ const Shop = () => {
       sortBy: 'newest'
     });
     setCurrentPage(1);
-    setSearchQuery('');
     
     // Clear URL params
     setSearchParams({});
@@ -387,15 +380,7 @@ const Shop = () => {
     console.log('Adding to cart:', product);
   };
 
-  // Handle mobile search toggle
-  const handleMobileSearchToggle = () => {
-    setIsMobileSearchOpen(true);
-  };
 
-  // Handle mobile search close
-  const handleMobileSearchClose = () => {
-    setIsMobileSearchOpen(false);
-  };
 
   // Handle mobile filters toggle
   const handleMobileFiltersToggle = () => {
@@ -407,26 +392,7 @@ const Shop = () => {
     setIsMobileFiltersOpen(false);
   };
 
-  // Handle search
-  const handleSearch = async (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-    
-    // Update URL params
-    if (query.trim()) {
-      setSearchParams(prev => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('search', query.trim());
-        return newParams;
-      });
-    } else {
-      setSearchParams(prev => {
-        const newParams = new URLSearchParams(prev);
-        newParams.delete('search');
-        return newParams;
-      });
-    }
-  };
+ 
 
   // Handle page change
   const handlePageChange = (page) => {
@@ -585,12 +551,7 @@ const Shop = () => {
       <SecondaryNavbar />
       
       {/* Mobile Search */}
-      <MobileSearch 
-        isOpen={isMobileSearchOpen}
-        onClose={handleMobileSearchClose}
-        onSearch={handleSearch}
-        searchQuery={searchQuery}
-      />
+     
 
       {/* Mobile Filters */}
       <MobileFilters
@@ -677,16 +638,7 @@ const Shop = () => {
                   </button>
                 </div>
                 
-                <button 
-                  className="mobile-filter-btn"
-                  onClick={handleMobileSearchToggle}
-                  title={currentLang === 'ar' ? 'البحث' : 'Search'}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                  </svg>
-                </button>
+           
               </div>
               
               <div className="mobile-results-info">
@@ -718,7 +670,7 @@ const Shop = () => {
               </div>
             </div>
 
-            <ShopToolbar
+            {/* <ShopToolbar
               totalItems={totalItems}
               currentPage={currentPage}
               itemsPerPage={itemsPerPage}
@@ -730,7 +682,7 @@ const Shop = () => {
               onMobileFiltersToggle={handleMobileFiltersToggle}
               sortBy={filters.sortBy}
               loading={isLoading}
-            />
+            /> */}
 
             {/* Products Grid */}
             {isLoading ? (
