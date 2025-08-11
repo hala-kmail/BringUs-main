@@ -1196,7 +1196,7 @@ width: 100%;}
   .product-breadcrumb {
     font-size: 0.7rem;
     gap: 0.25rem;
-    margin-bottom: 0.75rem;
+    margin: 1rem 0;
   }
 
   .product-main-image {

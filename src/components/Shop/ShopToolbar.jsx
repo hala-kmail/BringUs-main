@@ -19,6 +19,7 @@ const ShopToolbar = ({
   onSortChange,
   onItemsPerPageChange,
   onMobileSearchToggle,
+  onMobileFiltersToggle,
   sortBy = 'newest',
   loading = false,
   sortOptions
@@ -70,6 +71,18 @@ const ShopToolbar = ({
               <circle cx="4" cy="6" r="2"/>
               <circle cx="4" cy="12" r="2"/>
               <circle cx="4" cy="18" r="2"/>
+            </svg>
+          </button>
+          
+          {/* Mobile Filter Button */}
+          <button 
+            className="mobile-filter-toggle"
+            onClick={onMobileFiltersToggle}
+            title={currentLang === 'ar' ? 'الفلاتر' : 'Filters'}
+            disabled={loading}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"/>
             </svg>
           </button>
         </div>

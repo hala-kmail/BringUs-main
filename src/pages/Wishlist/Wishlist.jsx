@@ -130,9 +130,7 @@ const Wishlist = () => {
         {/* Header */}
         <div className="wishlist-header">
           <h1 className="wishlist-title">{t('navbar.wishlist')}</h1>
-          <p className="wishlist-subtitle">
-            {t('wishlist.items_count', { count: wishlistItems.length })}
-          </p>
+        
           {wishlistItems.length > 0 && (
             <button 
               onClick={handleClearWishlist}

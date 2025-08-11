@@ -133,7 +133,7 @@ const MobileCategories = () => {
           </div>
           
           {subCategories && subCategories.length > 0 ? (
-            <div className="subcategories-grid">
+            <div className="subcategories-grid mobile-subcategories-grid">
               {subCategories.map((subcategory) => (
                 <div
                   key={subcategory._id}

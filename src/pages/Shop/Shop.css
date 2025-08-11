@@ -1391,6 +1391,10 @@
     
     display: none;
   }
+  
+  .mobile-shop-toolbar {
+    display: block;
+  }
   .shop-hero {
     padding: 2rem 0;
     margin-bottom: 1.5rem;
@@ -1409,10 +1413,7 @@
   }
 
   .shop-toolbar {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: stretch;
-    padding: 0.75rem;
+    display: none;
   }
 
   [dir="rtl"] .shop-toolbar {
@@ -1861,6 +1862,7 @@
   margin-bottom: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  padding: 1rem;
 }
 
 .mobile-filter-controls {
@@ -2352,6 +2354,25 @@
   
   .mobile-sort-select:hover {
     border-color: #cbd5e1;
+  }
+  
+  .mobile-results-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .mobile-results-count {
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  [dir="rtl"] .mobile-results-count {
+    font-family: 'Tajawal', 'Arial', sans-serif;
+    font-weight: 600;
   }
   
   .mobile-results-info {

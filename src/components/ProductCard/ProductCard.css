@@ -1152,6 +1152,7 @@ max-width: 300px;
   .product-card-new {
     padding: 12px;
     min-height: 320px;
+    width: 240px;
   }
   
   .product-image-img-new {
@@ -1163,19 +1164,20 @@ max-width: 300px;
   }
   
   .add-to-cart-btn-new {
-    padding: 10px 14px;
-    font-size: 12px;
-    min-height: 40px;
-  }
+    padding: 3px 5px;
+    font-size: 4px;
+    border-radius: 5px;
+    min-height: 30px;
+}
   
   .wishlist-btn-new {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
   }
   
   .product-label-new {
-    font-size: 10px;
-    padding: 4px 8px;
+    font-size: 8px;
+    padding: 2px 4px;
   }
 }
 

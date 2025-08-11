@@ -140,7 +140,9 @@ button:focus-visible {
   .related-add-to-cart-btn span:not(.loading-spinner) {
     display: none !important;
   }
-
+.add-to-cart-btn.product-dtls-btn{
+  width: 100% !important;
+}
   /* التأكد من أن الأيقونة ظاهرة */
   .add-to-cart-btn svg,
   .product-add-to-cart-btn svg,
@@ -153,8 +155,8 @@ button:focus-visible {
   .add-to-cart-btn:not(.product-detail .add-to-cart-btn),
   .wishlist-add-to-cart-btn,
   .related-add-to-cart-btn {
-    width: 35px !important;
-    height: 35px !important;
+    width: 35px ;
+    height: 35px ;
     
     padding: 0 !important;
     justify-content: center !important;
@@ -173,8 +175,8 @@ button:focus-visible {
   .add-to-cart-btn:not(.product-detail .add-to-cart-btn),
   .wishlist-add-to-cart-btn,
   .related-add-to-cart-btn {
-    width: 32px !important;
-    height: 32px !important;
+    width: 32px ;
+    height: 32px ;
   }
   .language-name{
     display: none;

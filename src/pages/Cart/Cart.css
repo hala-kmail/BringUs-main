@@ -1102,13 +1102,14 @@
 
 @media (max-width: 480px) {
   .cart-content {
-    padding: 1rem;
+    padding:0 1rem;
     padding-bottom: 100px;
   }
 
   .cart-breadcrumb {
     font-size: 0.7rem;
     flex-wrap: wrap;
+    margin:1rem 0;
   }
 
   .page-title {
