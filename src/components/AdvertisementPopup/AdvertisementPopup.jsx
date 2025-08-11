@@ -25,7 +25,7 @@ const AdvertisementPopup = () => {
   // Show advertisement immediately when loaded
   useEffect(() => {
     if (advertisements.length > 0 && !isVisible && !hasBeenClosed) {
-      console.log('Setting advertisement visible immediately');
+        // console.log('Setting advertisement visible immediately');
       setIsVisible(true);
     }
   }, [advertisements, isVisible, hasBeenClosed]);
@@ -48,7 +48,7 @@ const AdvertisementPopup = () => {
       if (e.key === 'authToken' && !e.newValue) {
         // User logged out, clear advertisement history
         localStorage.removeItem('shownAdvertisements');
-        console.log('User logged out, cleared advertisement history');
+        // console.log('User logged out, cleared advertisement history');
       }
     };
 
@@ -72,7 +72,7 @@ const AdvertisementPopup = () => {
         if (!currentAuthStatus) {
           // User logged out, clear advertisement history
           localStorage.removeItem('shownAdvertisements');
-          console.log('User logged out, cleared advertisement history');
+          // console.log('User logged out, cleared advertisement history');
         }
       }
       
@@ -130,11 +130,11 @@ const AdvertisementPopup = () => {
       // Check if we already have advertisement data in localStorage
       const storedAds = JSON.parse(localStorage.getItem('shownAdvertisements') || '[]');
       if (storedAds.length > 0) {
-        console.log('Advertisement already shown, not fetching from API');
+        // console.log('Advertisement already shown, not fetching from API');
         return;
       }
       
-      console.log('Fetching advertisements for storeId:', storeId);
+      // console.log('Fetching advertisements for storeId:', storeId);
       fetchAdvertisements();
     }
   }, [storeId]);
@@ -167,7 +167,7 @@ const AdvertisementPopup = () => {
       if (!contentType || !contentType.includes('application/json')) {
         // Try to get the response text to see what we're getting
         const responseText = await response.text();
-        console.error('Response text:', responseText);
+        // console.error('Response text:', responseText);
         
         setError(t('advertisement.no_json_response'));
         setAdvertisements([]);
@@ -185,26 +185,26 @@ const AdvertisementPopup = () => {
       if (result.success && result.data) {
         // Convert single advertisement to array for consistency
         const adsArray = Array.isArray(result.data) ? result.data : [result.data];
-        console.log('Advertisements found:', adsArray.length);
+        // console.log('Advertisements found:', adsArray.length);
         
         // Check if this advertisement was already shown
         const advertisementId = adsArray[0]._id;
         const hasBeenShown = checkIfAlreadyShown(advertisementId);
-        console.log('Advertisement ID:', advertisementId);
-        console.log('Has been shown:', hasBeenShown);
+        // console.log('Advertisement ID:', advertisementId);
+        // console.log('Has been shown:', hasBeenShown);
         
         if (!hasBeenShown) {
-          console.log('Setting advertisement as visible');
+          // console.log('Setting advertisement as visible');
           setAdvertisements(adsArray);
           // Set visible immediately
           setIsVisible(true);
           markAsShown(advertisementId);
         } else {
-          console.log('Advertisement already shown, not displaying');
+          // console.log('Advertisement already shown, not displaying');
           setAdvertisements([]);
         }
       } else {
-        console.log('No advertisements found in response');
+        // console.log('No advertisements found in response');
         setAdvertisements([]);
       }
     } catch (err) {

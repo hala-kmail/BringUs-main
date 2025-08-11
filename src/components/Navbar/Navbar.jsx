@@ -20,7 +20,7 @@ const Navbar = () => {
   const { isAuthenticated, user, clearData, store } = useAppData();
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
-  const { searchProducts, loading: productsLoading, products } = useProducts();
+  const { searchProducts, loading: productsLoading, products,variants, allProducts } = useProducts();
   
   // Mobile search modal state
   const [isMobileSearchModalOpen, setIsMobileSearchModalOpen] = useState(false);
@@ -141,19 +141,19 @@ const Navbar = () => {
   useEffect(() => {
     // This will trigger re-render when user data changes
     if (process.env.NODE_ENV === 'development') {
-      console.log('Navbar - User data changed:', { user, userName, isAuthenticated });
+      // console.log('Navbar - User data changed:', { user, userName, isAuthenticated });
     }
   }, [user, userName, isAuthenticated]);
   
   // Debug user data changes
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Navbar - User state updated:', { 
-        user: user ? 'User exists' : 'No user',
-        userName,
-        isAuthenticated,
-        localStorageUser: localStorage.getItem('userInfo')
-      });
+      //  console.log('Navbar - User state updated:', { 
+      //   user: user ? 'User exists' : 'No user',
+      //   userName,
+      //   isAuthenticated,
+      //   localStorageUser: localStorage.getItem('userInfo')
+      // });
     }
   }, [user, userName, isAuthenticated]);
   
@@ -185,8 +185,8 @@ const Navbar = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      console.log('🔍 Search submitted:', searchQuery.trim());
-      console.log('🔍 Store ID available:', !!storeDataFinal?._id);
+      // console.log('🔍 Search submitted:', searchQuery.trim());
+      // console.log('🔍 Store ID available:', !!storeDataFinal?._id);
       setShowSearchDropdown(true);
     }
   };
@@ -245,10 +245,10 @@ const Navbar = () => {
   useEffect(() => {
       // Monitor changes in store and user data - only log once per change
   if (process.env.NODE_ENV === 'development') {
-    console.log('Navbar - Store/User data changed:', {
-      hasStore: !!storeDataFinal,
-      hasUser: !!user
-    });
+    // console.log('Navbar - Store/User data changed:', {
+    //   hasStore: !!storeDataFinal,
+    //   hasUser: !!user
+    // });
   }
   }, [storeDataFinal, user]);
 
@@ -291,29 +291,65 @@ const Navbar = () => {
         
         try {
           // Search locally in existing products
-          console.log('🔍 Searching locally for:', searchQuery.trim());
-          console.log('🔍 Current language:', currentLang);
-          console.log('🔍 Available products count:', products?.length || 0);
-          
-          if (products && Array.isArray(products)) {
-            const filteredProducts = products.filter(product => {
+          // console.log('🔍 Searching locally for:', searchQuery.trim());
+          // console.log('🔍 Current language:', currentLang);
+          // console.log('🔍 Available products count:', products?.length || 0);
+          // console.log('🔍 All products:', allProducts);
+          if (allProducts && Array.isArray(allProducts) ) {
+            const filteredProducts = allProducts.filter(product => {
               const nameAr = product.nameAr?.toLowerCase() || '';
               const nameEn = product.nameEn?.toLowerCase() || '';
               const descriptionAr = product.descriptionAr?.toLowerCase() || '';
               const descriptionEn = product.descriptionEn?.toLowerCase() || '';
-              const searchTerm = searchQuery.toLowerCase();
               
-              // Search in both languages regardless of current language
-              return nameAr.includes(searchTerm) || 
-                     nameEn.includes(searchTerm) || 
-                     descriptionAr.includes(searchTerm) || 
-                     descriptionEn.includes(searchTerm);
+              // Clean search term by trimming spaces and converting to lowercase
+              const searchTerm = searchQuery.trim().toLowerCase();
+              
+              // Search in basic product fields
+              const basicMatch = nameAr.includes(searchTerm) || 
+                                nameEn.includes(searchTerm) || 
+                                descriptionAr.includes(searchTerm) || 
+                                descriptionEn.includes(searchTerm);
+              
+              // Search in specifications
+              let specMatch = false;
+              if (product.specificationValues && Array.isArray(product.specificationValues)) {
+                specMatch = product.specificationValues.some(spec => {
+                  const specTitleAr = spec.titleAr?.toLowerCase() || '';
+                  const specTitleEn = spec.titleEn?.toLowerCase() || '';
+                  const specValueAr = spec.valueAr?.toLowerCase() || '';
+                  const specValueEn = spec.valueEn?.toLowerCase() || '';
+                  
+                  return specTitleAr.includes(searchTerm) || 
+                         specTitleEn.includes(searchTerm) || 
+                         specValueAr.includes(searchTerm) || 
+                         specValueEn.includes(searchTerm);
+                });
+              }
+              
+              // Search in variants if they exist
+              let variantMatch = false;
+              if (product.variants && Array.isArray(product.variants)) {
+                variantMatch = product.variants.some(variant => {
+                  const variantNameAr = variant.nameAr?.toLowerCase() || '';
+                  const variantNameEn = variant.nameEn?.toLowerCase() || '';
+                  const variantDescAr = variant.descriptionAr?.toLowerCase() || '';
+                  const variantDescEn = variant.descriptionEn?.toLowerCase() || '';
+                  
+                  return variantNameAr.includes(searchTerm) || 
+                         variantNameEn.includes(searchTerm) || 
+                         variantDescAr.includes(searchTerm) || 
+                         variantDescEn.includes(searchTerm);
+                });
+              }
+              
+              return basicMatch || specMatch || variantMatch;
             });
             
-            console.log('🔍 Found products locally:', filteredProducts.length);
+            // console.log('🔍 Found products locally:', filteredProducts.length);
             setSearchResults(filteredProducts.slice(0, 8));
           } else {
-            console.log('🔍 No products available for local search');
+            // console.log('🔍 No products available for local search');
             setSearchResults([]);
           }
         } catch (error) {
@@ -567,15 +603,7 @@ const Navbar = () => {
       {isMobileSearchModalOpen && (
         <div className="mobile-search-modal">
           <div className="mobile-search-modal-content">
-            <div className="mobile-search-modal-header">
-              <h3>{currentLang === 'ar' ? 'البحث' : 'Search'}</h3>
-              <button 
-                className="mobile-search-modal-close"
-                onClick={() => setIsMobileSearchModalOpen(false)}
-              >
-                ✕
-              </button>
-            </div>
+           
             <form onSubmit={handleSearchSubmit} className="mobile-search-modal-form">
               <input
                 type="text"

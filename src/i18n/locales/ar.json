@@ -57,6 +57,10 @@
     "healthcare": "الرعاية الصحية",
     "baby_pregnancy": "الطفل والحمل"
   },
+  "mobile_categories": {
+    "title": "فئات الموبايل",
+    "subtitle": "اكتشف أحدث هواتف الموبايل والأجهزة الذكية"
+  },
   "secondary_navbar": {
     "home": "الرئيسية",
     "shop": "المتجر",

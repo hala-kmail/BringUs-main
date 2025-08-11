@@ -81,9 +81,9 @@ function App() {
       // Check if URL has changed (different store)
       if (storageHasUrlChanged(currentUrl, previousUrl)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 URL changed - performing storage cleanup');
-          console.log('📋 Previous URL:', previousUrl);
-          console.log('📋 Current URL:', currentUrl);
+          // console.log('🔄 URL changed - performing storage cleanup');
+          // console.log('📋 Previous URL:', previousUrl);
+          // console.log('📋 Current URL:', currentUrl);
         }
         
         // Clear all storage when switching stores
@@ -104,7 +104,7 @@ function App() {
         // User logged out
         if (wasAuthenticated && !isCurrentlyAuthenticated) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('🚪 User logged out - performing storage cleanup');
+            // console.log('🚪 User logged out - performing storage cleanup');
           }
           
           // Clear storage but preserve essential items
@@ -117,7 +117,7 @@ function App() {
         // User logged in
         if (!wasAuthenticated && isCurrentlyAuthenticated) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('🔐 User logged in - updating session state');
+            // console.log('🔐 User logged in - updating session state');
           }
           
           // Update session storage
@@ -153,7 +153,7 @@ function App() {
       sessionStorage.setItem('wasAuthenticated', token ? 'true' : 'false');
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('🚀 App initialized - Auth state:', token ? 'authenticated' : 'guest');
+        // console.log('🚀 App initialized - Auth state:', token ? 'authenticated' : 'guest');
       }
     }, []);
 
