@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, Suspense } from 'react';
+import React, { useEffect, useMemo, useState, Suspense, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useStoreSlug from './hooks/useStoreSlug';
 import { WishlistProvider } from './contexts/WishlistContext';
@@ -6,6 +6,7 @@ import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import DynamicColors from './components/DynamicColors/DynamicColors';
+import MobileSearch from './components/MobileSearch/MobileSearch';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Home from './pages/Home/Home';
@@ -33,8 +34,24 @@ import {
 
 import './App.css';
 
+// Create context for mobile search
+const MobileSearchContext = createContext();
+
+// Hook to use mobile search
+const useMobileSearch = () => {
+  const context = useContext(MobileSearchContext);
+  if (!context) {
+    throw new Error('useMobileSearch must be used within a MobileSearchProvider');
+  }
+  return context;
+};
+
+// Export the hook
+export { useMobileSearch };
+
 function App() {
   const { storeSlug, storeData, loading, error, initializeStore } = useStoreSlug();
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Initialize store on mount
   useEffect(() => {
@@ -42,6 +59,14 @@ function App() {
   }, [initializeStore]);
 
   const routerProps = storeSlug ? { basename: `/${storeSlug}` } : {};
+
+  const handleMobileSearchToggle = () => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
+  };
+
+  const handleMobileSearchClose = () => {
+    setIsMobileSearchOpen(false);
+  };
 
   // Component to manage conditional rendering - moved inside App function
   const AppContent = () => {
@@ -159,6 +184,12 @@ function App() {
         </div>
         {!isAuthPage && <BottomNavigation />}
         <Footer />
+        
+        {/* Mobile Search - Available on all pages */}
+        <MobileSearch 
+          isOpen={isMobileSearchOpen} 
+          onClose={handleMobileSearchClose}
+        />
       </div>
     );
   };
@@ -200,22 +231,28 @@ function App() {
       <ThemeProvider>
         <CartProvider>
           <WishlistProvider>
-            <Router key={storeSlug || 'root'} {...routerProps}>
-              <Suspense fallback={
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  height: '100vh',
-                  fontSize: '1.2rem',
-                  color: '#666'
-                }}>
-                  جاري التحميل...
-                </div>
-              }>
-                <AppContent />
-              </Suspense>
-            </Router>
+            <MobileSearchContext.Provider value={{
+              isMobileSearchOpen,
+              toggleMobileSearch: handleMobileSearchToggle,
+              closeMobileSearch: handleMobileSearchClose
+            }}>
+              <Router key={storeSlug || 'root'} {...routerProps}>
+                <Suspense fallback={
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    height: '100vh',
+                    fontSize: '1.2rem',
+                    color: '#666'
+                  }}>
+                    جاري التحميل...
+                  </div>
+                }>
+                  <AppContent />
+                </Suspense>
+              </Router>
+            </MobileSearchContext.Provider>
           </WishlistProvider>
         </CartProvider>
       </ThemeProvider>

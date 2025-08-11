@@ -17,8 +17,21 @@ const CheckoutForm = ({
   deliveryMethods,
   storeAddress,
   isTermsModalOpen,
-  setIsTermsModalOpen
-}) => (
+  setIsTermsModalOpen,
+  updateShippingArea
+}) => {
+  // معالج مخصص لتغيير منطقة التوصيل
+  const handleDeliveryAreaChange = (e) => {
+    const areaId = e.target.value;
+    // تحديث النموذج
+    setFormData(prev => ({ ...prev, deliveryMethodId: areaId }));
+    // تحديث منطقة التوصيل في CartContext
+    if (areaId) {
+      updateShippingArea(areaId);
+    }
+  };
+
+  return (
   <form className="checkout-form">
     {/* طريقة الاستلام */}
     <div className="form-group">
@@ -85,7 +98,7 @@ const CheckoutForm = ({
             id="deliveryMethodId" 
             name="deliveryMethodId" 
             value={formData.deliveryMethodId} 
-            onChange={handleInputChange}
+            onChange={handleDeliveryAreaChange}
             className={formErrors.deliveryMethodId ? 'error' : ''}
           >
             <option value="">{currentLang === 'ar' ? 'اختر منطقة التوصيل' : 'Select delivery area'}</option>
@@ -165,6 +178,7 @@ const CheckoutForm = ({
     )}
    
   </form>
-);
+  );
+};
 
 export default CheckoutForm; 

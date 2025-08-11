@@ -566,7 +566,9 @@ input:checked + .slider:before {
   .profile-tab {
     padding: 1rem;
   }
-
+  .profile-container{
+    max-width: 100%;
+  }
   .tab-header {
     flex-direction: column;
     gap: 1rem;

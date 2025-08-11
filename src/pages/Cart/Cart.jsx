@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
+import { useNavigate, Link } from 'react-router-dom';
+import { formatPrice } from '../../utils/currencyUtils';
+import { getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
+import MobileSearch from '../../components/MobileSearch/MobileSearch';
 
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
-import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import './Cart.css';
 
-
-import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 
 const Cart = () => {
   const { t, i18n } = useTranslation();
@@ -24,7 +24,8 @@ const Cart = () => {
     getCartTotals,
     canIncreaseQuantity,
     canDecreaseQuantity,
-    getAvailableQuantityForCartItem
+    getAvailableQuantityForCartItem,
+    updateShippingArea
   } = useCart();
   const { store } = useAppData();
   const currentLang = i18n.language;
@@ -32,8 +33,21 @@ const Cart = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteItemId, setPendingDeleteItemId] = useState(null);
+  const [cartTotals, setCartTotals] = useState({});
 
-  const cartTotals = getCartTotals();
+  // تحديث منطقة التوصيل وإعادة حساب التوتال
+  const handleShippingAreaChange = (areaId) => {
+    updateShippingArea(areaId);
+    // إعادة حساب التوتال
+    const newTotals = getCartTotals();
+    setCartTotals(newTotals);
+  };
+
+  // تحديث التوتال عند تغيير أي شيء يؤثر عليه
+  useEffect(() => {
+    const totals = getCartTotals();
+    setCartTotals(totals);
+  }, [cartItems, getCartTotals]);
 
   const handleQuantityChange = async (product, newQuantity, selectedColor = '', selectedSpecs = {}) => {
     if (newQuantity < 1) {
@@ -473,10 +487,10 @@ const Cart = () => {
                     <div className="cart-item-price">
                       {item.product.salePercentage > 0 && (
                         <span className="original-price">
-                          {formatPrice( item.product.price, store?.settings?.currency || 'ILS')}
+                          {formatPrice(getOriginalPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}
                         </span>
                       )}
-                      <span className="current-price">{formatPrice( item.product.finalPrice, store?.settings?.currency || 'ILS')}</span>
+                      <span className="current-price">{formatPrice(getPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}</span>
                     </div>
                     {/* Product Specifications - Simple Text */}
                     {(item.selectedSpecifications || item.selectedColors) && (
@@ -540,7 +554,7 @@ const Cart = () => {
                   </div>
                   {/* Total Price */}
                   <div className="cart-item-total desktop-only">
-                    {formatPrice((( item.product.finalPrice || item.price || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
+                    {formatPrice((getPriceByUserRole(item.product) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
                   </div>
                   {/* Remove Button */}
                   <button 
@@ -634,10 +648,10 @@ const Cart = () => {
                         <div className="cart-item-price">
                         {item.product.salePercentage > 0 && (
                           <span className="original-price">
-                            {formatPrice( item.product.price, store?.settings?.currency || 'ILS')}
+                            {formatPrice(getOriginalPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}
                           </span>
                         )}
-                          <span className="current-price">{formatPrice((item.product.finalPrice || item.price || 0), store?.settings?.currency || 'ILS')}</span>
+                          <span className="current-price">{formatPrice(getPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}</span>
                         </div>
                       </div>
                     </div>
@@ -688,7 +702,7 @@ const Cart = () => {
                           {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
                         </span>
                         <div className="cart-item-total-price">
-                          {formatPrice(((item.product.finalPrice || item.price || 0) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
+                          {formatPrice((getPriceByUserRole(item.product) * (item.quantity || 1)), store?.settings?.currency || 'ILS')}
                         </div>
                       </div>
                     </div>
@@ -703,9 +717,21 @@ const Cart = () => {
                 <span>{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
                 <span>{formatPrice(cartTotals?.subtotal || 0, store?.settings?.currency || 'ILS')}</span>
               </div>
+              
+              {/* عرض خصم المستخدم التاجر الجملة */}
+              {cartTotals?.userDiscount > 0 && (
+                <div className="summary-row user-discount-row">
+                  <span>
+                    {currentLang === 'ar' ? 'خصم التاجر الجملة:' : 'Wholesaler Discount:'}{}
+                  </span>
+                  <span className="discount-amount">-{formatPrice(cartTotals.userDiscount, store?.settings?.currency || 'ILS')}</span>
+                </div>
+              )}
+              
               <hr className="summary-divider" />
               <div className="summary-row summary-total">
-              
+                <span>{currentLang === 'ar' ? 'الإجمالي النهائي:' : 'Final Total:'}</span>
+                <span>{formatPrice(cartTotals?.total || cartTotals?.subtotal || 0, store?.settings?.currency || 'ILS')}</span>
               </div>
               <button 
                 className="checkout-btn"

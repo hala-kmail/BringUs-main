@@ -41,6 +41,13 @@ const OrderSummary = ({
 
   const currencySymbol = getCurrencySymbol(store?.settings?.currency || 'ILS');
 
+  const getUserDiscountPercentage = () => {
+    if (cartTotals.subtotal > 0) {
+      return ((cartTotals.userDiscount / cartTotals.subtotal) * 100).toFixed(0);
+    }
+    return 0;
+  };
+
   return (
     <div className="order-summary-section">
       <h2 className="section-title">
@@ -118,8 +125,20 @@ const OrderSummary = ({
         <div className="order-totals">
           <div className="total-row">
             <span>{t('checkout.subtotal')}</span>
-            <span>{currencySymbol}{cartTotals.subtotal}</span>
+            {/* <span>{currencySymbol}{cartTotals.subtotal.toFixed(2)}</span> */}
           </div>
+          
+          {/* عرض خصم المستخدم التاجر الجملة */}
+          {cartTotals.userDiscount > 0 && (
+            <div className="total-row user-discount-row">
+              <span>
+                {currentLang === 'ar' ? 'خصم التاجر الجملة' : 'Wholesaler Discount'}
+                <span className="discount-percentage"> ({getUserDiscountPercentage()}%)</span>
+              </span>
+              <span className="discount-amount">-{currencySymbol}{cartTotals.userDiscount.toFixed(2)}</span>
+            </div>
+          )}
+          
           <div className="total-row">
             <span>{t('checkout.shipping')}</span>
             <span>
@@ -129,7 +148,7 @@ const OrderSummary = ({
           <hr className="totals-divider" />
           <div className="total-row total-final">
             <span>{t('checkout.total')}</span>
-            <span>{currencySymbol}{(cartTotals.subtotal + getShippingPrice()).toFixed(2)}</span>
+            <span>{currencySymbol}{(cartTotals.total + getShippingPrice()).toFixed(2)}</span>
           </div>
         </div>
         {/* Submit Button */}

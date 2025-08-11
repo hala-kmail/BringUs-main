@@ -24,7 +24,7 @@ import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 const Checkout = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { cartItems, getCartTotals, clearCart, loading: cartLoading } = useCart();
+  const { cartItems, getCartTotals, clearCart, loading: cartLoading, updateShippingArea, shippingAreaId } = useCart();
   const { store, user } = useAppData();
   const currentLang = i18n.language;
   
@@ -72,7 +72,6 @@ const Checkout = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
-  const cartTotals = getCartTotals();
   const [deliveryMethod, setDeliveryMethod] = useState('delivery'); 
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
@@ -81,6 +80,25 @@ const Checkout = () => {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [cartTotalsState, setCartTotalsState] = useState({});
+
+  // تحديث التوتال عند تغيير أي شيء يؤثر عليه
+  useEffect(() => {
+    console.log('🔄 useEffect triggered - recalculating cart totals');
+    const totals = getCartTotals();
+    console.log('💰 Cart totals updated:', totals);
+    setCartTotalsState(totals);
+  }, [cartItems, getCartTotals, shippingAreaId]);
+
+  // دالة لتحديث منطقة التوصيل وإعادة حساب التوتال
+  const handleShippingAreaChange = (areaId) => {
+    console.log('🔄 Changing shipping area to:', areaId);
+    updateShippingArea(areaId);
+    // إعادة حساب التوتال
+    const newTotals = getCartTotals();
+    console.log('💰 New cart totals:', newTotals);
+    setCartTotalsState(newTotals);
+  };
 //-----------------------------------paymentMethods------------------------------------------------  
     // دالة لتحويل طرق الدفع من API إلى التنسيق المطلوب
   const formatPaymentMethods = (apiMethods) => {
@@ -502,7 +520,7 @@ const handleSendWhatsApp = async () => {
       orderNumber: createdOrder.orderNumber,
       customerInfo: formData,
       items: cartItems,
-      totals: { ...cartTotals, shipping: getShippingPrice(), total: cartTotals.subtotal + getShippingPrice() },
+      totals: { ...cartTotalsState, shipping: getShippingPrice(), total: cartTotalsState.subtotal + getShippingPrice() },
       orderDate: new Date().toISOString(),
       deliveryMethod: deliveryMethod,
       deliveryMethodId: formData.deliveryMethodId,
@@ -760,6 +778,7 @@ const handleSendWhatsApp = async () => {
               storeAddress={storeAddress}
               isTermsModalOpen={isTermsModalOpen}
               setIsTermsModalOpen={setIsTermsModalOpen}
+              updateShippingArea={handleShippingAreaChange}
             />
           </div>
 
@@ -768,7 +787,7 @@ const handleSendWhatsApp = async () => {
             
             <OrderSummary
               cartItems={cartItems}
-              cartTotals={cartTotals}
+              cartTotals={cartTotalsState}
               deliveryMethod={deliveryMethod}
               getShippingPrice={getShippingPrice}
               t={t}
@@ -823,7 +842,7 @@ const handleSendWhatsApp = async () => {
                 <svg width="32" height="32" fill="none" stroke="var(--primary-color)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="var(--primary-color)" strokeWidth="2" fill="#e6f9ed"/><path d="M9 12l2 2 4-4" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
               <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>{t('checkout.payment_successful')}</div>
-              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{getCurrencySymbol(store?.settings.currency || 'ILS')}{(cartTotals.subtotal + getShippingPrice()).toFixed(2)}</div>
+              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{getCurrencySymbol(store?.settings.currency || 'ILS')}{(cartTotalsState.subtotal + getShippingPrice()).toFixed(2)}</div>
               
               {/* QR Code - Show if payment method has QR code */}
               { selectedPaymentMethod?.qrCode?.qrCodeImage && (

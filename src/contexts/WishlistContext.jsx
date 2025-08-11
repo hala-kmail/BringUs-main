@@ -20,7 +20,7 @@ export const WishlistProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { i18n } = useTranslation();
-  const { store } = useAppData();
+  const { store, isAuthenticated, user } = useAppData();
   const hasInitialized = useRef(false);
   const storeId = useRef(null);
   const currentLang = i18n.language;
@@ -116,15 +116,15 @@ export const WishlistProvider = ({ children }) => {
       'Content-Type': 'application/json',
     };
     
-    // Ensure we have a Guest ID (generate if needed)
-    const guestId = generateStableGuestId();
-    if (guestId) {
-      headers['X-Guest-ID'] = guestId;
-    }
-    
     // Add authorization header if user is logged in
     if (token) {
       headers['Authorization'] = getBearerToken();
+    } else {
+      // Only send Guest ID if user is not authenticated
+      const guestId = generateStableGuestId();
+      if (guestId) {
+        headers['X-Guest-ID'] = guestId;
+      }
     }
     
     return headers;
@@ -516,6 +516,24 @@ export const WishlistProvider = ({ children }) => {
       storeId.current = null;
     }
   }, [store?._id, store?.slug, getStoreId, getStoreSlug, fetchWishlist, wishlistItems.length, initializeGuestSystem]);
+
+  // Monitor authentication state changes to merge guest likes
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // User is authenticated, clear guest ID and fetch user's wishlist
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔐 User authenticated, clearing guest ID and fetching user wishlist');
+      }
+      clearGuestId();
+      fetchWishlist();
+    } else if (!isAuthenticated) {
+      // User is not authenticated, ensure guest system is initialized
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👤 User not authenticated, initializing guest system');
+      }
+      initializeGuestSystem();
+    }
+  }, [isAuthenticated, user, clearGuestId, fetchWishlist, initializeGuestSystem]);
 
   const value = {
     wishlistItems,

@@ -132,11 +132,11 @@ export const getEffectivePrice = (product) => {
 
 // دالة جديدة للحصول على السعر المناسب حسب دور المستخدم
 export const getPriceByUserRole = (product) => {
-  // إذا كان المستخدم تاجر جملة، استخدم سعر تاجر الجملة
+  // إذا كان المستخدم تاجر جملة، استخدم سعر تاجر الجملة بدون خصم
   if (isWholesaler()) {
-    // استخدم compareAtPrice كسعر أساسي لتاجر الجملة (بدون خصومات)
+    // استخدم compareAtPrice كسعر أساسي لتاجر الجملة (بدون خصم)
     if (product.compareAtPrice !== undefined && product.compareAtPrice !== null && product.compareAtPrice > 0) {
-      return product.compareAtPrice;
+      return product.compareAtPrice; // بدون خصم
     }
   }
   
@@ -147,13 +147,69 @@ export const getPriceByUserRole = (product) => {
 //---------------------------------getOriginalPriceByUserRole---------------------------------
 
 export const getOriginalPriceByUserRole = (product) => {
-  // إذا كان المستخدم تاجر جملة، استخدم compareAtPrice كسعر أصلي
+  // إذا كان المستخدم تاجر جملة، استخدم compareAtPrice كسعر أصلي (بدون خصم)
   if (isWholesaler()) {
     if (product.compareAtPrice !== undefined && product.compareAtPrice !== null && product.compareAtPrice > 0) {
-      return product.compareAtPrice;
+      return product.compareAtPrice; // بدون خصم
     }
   }
-    return product.price || 0;
+  return product.price || 0;
+};
+
+//---------------------------------getPriceWithUserDiscount---------------------------------
+// دالة جديدة لتطبيق خصم المستخدم التاجر الجملة
+export const getPriceWithUserDiscount = (basePrice) => {
+  try {
+    const userDiscount = localStorage.getItem('userDiscount');
+    if (userDiscount) {
+      const discountData = JSON.parse(userDiscount);
+      if (discountData.value && discountData.value > 0) {
+        // حساب السعر بعد خصم المستخدم
+        const discountAmount = (basePrice * discountData.value) / 100;
+        const finalPrice = basePrice - discountAmount;
+        return Math.max(0, finalPrice); // التأكد من أن السعر لا يكون سالب
+      }
+    }
+  } catch (error) {
+    console.error('Error applying user discount:', error);
+  }
+  
+  // إذا لم يكن هناك خصم أو حدث خطأ، إرجاع السعر الأصلي
+  return basePrice;
+};
+
+//---------------------------------getUserDiscountPercentage---------------------------------
+// دالة للحصول على نسبة خصم المستخدم
+export const getUserDiscountPercentage = () => {
+  try {
+    const userDiscount = localStorage.getItem('userDiscount');
+    if (userDiscount) {
+      const discountData = JSON.parse(userDiscount);
+      return discountData.value || 0;
+    }
+  } catch (error) {
+    console.error('Error getting user discount:', error);
+  }
+  return 0;
+};
+
+//---------------------------------getCartTotalDiscount---------------------------------
+// دالة جديدة لحساب خصم المستخدم على توتال السلة (بدون التأثير على أسعار المنتجات الفردية)
+export const getCartTotalDiscount = (subtotal) => {
+  try {
+    const userDiscount = localStorage.getItem('userDiscount');
+    if (userDiscount) {
+      const discountData = JSON.parse(userDiscount);
+      if (discountData.value && discountData.value > 0) {
+        // حساب خصم المستخدم على توتال السلة
+        const discountAmount = (subtotal * discountData.value) / 100;
+        return Math.max(0, discountAmount); // التأكد من أن الخصم لا يكون سالب
+      }
+    }
+  } catch (error) {
+    console.error('Error calculating cart total discount:', error);
+  }
+  return 0;
 };
 
 //---------------------------------organizeSpecifications---------------------------------

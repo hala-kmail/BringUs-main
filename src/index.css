@@ -176,7 +176,9 @@ button:focus-visible {
     width: 32px !important;
     height: 32px !important;
   }
-
+  .language-name{
+    display: none;
+  }
   .add-to-cart-btn svg:not(.product-detail .add-to-cart-btn svg),
   .wishlist-add-to-cart-btn svg,
   .related-add-to-cart-btn svg {

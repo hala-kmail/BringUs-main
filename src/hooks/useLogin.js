@@ -253,18 +253,33 @@ const useLogin = () => {
 
       // Try to get complete user information
       let completeUserData = data.user;
+      
+      // Use the original login response data directly to preserve discount information
+      // Only fetch additional user info if needed for other fields
       try {
         // Use user ID from login response to fetch complete user info
         const userId = data.user.id || data.user._id;
         if (userId) {
           const userInfo = await fetchUserInfo(userId, data.token);
           if (userInfo) {
-            completeUserData = userInfo;
-            
+            // Merge the original login response with fetched user info
+            // This preserves discount information from login response
+            completeUserData = {
+              ...userInfo,
+              store: {
+                ...userInfo.store,
+                // Preserve discount from login response if available
+                discount: data.user.store?.discount || userInfo.store?.discount
+              },
+              stores: data.user.stores || userInfo.stores
+            };
+            console.log('Merged user data with discount:', completeUserData);
           }
         }
       } catch (err) {
         console.log('Could not fetch complete user info, using login response');
+        // Even if fetchUserInfo fails, we still have the discount from login response
+        completeUserData = data.user;
       }
 
       // Success - store user data

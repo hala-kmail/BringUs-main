@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
-import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import Carousel from '../../components/Carousel/Carousel';
 import CategoriesGrid from '../../components/CategoriesGrid/CategoriesGrid';
 import Features from '../../components/Features/Features';
@@ -14,19 +13,11 @@ import './Home.css';
 import { useTranslation } from 'react-i18next';
 //-----------------------------------Home------------------------------------------------  
 const Home = () => {
- //-----------------------------------isWholesaleModalOpen------------------------------------------------  
-  const [isWholesaleModalOpen, setIsWholesaleModalOpen] = useState(false); 
+  const [isWholesaleModalOpen, setIsWholesaleModalOpen] = useState(false);
+  
   const handleWholesaleModalOpen = () => setIsWholesaleModalOpen(true);
   const handleWholesaleModalClose = () => setIsWholesaleModalOpen(false);
-  //-----------------------------------isMobileSearchOpen------------------------------------------------  
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false); 
-    const handleMobileSearchToggle = () => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
-  };
-  const handleMobileSearchClose = () => {
-    setIsMobileSearchOpen(false);
-  };
-//-----------------------------------t------------------------------------------------  
+  
   const { t } = useTranslation();
   // Lazy reveal section using IntersectionObserver
   const LazyRevealSection = ({
@@ -78,12 +69,9 @@ const Home = () => {
     <div className="home">
      
       <Navbar 
-        onMobileSearchToggle={handleMobileSearchToggle}
-        isMobileSearchOpen={isMobileSearchOpen}
       />
       <SecondaryNavbar />
       
-      <MobileSearch isOpen={isMobileSearchOpen} onClose={handleMobileSearchClose}/>
       <main className="home-content">
         <Carousel />
 

@@ -58,7 +58,7 @@ const ProductOptions = ({
         if (group.values.length > 0 && group.meta) {
           const firstValue = group.values[0];
           initial[group.meta._id] = {
-            valueId: firstValue._id, // استخدام _id من API
+            valueId: firstValue.valueId || firstValue._id, // استخدام valueId أولاً، ثم _id كبديل
             valueAr: firstValue.valueAr || firstValue.value,
             valueEn: firstValue.valueEn || firstValue.value,
             titleAr: group.meta?.titleAr || group.title,
@@ -78,7 +78,7 @@ const ProductOptions = ({
     setSelectedSpecs(prev => ({ 
       ...prev, 
       [specificationId]: {
-        valueId: valueId, // هذا هو _id من API
+        valueId: specValue?.valueId || valueId, // استخدام valueId من specValue أولاً، ثم valueId كبديل
         valueAr: specValue?.valueAr || value,
         valueEn: specValue?.valueEn || value,
         titleAr: specGroup?.meta?.titleAr || title,

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import Navbar from '../../components/Navbar/Navbar';

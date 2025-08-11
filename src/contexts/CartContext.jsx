@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getToken, getBearerToken } from '../utils/tokenManager';
 import { useAppData } from './AppDataContext';
 import Toast from '../components/Toast/Toast';
-import { getEffectivePrice, getPriceByUserRole } from '../utils/productUtils';
+import { getEffectivePrice, getPriceByUserRole, getPriceWithUserDiscount, getUserDiscountPercentage, getCartTotalDiscount } from '../utils/productUtils';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -22,8 +22,9 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
+  const [shippingAreaId, setShippingAreaId] = useState(null);
   const { i18n } = useTranslation();
-  const { store } = useAppData();
+  const { store, isAuthenticated, user } = useAppData();
   const currentLang = i18n.language;
   const hasInitialized = useRef(false);
   const storeId = useRef(null);
@@ -119,15 +120,15 @@ export const CartProvider = ({ children }) => {
       'Content-Type': 'application/json',
     };
     
-    // Ensure we have a Guest ID (generate if needed)
-    const guestId = generateStableGuestId();
-    if (guestId) {
-      headers['X-Guest-ID'] = guestId;
-    }
-    
     // Add authorization header if user is logged in
     if (token) {
       headers['Authorization'] = getBearerToken();
+    } else {
+      // Only send Guest ID if user is not authenticated
+      const guestId = generateStableGuestId();
+      if (guestId) {
+        headers['X-Guest-ID'] = guestId;
+      }
     }
     
     return headers;
@@ -245,6 +246,21 @@ export const CartProvider = ({ children }) => {
     }
   }, [getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
+  // تهيئة النظام عند تحميل الصفحة
+  const initializeGuestSystem = useCallback(async () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 Initializing guest cart system...');
+    }
+    
+    // Ensure we have a stable Guest ID
+    const guestId = generateStableGuestId();
+    if (guestId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👤 Guest cart session ready:', guestId);
+      }
+    }
+  }, [generateStableGuestId]);
+
   // جلب الكارت عند تحميل الصفحة
   useEffect(() => {
     const currentStoreId = getStoreId();
@@ -275,20 +291,23 @@ export const CartProvider = ({ children }) => {
     }
   }, [store?._id, store?.slug, getStoreId, getStoreSlug, fetchCart, cartItems.length]);
 
-  // تهيئة النظام عند تحميل الصفحة
-  const initializeGuestSystem = useCallback(async () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Initializing guest cart system...');
-    }
-    
-    // Ensure we have a stable Guest ID
-    const guestId = generateStableGuestId();
-    if (guestId) {
+  // Monitor authentication state changes to handle guest ID and cart updates
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // User is authenticated, clear guest ID and fetch user's cart
       if (process.env.NODE_ENV === 'development') {
-        console.log('👤 Guest cart session ready:', guestId);
+        console.log('🔐 User authenticated, clearing guest ID and fetching user cart');
       }
+      clearGuestId();
+      fetchCart();
+    } else if (!isAuthenticated) {
+      // User is not authenticated, ensure guest system is initialized
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👤 User not authenticated, initializing guest cart system');
+      }
+      initializeGuestSystem();
     }
-  }, [generateStableGuestId]);
+  }, [isAuthenticated, user, clearGuestId, fetchCart, initializeGuestSystem]);
 
   // دالة لإظهار الإشعارات
   const showToast = (message, type = 'success') => {
@@ -303,6 +322,8 @@ export const CartProvider = ({ children }) => {
   // دالة لتحويل المواصفات إلى التنسيق المطلوب
   const formatSpecifications = (specs) => {
     const selectedSpecifications = [];
+    
+    console.log('🔧 Formatting Specifications - Raw Input:', specs);
     
     Object.entries(specs).forEach(([specificationId, specData]) => {
       if (specData && specData !== '' && specificationId !== 'selectedColor' && specificationId !== 'quantity') {
@@ -340,6 +361,8 @@ export const CartProvider = ({ children }) => {
       }
     });
     
+    console.log('🔧 Formatting Specifications - Formatted Output:', selectedSpecifications);
+    
     return selectedSpecifications;
   };
 
@@ -350,6 +373,14 @@ export const CartProvider = ({ children }) => {
       quantity = 1,
       ...otherSpecs // جميع المواصفات الأخرى
     } = options;
+
+    // طباعة المواصفات المستلمة في الكونسول
+    console.log('🛒 CartContext - Received Options:');
+    console.log('   Product:', product.nameAr || product.nameEn);
+    console.log('   Selected Color:', selectedColor);
+    console.log('   Quantity:', quantity);
+    console.log('   Other Specs:', otherSpecs);
+    console.log('   Full Options:', options);
 
     const currentStoreId = getStoreId();
     const currentStoreSlug = getStoreSlug();
@@ -834,25 +865,48 @@ export const CartProvider = ({ children }) => {
   // Get cart totals
   const getCartTotals = () => {
     const subtotal = cartItems.reduce((total, item) => {
-      // استخدم السعر الصحيح (بعد الخصم)
-      const itemPrice = item.product.finalPrice || item.price || 0;
+      // استخدم السعر الصحيح حسب دور المستخدم (بدون خصم المستخدم على المنتجات الفردية)
+      const itemPrice = getPriceByUserRole(item.product);
       return total + (itemPrice * (item.quantity || 1));
     }, 0);
 
     // Count unique products instead of total quantity
     const itemsCount = cartItems.length;
 
-    // الشحن: يمكنك تعديله حسب الحاجة
-    const shipping = getShippingPriceByAreaId(getDefaultAreaIdFromLocalStorage());
-    const total = subtotal + shipping;
+    // الشحن: استخدم shippingAreaId من state أو من localStorage
+    const currentShippingAreaId = shippingAreaId || getDefaultAreaIdFromLocalStorage();
+    const shipping = getShippingPriceByAreaId(currentShippingAreaId);
+    
+    // تطبيق خصم المستخدم التاجر الجملة على توتال السلة (وليس على المنتجات الفردية)
+    const userDiscount = getCartTotalDiscount(subtotal);
+    const totalAfterUserDiscount = subtotal - userDiscount;
+    
+    const total = totalAfterUserDiscount + shipping;
 
     return {
-      subtotal,
-      shipping,
-      total,
-      itemsCount
+      subtotal: subtotal,
+      userDiscount: userDiscount,
+      totalAfterUserDiscount: totalAfterUserDiscount,
+      shipping: shipping,
+      total: total,
+      itemsCount: itemsCount
     };
   };
+
+  // تحديث منطقة التوصيل وإعادة حساب التوتال
+  const updateShippingArea = (areaId) => {
+    setShippingAreaId(areaId);
+    // حفظ في localStorage
+    localStorage.setItem('selectedShippingArea', areaId);
+  };
+
+  // تحميل منطقة التوصيل المحفوظة عند التحميل
+  useEffect(() => {
+    const savedShippingArea = localStorage.getItem('selectedShippingArea');
+    if (savedShippingArea) {
+      setShippingAreaId(savedShippingArea);
+    }
+  }, []);
 
   // التحقق من وجود منتج في الكارت
   const isInCart = (productId, selectedColor = '', otherSpecs = {}) => {
@@ -909,7 +963,9 @@ export const CartProvider = ({ children }) => {
     mergeGuestCartAfterLogin,
     canIncreaseQuantity,
     canDecreaseQuantity,
-    getAvailableQuantityForCartItem
+    getAvailableQuantityForCartItem,
+    updateShippingArea,
+    shippingAreaId
   };
 
   return (

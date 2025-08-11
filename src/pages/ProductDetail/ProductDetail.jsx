@@ -224,17 +224,17 @@ const ProductDetail = () => {
         ...selectedSpecs
       };
       
+      // طباعة المواصفات المختارة في الكونسول
+      console.log('🛒 Selected Options before adding to cart:');
+      console.log('   Color:', selectedColor);
+      console.log('   Quantity:', quantity);
+      console.log('   Selected Specs:', selectedSpecs);
+      console.log('   Full Options Object:', selectedOptions);
+      
       const success = await addToCart(product, selectedOptions);
       
       if (success) {
-        // إظهار رسالة نجاح مع تحذير إذا كان المخزون منخفض
-        if (product.stockStatus === 'low_stock' || 
-            (product.availableQuantity && product.availableQuantity <= (product.lowStockThreshold || 10))) {
-          alert(currentLang === 'ar' 
-            ? `تم إضافة المنتج للكارت بنجاح! تحذير: المخزون منخفض (${product.availableQuantity} متبقي)`
-            : `Product added to cart successfully! Warning: Low stock (${product.availableQuantity} remaining)`
-          );
-        }
+       
       }
     } catch (error) {
       console.error('Error adding to cart:', error);

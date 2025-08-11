@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import useUserOrders from '../../hooks/useUserOrders';
 import { formatPrice } from '../../utils/currencyUtils';
+import { getPriceByUserRole } from '../../utils/productUtils';
 import { useAppData } from '../../contexts/AppDataContext';
 import Toast from '../Toast/Toast';
 import './UserOrders.css';
@@ -10,7 +11,7 @@ const UserOrders = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const currentLang = i18n.language;
-  const { store } = useAppData();
+  const { store, user } = useAppData();
   
   const {
     orders,
@@ -379,7 +380,13 @@ const UserOrders = () => {
                    <span className="detail-label">{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
                    <span className="detail-value">
                      {formatPrice(
-                       selectedOrder.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0,
+                       selectedOrder.items?.reduce((sum, item) => {
+                         const wholesalePrice = getPriceByUserRole({ 
+                           compareAtPrice: item.pricePerUnit,
+                           finalPrice: item.pricePerUnit 
+                         });
+                         return sum + (wholesalePrice * item.quantity);
+                       }, 0) || 0,
                        selectedOrder.currency || store?.settings?.currency || 'USD'
                      )}
                    </span>
@@ -398,7 +405,13 @@ const UserOrders = () => {
                    <span className="detail-label">{currentLang === 'ar' ? 'المجموع النهائي:' : 'Final Total:'}</span>
                    <span className="detail-value total-amount">
                      {formatPrice(
-                       (selectedOrder.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0) + 
+                       (selectedOrder.items?.reduce((sum, item) => {
+                         const wholesalePrice = getPriceByUserRole({ 
+                           compareAtPrice: item.pricePerUnit,
+                           finalPrice: item.pricePerUnit 
+                         });
+                         return sum + (wholesalePrice * item.quantity);
+                       }, 0) || 0) + 
                        (selectedOrder.deliveryArea?.price || 0),
                        selectedOrder.currency || store?.settings?.currency || 'USD'
                      )}
@@ -450,13 +463,25 @@ const UserOrders = () => {
                        )}
                        
                        <p className="item-price">
-                         {formatPrice(item.pricePerUnit, selectedOrder.currency || store?.settings?.currency || 'USD')} 
+                         {formatPrice(
+                           getPriceByUserRole({ 
+                             compareAtPrice: item.pricePerUnit,
+                             finalPrice: item.pricePerUnit 
+                           }), 
+                           selectedOrder.currency || store?.settings?.currency || 'USD'
+                         )} 
                          {currentLang === 'ar' ? ' لكل قطعة' : ' per unit'}
                        </p>
                      </div>
                      <div className="item-total">
                        <span className="total-amount">
-                         {formatPrice(item.total, selectedOrder.currency || store?.settings?.currency || 'USD')}
+                         {formatPrice(
+                           getPriceByUserRole({ 
+                             compareAtPrice: item.pricePerUnit,
+                             finalPrice: item.pricePerUnit 
+                           }) * item.quantity,
+                           selectedOrder.currency || store?.settings?.currency || 'USD'
+                         )}
                        </span>
                        <span className="total-label">
                          {currentLang === 'ar' ? 'المجموع' : 'Total'}

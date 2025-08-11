@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
 import './Auth.css';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
   
   const [formData, setFormData] = useState({
@@ -70,9 +71,12 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     const result = await login(formData.email, formData.password);
     
     if (result.success) {
-      // Close modal and redirect to home page
-      onClose();
-      window.location.href = '/';
+      // Wait a bit for the context to update
+      setTimeout(() => {
+        // Close modal and redirect to home page
+        onClose();
+        navigate('/');
+      }, 100);
     }
   };
 

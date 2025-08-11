@@ -308,7 +308,7 @@
 
 /* Product Info */
 .product-info {
-  padding: 1rem;
+  padding:0 1rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;

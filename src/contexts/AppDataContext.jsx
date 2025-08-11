@@ -16,6 +16,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
   const [categories, setCategories] = useState(null); // القيمة الأولية null
   const [products, setProducts] = useState([]);
   const [sliders, setSliders] = useState(null); // القيمة الأولية null
+  const [userDiscount, setUserDiscount] = useState(null); // قيمة الخصم للمستخدم
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -37,6 +38,16 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           setUser(userData);
           if (process.env.NODE_ENV === 'development') {
             console.log('AppData - User loaded from localStorage:', userData);
+          }
+        }
+
+        // Load user discount
+        const storedUserDiscount = localStorage.getItem('userDiscount');
+        if (storedUserDiscount) {
+          const discountData = JSON.parse(storedUserDiscount);
+          setUserDiscount(discountData);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AppData - User discount loaded from localStorage:', discountData);
           }
         }
 
@@ -115,13 +126,31 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     if (userData && (userData._id || userData.id)) {
       setUser(userData);
       localStorage.setItem('userInfo', JSON.stringify(userData));
+      
+      // Extract and store user discount if available
+      if (userData.store && userData.store.discount !== undefined) {
+        const discountInfo = {
+          value: userData.store.discount,
+          storeId: userData.store.id || userData.store._id,
+          storeName: userData.store.nameAr || userData.store.nameEn,
+          role: userData.role
+        };
+        setUserDiscount(discountInfo);
+        localStorage.setItem('userDiscount', JSON.stringify(discountInfo));
+        if (process.env.NODE_ENV === 'development') {
+          console.log('AppData - User discount updated:', discountInfo);
+        }
+      }
+      
       if (process.env.NODE_ENV === 'development') {
         console.log('AppData - User updated:', userData);
       }
     } else if (userData === null || userData === undefined) {
       // Only clear user if explicitly passed null/undefined
       setUser(null);
+      setUserDiscount(null);
       localStorage.removeItem('userInfo');
+      localStorage.removeItem('userDiscount');
       if (process.env.NODE_ENV === 'development') {
         console.log('AppData - User cleared');
       }
@@ -203,6 +232,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     setCategories(null);
     setProducts([]);
     setSliders(null);
+    setUserDiscount(null);
     
     // Clear all localStorage items from AppDataContext
     localStorage.removeItem('userInfo');
@@ -210,6 +240,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     localStorage.removeItem('categoriesInfo');
     localStorage.removeItem('productsInfo');
     localStorage.removeItem('slidersInfo');
+    localStorage.removeItem('userDiscount');
     
     // Clear items from tokenManager
     localStorage.removeItem('authToken');
@@ -250,6 +281,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     categories,
     products,
     sliders, // تمرير السلايدر
+    userDiscount, // قيمة الخصم للمستخدم
     isLoading,
     isInitialized,
     isAuthenticated,
@@ -271,7 +303,8 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
       sliders: sliders ? `${sliders.length} sliders` : 'No sliders',
       isLoading,
       isInitialized,
-      isAuthenticated
+      isAuthenticated,
+      userDiscount: userDiscount ? `Discount: ${userDiscount.value}` : 'No discount'
     });
   }
 
