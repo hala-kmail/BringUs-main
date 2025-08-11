@@ -91,23 +91,44 @@ const ProductOptions = ({
   const effectiveAvailable = React.useMemo(() => {
     // Start with product availableQuantity if provided, else a large number
     let available = Number.isFinite(product?.availableQuantity) ? product.availableQuantity : Number.POSITIVE_INFINITY;
+    
+    console.log('🔍 Computing effective availability:', {
+      productAvailableQuantity: product?.availableQuantity,
+      initialAvailable: available,
+      organizedSpecs: organizedSpecs.length,
+      selectedSpecs: selectedSpecs
+    });
+    
     // Reduce by selected spec quantities (take the minimum among selected specs that have a defined quantity)
     if (organizedSpecs.length > 0 && selectedSpecs) {
       organizedSpecs.forEach(group => {
         const selected = selectedSpecs[group.meta?._id];
         if (selected) {
           const match = group.values.find(v => v._id === selected.valueId);
+          console.log('🔍 Checking spec:', {
+            groupTitle: group.title,
+            selectedValueId: selected.valueId,
+            match: match,
+            matchQuantity: match?.quantity
+          });
           if (typeof match?.quantity === 'number') {
             available = Math.min(available, match.quantity);
+            console.log('🔍 Updated available to:', available);
           }
         }
       });
     }
+    
     // If still Infinity (no limits found), fallback to product.availableQuantity or 0
     if (!Number.isFinite(available)) {
       available = product?.availableQuantity ?? 0;
+      console.log('🔍 Using fallback available:', available);
     }
-    return Math.max(0, available);
+    
+    const finalAvailable = Math.max(0, available);
+    console.log('🔍 Final effective available:', finalAvailable);
+    
+    return finalAvailable;
   }, [product?.availableQuantity, organizedSpecs, selectedSpecs]);
 
   // Inform parent about availability changes
@@ -174,11 +195,11 @@ const ProductOptions = ({
                       disabled={isOut}
                   >
                       <span className="spec-value-text">{value}</span>
-                      {/* {typeof spec.quantity === 'number' && (
+                      {typeof spec.quantity === 'number' && (
                         <span className="spec-qty-hint" aria-hidden>
                           {spec.quantity}
                         </span>
-                      )} */}
+                      )}
                   </button>
                 );
               })}
@@ -207,8 +228,13 @@ const ProductOptions = ({
           <span className="quantity-display">{quantity}</span>
           <button
             className="quantity-btn increase"
-            onClick={() => setQuantity(Math.min(effectiveAvailable, quantity + 1))}
+            onClick={() => {
+              const newQuantity = Math.min(effectiveAvailable, quantity + 1);
+              console.log('Increasing quantity:', { current: quantity, new: newQuantity, available: effectiveAvailable });
+              setQuantity(newQuantity);
+            }}
             disabled={quantity >= (effectiveAvailable || 0) || effectiveAvailable === 0}
+            title={currentLang === 'ar' ? `الكمية المتوفرة: ${effectiveAvailable}` : `Available: ${effectiveAvailable}`}
           >
             +
           </button>
