@@ -382,6 +382,30 @@ export const CartProvider = ({ children }) => {
     console.log('   Other Specs:', otherSpecs);
     console.log('   Full Options:', options);
 
+    // التحقق من الكمية المتوفرة قبل الإضافة
+    const availableQuantity = getAvailableQuantityForProduct(product, selectedColor, otherSpecs);
+    const currentQuantity = getItemQuantity(product._id || product.id, selectedColor, otherSpecs);
+    const totalRequestedQuantity = currentQuantity + quantity;
+
+    console.log('🛒 Quantity validation:', {
+      availableQuantity,
+      currentQuantity,
+      requestedQuantity: quantity,
+      totalRequestedQuantity,
+      productId: product._id || product.id,
+      selectedColor,
+      otherSpecs,
+      productSpecificationValues: product.specificationValues
+    });
+
+    if (totalRequestedQuantity > availableQuantity) {
+      const message = currentLang === 'ar' 
+        ? `الكمية المتوفرة هي ${availableQuantity} فقط. لديك ${currentQuantity} في السلة بالفعل.`
+        : `Only ${availableQuantity} items available. You already have ${currentQuantity} in cart.`;
+      showToast(message, 'error');
+      return false;
+    }
+
     const currentStoreId = getStoreId();
     const currentStoreSlug = getStoreSlug();
     
@@ -550,6 +574,50 @@ export const CartProvider = ({ children }) => {
     }
   }, [fetchCart, getStoreId, getStoreSlug, getHeaders, handleApiResponse]);
 
+  // دالة للحصول على الكمية المتوفرة للمنتج مع المواصفات المحددة
+  const getAvailableQuantityForProduct = useCallback((product, selectedColor = '', otherSpecs = {}) => {
+    // إذا كان المنتج يحتوي على مواصفات محددة
+    if (Object.keys(otherSpecs).length > 0) {
+      // البحث عن المواصفة المحددة في specificationValues
+      if (product.specificationValues && product.specificationValues.length > 0) {
+        // البحث عن المواصفات المختارة في specificationValues
+        for (const [specName, specData] of Object.entries(otherSpecs)) {
+          let valueId;
+          
+          // تحديد valueId بناءً على نوع البيانات
+          if (typeof specData === 'object') {
+            if (specData.valueId) {
+              valueId = specData.valueId;
+            } else if (specData._id) {
+              valueId = specData._id;
+            } else if (specData.id) {
+              valueId = specData.id;
+            } else {
+              valueId = specData.value || specData.name || specData;
+            }
+          } else {
+            valueId = specData;
+          }
+          
+          console.log('Looking for spec in product:', { specName, valueId, availableSpecs: product.specificationValues });
+          
+          // البحث عن المواصفة المطابقة
+          const matchingSpec = product.specificationValues.find(spec => 
+            spec.specificationId === specName && spec.valueId === valueId
+          );
+          
+          if (matchingSpec) {
+            console.log('Found matching spec in product:', matchingSpec);
+            return matchingSpec.quantity || 0;
+          }
+        }
+      }
+    }
+    
+    // إذا لم تكن هناك مواصفات محددة، استخدم الكمية العامة للمنتج
+    return product.availableQuantity || product.stock || 0;
+  }, []);
+
   // دالة للحصول على الكمية المتوفرة لعنصر معين في الكارت
   const getAvailableQuantityForCartItem = useCallback((productId, selectedColor = '', otherSpecs = {}) => {
     // البحث عن المنتج في الكارت للحصول على بيانات المنتج
@@ -570,7 +638,24 @@ export const CartProvider = ({ children }) => {
       if (product.specificationValues && product.specificationValues.length > 0) {
         // البحث عن المواصفات المختارة في specificationValues
         for (const [specName, specData] of Object.entries(otherSpecs)) {
-          const valueId = typeof specData === 'object' && specData.valueId ? specData.valueId : specData;
+          let valueId;
+          
+          // تحديد valueId بناءً على نوع البيانات
+          if (typeof specData === 'object') {
+            if (specData.valueId) {
+              valueId = specData.valueId;
+            } else if (specData._id) {
+              valueId = specData._id;
+            } else if (specData.id) {
+              valueId = specData.id;
+            } else {
+              valueId = specData.value || specData.name || specData;
+            }
+          } else {
+            valueId = specData;
+          }
+          
+          console.log('Looking for spec:', { specName, valueId, availableSpecs: product.specificationValues });
           
           // البحث عن المواصفة المطابقة
           const matchingSpec = product.specificationValues.find(spec => 
@@ -578,6 +663,7 @@ export const CartProvider = ({ children }) => {
           );
           
           if (matchingSpec) {
+            console.log('Found matching spec:', matchingSpec);
             return matchingSpec.quantity || 0;
           }
         }
@@ -964,6 +1050,7 @@ export const CartProvider = ({ children }) => {
     canIncreaseQuantity,
     canDecreaseQuantity,
     getAvailableQuantityForCartItem,
+    getAvailableQuantityForProduct,
     updateShippingArea,
     shippingAreaId
   };
