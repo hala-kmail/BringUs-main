@@ -12,8 +12,11 @@
 
 /* Header */
 .wishlist-header {
+  display: flex;
   text-align: center;
   margin-bottom: 3rem;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .wishlist-title {

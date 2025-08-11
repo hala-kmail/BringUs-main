@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
+import { getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
 
 const OrderSummary = ({
   cartItems,
@@ -112,11 +113,18 @@ const OrderSummary = ({
                   </div>
                 )}
                 <div className="item-price">
-                  {currencySymbol}{(item.product.finalPrice).toFixed(2)} × {item.quantity}
+                  {getPriceByUserRole(item.product) !== getOriginalPriceByUserRole(item.product) && (
+                    <span className="original-price" style={{ textDecoration: 'line-through', color: '#666', fontSize: '0.9em', marginRight: '8px' }}>
+                      {currencySymbol}{getOriginalPriceByUserRole(item.product).toFixed(2)}
+                    </span>
+                  )}
+                  <span className="current-price">
+                    {currencySymbol}{getPriceByUserRole(item.product).toFixed(2)} × {item.quantity}
+                  </span>
                 </div>
               </div>
               <div className="item-total">
-                {currencySymbol}{((item.product.finalPrice) * item.quantity).toFixed(2)}
+                {currencySymbol}{(getPriceByUserRole(item.product) * item.quantity).toFixed(2)}
               </div>
             </div>
           ))}

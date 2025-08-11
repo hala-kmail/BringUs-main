@@ -57,6 +57,10 @@
     "healthcare": "Healthcare",
     "baby_pregnancy": "Baby & Pregnancy"
   },
+  "mobile_categories": {
+    "title": "Mobile Categories",
+    "subtitle": "Discover the latest mobile phones and smart devices"
+  },
   "secondary_navbar": {
     "home": "Home",
     "shop": "Shop",

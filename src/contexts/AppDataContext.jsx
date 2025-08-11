@@ -19,7 +19,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
   const [userDiscount, setUserDiscount] = useState(null); // قيمة الخصم للمستخدم
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
-
+  const [allProducts, setAllProducts] = useState([]);
   // Load data from localStorage on app start
   useEffect(() => {
     const loadStoredData = () => {
@@ -37,7 +37,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           const userData = JSON.parse(storedUser);
           setUser(userData);
           if (process.env.NODE_ENV === 'development') {
-            console.log('AppData - User loaded from localStorage:', userData);
+            // console.log('AppData - User loaded from localStorage:', userData);
           }
         }
 
@@ -47,7 +47,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           const discountData = JSON.parse(storedUserDiscount);
           setUserDiscount(discountData);
           if (process.env.NODE_ENV === 'development') {
-            console.log('AppData - User discount loaded from localStorage:', discountData);
+            // console.log('AppData - User discount loaded from localStorage:', discountData);
           }
         }
 
@@ -57,7 +57,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           const storeData = JSON.parse(storedStore);
           setStore(storeData);
           if (process.env.NODE_ENV === 'development') {
-            console.log('AppData - Store loaded from localStorage:', storeData);
+            // console.log('AppData - Store loaded from localStorage:', storeData);
           }
         }
 
@@ -208,7 +208,13 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
       }
     }
   }, []);
-
+  const updateAllProducts = useCallback((allProductsData) => {
+    setAllProducts(allProductsData);
+    if (allProductsData) {
+      localStorage.setItem('allProductsInfo', JSON.stringify(allProductsData));
+      // console.log('AppData - All products updated:', allProductsData);
+    }
+  }, []);
   // Update sliders data
   const updateSliders = (slidersData) => {
     setSliders(slidersData);
@@ -280,6 +286,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     store,
     categories,
     products,
+    allProducts,
     sliders, // تمرير السلايدر
     userDiscount, // قيمة الخصم للمستخدم
     isLoading,
@@ -289,6 +296,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     updateStore,
     updateCategories,
     updateProducts,
+    updateAllProducts,
     updateSliders, // تمرير الدالة
     clearData,
   };

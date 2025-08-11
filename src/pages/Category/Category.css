@@ -39,7 +39,7 @@
   padding: 1rem 0;
   text-align: center;
   position: relative;
-  margin: 0.5rem 0 2rem 0;
+  
 }
 
 .category-title {
@@ -63,7 +63,7 @@
 /* Subcategories Section */
 .subcategories-section {
   padding: 2rem 0;
-  margin-bottom: 2rem;
+  
 }
 
 .subcategories-title {

@@ -202,7 +202,7 @@ const MobileFilters = ({
 
   // Handle filter toggle
   const handleFilterToggle = useCallback((sectionId, itemId) => {
-    console.log('handleFilterToggle called:', sectionId, itemId);
+    // console.log('handleFilterToggle called:', sectionId, itemId);
     if (!onFiltersChange) {
       console.error('onFiltersChange is not provided!');
       return;
@@ -217,7 +217,7 @@ const MobileFilters = ({
       newFilters[sectionId] = [...currentArray, itemId];
     }
     
-    console.log('Filter toggled:', sectionId, itemId, 'New filters:', newFilters);
+    // console.log('Filter toggled:', sectionId, itemId, 'New filters:', newFilters);
     onFiltersChange(newFilters);
   }, [filters, onFiltersChange]);
 
@@ -225,7 +225,7 @@ const MobileFilters = ({
   const handleClearAll = useCallback(() => {
     if (!onFiltersChange) return;
     
-    console.log('Clearing all filters');
+    // console.log('Clearing all filters');
     onFiltersChange({
       categories: [],
       features: [],
@@ -335,7 +335,7 @@ const MobileFilters = ({
       }
     }
     
-    console.log('Category toggled:', categoryId, 'New filters:', newFilters);
+    // console.log('Category toggled:', categoryId, 'New filters:', newFilters);
     onFiltersChange(newFilters);
   }, [filters, onFiltersChange, categoriesProp]);
 

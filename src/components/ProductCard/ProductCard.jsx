@@ -340,7 +340,7 @@ const ProductCard = ({
         <button
           className="add-to-cart-btn-new"
           onClick={handleAddToCartClick}
-          disabled={product.stockStatus === 'out_of_stock' || isAddToCartLoading}
+          disabled={product.availableQuantity === 0 || isAddToCartLoading}
         >
           {isAddToCartLoading ? (
             <div className="add-to-cart-loading-spinner"></div>

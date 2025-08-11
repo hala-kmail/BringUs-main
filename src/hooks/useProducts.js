@@ -14,8 +14,9 @@ let fetchTimeout = null;
 const useProducts = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [allProducts, setAllProducts] = useState([]);
   const [pagination, setPagination] = useState(null);
-  const { store, products, updateProducts } = useAppData();
+  const { store, products, updateProducts, updateAllProducts } = useAppData();
   const hasInitialized = useRef(false);
   const storeId = useRef(null);
   const token = getBearerToken();
@@ -262,6 +263,76 @@ const useProducts = () => {
     };
   }, [store?._id, getStoreId, updateProducts, token]);
 
+
+  //-----------------------------------Fetch all products by store------------------------------------------------   
+  const fetchAllProductsByStore = useCallback(async (targetStoreId = null) => {
+    
+
+    if (!targetStoreId) {
+      console.log('No store ID available for fetching all products');
+      return null;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const url = `${API_BASE_URL}/products/by-store/${targetStoreId}`;
+      
+      const headers = {
+        'accept': 'application/json',
+      };
+      
+      if (token) {
+        headers.Authorization = token;
+      }
+
+    
+
+      const response = await fetch(url, { headers });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setAllProducts(result.data);
+        // Update the products in the context
+       
+        if (updateAllProducts) {
+          updateAllProducts(result.data);
+        }
+        
+        return {
+          allProducts: result.data,
+          total: result.data.length,
+          success: true,
+          error: null
+        };
+      } else {
+        throw new Error(result.message || 'Failed to fetch products');
+      }
+    } catch (err) {
+      console.error('❌ Error fetching all products by store:', err);
+      setError(err.message);
+      return {
+        products: [],
+        total: 0,
+        success: false,
+        error: err.message
+      };
+    } finally {
+      setLoading(false);
+    }
+  }, [getStoreId, token, updateAllProducts]);
+  useEffect(() => {
+    if (store?._id) {
+      fetchAllProductsByStore(store._id);
+    }
+  }, []);
+
   // Fetch single product by ID
   const fetchProductById = useCallback(async (productId) => {
     if (!productId) {
@@ -334,6 +405,7 @@ const useProducts = () => {
       if (result.success && result.data) {
         // Expecting shape: { product, variants, variantsCount }
         return {
+          
           product: result.data.product || result.data,
           variants: result.data.variants || [],
           variantsCount: result.data.variantsCount ?? (result.data.variants ? result.data.variants.length : 0),
@@ -511,6 +583,7 @@ const useProducts = () => {
 
   return {
     products,
+    allProducts,
     loading,
     error,
     pagination,
@@ -532,7 +605,8 @@ const useProducts = () => {
     getProductDescription,
     getAllAvailableColors,
     getAllAvailableColorsForDisplay,
-    getAllAvailableProductLabels
+    getAllAvailableProductLabels,
+    fetchAllProductsByStore
   };
 };
 

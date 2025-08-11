@@ -1186,7 +1186,9 @@ max-width: 300px;
   gap: 20px;
   min-height: auto;
 }
-
+.product-image-new{
+  margin: 0;
+}
 .product-card-new.list-view .product-image-new {
   margin: 0;
   flex-shrink: 0;
