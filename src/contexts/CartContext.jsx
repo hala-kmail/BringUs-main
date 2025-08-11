@@ -4,7 +4,7 @@ import { getToken, getBearerToken } from '../utils/tokenManager';
 import { useAppData } from './AppDataContext';
 import Toast from '../components/Toast/Toast';
 import { getEffectivePrice, getPriceByUserRole, getPriceWithUserDiscount, getUserDiscountPercentage, getCartTotalDiscount } from '../utils/productUtils';
-
+import { useDeliveryMethods } from '../hooks/useDeliveryMethods';
 const API_BASE_URL = 'http://localhost:5001/api';
 
 const CartContext = createContext();
@@ -28,6 +28,7 @@ export const CartProvider = ({ children }) => {
   const currentLang = i18n.language;
   const hasInitialized = useRef(false);
   const storeId = useRef(null);
+  const { deliveryMethods } = useDeliveryMethods();
 
   // ===== Guest ID Management =====
   
@@ -162,9 +163,9 @@ export const CartProvider = ({ children }) => {
   };
 
   const getShippingPriceByAreaId = (areaId) => {
-    // This should be implemented based on your delivery areas API
-    // For now, return a default value
-    return 0;
+    const shippingPrice = deliveryMethods.find(method => method._id === areaId)?.price || 0;
+    console.log('shippingPrice', shippingPrice);
+    return shippingPrice;
   };
 
   // جلب الكارت من API
@@ -656,7 +657,7 @@ export const CartProvider = ({ children }) => {
           }
           
           console.log('Looking for spec:', { specName, valueId, availableSpecs: product.specificationValues });
-          
+          console.log('product.specificationValues', product.specificationValues);
           // البحث عن المواصفة المطابقة
           const matchingSpec = product.specificationValues.find(spec => 
             spec.specificationId === specName && spec.valueId === valueId
@@ -955,10 +956,10 @@ export const CartProvider = ({ children }) => {
       const itemPrice = getPriceByUserRole(item.product);
       return total + (itemPrice * (item.quantity || 1));
     }, 0);
-
+ console.log('shippingAreaId', shippingAreaId);
     // Count unique products instead of total quantity
     const itemsCount = cartItems.length;
-
+   
     // الشحن: استخدم shippingAreaId من state أو من localStorage
     const currentShippingAreaId = shippingAreaId || getDefaultAreaIdFromLocalStorage();
     const shipping = getShippingPriceByAreaId(currentShippingAreaId);
@@ -969,6 +970,12 @@ export const CartProvider = ({ children }) => {
     
     const total = totalAfterUserDiscount + shipping;
 
+    console.log('subtotal', subtotal);
+    console.log('userDiscount', userDiscount);
+    console.log('totalAfterUserDiscount', totalAfterUserDiscount);
+    console.log('shipping', shipping);
+    console.log('total', total);
+    console.log('itemsCount', itemsCount);
     return {
       subtotal: subtotal,
       userDiscount: userDiscount,

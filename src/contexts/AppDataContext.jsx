@@ -81,6 +81,16 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           }
         }
 
+        // Load all products data
+        const storedAllProducts = localStorage.getItem('allProductsInfo');
+        if (storedAllProducts) {
+          const allProductsData = JSON.parse(storedAllProducts);
+          setAllProducts(allProductsData);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AppData - All products loaded from localStorage:', allProductsData.length, 'products');
+          }
+        }
+
         // Load sliders data
         const storedSliders = localStorage.getItem('slidersInfo');
         if (storedSliders) {
@@ -245,6 +255,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     localStorage.removeItem('storeData');
     localStorage.removeItem('categoriesInfo');
     localStorage.removeItem('productsInfo');
+    localStorage.removeItem('allProductsInfo');
     localStorage.removeItem('slidersInfo');
     localStorage.removeItem('userDiscount');
     

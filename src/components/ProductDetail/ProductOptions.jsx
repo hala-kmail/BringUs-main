@@ -28,13 +28,15 @@ const ProductOptions = ({
       const title = currentLang === 'ar'
         ? (meta?.titleAr || spec.titleAr || spec.title || '')
         : (meta?.titleEn || spec.titleEn || spec.title || '');
-      if (!grouped[title]) grouped[title] = { title, values: [], meta };
+      // استخدام specificationId كـ key بدلاً من title لتجنب مشاكل ObjectId
+      const specKey = spec.specificationId;
+      if (!grouped[specKey]) grouped[specKey] = { title, values: [], meta, specificationId: specKey };
       // مطابقة valueId أو valueAr فقط
       let metaValue = meta?.values?.find(v => v._id === spec.valueId);
       if (!metaValue) {
         metaValue = meta?.values?.find(v => v.valueAr === spec.value);
       }
-      grouped[title].values.push({
+      grouped[specKey].values.push({
         ...spec,
         valueAr: metaValue?.valueAr || spec.valueAr || spec.value,
         valueEn: metaValue?.valueEn || spec.valueEn || metaValue?.valueAr || spec.value
@@ -57,7 +59,7 @@ const ProductOptions = ({
       organizedSpecs.forEach(group => {
         if (group.values.length > 0 && group.meta) {
           const firstValue = group.values[0];
-          initial[group.meta._id] = {
+          initial[group.specificationId] = {
             valueId: firstValue.valueId || firstValue._id, // استخدام valueId أولاً، ثم _id كبديل
             valueAr: firstValue.valueAr || firstValue.value,
             valueEn: firstValue.valueEn || firstValue.value,
@@ -72,7 +74,7 @@ const ProductOptions = ({
 
   const handleSpecSelect = (title, value, specificationId, valueId) => {
     // البحث عن المواصفة في organizedSpecs للحصول على الترجمات
-    const specGroup = organizedSpecs.find(group => group.meta._id === specificationId);
+    const specGroup = organizedSpecs.find(group => group.specificationId === specificationId);
     const specValue = specGroup?.values.find(spec => spec._id === valueId);
     
     setSelectedSpecs(prev => ({ 
@@ -102,9 +104,9 @@ const ProductOptions = ({
     // Reduce by selected spec quantities (take the minimum among selected specs that have a defined quantity)
     if (organizedSpecs.length > 0 && selectedSpecs) {
       organizedSpecs.forEach(group => {
-        const selected = selectedSpecs[group.meta?._id];
+        const selected = selectedSpecs[group.specificationId];
         if (selected) {
-          const match = group.values.find(v => v._id === selected.valueId);
+          const match = group.values.find(v => v.valueId === selected.valueId);
           console.log('🔍 Checking spec:', {
             groupTitle: group.title,
             selectedValueId: selected.valueId,
@@ -183,14 +185,14 @@ const ProductOptions = ({
             <div className="specification-options">
               {group.values.map((spec) => {
                 const value = currentLang === 'ar' ? (spec.valueAr || spec.value) : (spec.valueEn || spec.value);
-                const isSelected = selectedSpecs[group.meta._id]?.valueId === spec._id;
+                const isSelected = selectedSpecs[group.specificationId]?.valueId === spec._id;
                   const isOut = Number(spec.quantity) === 0;
                   const isLow = Number(spec.quantity) > 0 && Number(spec.quantity) <= 3;
                 return (
                   <button
                     key={spec._id}
                       className={`specification-option${isSelected ? ' selected' : ''}${isOut ? ' out-of-stock' : ''}${isLow ? ' low-stock' : ''}`}
-                      onClick={() => !isOut && handleSpecSelect(group.title, spec.value, group.meta._id, spec._id)}
+                      onClick={() => !isOut && handleSpecSelect(group.title, spec.value, group.specificationId, spec._id)}
                       type="button"
                       disabled={isOut}
                   >

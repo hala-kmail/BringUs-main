@@ -89,8 +89,8 @@ const Cart = () => {
     const specs = {};
     if (cartItem.selectedSpecifications) {
       cartItem.selectedSpecifications.forEach(spec => {
-        // استخدام valueId كمفتاح بدلاً من specificationId
-        specs[spec.valueId] = {
+        // استخدام specificationId كمفتاح (وليس valueId) لتجنب مشاكل ObjectId
+        specs[spec.specificationId] = {
           valueId: spec.valueId,
           valueAr: spec.valueAr,
           valueEn: spec.valueEn,
@@ -150,6 +150,12 @@ const Cart = () => {
     setShowDeleteModal(false);
   };
 
+  const getUserDiscountPercentage = () => {
+    if (cartTotals.subtotal > 0) {
+      return ((cartTotals.userDiscount / cartTotals.subtotal) * 100).toFixed(0);
+    }
+    return 0;
+  };
   const handleClearCartClick = () => {
     setShowClearModal(true);
   };
@@ -428,7 +434,7 @@ const Cart = () => {
               className="start-shopping-btn"
               onClick={() => navigate('/shop')}
             >
-              <span className="btn-icon">🛍️</span>
+             
               {currentLang === 'ar' ? 'ابدأ التسوق الآن' : 'Start Shopping Now'}
             </button>
           </div>
@@ -528,16 +534,16 @@ const Cart = () => {
                     >
                       -
                     </button>
-                    <span className="quantity-display">
-                      {item.quantity}
-                      <span className="quantity-available">
+                    <div className="quantity-display">
+                      <span className="current-quantity">{item.quantity}</span>
+                      {/* <span className="quantity-available">
                         / {getAvailableQuantityForCartItem(
                           item.product._id || item.product.id,
                           getSelectedColorFromCartItem(item),
                           getSelectedSpecsFromCartItem(item)
                         )}
-                      </span>
-                    </span>
+                      </span> */}
+                    </div>
                     <button 
                       className="quantity-btn"
                       onClick={() => handleQuantityChange(
@@ -672,16 +678,16 @@ const Cart = () => {
                         >
                           -
                         </button>
-                        <span className="quantity-display">
-                          {item.quantity}
-                          <span className="quantity-available">
+                        <div className="quantity-display">
+                          <span className="current-quantity">{item.quantity}</span>
+                          {/* <span className="quantity-available">
                             / {getAvailableQuantityForCartItem(
                               item.product._id || item.product.id,
                               getSelectedColorFromCartItem(item),
                               getSelectedSpecsFromCartItem(item)
                             )}
-                          </span>
-                        </span>
+                          </span> */}
+                        </div>
                         <button 
                           className="quantity-btn"
                           onClick={() => handleQuantityChange(
@@ -722,7 +728,7 @@ const Cart = () => {
               {cartTotals?.userDiscount > 0 && (
                 <div className="summary-row user-discount-row">
                   <span>
-                    {currentLang === 'ar' ? 'خصم التاجر الجملة:' : 'Wholesaler Discount:'}{}
+                      {currentLang === 'ar' ? 'خصم التاجر الجملة:' : 'Wholesaler Discount:'}({getUserDiscountPercentage()}%)
                   </span>
                   <span className="discount-amount">-{formatPrice(cartTotals.userDiscount, store?.settings?.currency || 'ILS')}</span>
                 </div>
@@ -753,10 +759,25 @@ const Cart = () => {
       {cartItems.length > 0 && (
         <div className="mobile-checkout-bar" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
           <div className="mobile-total-section">
-            <span className="mobile-total-label">
-              {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
+            <div className="mobile-total-info">
+              <span className="mobile-total-label">
+                {currentLang === 'ar' ? 'الإجمالي' : 'Total'}
+              </span>
+              {cartTotals?.userDiscount > 0 && (
+                <div className="mobile-discount-info">
+                  <span className="mobile-discount-label">
+                    {currentLang === 'ar' ? 'خصم الجملة' : 'Wholesale Discount'}<span className="discount-percentage"> ({getUserDiscountPercentage()}%)</span>
+
+                  </span>
+                  <span className="mobile-discount-amount">
+                    -{formatPrice(cartTotals.userDiscount, store?.settings?.currency || 'ILS')}
+                  </span>
+                </div>
+              )}
+            </div>
+            <span className="mobile-total-amount">
+              {formatPrice(cartTotals?.total || cartTotals?.subtotal || 0, store?.settings?.currency || 'ILS')}
             </span>
-            <span className="mobile-total-amount">{formatPrice(cartTotals?.subtotal || 0, store?.settings?.currency || 'ILS')}</span>
           </div>
           <button 
             className="mobile-checkout-btn"

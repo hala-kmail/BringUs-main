@@ -13,6 +13,7 @@ import useProducts from '../../hooks/useProducts';
 import './Navbar.css';
 
 const Navbar = () => {
+  
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();

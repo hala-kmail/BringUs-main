@@ -99,6 +99,51 @@
   margin-left: 4px;
 }
 
+/* تحسين مظهر عرض الكمية */
+.quantity-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 60px;
+}
+
+.current-quantity {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.quantity-available {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* تحسين مظهر الشريط السفلي للموبايل */
+.mobile-total-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-discount-info {
+  display: flex;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.mobile-discount-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.mobile-discount-amount {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 11px;
+}
+
 /* Simple total price for desktop */
 .cart-item-total.desktop-only {
   font-size: 16px;
@@ -760,7 +805,8 @@
   .mobile-total-section {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.5rem;
+    flex: 1;
   }
 
   .mobile-total-label {
@@ -1061,15 +1107,28 @@
 
   .mobile-cart-item .quantity-display {
     background: white;
-    padding: 0 1rem;
+    padding: 0 0.75rem;
     height: 36px;
     display: flex;
     align-items: center;
     font-weight: 600;
     color: #1f2937;
-    min-width: 3rem;
+    min-width: 4rem;
     text-align: center;
     justify-content: center;
+    gap: 3px;
+  }
+
+  .mobile-cart-item .current-quantity {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .mobile-cart-item .quantity-available {
+    font-size: 10px;
+    color: #6b7280;
+    font-weight: 400;
+    opacity: 0.8;
   }
 
   .mobile-cart-item .quantity-available {

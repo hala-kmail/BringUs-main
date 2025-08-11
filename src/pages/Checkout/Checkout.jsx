@@ -842,7 +842,7 @@ const handleSendWhatsApp = async () => {
                 <svg width="32" height="32" fill="none" stroke="var(--primary-color)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="var(--primary-color)" strokeWidth="2" fill="#e6f9ed"/><path d="M9 12l2 2 4-4" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
               <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>{t('checkout.payment_successful')}</div>
-              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{getCurrencySymbol(store?.settings.currency || 'ILS')}{(cartTotalsState.subtotal + getShippingPrice()).toFixed(2)}</div>
+              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{getCurrencySymbol(store?.settings.currency || 'ILS')}{(cartTotalsState.total + getShippingPrice()).toFixed(2)}</div>
               
               {/* QR Code - Show if payment method has QR code */}
               { selectedPaymentMethod?.qrCode?.qrCodeImage && (

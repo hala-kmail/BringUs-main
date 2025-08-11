@@ -266,7 +266,22 @@ const useProducts = () => {
 
   //-----------------------------------Fetch all products by store------------------------------------------------   
   const fetchAllProductsByStore = useCallback(async (targetStoreId = null) => {
-    
+    // Check if we're already fetching for this store
+    if (isGlobalFetching && storeId.current === targetStoreId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Already fetching all products for store:', targetStoreId);
+      }
+      return null;
+    }
+
+    // Check cooldown
+    const now = Date.now();
+    if (now - lastFetchTime < FETCH_COOLDOWN) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Fetch cooldown active, skipping fetch for store:', targetStoreId);
+      }
+      return null;
+    }
 
     if (!targetStoreId) {
       console.log('No store ID available for fetching all products');
@@ -274,6 +289,11 @@ const useProducts = () => {
     }
 
     try {
+      // Set global fetching state and update last fetch time
+      isGlobalFetching = true;
+      storeId.current = targetStoreId;
+      lastFetchTime = now;
+      
       setLoading(true);
       setError(null);
 
@@ -300,7 +320,7 @@ const useProducts = () => {
       if (result.success && result.data) {
         setAllProducts(result.data);
         // Update the products in the context
-       
+      
         if (updateAllProducts) {
           updateAllProducts(result.data);
         }
@@ -325,13 +345,58 @@ const useProducts = () => {
       };
     } finally {
       setLoading(false);
+      isGlobalFetching = false;
     }
-  }, [getStoreId, token, updateAllProducts]);
+  }, [updateAllProducts]);
   useEffect(() => {
     if (store?._id) {
-      fetchAllProductsByStore(store._id);
+      // Check if we already have all products for this store
+      const currentStoreId = store._id;
+      
+      // First check if we already have products in state
+      if (allProducts.length > 0) {
+        const firstProduct = allProducts[0];
+        if (firstProduct && (firstProduct.storeId === currentStoreId || firstProduct.store?._id === currentStoreId)) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Using existing all products from state:', allProducts.length, 'products');
+          }
+          return; // Don't fetch if we already have valid data in state
+        }
+      }
+      
+      // Then check localStorage
+      const storedAllProducts = localStorage.getItem('allProductsInfo');
+      if (storedAllProducts) {
+        try {
+          const parsedProducts = JSON.parse(storedAllProducts);
+          // Check if we have products and they're not empty
+          if (parsedProducts && Array.isArray(parsedProducts) && parsedProducts.length > 0) {
+            // Check if the first product has the same store ID (basic validation)
+            const firstProduct = parsedProducts[0];
+            if (firstProduct && (firstProduct.storeId === currentStoreId || firstProduct.store?._id === currentStoreId)) {
+              if (process.env.NODE_ENV === 'development') {
+                console.log('Using cached all products from localStorage:', parsedProducts.length, 'products');
+              }
+              setAllProducts(parsedProducts);
+              if (updateAllProducts) {
+                updateAllProducts(parsedProducts);
+              }
+              return; // Don't fetch if we already have valid cached data
+            }
+          }
+        } catch (err) {
+          console.warn('Error parsing cached all products:', err);
+          localStorage.removeItem('allProductsInfo');
+        }
+      }
+      
+      // Only fetch if we don't have valid data anywhere
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Fetching all products for store:', currentStoreId);
+      }
+      fetchAllProductsByStore(currentStoreId);
     }
-  }, []);
+  }, [store?._id, updateAllProducts, allProducts.length]);
 
   // Fetch single product by ID
   const fetchProductById = useCallback(async (productId) => {
