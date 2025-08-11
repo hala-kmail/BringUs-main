@@ -133,7 +133,9 @@ const OrderSummary = ({
         <div className="order-totals">
           <div className="total-row">
             <span>{t('checkout.subtotal')}</span>
-            {/* <span>{currencySymbol}{cartTotals.subtotal.toFixed(2)}</span> */}
+            <span>
+  {currencySymbol}{cartTotals && cartTotals.subtotal !== undefined ? cartTotals.subtotal.toFixed(2) : '0.00'}
+</span>
           </div>
           
           {/* عرض خصم المستخدم التاجر الجملة */}

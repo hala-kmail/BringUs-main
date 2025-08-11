@@ -380,18 +380,18 @@ const UserOrders = () => {
                    <span className="detail-label">{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
                    <span className="detail-value">
                      {formatPrice(
-                       selectedOrder.items?.reduce((sum, item) => {
-                         const wholesalePrice = getPriceByUserRole({ 
-                           compareAtPrice: item.pricePerUnit,
-                           finalPrice: item.pricePerUnit 
-                         });
-                         return sum + (wholesalePrice * item.quantity);
-                       }, 0) || 0,
-                       selectedOrder.currency || store?.settings?.currency || 'USD'
+                       selectedOrder.pricing.subtotal, store?.settings?.currency || 'USD'
                      )}
                    </span>
                  </div>
-                 
+                 {selectedOrder.pricing.discount > 0 && (
+                   <div className="detail-row">
+                   <span className="detail-label">{currentLang === 'ar' ? 'خصم التاجر الجملة:' : 'Wholesaler Discount:'}</span>
+                   <span className="detail-value">
+                     {selectedOrder.pricing.discount}%(-{formatPrice(selectedOrder.pricing.subtotal * selectedOrder.pricing.discount / 100, store?.settings?.currency || 'USD')})
+                   </span>
+                 </div>
+                 )}
                  {selectedOrder.deliveryArea && selectedOrder.deliveryArea.price > 0 && (
                    <div className="detail-row">
                      <span className="detail-label">{currentLang === 'ar' ? 'رسوم التوصيل:' : 'Shipping Cost:'}</span>
@@ -405,15 +405,7 @@ const UserOrders = () => {
                    <span className="detail-label">{currentLang === 'ar' ? 'المجموع النهائي:' : 'Final Total:'}</span>
                    <span className="detail-value total-amount">
                      {formatPrice(
-                       (selectedOrder.items?.reduce((sum, item) => {
-                         const wholesalePrice = getPriceByUserRole({ 
-                           compareAtPrice: item.pricePerUnit,
-                           finalPrice: item.pricePerUnit 
-                         });
-                         return sum + (wholesalePrice * item.quantity);
-                       }, 0) || 0) + 
-                       (selectedOrder.deliveryArea?.price || 0),
-                       selectedOrder.currency || store?.settings?.currency || 'USD'
+                       (selectedOrder.price)|| store?.settings?.currency || 'USD'
                      )}
                    </span>
                  </div>

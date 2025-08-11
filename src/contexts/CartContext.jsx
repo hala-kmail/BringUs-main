@@ -961,14 +961,14 @@ export const CartProvider = ({ children }) => {
     const itemsCount = cartItems.length;
    
     // الشحن: استخدم shippingAreaId من state أو من localStorage
-    const currentShippingAreaId = shippingAreaId || getDefaultAreaIdFromLocalStorage();
+    const currentShippingAreaId = shippingAreaId;
     const shipping = getShippingPriceByAreaId(currentShippingAreaId);
     
     // تطبيق خصم المستخدم التاجر الجملة على توتال السلة (وليس على المنتجات الفردية)
     const userDiscount = getCartTotalDiscount(subtotal);
     const totalAfterUserDiscount = subtotal - userDiscount;
     
-    const total = totalAfterUserDiscount + shipping;
+    const total = totalAfterUserDiscount||subtotal;
 
     console.log('subtotal', subtotal);
     console.log('userDiscount', userDiscount);
@@ -990,16 +990,10 @@ export const CartProvider = ({ children }) => {
   const updateShippingArea = (areaId) => {
     setShippingAreaId(areaId);
     // حفظ في localStorage
-    localStorage.setItem('selectedShippingArea', areaId);
+    // localStorage.setItem('selectedShippingArea', areaId);
   };
 
-  // تحميل منطقة التوصيل المحفوظة عند التحميل
-  useEffect(() => {
-    const savedShippingArea = localStorage.getItem('selectedShippingArea');
-    if (savedShippingArea) {
-      setShippingAreaId(savedShippingArea);
-    }
-  }, []);
+ 
 
   // التحقق من وجود منتج في الكارت
   const isInCart = (productId, selectedColor = '', otherSpecs = {}) => {
