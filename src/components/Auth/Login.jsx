@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
 import './Auth.css';
 
 const Login = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
   
   const [formData, setFormData] = useState({

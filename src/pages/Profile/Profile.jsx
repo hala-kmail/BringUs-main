@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
@@ -11,7 +11,7 @@ import './Profile.css';
 import { formatPrice } from '../../utils/currencyUtils';
 const Profile = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const currentLang = i18n.language;
   const { user, store, updateUser } = useAppData();
   const { wishlistItems } = useWishlist();

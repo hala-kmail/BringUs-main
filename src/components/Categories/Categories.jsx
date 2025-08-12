@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import useCategories from '../../hooks/useCategories';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './Categories.css';
 
 const Categories = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [activeMainCategory, setActiveMainCategory] = useState(null);
   const currentLang = i18n.language;

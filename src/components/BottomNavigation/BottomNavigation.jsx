@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { getCurrentAffiliateCode } from '../../App';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './BottomNavigation.css';
 
 const BottomNavigation = () => {
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const location = useLocation();
   const { t } = useTranslation();
   const { count: wishlistCount } = useWishlist();
@@ -16,6 +18,9 @@ const BottomNavigation = () => {
   const cartTotals = getCartTotals();
   const cartItemsCount = cartTotals.itemsCount;
 
+  // Get current affiliate code for active state checking
+  const currentAffiliateCode = getCurrentAffiliateCode();
+  
   const navItems = [
     {
       id: 'home',
@@ -26,7 +31,7 @@ const BottomNavigation = () => {
         </svg>
       ),
       path: '/',
-      isActive: location.pathname === '/'
+      isActive: location.pathname === '/' || location.pathname === `/affiliate/${currentAffiliateCode}/home`
     },
     {
       id: 'categories',
@@ -37,7 +42,8 @@ const BottomNavigation = () => {
         </svg>
       ),
       path: '/mobile-categories',
-      isActive: location.pathname === '/mobile-categories' || location.pathname.startsWith('/category/')
+      isActive: location.pathname === '/mobile-categories' || location.pathname.startsWith('/category/') || 
+                (currentAffiliateCode && (location.pathname === `/affiliate/${currentAffiliateCode}/mobile-categories` || location.pathname.startsWith(`/affiliate/${currentAffiliateCode}/category/`)))
     },
     {
       id: 'shop',
@@ -48,7 +54,7 @@ const BottomNavigation = () => {
         </svg>
       ),
       path: '/shop',
-      isActive: location.pathname === '/shop',
+      isActive: location.pathname === '/shop' || (currentAffiliateCode && location.pathname === `/affiliate/${currentAffiliateCode}/shop`),
       isShopButton: true
     },
     {
@@ -64,7 +70,7 @@ const BottomNavigation = () => {
         </svg>
       ),
       path: '/wishlist',
-      isActive: location.pathname === '/wishlist',
+      isActive: location.pathname === '/wishlist' || (currentAffiliateCode && location.pathname === `/affiliate/${currentAffiliateCode}/wishlist`),
       badge: wishlistCount > 0 ? wishlistCount : null
     },
     {
@@ -76,7 +82,7 @@ const BottomNavigation = () => {
         </svg>
       ),
       path: '/cart',
-      isActive: location.pathname === '/cart',
+      isActive: location.pathname === '/cart' || (currentAffiliateCode && location.pathname === `/affiliate/${currentAffiliateCode}/cart`),
       badge: cartItemsCount > 0 ? cartItemsCount : null
     }
   ];

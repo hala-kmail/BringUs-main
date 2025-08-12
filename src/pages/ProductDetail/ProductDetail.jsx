@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
@@ -24,7 +25,7 @@ const ProductDetail = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const { id: productId } = useParams();
   const currentLang = i18n.language;
   const { categories: allCategories } = useAppData();

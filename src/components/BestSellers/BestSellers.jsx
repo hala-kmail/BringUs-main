@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import ProductCard from '../ProductCard/ProductCard';
 import './BestSellers.css';
 
@@ -13,7 +14,7 @@ const BestSellers = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const [bestSellerProducts, setBestSellerProducts] = useState([]);
   const { categories } = useCategories();
   

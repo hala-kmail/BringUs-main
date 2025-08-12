@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useDeliveryMethods } from '../../hooks/useDeliveryMethods';
@@ -23,7 +24,7 @@ import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 //-----------------------------------Checkout------------------------------------------------  
 const Checkout = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const { cartItems, getCartTotals, clearCart, loading: cartLoading, updateShippingArea, shippingAreaId } = useCart();
   const { store, user } = useAppData();
   const currentLang = i18n.language;

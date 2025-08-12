@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { formatPrice } from '../../utils/currencyUtils';
 import { getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
@@ -15,7 +16,7 @@ import './Cart.css';
 
 const Cart = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const { 
     cartItems, 
     removeFromCart, 

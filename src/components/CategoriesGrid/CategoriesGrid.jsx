@@ -1,12 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import useCategories from '../../hooks/useCategories';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './CategoriesGrid.css';
 
 const CategoriesGrid = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const currentLang = i18n.language;
 
   // Use categories from API

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import useUserOrders from '../../hooks/useUserOrders';
 import { formatPrice } from '../../utils/currencyUtils';
 import { getPriceByUserRole } from '../../utils/productUtils';
@@ -9,7 +9,7 @@ import Toast from '../Toast/Toast';
 import './UserOrders.css';
 const UserOrders = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const currentLang = i18n.language;
   const { store, user } = useAppData();
   

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -15,7 +16,7 @@ import './Navbar.css';
 const Navbar = () => {
   
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const location = useLocation();
   const currentLang = i18n.language;
   const { isAuthenticated, user, clearData, store } = useAppData();
