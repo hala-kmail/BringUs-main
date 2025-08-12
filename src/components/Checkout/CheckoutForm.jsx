@@ -77,9 +77,14 @@ const CheckoutForm = ({
     {/* دائماً: الاسم، الهاتف */}
     <div className="form-row">
       <div className="form-group">
-        <label htmlFor="fullName">{t('checkout.full_name')}*</label>
-        <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder={t('checkout.full_name_placeholder')} className={formErrors.fullName ? 'error' : ''} />
-        {formErrors.fullName && <span className="error-message">{formErrors.fullName}</span>}
+        <label htmlFor="firstName">{t('checkout.first_name')}*</label>
+        <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder={t('checkout.first_name_placeholder')} className={formErrors.firstName ? 'error' : ''} />
+        {formErrors.firstName && <span className="error-message">{formErrors.firstName}</span>}
+      </div>
+      <div className="form-group">
+        <label htmlFor="lastName">{t('checkout.last_name')}*</label>
+        <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder={t('checkout.last_name_placeholder')} className={formErrors.lastName ? 'error' : ''} />
+        {formErrors.lastName && <span className="error-message">{formErrors.lastName}</span>}
       </div>
       <div className="form-group">
         <label htmlFor="phone">{t('checkout.phone')}  *</label>

@@ -71,7 +71,7 @@ const useOrders = () => {
 
       if (isGuestOrder) {
         // Guest order endpoint
-        endpoint = `${API_BASE_URL}/orders/store/${storeId}/guest`;
+        endpoint = `${API_BASE_URL}/orders/store/${storeId}`;
         
         // Get guest ID from localStorage or generate one
         let guestId = localStorage.getItem('guestId');
@@ -98,7 +98,8 @@ const useOrders = () => {
         };
         
         console.log('createOrder - Guest order data:', requestData);
-      } else {
+      } 
+      else {
         // Authenticated user order endpoint
         endpoint = `${API_BASE_URL}/orders/store/${storeId}`;
         requestData = orderData;

@@ -318,7 +318,10 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
       user: user ? 'User exists' : 'No user',
       store: store ? `Store ID: ${store._id}` : 'No store',
       categories: categories ? `${categories.length} categories` : 'No categories',
-      products: products.length > 0 ? `${products.length} products` : 'No products',
+      products: products?.length > 0 
+      ? `${products.length} products` 
+      : 'No products',
+    
       sliders: sliders ? `${sliders.length} sliders` : 'No sliders',
       isLoading,
       isInitialized,

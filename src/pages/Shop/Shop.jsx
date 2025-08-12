@@ -26,7 +26,7 @@ const Shop = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-
+  const {store} = useAppData();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   // const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
@@ -39,12 +39,13 @@ const Shop = () => {
     searchProducts, 
     fetchProductsByCategory,
     fetchProductsWithFilters,
+    fetchAllProductsByStore,
     getAllAvailableColors,
     getAllAvailableColorsForDisplay,
     getAllAvailableProductLabels
   } = useProducts();
   const { categories, getMainCategories, getSubCategories, loading: categoriesLoading } = useCategories();
-  const { store, features } = useAppData();
+    const { features } = useAppData();
 
   // API-based products state
   const [apiProducts, setApiProducts] = useState([]);
@@ -146,7 +147,7 @@ const Shop = () => {
       }
 
       const result = await fetchProductsWithFilters(apiFilters);
-
+      // console.log('resultttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt', result);
       if (result && result.products) {
         setApiProducts(result.products);
         setApiPagination(result.pagination);
@@ -203,7 +204,8 @@ const Shop = () => {
     const productLabelsLegacy = searchParams.get('productLabels');
     
     if (category) {
-      const categoryId = parseInt(category);
+      const categoryId = category;
+      console.log('categoryId', categoryId);
       if (!isNaN(categoryId)) {
         setFilters(prev => ({
           ...prev,
@@ -213,7 +215,8 @@ const Shop = () => {
     }
     
     if (feature) {
-      const featureId = parseInt(feature);
+      const featureId = feature;
+      console.log('featureIhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhd', featureId);
       if (!isNaN(featureId)) {
         setFilters(prev => ({
           ...prev,
@@ -231,10 +234,12 @@ const Shop = () => {
       source.forEach(item => {
         const parts = item.split('+').map(s => s.trim()).filter(Boolean);
         parts.forEach(p => {
-          const name = p.startsWith('#') ? hexToColorName(p) : p;
+          // const name = p.startsWith('#') ? hexToColorName(p) : p;
+          const name = p;
           if (name && !collected.includes(name)) collected.push(name);
         });
       });
+      console.log('collectttttttttttttttttttttttttttted', collected);
       setFilters(prev => ({
         ...prev,
         colors: collected
@@ -246,6 +251,7 @@ const Shop = () => {
       const labels = productLabelsArrayParams && productLabelsArrayParams.length > 0
         ? productLabelsArrayParams
         : productLabelsLegacy.split(',').filter(Boolean);
+      console.log('labelsssssssssssssssssssssssssssssssssssssssssssssssssssssssssss', labels);
       setFilters(prev => ({
         ...prev,
         productLabels: labels
@@ -269,7 +275,9 @@ const Shop = () => {
           categories: prev.categories.filter(cat => cat !== value)
         }));
       }
-    } else if (filterType === 'priceRange') {
+    }
+    
+    else if (filterType === 'priceRange') {
       setFilters(prev => ({
         ...prev,
         priceRange: value
@@ -506,7 +514,7 @@ const Shop = () => {
     filters.categories.forEach(catId => {
       const category = getCategoryById(catId);
       if (category) {
-        active.push({ type: 'category', value: catId, label: category.name });
+        active.push({ type: 'category', value: catId, label: currentLang === 'ar' ? category.nameAr : category.nameEn });
       }
     });
     
@@ -541,7 +549,8 @@ const Shop = () => {
 
   // Products to display (use API products when available, fallback to all products)
   const displayProducts = apiProducts.length > 0 ? apiProducts : (products || []);
-
+  // console.log('apiProducts', apiProducts);
+  // console.log('displayProducts', displayProducts);
   // Total items for pagination
   const totalItems = apiPagination ? apiPagination.totalItems : (products ? products.length : 0);
 

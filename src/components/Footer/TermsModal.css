@@ -162,11 +162,11 @@
 }
 
 .login-button {
-  background: #10b981;
+  /* background: #10b981; */
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 0.75rem 1.5rem;
+  /* padding: 0.75rem 1.5rem; */
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
@@ -178,7 +178,7 @@
 }
 
 .login-button:hover {
-  background: #059669;
+  /* background: #059669; */
   transform: translateY(-1px);
 }
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './ProductCard.css';
 import CountdownTimer from '../CountdownTimer/CountdownTimer';
-import { getSimpleColorsFromColorsField, isDiscountActive, getEffectivePrice, getPriceByUserRole, getOriginalPriceByUserRole ,isWholesaler} from '../../utils/productUtils';
+import { getSimpleColorsFromColorsField, isDiscountActive, getEffectivePrice, getPriceByUserRole, getOriginalPriceByUserRole ,isWholesaler,isWholesalerUser} from '../../utils/productUtils';
 import { useCart } from '../../contexts/CartContext';
 import { namer } from 'color-namer';
 import { useAppData } from '../../contexts/AppDataContext';
@@ -253,7 +253,7 @@ const ProductCard = ({
             {currentLang === 'ar' ? 'تخفيض' : 'Sale'}
           </span>
         )}
-        {product.stockStatus === 'out_of_stock' && (
+        {product.stock === 0 && (
           <span className="product-label-new product-out-of-stock-label">
             {currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock'}
           </span>
@@ -284,7 +284,7 @@ const ProductCard = ({
       </div>
 
       {/* Discount Badge - Top Left */}
-      {product.salePercentage > 0 && (
+      {!isWholesalerUser() && product.salePercentage > 0 && (
         <div className="discount-badge-new">
           -{product.salePercentage}%
         </div>
@@ -340,7 +340,11 @@ const ProductCard = ({
         <button
           className="add-to-cart-btn-new"
           onClick={handleAddToCartClick}
-          disabled={product.availableQuantity === 0 || isAddToCartLoading}
+          disabled={
+            isAddToCartLoading || product.stock === 0
+            // !Array.isArray(product.specificationValues) ||
+            // product.specificationValues.reduce((sum, spec) => sum + (spec.quantity || 0), 0) === 0
+          }
         >
           {isAddToCartLoading ? (
             <div className="add-to-cart-loading-spinner"></div>

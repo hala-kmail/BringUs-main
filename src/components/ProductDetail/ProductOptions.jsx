@@ -17,7 +17,7 @@ const ProductOptions = ({
 }) => {
   // استخدم فقط getSimpleColorsFromColorsField
   const simpleColors = getSimpleColorsFromColorsField(product);
-
+  
 
   // ربط المواصفات مع بيانات meta
   const organizedSpecs = React.useMemo(() => {
@@ -89,6 +89,31 @@ const ProductOptions = ({
     }));
   };
 
+  function getColorStyle(color) {
+    if (typeof color === 'string' && color.includes('+')) {
+      const parts = color.split('+').map(c => c.trim());
+      const segment = 100 / parts.length;
+      const stops = parts
+        .map((c, idx) => {
+          const start = Math.round(idx * segment);
+          const end = Math.round((idx + 1) * segment);
+          return `${c} ${start}%, ${c} ${end}%`;
+        })
+        .join(', ');
+      const borderNeeded = parts.some(p => {
+        const lower = p.toLowerCase();
+        return lower === '#ffffff' || lower === '#fff' || lower === 'white';
+      });
+      return {
+        background: `linear-gradient(90deg, ${stops})`,
+        border: borderNeeded ? '2px solid #e2e8f0' : 'none'
+      };
+    }
+    return {
+      backgroundColor: color,
+      border: color.toLowerCase() === '#ffffff' || color.toLowerCase() === '#fff' ? '2px solid #e2e8f0' : 'none'
+    };
+  }
   // Compute effective availability for current selection
   const effectiveAvailable = React.useMemo(() => {
     // Start with product availableQuantity if provided, else a large number
@@ -263,3 +288,6 @@ const ProductOptions = ({
 };
 
 export default ProductOptions; 
+
+
+

@@ -238,9 +238,8 @@ const UserOrders = () => {
                 <div className="order-total">
                   <span className="total-amount">
                     {formatPrice(
-                      (order.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0) + 
-                      (order.deliveryArea?.price || 0), 
-                      order.currency || store?.settings?.currency || 'USD'
+                      order.pricing.total, 
+                      store?.settings?.currency || 'USD'
                     )}
                   </span>
                 </div>

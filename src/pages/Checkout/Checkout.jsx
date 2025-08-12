@@ -15,6 +15,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import './Checkout.css';
 import namer from 'color-namer';
+import { getUserRole } from '../../utils/productUtils';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import CheckoutForm from '../../components/Checkout/CheckoutForm';
 import OrderSummary from '../../components/Checkout/OrderSummary';
@@ -22,6 +23,7 @@ import { validateRequired, validateAndSanitizePhone } from '../../utils/validati
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 //-----------------------------------Checkout------------------------------------------------  
 const Checkout = () => {
+
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { cartItems, getCartTotals, clearCart, loading: cartLoading, updateShippingArea, shippingAreaId } = useCart();
@@ -29,10 +31,10 @@ const Checkout = () => {
   const currentLang = i18n.language;
   
   // Debug logging for store and user data
-  console.log('Checkout - Store from context:', store);
-  console.log('Checkout - User from context:', user);
-  console.log('Checkout - Store ID:', store?._id);
-  console.log('Checkout - User ID:', user?._id);
+  // console.log('Checkout - Store from context:', store);
+  // console.log('Checkout - User from context:', user);
+  // console.log('Checkout - Store ID:', store?._id);
+  // console.log('Checkout - User ID:', user?._id);
   
   // جلب طرق التوصيل من API
   const { deliveryMethods, loading: deliveryMethodsLoading, error: deliveryMethodsError } = useDeliveryMethods(store?._id);
@@ -43,6 +45,11 @@ const Checkout = () => {
   // إدارة الطلبات
   const { createOrder, loading: orderLoading, error: orderError } = useOrders();
   
+  const isWholesalerUser = () => {
+    const userRole = getUserRole();
+    return userRole === 'wholesaler';
+  };
+
   // دالة للحصول على عنوان المتجر
   const getStoreAddress = () => {
     if (!store?.contact?.address) return null;
@@ -62,7 +69,8 @@ const Checkout = () => {
   const storeAddress = getStoreAddress();
   
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     deliveryMethodId: '',
     address: '',
@@ -230,7 +238,8 @@ const Checkout = () => {
         
         setFormData(prev => ({
           ...prev,
-          fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
           phone: user.phone || '',
           address: defaultAddress?.street || '',
           district: defaultAddress?.state || '',
@@ -278,7 +287,8 @@ const Checkout = () => {
 //-----------------------------------validateForm------------------------------------------------  
   const validateForm = () => {
     const errors = {};
-    errors.fullName = validateRequired(formData.fullName, t('checkout.validation.name_required'));
+    errors.firstName = validateRequired(formData.firstName, t('checkout.validation.name_required'));
+    errors.lastName = validateRequired(formData.lastName, t('checkout.validation.name_required'));
     const phoneResult = validateAndSanitizePhone(formData.phone, t('checkout.validation.phone_invalid'));
     errors.phone = phoneResult.error || validateRequired(formData.phone, t('checkout.validation.phone_required'));
     
@@ -390,27 +400,25 @@ const handleSendWhatsApp = async () => {
         selectedColors: item.selectedColors || []
       })),
       shippingAddress: {
-        fullName: formData.fullName,
-        firstName: formData.fullName.split(' ')[0] || '',
-        lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
-        email: 'guest@example.com', // You might want to add email field to the form
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email || '', // You might want to add email field to the form
         phone: formData.phone,
         street: formData.address,
         city: formData.city,
         district: formData.district,
-        country: 'Palestine',
+        country: '',
         zipCode: ''
       },
       billingAddress: {
-        fullName: formData.fullName,
-        firstName: formData.fullName.split(' ')[0] || '',
-        lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
-        email: 'guest@example.com', // You might want to add email field to the form
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email || '', // You might want to add email field to the form
         phone: formData.phone,
         street: formData.address,
         city: formData.city,
         district: formData.district,
-        country: 'Palestine',
+        country: '',
         zipCode: ''
       },
       paymentInfo: {
@@ -513,13 +521,14 @@ const handleSendWhatsApp = async () => {
     
     // إنشاء الطلب في قاعدة البيانات
     const createdOrder = await createOrder(orderData);
-    console.log('Order created successfully:', createdOrder);
+    console.log('Order created successfully2:', createdOrder);
 
     // إرسال رسالة الواتساب مع معلومات الطلب
     const whatsappOrderData = {
       orderNumber: createdOrder.orderNumber,
       customerInfo: formData,
       items: cartItems,
+      pricing:createdOrder.pricing,
       totals: { ...cartTotalsState, shipping: getShippingPrice(), total: cartTotalsState.subtotal + getShippingPrice() },
       orderDate: new Date().toISOString(),
       deliveryMethod: deliveryMethod,
@@ -559,7 +568,7 @@ const handleSendWhatsApp = async () => {
       ? ` *طلب جديد*\n`
       : ` *New Order*\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
-    
+   
     // معلومات الطلب - Order Information
     message += isArabic 
       ? ` *رقم الطلب:* ${orderNumber || 'غير محدد'}\n`
@@ -576,8 +585,8 @@ const handleSendWhatsApp = async () => {
       ? ` *معلومات العميل:*\n`
       : ` *Customer Information:*\n`;
     message += isArabic 
-      ? ` *الاسم:* ${customerInfo.fullName || 'غير محدد'}\n`
-      : ` *Name:* ${customerInfo.fullName || 'N/A'}\n`;
+      ? ` *الاسم:* ${customerInfo.firstName} ${customerInfo.lastName || 'غير محدد'}\n`
+      : ` *Name:* ${customerInfo.firstName} ${customerInfo.lastName || 'N/A'}\n`;
     message += isArabic 
       ? ` الهاتف: ${customerInfo.phone || 'غير محدد'}\n`
       : ` Phone: ${customerInfo.phone || 'N/A'}\n`;
@@ -629,7 +638,8 @@ const handleSendWhatsApp = async () => {
       };
       
       const itemName = getItemName(item, currentLang);
-      const itemPrice = item.product.finalPrice || item.priceAtAdd || item.price || 0;
+      const isWholesale = isWholesalerUser();
+      const itemPrice = isWholesale ? item.product.compareAtPrice : item.product.finalPrice || item.priceAtAdd || item.price || 0;
       const currencySymbol = getCurrencySymbol(store?.settings.currency || 'ILS');
       
       message += `\n${index + 1}. *${itemName}*\n`;
@@ -679,15 +689,22 @@ const handleSendWhatsApp = async () => {
     
     const currencySymbol = getCurrencySymbol(store?.settings.currency || 'ILS');
     message += isArabic 
-      ? ` المجموع الفرعي: ${currencySymbol}${totals.subtotal.toFixed(2)}\n`
-      : ` Subtotal: ${currencySymbol}${totals.subtotal.toFixed(2)}\n`;
+      ? ` المجموع الفرعي: ${currencySymbol}${orderData.pricing.subtotal.toFixed(2)}\n`
+      : ` Subtotal: ${currencySymbol}${orderData.pricing.subtotal.toFixed(2)}\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      if(isWholesalerUser()){
+      message+= isArabic 
+      ? ` خصم التاجر الجملة: ${orderData.pricing.discount}%(-${currencySymbol}${orderData.pricing.subtotal * orderData.pricing.discount / 100})\n`
+      : ` Wholesaler Discount: ${orderData.pricing.discount}%(-${currencySymbol}${orderData.pricing.subtotal * orderData.pricing.discount / 100})\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    }
     message += isArabic 
-      ? ` رسوم الشحن: ${totals.shipping === 0 ? ' مجاني' : `${currencySymbol}${totals.shipping.toFixed(2)}`}\n`
-      : ` Shipping: ${totals.shipping === 0 ? ' Free' : `${currencySymbol}${totals.shipping.toFixed(2)}`}\n`;
+      ? ` رسوم الشحن: ${orderData.pricing.shipping === 0 ? ' مجاني' : `${currencySymbol}${orderData.pricing.shipping.toFixed(2)}`}\n`
+      : ` Shipping: ${orderData.pricing.shipping === 0 ? ' Free' : `${currencySymbol}${orderData.pricing.shipping.toFixed(2)}`}\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n`;
     message += isArabic 
-      ? ` *الإجمالي النهائي: ${currencySymbol}${totals.total.toFixed(2)}*\n`
-      : ` *Final Total: ${currencySymbol}${totals.total.toFixed(2)}*\n`;
+      ? ` *الإجمالي النهائي: ${currencySymbol}${orderData.pricing.total.toFixed(2)}*\n`
+      : ` *Final Total: ${currencySymbol}${orderData.pricing.total.toFixed(2)}*\n`;
     
 
     

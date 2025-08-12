@@ -74,9 +74,10 @@ const SidebarFilters = ({
 
   // Get subcategories for a category
   const getSubCategories = (categoryId) => {
-    return categories.filter(cat => 
-      cat.parentId === categoryId || cat.parent === categoryId
-    );
+    return categories.filter(cat => {
+      // console.log('cat', cat.parent?._id);
+      return cat.parent?._id === categoryId || cat.parent?._id === categoryId
+    });
   };
 
   // Get all descendant category IDs
@@ -156,6 +157,7 @@ const SidebarFilters = ({
   }
 
   function getColorStyle(color) {
+    
     if (typeof color === 'string' && color.includes('+')) {
       const parts = color.split('+').map(c => c.trim());
       const segment = 100 / parts.length;
@@ -188,13 +190,13 @@ const SidebarFilters = ({
       (!parentId && !cat.parentId && !cat.parent)
     );
 
-    return mainCategories.map(category => {
+    const renderCategory = (category) => {
       const categoryId = category.id || category._id;
       const subcategories = getSubCategories(categoryId);
       const isExpanded = expandedCategories[categoryId];
       const isSelected = filters.categories.includes(categoryId);
       const hasSubcategories = subcategories.length > 0;
-
+    
       return (
         <div key={categoryId} className="category-filter-item">
           <div className="category-main-filter">
@@ -210,7 +212,7 @@ const SidebarFilters = ({
                 {currentLang === 'ar' ? category.nameAr : category.nameEn}
               </span>
             </label>
-            
+    
             {hasSubcategories && (
               <button
                 className={`category-expand-btn ${isExpanded ? 'expanded' : ''}`}
@@ -223,33 +225,19 @@ const SidebarFilters = ({
               </button>
             )}
           </div>
-          
+    
           {hasSubcategories && isExpanded && (
             <div className="subcategory-filters">
-              {subcategories.map(sub => {
-                const subId = sub.id || sub._id;
-                const isSubSelected = filters.categories.includes(subId);
-                
-                return (
-                  <label key={subId} className="subcategory-filter filter-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={isSubSelected}
-                      onChange={(e) => onFilterChange('category', subId, e.target.checked)}
-                      disabled={loading}
-                    />
-                    <span className="checkmark"></span>
-                    <span className="category-name">
-                      {currentLang === 'ar' ? sub.nameAr : sub.nameEn}
-                    </span>
-                  </label>
-                );
-              })}
+              {subcategories.map((sub) => renderCategory(sub))}
             </div>
           )}
         </div>
       );
-    });
+    };
+    
+    // في مكان return الرئيسي
+    return mainCategories.map((category) => renderCategory(category));
+    
   };
 
   return (
@@ -353,6 +341,7 @@ const SidebarFilters = ({
 
       {/* Colors Filter */}
       {allColors.length > 0 && (
+        // console.log('allColors', allColors),
         <div className="filter-section">
           <div 
             className="filter-section-header"
@@ -368,7 +357,10 @@ const SidebarFilters = ({
           
           {!collapsedSections.colors && (
             <div className="color-filters">
-              {allColors.map(color => (
+              {allColors.map(color => {
+                 const isMixed = color.includes('+');
+                return (
+                
                 <label key={color} className="color-filter">
                   <input
                     type="checkbox"
@@ -378,11 +370,14 @@ const SidebarFilters = ({
                   />
                   <span 
                     className={`color-swatch color-${getColorKey(color).toLowerCase()}`}
-                    style={getColorStyle(color)}
+                    style={{
+                      background: isMixed ? `linear-gradient(45deg, ${color.split('+').join(', ')})` : color,
+                      border: color === "#fff" || color === "#ffffff" ? "2px solid #e2e8f0" : undefined
+                    }}
                     title={getColorLabelLocal(color, t)}
                   ></span>
                 </label>
-              ))}
+              )})}
             </div>
           )}
         </div>
