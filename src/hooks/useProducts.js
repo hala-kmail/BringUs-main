@@ -266,6 +266,7 @@ const useProducts = () => {
 
   //-----------------------------------Fetch all products by store------------------------------------------------   
   const fetchAllProductsByStore = useCallback(async (targetStoreId = null) => {
+    // alert('fetchAllProductsByStore');
     // Check if we're already fetching for this store
     if (isGlobalFetching && storeId.current === targetStoreId) {
       if (process.env.NODE_ENV === 'development') {

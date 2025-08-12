@@ -6,8 +6,7 @@ export const getSimpleColorsFromColorsField = (product) => {
   if (!colorsField) return [];
 
   let colorsArray = [];
-  
-  // محاولة تحليل JSON إذا كان string
+
   if (typeof colorsField === 'string') {
     try {
       colorsArray = JSON.parse(colorsField);
@@ -16,7 +15,6 @@ export const getSimpleColorsFromColorsField = (product) => {
       return [];
     }
   } else if (Array.isArray(colorsField)) {
-    // إذا كان array مباشرة (للتوافق مع الكود القديم)
     colorsArray = colorsField;
   } else {
     return [];
@@ -28,20 +26,17 @@ export const getSimpleColorsFromColorsField = (product) => {
   
   colorsArray.forEach(colorItem => {
     if (Array.isArray(colorItem)) {
-      // إذا كان اللون مصفوفة (ألوان متعددة) فأضف كل لون منفرداً
-      colorItem.forEach(hex => {
-        const colorName = hexToColorName(hex);
-        extractedColors.push(colorName);
-      });
+      // بدل ما نفصلهم، نجمعهم بـ +
+      const joinedColors = colorItem.join('+');
+      extractedColors.push(joinedColors);
     } else if (typeof colorItem === 'string') {
-      // لون واحد كسطر نصي - تحويل hex إلى اسم اللون
-      const colorName = hexToColorName(colorItem);
-      extractedColors.push(colorName);
+      extractedColors.push(colorItem);
     }
   });
   
-  return extractedColors.filter(Boolean); // حذف القيم الفارغة
+  return extractedColors.filter(Boolean);
 };
+
 
 // دالة لاستخراج hex codes الأصلية للعرض في الواجهة
 export const getOriginalColorsFromColorsField = (product) => {
@@ -156,6 +151,11 @@ export const getOriginalPriceByUserRole = (product) => {
   return product.price || 0;
 };
 
+//---------------------------------isWholesalerUser---------------------------------
+export const isWholesalerUser = () => {
+  const userRole = getUserRole();
+  return userRole === 'wholesaler';
+};
 //---------------------------------getPriceWithUserDiscount---------------------------------
 // دالة جديدة لتطبيق خصم المستخدم التاجر الجملة
 export const getPriceWithUserDiscount = (basePrice) => {
@@ -255,12 +255,12 @@ export const hexToColorName = (hex) => {
     '3b82f6': 'blue',
     '2563eb': 'blue',
     '1d4ed8': 'blue',
-    'ffff00': 'yellow',
-    'ff0': 'yellow',
-    'f8e71c': 'yellow',
-    'eab308': 'yellow',
-    'facc15': 'yellow',
-    'fbbf24': 'yellow',
+    // 'ffff00': 'yellow',
+    // 'ff0': 'yellow',
+    // 'f8e71c': 'yellow',
+    // 'eab308': 'yellow',
+    // 'facc15': 'yellow',
+    // 'fbbf24': 'yellow',
     'ffa500': 'orange',
     'f97316': 'orange',
     'ea580c': 'orange',

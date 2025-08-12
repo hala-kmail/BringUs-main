@@ -75,7 +75,7 @@ const useOrders = () => {
 
       if (isGuestOrder) {
         // Guest order endpoint
-        endpoint = `${API_BASE_URL}/orders/store/${storeId}/guest`;
+        endpoint = `${API_BASE_URL}/orders/store/${storeId}`;
         
         // Get guest ID from localStorage or generate one
         let guestId = localStorage.getItem('guestId');
@@ -104,16 +104,13 @@ const useOrders = () => {
                 };
         
         console.log('createOrder - Guest order data:', requestData);
-                      } else {
-                  // Authenticated user order endpoint
-                  endpoint = `${API_BASE_URL}/orders/store/${storeId}`;
-                  requestData = {
-                    ...orderData,
-                    // Add affiliate code if available
-                    ...(storedAffiliateCode && { affiliate: storedAffiliateCode })
-                  };
-                  console.log('createOrder - Authenticated order data:', requestData);
-                }
+      } 
+      else {
+        // Authenticated user order endpoint
+        endpoint = `${API_BASE_URL}/orders/store/${storeId}`;
+        requestData = orderData;
+        console.log('createOrder - Authenticated order data:', requestData);
+      }
 
       console.log('createOrder - Endpoint:', endpoint);
       console.log('createOrder - Request data:', requestData);

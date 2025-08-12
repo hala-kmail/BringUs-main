@@ -164,7 +164,7 @@ export const CartProvider = ({ children }) => {
 
   const getShippingPriceByAreaId = (areaId) => {
     const shippingPrice = deliveryMethods.find(method => method._id === areaId)?.price || 0;
-    console.log('shippingPrice', shippingPrice);
+    // console.log('shippingPrice', shippingPrice);
     return shippingPrice;
   };
 
@@ -956,7 +956,7 @@ export const CartProvider = ({ children }) => {
       const itemPrice = getPriceByUserRole(item.product);
       return total + (itemPrice * (item.quantity || 1));
     }, 0);
- console.log('shippingAreaId', shippingAreaId);
+//  console.log('shippingAreaId', shippingAreaId);
     // Count unique products instead of total quantity
     const itemsCount = cartItems.length;
    
@@ -970,12 +970,12 @@ export const CartProvider = ({ children }) => {
     
     const total = totalAfterUserDiscount||subtotal;
 
-    console.log('subtotal', subtotal);
-    console.log('userDiscount', userDiscount);
-    console.log('totalAfterUserDiscount', totalAfterUserDiscount);
-    console.log('shipping', shipping);
-    console.log('total', total);
-    console.log('itemsCount', itemsCount);
+    // console.log('subtotal', subtotal);
+    // console.log('userDiscount', userDiscount);
+    // console.log('totalAfterUserDiscount', totalAfterUserDiscount);
+    // console.log('shipping', shipping);
+    // console.log('total', total);
+    // console.log('itemsCount', itemsCount);
     return {
       subtotal: subtotal,
       userDiscount: userDiscount,
