@@ -263,6 +263,7 @@ const Shop = () => {
   const handleFilterChange = async (filterType, value, checked = null) => {
     setCurrentPage(1); // Reset to first page when filters change
 
+    
     if (filterType === 'category') {
       if (checked) {
         setFilters(prev => ({
