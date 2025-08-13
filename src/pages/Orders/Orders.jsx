@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useAppData } from '../../contexts/AppDataContext';
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
@@ -9,7 +9,7 @@ import './Orders.css';
 
 const Orders = () => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const currentLang = i18n.language;
   const { user } = useAppData();
 

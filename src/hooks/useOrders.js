@@ -62,6 +62,10 @@ const useOrders = () => {
         throw new Error('Store ID is required');
       }
 
+      // Get affiliate code from localStorage if available
+      const storedAffiliateCode = localStorage.getItem('affiliateCode');
+      console.log('createOrder - affiliateCode:', storedAffiliateCode);
+
       // Determine if this is a guest order
       const isGuestOrder = !user || !user._id;
       console.log('createOrder - isGuestOrder:', isGuestOrder);
@@ -80,22 +84,24 @@ const useOrders = () => {
           localStorage.setItem('guestId', guestId);
         }
         
-        requestData = {
-          ...orderData,
-          guestId: guestId,
-          // Ensure shippingAddress has the required fields for guest orders
-          shippingAddress: {
-            firstName: orderData.shippingAddress?.fullName?.split(' ')[0] || orderData.shippingAddress?.firstName || '',
-            lastName: orderData.shippingAddress?.fullName?.split(' ').slice(1).join(' ') || orderData.shippingAddress?.lastName || '',
-            email: orderData.shippingAddress?.email || 'guest@example.com', // You might want to collect email in the form
-            phone: orderData.shippingAddress?.phone || '',
-            street: orderData.shippingAddress?.street || '',
-            city: orderData.shippingAddress?.city || '',
-            district: orderData.shippingAddress?.district || '',
-            country: orderData.shippingAddress?.country || 'Palestine',
-            zipCode: orderData.shippingAddress?.zipCode || ''
-          }
-        };
+                        requestData = {
+                  ...orderData,
+                  guestId: guestId,
+                  // Add affiliate code if available
+                  ...(storedAffiliateCode && { affiliate: storedAffiliateCode }),
+                  // Ensure shippingAddress has the required fields for guest orders
+                  shippingAddress: {
+                    firstName: orderData.shippingAddress?.fullName?.split(' ')[0] || orderData.shippingAddress?.firstName || '',
+                    lastName: orderData.shippingAddress?.fullName?.split(' ').slice(1).join(' ') || orderData.shippingAddress?.lastName || '',
+                    email: orderData.shippingAddress?.email || 'guest@example.com', // You might want to collect email in the form
+                    phone: orderData.shippingAddress?.phone || '',
+                    street: orderData.shippingAddress?.street || '',
+                    city: orderData.shippingAddress?.city || '',
+                    district: orderData.shippingAddress?.district || '',
+                    country: orderData.shippingAddress?.country || 'Palestine',
+                    zipCode: orderData.shippingAddress?.zipCode || ''
+                  }
+                };
         
         console.log('createOrder - Guest order data:', requestData);
       } 
@@ -128,6 +134,14 @@ const useOrders = () => {
       }
 
       console.log('Order created successfully:', data);
+      
+      // Clear affiliate code after successful order creation
+      const affiliateCodeToClear = localStorage.getItem('affiliateCode');
+      if (affiliateCodeToClear) {
+        console.log('Clearing affiliate code after successful order:', affiliateCodeToClear);
+        localStorage.removeItem('affiliateCode');
+      }
+      
       return data.data;
     } catch (err) {
       console.error('Error creating order:', err);
@@ -158,9 +172,15 @@ const useOrders = () => {
         localStorage.setItem('guestId', guestId);
       }
 
+      // Get affiliate code from localStorage if available
+      const guestStoredAffiliateCode = localStorage.getItem('affiliateCode');
+      console.log('createGuestOrder - affiliateCode:', guestStoredAffiliateCode);
+
       const requestData = {
         ...orderData,
-        guestId: guestId
+        guestId: guestId,
+        // Add affiliate code if available
+        ...(guestStoredAffiliateCode && { affiliate: guestStoredAffiliateCode })
       };
 
       console.log('Creating guest order with data:', requestData);
@@ -185,6 +205,14 @@ const useOrders = () => {
       }
 
       console.log('Guest order created successfully:', data);
+      
+      // Clear affiliate code after successful guest order creation
+      const guestAffiliateCode = localStorage.getItem('affiliateCode');
+      if (guestAffiliateCode) {
+        console.log('Clearing affiliate code after successful guest order:', guestAffiliateCode);
+        localStorage.removeItem('affiliateCode');
+      }
+      
       return data.data;
     } catch (err) {
       console.error('Error creating guest order:', err);

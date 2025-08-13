@@ -1,11 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../contexts/AppDataContext';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './AlmostFinishedCard.css';
 
 const AlmostFinishedCard = () => {
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const { t } = useTranslation();
   const { products } = useAppData();
   

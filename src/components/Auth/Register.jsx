@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';
 import { validateRequired, validatePhone, validateEmail, validateMinLength, validateMatch } from '../../utils/validation';
@@ -9,7 +10,7 @@ import { useAppData } from '../../contexts/AppDataContext';
 
 const Register = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const { createUser, loading, error, reset } = useCreateUser();
   const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();
   const { store } = useAppData();

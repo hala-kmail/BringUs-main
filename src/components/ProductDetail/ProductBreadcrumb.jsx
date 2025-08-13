@@ -1,8 +1,8 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 
 const ProductBreadcrumb = ({ category, productName, currentLang, t, allCategories = [] }) => {
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
 
   // دالة لإيجاد مسار الفئة من الجذر حتى الفئة الحالية
   function getCategoryPath(categoryId, categories) {

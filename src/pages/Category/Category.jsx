@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import Navbar from '../../components/Navbar/Navbar';
@@ -17,7 +18,7 @@ import './Category.css';
 const Category = () => {
   const { categorySlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();

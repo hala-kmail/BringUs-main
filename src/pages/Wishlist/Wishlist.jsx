@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import Navbar from '../../components/Navbar/Navbar';
@@ -15,7 +16,7 @@ import './Wishlist.css';
 const Wishlist = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const currentLang = i18n.language;
   const { categories } = useCategories();
   const { features } = useAppData();

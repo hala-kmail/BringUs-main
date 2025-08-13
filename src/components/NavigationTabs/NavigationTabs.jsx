@@ -1,11 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './NavigationTabs.css';
 
 const NavigationTabs = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { navigate } = useAffiliateNavigation();
   const location = useLocation();
 
   const tabs = [

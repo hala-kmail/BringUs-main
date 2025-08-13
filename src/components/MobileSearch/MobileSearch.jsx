@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import './MobileSearch.css';
 import { useAppData } from '../../contexts/AppDataContext';
 import useProducts from '../../hooks/useProducts';
 import { formatPrice } from '../../utils/currencyUtils';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 
 const MobileSearch = ({ isOpen, onClose, onSearch, searchQuery: parentSearchQuery }) => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate(); const {allProducts} = useAppData();
+  const { navigate } = useAffiliateNavigation(); const {allProducts} = useAppData();
   const [searchQuery, setSearchQuery] = useState(parentSearchQuery || '');
   const [allProductsSearch, setAllProductsSearch] = useState(allProducts);
   const language = i18n.language === 'ar' ? 'ar' : 'en';

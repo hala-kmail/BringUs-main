@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 
 import Navbar from '../../components/Navbar/Navbar';
 import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
@@ -25,8 +26,10 @@ const Shop = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  //  const navigate = useNavigate();
   const {store} = useAppData();
+  const { navigate } = useAffiliateNavigation();
+
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   // const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 

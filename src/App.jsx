@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, Suspense, createContext, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import useStoreSlug from './hooks/useStoreSlug';
 import { WishlistProvider } from './contexts/WishlistContext';
 import { CartProvider } from './contexts/CartContext';
@@ -46,8 +46,114 @@ const useMobileSearch = () => {
   return context;
 };
 
-// Export the hook
-export { useMobileSearch };
+// Export the hook and utility functions
+export { useMobileSearch, createAffiliateLink, getCurrentAffiliateCode };
+
+// Utility function to extract affiliate code from URL
+const extractAffiliateCode = (pathname) => {
+  const affiliateMatch = pathname.match(/\/affiliate\/([^\/]+)/);
+  return affiliateMatch ? affiliateMatch[1] : null;
+};
+
+// Utility function to get path without affiliate part
+const getPathWithoutAffiliate = (pathname) => {
+  const affiliateMatch = pathname.match(/\/affiliate\/[^\/]+(\/.*)?/);
+  if (affiliateMatch) {
+    return affiliateMatch[1] || '/home';
+  }
+  return pathname;
+};
+
+// Utility function to clear affiliate code from localStorage
+const clearAffiliateCode = () => {
+  localStorage.removeItem('affiliateCode');
+  console.log('Affiliate code cleared from localStorage');
+};
+
+// Utility function to create links with affiliate code
+const createAffiliateLink = (path, affiliateCode) => {
+  if (affiliateCode) {
+    return `/affiliate/${affiliateCode}${path}`;
+  }
+  return path;
+};
+
+// Utility function to get current affiliate code from URL
+const getCurrentAffiliateCode = () => {
+  const pathname = window.location.pathname;
+  const affiliateMatch = pathname.match(/\/affiliate\/([^\/]+)/);
+  return affiliateMatch ? affiliateMatch[1] : null;
+};
+
+// Component to handle affiliate redirects
+const AffiliateRedirect = ({ affiliateCode }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = useParams();
+  
+  // Get affiliate code from URL params if not passed as prop
+  const actualAffiliateCode = affiliateCode || params.affiliateCode;
+  
+  useEffect(() => {
+    // Store affiliate code in localStorage for tracking
+    if (actualAffiliateCode) {
+      localStorage.setItem('affiliateCode', actualAffiliateCode);
+      console.log('Affiliate code stored:', actualAffiliateCode);
+    }
+  }, [actualAffiliateCode]);
+  
+  // Redirect to home page with affiliate code
+  useEffect(() => {
+    if (actualAffiliateCode && location.pathname === `/affiliate/${actualAffiliateCode}`) {
+      console.log('Redirecting affiliate root to home:', {
+        from: location.pathname,
+        to: `/affiliate/${actualAffiliateCode}/home`,
+        affiliateCode: actualAffiliateCode
+      });
+      
+      // Redirect to home page with affiliate code
+      navigate(`/affiliate/${actualAffiliateCode}/home`, { replace: true });
+    }
+  }, [actualAffiliateCode, location.pathname, navigate]);
+  
+  // Show loading while redirecting
+  return (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh',
+      fontSize: '1.2rem',
+      color: '#666'
+    }}>
+      جاري التوجيه...
+    </div>
+  );
+};
+
+// Component to wrap pages with affiliate code support
+const AffiliateWrapper = ({ children }) => {
+  const params = useParams();
+  const affiliateCode = params.affiliateCode;
+  
+  useEffect(() => {
+    // Store affiliate code in localStorage for tracking
+    if (affiliateCode) {
+      localStorage.setItem('affiliateCode', affiliateCode);
+      console.log('Affiliate code stored in wrapper:', affiliateCode);
+    }
+  }, [affiliateCode]);
+  
+  // Pass affiliate code to children if they accept it as a prop
+  const childrenWithAffiliate = React.Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, { affiliateCode });
+    }
+    return child;
+  });
+  
+  return childrenWithAffiliate;
+};
 
 function App() {
   const { storeSlug, storeData, loading, error, initializeStore } = useStoreSlug();
@@ -58,6 +164,19 @@ function App() {
     initializeStore();
   }, [initializeStore]);
 
+  // Check if current URL contains affiliate pattern
+  const isAffiliateUrl = window.location.pathname.includes('/affiliate/');
+  
+  // Extract affiliate code if present
+  const affiliateCode = extractAffiliateCode(window.location.pathname);
+  
+  console.log('Affiliate URL detection:', {
+    isAffiliateUrl,
+    affiliateCode,
+    currentPath: window.location.pathname
+  });
+  
+  // If it's an affiliate URL, we need to handle it differently
   const routerProps = storeSlug ? { basename: `/${storeSlug}` } : {};
 
   const handleMobileSearchToggle = () => {
@@ -114,6 +233,13 @@ function App() {
           sessionStorage.setItem('wasAuthenticated', 'false');
         }
         
+        // User logged in - keep affiliate code for order tracking
+        if (!wasAuthenticated && isCurrentlyAuthenticated) {
+          if (process.env.NODE_ENV === 'development') {
+            // console.log('🔐 User logged in - keeping affiliate code for order tracking');
+          }
+        }
+        
         // User logged in
         if (!wasAuthenticated && isCurrentlyAuthenticated) {
           if (process.env.NODE_ENV === 'development') {
@@ -164,6 +290,67 @@ function App() {
         {/* <AdvertisementPopup /> */}
         <div className="main-content">
           <Routes>
+            {/* Affiliate routes - these will handle all affiliate URLs */}
+            <Route path="/affiliate/:affiliateCode" element={
+              <AffiliateRedirect affiliateCode={affiliateCode} />
+            } />
+            <Route path="/affiliate/:affiliateCode/home" element={
+              <AffiliateWrapper>
+                <Home />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/shop" element={
+              <AffiliateWrapper>
+                <Shop />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/category/:categorySlug" element={
+              <AffiliateWrapper>
+                <Category />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/mobile-categories" element={
+              <AffiliateWrapper>
+                <MobileCategories />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/product/:id" element={
+              <AffiliateWrapper>
+                <ProductDetail />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/cart" element={
+              <AffiliateWrapper>
+                <Cart />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/checkout" element={
+              <AffiliateWrapper>
+                <Checkout />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/wishlist" element={
+              <AffiliateWrapper>
+                <Wishlist />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/profile" element={
+              <AffiliateWrapper>
+                <Profile />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/orders" element={
+              <AffiliateWrapper>
+                <Orders />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/almost-finished-sale" element={
+              <AffiliateWrapper>
+                <AlmostFinishedSale />
+              </AffiliateWrapper>
+            } />
+            
+            {/* Regular routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Navigate to="/home" replace />} />
