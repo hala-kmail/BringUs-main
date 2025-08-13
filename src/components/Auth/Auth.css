@@ -277,6 +277,24 @@ body, html {
   margin-inline-start: 0.5rem;
 }
 
+/* Add styles for button elements that should look like links */
+.auth-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--primary-color);
+  font-size: inherit;
+  font-family: inherit;
+  display: inline;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+  color: var(--primary-color);
+}
+
 .wholesale-register-btn {
   background-color: var(--primary-color);
   color: #fff;
@@ -293,11 +311,6 @@ body, html {
 
 .wholesale-register-btn:hover {
   background-color: var(--primary-dark);
-}
-
-.auth-link:hover {
-  color: var(--primary-dark);
-  text-decoration: underline;
 }
 
 @media (max-width: 768px) {

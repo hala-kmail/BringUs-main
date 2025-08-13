@@ -284,9 +284,9 @@ const Register = () => {
         
         <div className="auth-footer">
           <span>{t('auth.register.have_account')}</span>
-          <Link to="/login" className="auth-link">
+          <button onClick={() => navigate('/login')} className="auth-link">
             {t('auth.register.signin')}
-          </Link>
+          </button>
         </div>
       </div>
     </div>

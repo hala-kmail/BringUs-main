@@ -151,9 +151,9 @@ const Login = () => {
         
         <div className="auth-footer">
           <span>{t('auth.login.no_account')}</span>
-          <Link to="/register" className="auth-link">
+          <button onClick={() => navigate('/register')} className="auth-link">
             {t('auth.login.signup')}
-          </Link>
+          </button>
         </div>
       </div>
     </div>

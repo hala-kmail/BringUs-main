@@ -23,6 +23,7 @@ const ProductCard = ({
   const { t, i18n } = useTranslation();
   const { addToCart } = useAppData();
   const currentLang = i18n.language;
+  const { navigate: navigateWithAffiliate } = useAffiliateNavigation();
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [isAddToCartLoading, setIsAddToCartLoading] = useState(false);
   const { store } = useAppData();
@@ -293,7 +294,11 @@ const ProductCard = ({
 
       {/* Product Image - Centered */}
       <div className="product-image-new">
-        <Link to={`/product/${product._id}`}>
+        <button 
+          onClick={() => navigateWithAffiliate(`/product/${product._id}`)}
+          className="product-image-button"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100%' }}
+        >
           <img 
             className='product-image-img-new' 
             src={productImage || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03NSA3NUM3NSA2OC4zNzMgODEuMzczIDYyIDg4IDYySDIxMkMyMTguNjI3IDYyIDIyNSA2OC4zNzMgMjI1IDc1VjIyNUM2MjUgMjMxLjYyNyAyMTguNjI3IDIzOCAyMTIgMjM4SDg4QzgxLjM3MyAyMzggNzUgMjMxLjYyNyA3NSAyMjVWNzVaIiBmaWxsPSIjOUNBMEE2Ii8+CjxwYXRoIGQ9Ik0xMTIuNSAxMTIuNUMxMTIuNSAxMDUuODczIDExOC44NzMgMTAwIDEyNS41IDEwMEgxNzQuNUMxODEuMTI3IDEwMCAxODcuNSAxMDUuODczIDE4Ny41IDExMi41VjE4Ny41QzE4Ny41IDE5NC4xMjcgMTgxLjEyNyAyMDAgMTc0LjUgMjAwSDEyNS41QzExOC44NzMgMjAwIDExMi41IDE5NC4xMjcgMTEyLjUgMTg3LjVWMTEyLjVaIiBmaWxsPSIjRkZGRkZGIi8+Cjwvc3ZnPgo='} 
@@ -302,7 +307,7 @@ const ProductCard = ({
               e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03NSA3NUM3NSA2OC4zNzMgODEuMzczIDYyIDg4IDYySDIxMkMyMTguNjI3IDYyIDIyNSA2OC4zNzMgMjI1IDc1VjIyNUM2MjUgMjMxLjYyNyAyMTguNjI3IDIzOCAyMTIgMjM4SDg4QzgxLjM3MyAyMzggNzUgMjMxLjYyNyA3NSAyMjVWNzVaIiBmaWxsPSIjOUNBMEE2Ii8+CjxwYXRoIGQ9Ik0xMTIuNSAxMTIuNUMxMTIuNSAxMDUuODczIDExOC44NzMgMTAwIDEyNS41IDEwMEgxNzQuNUMxODEuMTI3IDEwMCAxODcuNSAxMDUuODczIDE4Ny41IDExMi41VjE4Ny41QzE4Ny41IDE5NC4xMjcgMTgxLjEyNyAyMDAgMTc0LjUgMjAwSDEyNS41QzExOC44NzMgMjAwIDExMi41IDE5NC4xMjcgMTEyLjUgMTg3LjVWMTEyLjVaIiBmaWxsPSIjRkZGRkZGIi8+Cjwvc3ZnPgo=';
             }}
           />
-        </Link>
+        </button>
       </div>
 
       {/* Product Description - Below Image */}

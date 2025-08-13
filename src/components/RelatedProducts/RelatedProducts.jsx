@@ -86,12 +86,12 @@ const RelatedProducts = ({ currentProduct, categoryId }) => {
             <h2 className="related-section-title">{t('related_products.title')}</h2>
             <p className="related-section-subtitle">{t('related_products.subtitle')}</p>
           </div>
-          <Link to={`/category/${categorySlug}`} className="related-view-all-btn">
+          <button onClick={() => navigate(`/category/${categorySlug}`)} className="related-view-all-btn">
             {t('related_products.view_all')}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </Link>
+          </button>
         </div>
 
         {/* Products Grid */}
