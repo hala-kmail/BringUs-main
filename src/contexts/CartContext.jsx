@@ -46,7 +46,7 @@ export const CartProvider = ({ children }) => {
   const getStoredGuestId = useCallback(() => {
     const guestId = localStorage.getItem('guestId');
     if (guestId && process.env.NODE_ENV === 'development') {
-      console.log('📂 Retrieved Guest ID from localStorage:', guestId);
+      // console.log('📂 Retrieved Guest ID from localStorage:', guestId);
     }
     return guestId;
   }, []);
@@ -188,12 +188,12 @@ export const CartProvider = ({ children }) => {
       // Use storeId if available, otherwise use storeSlug
       const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
       
-      console.log('Fetching cart - Request details:', {
-        url: `${API_BASE_URL}/cart?${queryParam}`,
-        method: 'GET',
-        storeId: currentStoreId,
-        storeSlug: currentStoreSlug
-      });
+      // console.log('Fetching cart - Request details:', {
+      //   url: `${API_BASE_URL}/cart?${queryParam}`,
+      //   method: 'GET',
+      //   storeId: currentStoreId,
+      //   storeSlug: currentStoreSlug
+      // });
 
       const response = await fetch(`${API_BASE_URL}/cart?${queryParam}`, {
         method: 'GET',
@@ -202,17 +202,17 @@ export const CartProvider = ({ children }) => {
 
       const data = await handleApiResponse(response);
 
-      console.log('Fetching cart - Response:', {
-        status: response.status,
-        data: data,
-        items: data.data?.items?.map(item => ({
-          productId: item.product,
-          price: item.price,
-          finalPrice: item.product.finalPrice,
-          priceAtAdd: item.priceAtAdd,
-          quantity: item.quantity
-        }))
-      });
+      // console.log('Fetching cart - Response:', {
+      //   status: response.status,
+      //   data: data,
+      //   items: data.data?.items?.map(item => ({
+      //     productId: item.product,
+      //     price: item.price,
+      //     finalPrice: item.product.finalPrice,
+      //     priceAtAdd: item.priceAtAdd,
+      //     quantity: item.quantity
+      //   }))
+      // });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -250,14 +250,14 @@ export const CartProvider = ({ children }) => {
   // تهيئة النظام عند تحميل الصفحة
   const initializeGuestSystem = useCallback(async () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Initializing guest cart system...');
+      // console.log('🚀 Initializing guest cart system...');
     }
     
     // Ensure we have a stable Guest ID
     const guestId = generateStableGuestId();
     if (guestId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('👤 Guest cart session ready:', guestId);
+        // console.log('👤 Guest cart session ready:', guestId);
       }
     }
   }, [generateStableGuestId]);
@@ -271,7 +271,7 @@ export const CartProvider = ({ children }) => {
     // Only fetch if we have a store identifier and haven't initialized for this store
     if (storeIdentifier && (!hasInitialized.current || storeId.current !== storeIdentifier)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing cart for store:', storeIdentifier);
+        // console.log('Initializing cart for store:', storeIdentifier);
       }
       hasInitialized.current = true;
       storeId.current = storeIdentifier;
@@ -284,7 +284,7 @@ export const CartProvider = ({ children }) => {
     } else if (!storeIdentifier && cartItems.length > 0) {
       // Clear cart if no store is available
       if (process.env.NODE_ENV === 'development') {
-        console.log('No store available, clearing cart');
+        // console.log('No store available, clearing cart');
       }
       setCartItems([]);
       hasInitialized.current = false;
@@ -297,14 +297,14 @@ export const CartProvider = ({ children }) => {
     if (isAuthenticated && user) {
       // User is authenticated, clear guest ID and fetch user's cart
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔐 User authenticated, clearing guest ID and fetching user cart');
+        // console.log('🔐 User authenticated, clearing guest ID and fetching user cart');
       }
       clearGuestId();
       fetchCart();
     } else if (!isAuthenticated) {
       // User is not authenticated, ensure guest system is initialized
       if (process.env.NODE_ENV === 'development') {
-        console.log('👤 User not authenticated, initializing guest cart system');
+        // console.log('👤 User not authenticated, initializing guest cart system');
       }
       initializeGuestSystem();
     }
@@ -324,7 +324,7 @@ export const CartProvider = ({ children }) => {
   const formatSpecifications = (specs) => {
     const selectedSpecifications = [];
     
-    console.log('🔧 Formatting Specifications - Raw Input:', specs);
+    // console.log('🔧 Formatting Specifications - Raw Input:', specs);
     
     Object.entries(specs).forEach(([specificationId, specData]) => {
       if (specData && specData !== '' && specificationId !== 'selectedColor' && specificationId !== 'quantity') {
@@ -362,7 +362,7 @@ export const CartProvider = ({ children }) => {
       }
     });
     
-    console.log('🔧 Formatting Specifications - Formatted Output:', selectedSpecifications);
+    // console.log('🔧 Formatting Specifications - Formatted Output:', selectedSpecifications);
     
     return selectedSpecifications;
   };
@@ -376,28 +376,28 @@ export const CartProvider = ({ children }) => {
     } = options;
 
     // طباعة المواصفات المستلمة في الكونسول
-    console.log('🛒 CartContext - Received Options:');
-    console.log('   Product:', product.nameAr || product.nameEn);
-    console.log('   Selected Color:', selectedColor);
-    console.log('   Quantity:', quantity);
-    console.log('   Other Specs:', otherSpecs);
-    console.log('   Full Options:', options);
+    // console.log('🛒 CartContext - Received Options:');
+    // console.log('   Product:', product.nameAr || product.nameEn);
+    // console.log('   Selected Color:', selectedColor);
+    // console.log('   Quantity:', quantity);
+    // console.log('   Other Specs:', otherSpecs);
+    // console.log('   Full Options:', options);
 
     // التحقق من الكمية المتوفرة قبل الإضافة
     const availableQuantity = getAvailableQuantityForProduct(product, selectedColor, otherSpecs);
     const currentQuantity = getItemQuantity(product._id || product.id, selectedColor, otherSpecs);
     const totalRequestedQuantity = currentQuantity + quantity;
 
-    console.log('🛒 Quantity validation:', {
-      availableQuantity,
-      currentQuantity,
-      requestedQuantity: quantity,
-      totalRequestedQuantity,
-      productId: product._id || product.id,
-      selectedColor,
-      otherSpecs,
-      productSpecificationValues: product.specificationValues
-    });
+    // console.log('🛒 Quantity validation:', {
+    //   availableQuantity,
+    //   currentQuantity,
+    //   requestedQuantity: quantity,
+    //   totalRequestedQuantity,
+    //   productId: product._id || product.id,
+    //   selectedColor,
+    //   otherSpecs,
+    //   productSpecificationValues: product.specificationValues
+    // });
 
     if (totalRequestedQuantity > availableQuantity) {
       const message = currentLang === 'ar' 
@@ -412,17 +412,17 @@ export const CartProvider = ({ children }) => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for adding to cart');
+        // console.log('Store ID and slug not available for adding to cart');
       }
       showToast(currentLang === 'ar' ? 'معلومات المتجر غير متوفرة' : 'Store information not available', 'error');
       return false;
     }
 
-    console.log('Store information available:', {
-      storeId: currentStoreId,
-      storeSlug: currentStoreSlug,
-      storeName: store?.nameAr || store?.nameEn
-    });
+    // console.log('Store information available:', {
+    //   storeId: currentStoreId,
+    //    storeSlug: currentStoreSlug,
+    //   storeName: store?.nameAr || store?.nameEn
+    // });
 
     setLoading(true);
     setError(null);
@@ -458,17 +458,17 @@ export const CartProvider = ({ children }) => {
       // Use storeId if available, otherwise use storeSlug
       const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
 
-      console.log('Adding to cart - Request details:', {
-        url: `${API_BASE_URL}/cart?${queryParam}`,
-        method: 'POST',
-        storeId: currentStoreId,
-        storeSlug: currentStoreSlug,
-        productId: product._id || product.id,
-        requestBody: requestBody,
-        productPrice: product.price,
-        productFinalPrice: product.finalPrice,
-        sentPrice: finalPrice
-      });
+      // console.log('Adding to cart - Request details:', {
+      //   url: `${API_BASE_URL}/cart?${queryParam}`,
+      //   method: 'POST',
+      //   storeId: currentStoreId,
+      //   storeSlug: currentStoreSlug,
+      //   productId: product._id || product.id,
+      //   requestBody: requestBody,
+      //   productPrice: product.price,
+      //   productFinalPrice: product.finalPrice,
+      //   sentPrice: finalPrice
+      // });
 
       const response = await fetch(`${API_BASE_URL}/cart?${queryParam}`, {
         method: 'POST',
@@ -478,10 +478,10 @@ export const CartProvider = ({ children }) => {
 
       const data = await handleApiResponse(response);
 
-      console.log('Adding to cart - Response:', {
-        status: response.status,
-        data: data
-      });
+      // console.log('Adding to cart - Response:', {
+      //   status: response.status,
+      //   data: data
+      // });
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -522,7 +522,7 @@ export const CartProvider = ({ children }) => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for removing from cart');
+        // console.log('Store ID and slug not available for removing from cart');
       }
       return false;
     }
@@ -534,13 +534,13 @@ export const CartProvider = ({ children }) => {
       // Use storeId if available, otherwise use storeSlug
       const queryParam = currentStoreId ? `storeId=${currentStoreId}` : `storeSlug=${currentStoreSlug}`;
 
-      console.log('Removing from cart - Request details:', {
-        url: `${API_BASE_URL}/cart/${productId}?${queryParam}`,
-        method: 'DELETE',
-        storeId: currentStoreId,
-        storeSlug: currentStoreSlug,
-        productId: productId
-      });
+      // console.log('Removing from cart - Request details:', {
+      //   url: `${API_BASE_URL}/cart/${productId}?${queryParam}`,
+      //   method: 'DELETE',
+      //   storeId: currentStoreId,
+      //   storeSlug: currentStoreSlug,
+      //   productId: productId
+      // });
 
       const response = await fetch(`${API_BASE_URL}/cart/${productId}?${queryParam}`, {
         method: 'DELETE',
@@ -549,10 +549,10 @@ export const CartProvider = ({ children }) => {
 
       const data = await handleApiResponse(response);
 
-      console.log('Removing from cart - Response:', {
-        status: response.status,
-        data: data
-      });
+      // console.log('Removing from cart - Response:', {
+      //   status: response.status,
+      //   data: data
+      // });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -600,7 +600,7 @@ export const CartProvider = ({ children }) => {
             valueId = specData;
           }
           
-          console.log('Looking for spec in product:', { specName, valueId, availableSpecs: product.specificationValues });
+          // console.log('Looking for spec in product:', { specName, valueId, availableSpecs: product.specificationValues });
           
           // البحث عن المواصفة المطابقة
           const matchingSpec = product.specificationValues.find(spec => 
@@ -608,7 +608,7 @@ export const CartProvider = ({ children }) => {
           );
           
           if (matchingSpec) {
-            console.log('Found matching spec in product:', matchingSpec);
+            // console.log('Found matching spec in product:', matchingSpec);
             return matchingSpec.quantity || 0;
           }
         }
@@ -656,15 +656,15 @@ export const CartProvider = ({ children }) => {
             valueId = specData;
           }
           
-          console.log('Looking for spec:', { specName, valueId, availableSpecs: product.specificationValues });
-          console.log('product.specificationValues', product.specificationValues);
+          // console.log('Looking for spec:', { specName, valueId, availableSpecs: product.specificationValues });
+          // console.log('product.specificationValues', product.specificationValues);
           // البحث عن المواصفة المطابقة
           const matchingSpec = product.specificationValues.find(spec => 
             spec.specificationId === specName && spec.valueId === valueId
           );
           
           if (matchingSpec) {
-            console.log('Found matching spec:', matchingSpec);
+            // console.log('Found matching spec:', matchingSpec);
             return matchingSpec.quantity || 0;
           }
         }
@@ -687,7 +687,7 @@ export const CartProvider = ({ children }) => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for updating cart');
+        // console.log('Store ID and slug not available for updating cart');
       }
       return false;
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, Suspense, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAffiliateInfo } from './hooks/useAffiliateInfo';
 import useStoreSlug from './hooks/useStoreSlug';
 import { WishlistProvider } from './contexts/WishlistContext';
 import { CartProvider } from './contexts/CartContext';
@@ -47,7 +48,7 @@ const useMobileSearch = () => {
 };
 
 // Export the hook and utility functions
-export { useMobileSearch, createAffiliateLink, getCurrentAffiliateCode };
+export { useMobileSearch, createAffiliateLink, getCurrentAffiliateCode, getCurrentAffiliateInfo };
 
 // Utility function to extract affiliate code from URL
 const extractAffiliateCode = (pathname) => {
@@ -70,6 +71,11 @@ const clearAffiliateCode = () => {
   console.log('Affiliate code cleared from localStorage');
 };
 
+// Utility function to check if current path is an affiliate path
+const isAffiliatePath = (pathname) => {
+  return pathname.includes('/affiliate/');
+};
+
 // Utility function to create links with affiliate code
 const createAffiliateLink = (path, affiliateCode) => {
   if (affiliateCode) {
@@ -80,9 +86,33 @@ const createAffiliateLink = (path, affiliateCode) => {
 
 // Utility function to get current affiliate code from URL
 const getCurrentAffiliateCode = () => {
+  // Try to get from localStorage first (for better persistence)
+  try {
+    const storedCode = localStorage.getItem('affiliateCode');
+    if (storedCode) {
+      return storedCode;
+    }
+  } catch (err) {
+    console.warn('Could not read affiliate code from localStorage:', err);
+  }
+  
+  // Fallback to URL parsing
   const pathname = window.location.pathname;
   const affiliateMatch = pathname.match(/\/affiliate\/([^\/]+)/);
   return affiliateMatch ? affiliateMatch[1] : null;
+};
+
+// Utility function to get current affiliate info from localStorage
+const getCurrentAffiliateInfo = () => {
+  try {
+    const storedInfo = localStorage.getItem('affiliateInfo');
+    if (storedInfo) {
+      return JSON.parse(storedInfo);
+    }
+  } catch (err) {
+    console.warn('Could not read affiliate info from localStorage:', err);
+  }
+  return null;
 };
 
 // Component to handle affiliate redirects
@@ -90,9 +120,24 @@ const AffiliateRedirect = ({ affiliateCode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
+  const { storeData } = useStoreSlug();
   
   // Get affiliate code from URL params if not passed as prop
   const actualAffiliateCode = affiliateCode || params.affiliateCode;
+  
+  // Fetch affiliate info using the hook
+  const { affiliateInfo, loading: affiliateLoading, error: affiliateError } = useAffiliateInfo(actualAffiliateCode, storeData?._id);
+  
+  console.log('AffiliateRedirect component rendered:', {
+    propAffiliateCode: affiliateCode,
+    paramsAffiliateCode: params.affiliateCode,
+    actualAffiliateCode,
+    locationPathname: location.pathname,
+    storeId: storeData?._id,
+    affiliateInfo,
+    affiliateLoading,
+    affiliateError
+  });
   
   useEffect(() => {
     // Store affiliate code in localStorage for tracking
@@ -104,7 +149,19 @@ const AffiliateRedirect = ({ affiliateCode }) => {
   
   // Redirect to home page with affiliate code
   useEffect(() => {
-    if (actualAffiliateCode && location.pathname === `/affiliate/${actualAffiliateCode}`) {
+    // Normalize pathname by removing trailing slash
+    const normalizedPathname = location.pathname.replace(/\/$/, '');
+    const expectedPath = `/affiliate/${actualAffiliateCode}`;
+    
+    console.log('AffiliateRedirect useEffect triggered:', {
+      actualAffiliateCode,
+      locationPathname: location.pathname,
+      normalizedPathname,
+      expectedPath,
+      shouldRedirect: actualAffiliateCode && normalizedPathname === expectedPath
+    });
+    
+    if (actualAffiliateCode && normalizedPathname === expectedPath) {
       console.log('Redirecting affiliate root to home:', {
         from: location.pathname,
         to: `/affiliate/${actualAffiliateCode}/home`,
@@ -135,6 +192,10 @@ const AffiliateRedirect = ({ affiliateCode }) => {
 const AffiliateWrapper = ({ children }) => {
   const params = useParams();
   const affiliateCode = params.affiliateCode;
+  const { storeData } = useStoreSlug();
+  
+  // Fetch affiliate info using the hook
+  const { affiliateInfo, loading: affiliateLoading, error: affiliateError } = useAffiliateInfo(affiliateCode, storeData?._id);
   
   useEffect(() => {
     // Store affiliate code in localStorage for tracking
@@ -143,6 +204,14 @@ const AffiliateWrapper = ({ children }) => {
       console.log('Affiliate code stored in wrapper:', affiliateCode);
     }
   }, [affiliateCode]);
+  
+  console.log('AffiliateWrapper rendered:', {
+    affiliateCode,
+    storeId: storeData?._id,
+    affiliateInfo,
+    affiliateLoading,
+    affiliateError
+  });
   
   // Pass affiliate code to children if they accept it as a prop
   const childrenWithAffiliate = React.Children.map(children, child => {
@@ -153,6 +222,38 @@ const AffiliateWrapper = ({ children }) => {
   });
   
   return childrenWithAffiliate;
+};
+
+// Component to monitor affiliate state and clear when leaving affiliate context
+const AffiliateStateMonitor = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const isCurrentlyAffiliate = isAffiliatePath(currentPath);
+    
+    // If we're not in an affiliate path but have affiliate code stored, clear it
+    if (!isCurrentlyAffiliate) {
+      try {
+        const storedCode = localStorage.getItem('affiliateCode');
+        if (storedCode) {
+          console.log('Clearing affiliate code - no longer in affiliate context');
+          localStorage.removeItem('affiliateCode');
+        }
+        
+        // Also clear affiliate info from localStorage
+        const storedAffiliateInfo = localStorage.getItem('affiliateInfo');
+        if (storedAffiliateInfo) {
+          console.log('Clearing affiliate info - no longer in affiliate context');
+          localStorage.removeItem('affiliateInfo');
+        }
+      } catch (err) {
+        console.warn('Could not clear affiliate data:', err);
+      }
+    }
+  }, [location.pathname]);
+  
+  return null; // This component doesn't render anything
 };
 
 function App() {
@@ -170,11 +271,11 @@ function App() {
   // Extract affiliate code if present
   const affiliateCode = extractAffiliateCode(window.location.pathname);
   
-  console.log('Affiliate URL detection:', {
-    isAffiliateUrl,
-    affiliateCode,
-    currentPath: window.location.pathname
-  });
+  // console.log('Affiliate URL detection:', {
+  //   isAffiliateUrl,
+  //   affiliateCode,
+  //   currentPath: window.location.pathname
+  // });
   
   // If it's an affiliate URL, we need to handle it differently
   const routerProps = storeSlug ? { basename: `/${storeSlug}` } : {};
@@ -286,13 +387,14 @@ function App() {
     return (
       <div className="App">
         <DynamicColors />
+        <AffiliateStateMonitor />
         
         {/* <AdvertisementPopup /> */}
         <div className="main-content">
           <Routes>
             {/* Affiliate routes - these will handle all affiliate URLs */}
             <Route path="/affiliate/:affiliateCode" element={
-              <AffiliateRedirect affiliateCode={affiliateCode} />
+              <AffiliateRedirect />
             } />
             <Route path="/affiliate/:affiliateCode/home" element={
               <AffiliateWrapper>
@@ -349,6 +451,20 @@ function App() {
                 <AlmostFinishedSale />
               </AffiliateWrapper>
             } />
+            
+            {/* Store-specific routes with slug */}
+            <Route path="/:storeSlug" element={<Navigate to="/:storeSlug/home" replace />} />
+            <Route path="/:storeSlug/home" element={<Home />} />
+            <Route path="/:storeSlug/shop" element={<Shop />} />
+            <Route path="/:storeSlug/category/:categorySlug" element={<Category />} />
+            <Route path="/:storeSlug/mobile-categories" element={<MobileCategories />} />
+            <Route path="/:storeSlug/product/:id" element={<ProductDetail />} />
+            <Route path="/:storeSlug/cart" element={<Cart />} />
+            <Route path="/:storeSlug/checkout" element={<Checkout />} />
+            <Route path="/:storeSlug/wishlist" element={<Wishlist />} />
+            <Route path="/:storeSlug/profile" element={<Profile />} />
+            <Route path="/:storeSlug/orders" element={<Orders />} />
+            <Route path="/:storeSlug/almost-finished-sale" element={<AlmostFinishedSale />} />
             
             {/* Regular routes */}
             <Route path="/login" element={<Login />} />
@@ -423,7 +539,14 @@ function App() {
               toggleMobileSearch: handleMobileSearchToggle,
               closeMobileSearch: handleMobileSearchClose
             }}>
-              <Router key={storeSlug || 'root'} {...routerProps}>
+              <Router 
+                key={storeSlug || 'root'} 
+                {...routerProps}
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true
+                }}
+              >
                 <Suspense fallback={
                   <div style={{ 
                     display: 'flex', 

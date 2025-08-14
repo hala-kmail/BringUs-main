@@ -18,13 +18,24 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Load user and store info on component mount if user is already logged in
+  // Load user and store info when modal opens if user is already logged in
   useEffect(() => {
+    if (!isOpen) return; // Only run when modal is open
+    
     const token = localStorage.getItem('authToken');
-    if (token) {
-      loadUserAndStoreInfo();
+    const userInfo = localStorage.getItem('userInfo');
+    
+    if (token && userInfo) {
+      try {
+        const parsedUser = JSON.parse(userInfo);
+        if (parsedUser && (parsedUser.id || parsedUser._id)) {
+          loadUserAndStoreInfo();
+        }
+      } catch (err) {
+        console.log('Error parsing stored user info, skipping auto-load');
+      }
     }
-  }, [loadUserAndStoreInfo]);
+  }, [loadUserAndStoreInfo, isOpen]);
 
   // Validation function
   const validateForm = useCallback(() => {
@@ -197,7 +208,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             <span>{t('auth.login.no_account')}</span>
             <button 
               type="button" 
-              className="auth-link-button"
+              className="auth-link"
               onClick={handleSwitchToRegister}
             >
               {t('auth.login.signup')}

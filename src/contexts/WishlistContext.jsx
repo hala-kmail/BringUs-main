@@ -41,7 +41,7 @@ export const WishlistProvider = ({ children }) => {
   const getStoredGuestId = useCallback(() => {
     const guestId = localStorage.getItem('guestId');
     if (guestId && process.env.NODE_ENV === 'development') {
-      console.log('📂 Retrieved Guest ID from localStorage:', guestId);
+      // console.log('📂 Retrieved Guest ID from localStorage:', guestId);
     }
     return guestId;
   }, []);
@@ -189,7 +189,7 @@ export const WishlistProvider = ({ children }) => {
       if (data.success && data.data) {
         setWishlistItems(data.data);
         if (process.env.NODE_ENV === 'development') {
-          console.log('Wishlist fetched successfully:', data.data.length, 'items');
+          // console.log('Wishlist fetched successfully:', data.data.length, 'items');
         }
       } else {
         setWishlistItems([]);
@@ -210,13 +210,13 @@ export const WishlistProvider = ({ children }) => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for adding to wishlist');
+        // console.log('Store ID and slug not available for adding to wishlist');
       }
       return false;
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('Adding product to wishlist:', product._id, product.nameAr || product.nameEn);
+      // console.log('Adding product to wishlist:', product._id, product.nameAr || product.nameEn);
     }
 
     setLoading(true);
@@ -235,7 +235,7 @@ export const WishlistProvider = ({ children }) => {
       const data = await handleApiResponse(response);
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('Add to wishlist response:', { status: response.status, data });
+        // console.log('Add to wishlist response:', { status: response.status, data });
       }
 
       if (!response.ok) {
@@ -261,7 +261,7 @@ export const WishlistProvider = ({ children }) => {
         
         setWishlistItems(prev => [...prev, newWishlistItem]);
         if (process.env.NODE_ENV === 'development') {
-          console.log('Product added to wishlist successfully');
+          // console.log('Product added to wishlist successfully');
         }
         return true;
       }
@@ -281,13 +281,13 @@ export const WishlistProvider = ({ children }) => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for removing from wishlist');
+        // console.log('Store ID and slug not available for removing from wishlist');
       }
       return false;
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('Removing product from wishlist:', productId);
+      // console.log('Removing product from wishlist:', productId);
     }
 
     setLoading(true);
@@ -305,7 +305,7 @@ export const WishlistProvider = ({ children }) => {
       const data = await handleApiResponse(response);
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('Remove from wishlist response:', { status: response.status, data });
+        // console.log('Remove from wishlist response:', { status: response.status, data });
       }
 
       if (!response.ok) {
@@ -325,7 +325,7 @@ export const WishlistProvider = ({ children }) => {
           });
           
           if (process.env.NODE_ENV === 'development') {
-            console.log('Product removed from wishlist successfully');
+            // console.log('Product removed from wishlist successfully');
           }
           return updatedItems;
         });
@@ -373,7 +373,7 @@ export const WishlistProvider = ({ children }) => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for clearing wishlist');
+        // console.log('Store ID and slug not available for clearing wishlist');
       }
       return false;
     }
@@ -401,7 +401,7 @@ export const WishlistProvider = ({ children }) => {
       setWishlistItems([]);
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('Wishlist cleared successfully');
+        // console.log('Wishlist cleared successfully');
       }
       return true;
     } catch (err) {
@@ -419,7 +419,7 @@ export const WishlistProvider = ({ children }) => {
       const guestId = getStoredGuestId();
       if (!guestId) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('ℹ️ No guest ID found, nothing to merge');
+          // console.log('ℹ️ No guest ID found, nothing to merge');
         }
         return;
       }
@@ -427,13 +427,13 @@ export const WishlistProvider = ({ children }) => {
       const currentStoreId = getStoreId();
       if (!currentStoreId) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('ℹ️ No store ID found, cannot merge guest likes');
+          //  console.log('ℹ️ No store ID found, cannot merge guest likes');
         }
         return;
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Merging guest likes to user account...');
+        // console.log('🔄 Merging guest likes to user account...');
       }
 
       const response = await fetch(`${API_BASE_URL}/likes/merge-guest`, {
@@ -449,8 +449,8 @@ export const WishlistProvider = ({ children }) => {
       
       if (result.success) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Guest likes merged successfully:', result.message);
-          console.log(`📊 Merged: ${result.mergedCount}, Skipped: ${result.skippedCount}`);
+          // console.log('✅ Guest likes merged successfully:', result.message);
+          // console.log(`📊 Merged: ${result.mergedCount}, Skipped: ${result.skippedCount}`);
         }
         
         // حذف Guest ID من localStorage بعد الدمج الناجح
@@ -462,7 +462,7 @@ export const WishlistProvider = ({ children }) => {
         return result;
       } else {
         if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Failed to merge guest likes:', result.message);
+          // console.error('❌ Failed to merge guest likes:', result.message);
         }
         return null;
       }
@@ -475,14 +475,14 @@ export const WishlistProvider = ({ children }) => {
   // تهيئة النظام عند تحميل الصفحة
   const initializeGuestSystem = useCallback(async () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Initializing guest system...');
+      // console.log('🚀 Initializing guest system...');
     }
     
     // Ensure we have a stable Guest ID
     const guestId = generateStableGuestId();
     if (guestId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('👤 Guest session ready:', guestId);
+        // console.log('👤 Guest session ready:', guestId);
       }
     }
   }, [generateStableGuestId]);
@@ -496,7 +496,7 @@ export const WishlistProvider = ({ children }) => {
     // Only fetch if we have a store identifier and haven't initialized for this store
     if (storeIdentifier && (!hasInitialized.current || storeId.current !== storeIdentifier)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing wishlist for store:', storeIdentifier);
+        // console.log('Initializing wishlist for store:', storeIdentifier);
       }
       hasInitialized.current = true;
       storeId.current = storeIdentifier;
@@ -509,7 +509,7 @@ export const WishlistProvider = ({ children }) => {
     } else if (!storeIdentifier && wishlistItems.length > 0) {
       // Clear wishlist if no store is available
       if (process.env.NODE_ENV === 'development') {
-        console.log('No store available, clearing wishlist');
+        // console.log('No store available, clearing wishlist');
       }
       setWishlistItems([]);
       hasInitialized.current = false;
@@ -522,14 +522,14 @@ export const WishlistProvider = ({ children }) => {
     if (isAuthenticated && user) {
       // User is authenticated, clear guest ID and fetch user's wishlist
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔐 User authenticated, clearing guest ID and fetching user wishlist');
+        // console.log('🔐 User authenticated, clearing guest ID and fetching user wishlist');
       }
       clearGuestId();
       fetchWishlist();
     } else if (!isAuthenticated) {
       // User is not authenticated, ensure guest system is initialized
       if (process.env.NODE_ENV === 'development') {
-        console.log('👤 User not authenticated, initializing guest system');
+        // console.log('👤 User not authenticated, initializing guest system');
       }
       initializeGuestSystem();
     }

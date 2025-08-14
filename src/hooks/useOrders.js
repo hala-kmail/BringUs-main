@@ -62,9 +62,31 @@ const useOrders = () => {
         throw new Error('Store ID is required');
       }
 
-      // Get affiliate code from localStorage if available
-      const storedAffiliateCode = localStorage.getItem('affiliateCode');
-      console.log('createOrder - affiliateCode:', storedAffiliateCode);
+              // Get affiliate info from localStorage if available
+        const storedAffiliateCode = localStorage.getItem('affiliateCode');
+        const storedAffiliateInfo = localStorage.getItem('affiliateInfo');
+        console.log('createOrder - affiliateCode:', storedAffiliateCode);
+        console.log('createOrder - affiliateInfo:', storedAffiliateInfo);
+        console.log('createOrder - localStorage affiliateCode:', localStorage.getItem('affiliateCode'));
+        console.log('createOrder - localStorage affiliateInfo:', localStorage.getItem('affiliateInfo'));
+        
+        let affiliateId = null;
+        if (storedAffiliateInfo) {
+          try {
+            const affiliateInfo = JSON.parse(storedAffiliateInfo);
+            // Try userId first, then fallback to id
+            affiliateId = affiliateInfo.userId || affiliateInfo.id;
+            console.log('createOrder - affiliateInfo:', affiliateInfo);
+            console.log('createOrder - affiliateId from info:', affiliateId);
+            
+            // Validate that we have a valid affiliate ID
+            if (!affiliateId) {
+              console.warn('Affiliate info found but no valid ID or userId');
+            }
+          } catch (err) {
+            console.warn('Could not parse affiliate info:', err);
+          }
+        }
 
       // Determine if this is a guest order
       const isGuestOrder = !user || !user._id;
@@ -87,8 +109,8 @@ const useOrders = () => {
                         requestData = {
                   ...orderData,
                   guestId: guestId,
-                  // Add affiliate code if available
-                  ...(storedAffiliateCode && { affiliate: storedAffiliateCode }),
+                  // Add affiliate ID if available
+                  ...(affiliateId && { affiliate: affiliateId }),
                   // Ensure shippingAddress has the required fields for guest orders
                   shippingAddress: {
                     firstName: orderData.shippingAddress?.fullName?.split(' ')[0] || orderData.shippingAddress?.firstName || '',
@@ -108,12 +130,18 @@ const useOrders = () => {
       else {
         // Authenticated user order endpoint
         endpoint = `${API_BASE_URL}/orders/store/${storeId}`;
-        requestData = orderData;
+        requestData = {
+          ...orderData,
+          // Add affiliate ID if available
+          ...(affiliateId && { affiliate: affiliateId })
+        };
         console.log('createOrder - Authenticated order data:', requestData);
       }
 
       console.log('createOrder - Endpoint:', endpoint);
       console.log('createOrder - Request data:', requestData);
+      console.log('createOrder - Affiliate ID being sent:', affiliateId);
+      console.log('createOrder - Request data affiliate field:', requestData.affiliate);
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -135,11 +163,16 @@ const useOrders = () => {
 
       console.log('Order created successfully:', data);
       
-      // Clear affiliate code after successful order creation
+      // Clear affiliate data after successful order creation
       const affiliateCodeToClear = localStorage.getItem('affiliateCode');
+      const affiliateInfoToClear = localStorage.getItem('affiliateInfo');
       if (affiliateCodeToClear) {
         console.log('Clearing affiliate code after successful order:', affiliateCodeToClear);
         localStorage.removeItem('affiliateCode');
+      }
+      if (affiliateInfoToClear) {
+        console.log('Clearing affiliate info after successful order');
+        localStorage.removeItem('affiliateInfo');
       }
       
       return data.data;
@@ -172,19 +205,40 @@ const useOrders = () => {
         localStorage.setItem('guestId', guestId);
       }
 
-      // Get affiliate code from localStorage if available
+      // Get affiliate info from localStorage if available
       const guestStoredAffiliateCode = localStorage.getItem('affiliateCode');
+      const guestStoredAffiliateInfo = localStorage.getItem('affiliateInfo');
       console.log('createGuestOrder - affiliateCode:', guestStoredAffiliateCode);
+      console.log('createGuestOrder - affiliateInfo:', guestStoredAffiliateInfo);
+      
+      let guestAffiliateId = null;
+      if (guestStoredAffiliateInfo) {
+        try {
+          const affiliateInfo = JSON.parse(guestStoredAffiliateInfo);
+          // Try userId first, then fallback to id
+          guestAffiliateId = affiliateInfo.userId || affiliateInfo.id;
+          console.log('createGuestOrder - affiliateInfo:', affiliateInfo);
+          console.log('createGuestOrder - affiliateId from info:', guestAffiliateId);
+          
+          // Validate that we have a valid affiliate ID
+          if (!guestAffiliateId) {
+            console.warn('Guest affiliate info found but no valid ID or userId');
+          }
+        } catch (err) {
+          console.warn('Could not parse affiliate info:', err);
+        }
+      }
 
       const requestData = {
         ...orderData,
         guestId: guestId,
-        // Add affiliate code if available
-        ...(guestStoredAffiliateCode && { affiliate: guestStoredAffiliateCode })
+        // Add affiliate ID if available
+        ...(guestAffiliateId && { affiliate: guestAffiliateId })
       };
 
       console.log('Creating guest order with data:', requestData);
       console.log('Store ID:', storeId);
+      console.log('Guest order - Affiliate ID being sent:', guestAffiliateId);
 
       const response = await fetch(`${API_BASE_URL}/orders/store/${storeId}/guest`, {
         method: 'POST',
@@ -206,11 +260,16 @@ const useOrders = () => {
 
       console.log('Guest order created successfully:', data);
       
-      // Clear affiliate code after successful guest order creation
+      // Clear affiliate data after successful guest order creation
       const guestAffiliateCode = localStorage.getItem('affiliateCode');
+      const guestAffiliateInfo = localStorage.getItem('affiliateInfo');
       if (guestAffiliateCode) {
         console.log('Clearing affiliate code after successful guest order:', guestAffiliateCode);
         localStorage.removeItem('affiliateCode');
+      }
+      if (guestAffiliateInfo) {
+        console.log('Clearing affiliate info after successful guest order');
+        localStorage.removeItem('affiliateInfo');
       }
       
       return data.data;

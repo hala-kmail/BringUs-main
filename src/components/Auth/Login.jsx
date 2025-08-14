@@ -21,8 +21,17 @@ const Login = () => {
   // Load user and store info on component mount if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      loadUserAndStoreInfo();
+    const userInfo = localStorage.getItem('userInfo');
+    
+    if (token && userInfo) {
+      try {
+        const parsedUser = JSON.parse(userInfo);
+        if (parsedUser && (parsedUser.id || parsedUser._id)) {
+          loadUserAndStoreInfo();
+        }
+      } catch (err) {
+        console.log('Error parsing stored user info, skipping auto-load');
+      }
     }
   }, [loadUserAndStoreInfo]);
 
@@ -151,9 +160,9 @@ const Login = () => {
         
         <div className="auth-footer">
           <span>{t('auth.login.no_account')}</span>
-          <Link to="/register" className="auth-link">
+          <button onClick={() => navigate('/register')} className="auth-link">
             {t('auth.login.signup')}
-          </Link>
+          </button>
         </div>
       </div>
     </div>

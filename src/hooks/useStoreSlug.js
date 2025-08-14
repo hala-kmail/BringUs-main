@@ -21,13 +21,13 @@ const useStoreSlug = () => {
       
       if (pathParts.length > 0 && !knownRoutes.includes(pathParts[0])) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 Extracted slug from path:', pathParts[0], 'from path:', path);
+          // console.log('🔍 Extracted slug from path:', pathParts[0], 'from path:', path);
         }
         return pathParts[0];
       }
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 No slug found in path:', path);
+        // console.log('🔍 No slug found in path:', path);
       }
       return '';
     } catch (err) {
@@ -46,7 +46,7 @@ const useStoreSlug = () => {
         const candidate = parts[0];
         if (candidate && candidate !== 'www' && candidate !== 'localhost') {
           if (process.env.NODE_ENV === 'development') {
-            console.log('🔍 Extracted slug from subdomain:', candidate);
+            // console.log('🔍 Extracted slug from subdomain:', candidate);
           }
           return candidate;
         }
@@ -68,7 +68,7 @@ const useStoreSlug = () => {
     
     try {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🌐 Fetching store data for slug:', slug);
+        // console.log('🌐 Fetching store data for slug:', slug);
       }
 
       const response = await fetch(`${API_BASE_URL}/stores/slug/${slug}`, {
@@ -86,7 +86,7 @@ const useStoreSlug = () => {
 
       if (data.success && data.data) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Store data fetched successfully:', data.data.nameAr || data.data.nameEn);
+          // console.log('✅ Store data fetched successfully:', data.data.nameAr || data.data.nameEn);
         }
         return data.data;
       } else {
@@ -117,13 +117,13 @@ const useStoreSlug = () => {
     const urlChanged = hasUrlChanged(newUrl);
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Initializing store...', {
-        newUrl,
-        currentUrl,
-        urlChanged,
-        forceRefresh,
-        hasInitialized: hasInitialized.current
-      });
+      // console.log('🚀 Initializing store...', {
+      //   newUrl,
+      //   currentUrl,
+      //   urlChanged,
+      //   forceRefresh,
+      //   hasInitialized: hasInitialized.current
+      // });
     }
 
     // Try to get slug from various sources
@@ -168,14 +168,14 @@ const useStoreSlug = () => {
     }
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('📋 Determined slug:', slug, 'URL changed:', urlChanged);
+      // console.log('📋 Determined slug:', slug, 'URL changed:', urlChanged);
     }
 
     if (slug) {
       // Check if slug actually changed
       if (slug !== storeSlug || urlChanged || forceRefresh) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 Store slug changed:', { old: storeSlug, new: slug });
+          // console.log('🔄 Store slug changed:', { old: storeSlug, new: slug });
         }
         
         setStoreSlug(slug);
@@ -231,10 +231,10 @@ const useStoreSlug = () => {
       const newUrl = getCurrentUrl();
       if (hasUrlChanged(newUrl)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 URL changed, reinitializing store...', {
-            from: currentUrl,
-            to: newUrl
-          });
+          //  console.log('🔄 URL changed, reinitializing store...', {
+          //   from: currentUrl,
+          //   to: newUrl
+          // });
         }
         // استدعاء initializeStore بدون force refresh لتجنب الحلقة
         initializeStore(false);
@@ -268,11 +268,11 @@ const useStoreSlug = () => {
             const parsedData = JSON.parse(storedData);
             setStoreData(parsedData);
           } catch (err) {
-            console.warn('Could not parse stored store data:', err);
+            // console.warn('Could not parse stored store data:', err);
           }
         }
       } catch (err) {
-        console.warn('Could not load store data from localStorage:', err);
+        // console.warn('Could not load store data from localStorage:', err);
       }
     };
     

@@ -130,7 +130,7 @@
       "description": "منتجات عالية الجودة مع ضمان الرضا"
     },
     "fast_delivery": {
-      "title": "التوصيل خلال ساعة واحدة",
+      "title": "التوصيل السريع",
       "description": "توصيل سريع وموثوق إلى باب منزلك"
     }
   },
@@ -178,7 +178,9 @@
       "district_placeholder": "اسم الحي (اختياري)",
       "zipCode": "الرمز البريدي",
       "zipCode_placeholder": "أدخل الرمز البريدي",
-     
+      "personal_info": "المعلومات الشخصية",
+      "address_info": "معلومات العنوان",
+      "account_info": "معلومات الحساب",
       "select_area": "اختر المنطقة",
       "checking_email": "جاري التحقق من البريد الإلكتروني...",
       "validation": {

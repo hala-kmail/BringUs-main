@@ -65,7 +65,7 @@ const useStoreSliders = () => {
       if (data.success && data.data) {
         updateSliders(data.data);
         storeId.current = targetStoreId;
-        console.log('Sliders loaded successfully:', data.data.length, 'sliders');
+        // console.log('Sliders loaded successfully:', data.data.length, 'sliders');
         return data.data;
       } else {
         throw new Error('Invalid response format');
@@ -85,13 +85,13 @@ const useStoreSliders = () => {
     
     // Only fetch if we have a store ID and haven't initialized for this store
     if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
-      console.log('Initializing sliders for store ID:', currentStoreId);
+      // console.log('Initializing sliders for store ID:', currentStoreId);
       hasInitialized.current = true;
       storeId.current = currentStoreId;
       fetchSliders(currentStoreId);
     } else if (!currentStoreId && hasInitialized.current) {
       // Clear sliders if no store is available
-      console.log('No store available, clearing sliders');
+      // console.log('No store available, clearing sliders');
       updateSliders(null);
       hasInitialized.current = false;
       storeId.current = null;
@@ -104,7 +104,7 @@ const useStoreSliders = () => {
     if (id) {
       return fetchSliders(id);
     } else {
-      console.error('No store ID available for loading sliders');
+      // console.error('No store ID available for loading sliders');
       return null;
     }
   }, [getStoreId, fetchSliders]);

@@ -243,6 +243,7 @@ const Navbar = () => {
   // Handle switch to register
   const handleSwitchToRegister = () => {
     setIsLoginModalOpen(false);
+    navigate('/register');
     // You can implement register modal opening here if needed
   };
 
@@ -428,16 +429,23 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         {/*-----------------------------------Logo------------------------------------------------   */}
-        <Link to="/home" className="navbar-logo">
+        <button onClick={() => navigate('/home')} className="navbar-logo">
           {storeDataFinal && storeDataFinal.logo ? (
-            <img src={storeDataFinal.logo.url} alt={storeDataFinal.nameEn || storeDataFinal.nameAr || 'Store Logo'} />
+            <img 
+              src={storeDataFinal.logo.url} 
+              alt={storeDataFinal.nameEn || storeDataFinal.nameAr || 'Store Logo'}
+              onError={(e) => {
+                console.log('Logo failed to load:', storeDataFinal.logo.url);
+                e.target.style.display = 'none';
+              }}
+            />
           ) : (
             <img src={logo} alt="Hala Store" />
           )}
           <span className="logo-text">
             {storeDataFinal ? currentLang==='ar'? (storeDataFinal.nameAr) : (storeDataFinal.nameEn) : 'Hala Store'}
           </span>
-        </Link>
+        </button>
 
         {/*-----------------------------------Desktop Search Bar------------------------------------------------   */}
         <div className="search-bar desktop-search" ref={searchRef}>
@@ -475,9 +483,14 @@ const Navbar = () => {
                       onClick={() => handleProductClick(product._id || product.id)}
                     >
                       <div className="result-image">
-                        <img src={product.mainImage} alt={
-                          currentLang === 'ar' ? product.nameAr : product.nameEn
-                        } />
+                        <img 
+                          src={product.mainImage} 
+                          alt={currentLang === 'ar' ? product.nameAr : product.nameEn}
+                          onError={(e) => {
+                            console.log('Product image failed to load:', product.mainImage);
+                            e.target.style.display = 'none';
+                          }}
+                        />
                       </div>
                       <div className="result-details">
                         <h4 className="result-name">
@@ -579,18 +592,18 @@ const Navbar = () => {
                 </svg>
               </button>
               {isUserDropdownOpen && <div  id="user-menu-items" className={`dropdown-menu ${isUserDropdownOpen ? 'open-programmatically' : ''}`}>
-                <Link to="/profile" className="dropdown-item">
+                <button onClick={() => navigate('/profile')} className="dropdown-item">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   {t('navbar.profile')}
-                </Link>
-                <Link to="/orders" className="dropdown-item">
+                </button>
+                <button onClick={() => navigate('/orders')} className="dropdown-item">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                   {t('navbar.orders')}
-                </Link>
+                </button>
                 <button className="dropdown-item logout" onClick={handleLogout}>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{width: '16px', height: '16px', marginRight: '8px'}}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -609,24 +622,24 @@ const Navbar = () => {
           )}
 
           {/*-----------------------------------Wishlist------------------------------------------------   */}
-          <Link to="/wishlist" className="action-item">
+          <button onClick={() => navigate('/wishlist')} className="action-item">
             <div className="icon-container">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
               {wishlistCount > 0 && <span className="badge">{wishlistCount}</span>}
             </div>
-          </Link>
+          </button>
 
             {/*-----------------------------------Cart------------------------------------------------   */}
-          <Link to="/cart" className="action-item">
+          <button onClick={() => navigate('/cart')} className="action-item">
             <div className="icon-container">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               {cartItemsCount > 0 && <span className="badge">{cartItemsCount}</span>}
             </div>
-          </Link>
+          </button>
         </div>
       </div>
       
@@ -673,7 +686,14 @@ const Navbar = () => {
                     }}
                   >
                     <div className="mobile-result-image">
-                      <img src={product.mainImage} alt={currentLang === 'ar' ? product.nameAr : product.nameEn} />
+                      <img 
+                        src={product.mainImage} 
+                        alt={currentLang === 'ar' ? product.nameAr : product.nameEn}
+                        onError={(e) => {
+                          console.log('Mobile product image failed to load:', product.mainImage);
+                          e.target.style.display = 'none';
+                        }}
+                      />
                     </div>
                     <div className="mobile-result-details">
                       <h4 className="mobile-result-name">

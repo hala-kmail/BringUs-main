@@ -181,6 +181,9 @@
       "country_placeholder": "Enter country name",
       "select_area": "Select area",
       "checking_email": "Checking email...",
+      "personal_info": "Personal Information",
+      "address_info": "Address Information",
+      "account_info": "Account Information",
       "validation": {
         "firstName_required": "First name is required",
         "firstName_length": "First name must be between 2 and 50 characters",
@@ -199,10 +202,11 @@
         "city_required": "City is required",
         "zipCode_invalid": "Invalid zip code",
         "email_exists": "Email already exists",
-        "password_min_length": "Password must be at least 6 characters"
+        "password_min_length": "Password must be at least 6 characters",
+        "country_required": "Country is required"
+      }
     }
-  }
-},
+  },
   "validation": {
     "email_required": "Email is required",
     "email_invalid": "Invalid email format",

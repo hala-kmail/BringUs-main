@@ -24,8 +24,9 @@ export const useDeliveryMethods = () => {
     try {
       const storedStore = localStorage.getItem('storeData');
       if (storedStore) {
-        const parsedStore = JSON.parse(storedStore);
+        const parsedStore = JSON.parse(storedStore); 
         return parsedStore._id;
+      
       }
     } catch (err) {
       console.warn('Could not parse stored store data:', err);
@@ -89,7 +90,7 @@ export const useDeliveryMethods = () => {
     // Only fetch if we have a store ID and haven't initialized for this store
     if (storeId && (!hasInitialized.current || currentStoreId.current !== storeId)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing delivery methods for store ID:', storeId);
+        // console.log('Initializing delivery methods for store ID:', storeId);
       }
       hasInitialized.current = true;
       currentStoreId.current = storeId;
@@ -97,7 +98,7 @@ export const useDeliveryMethods = () => {
     } else if (!storeId && deliveryMethods.length > 0) {
       // Clear delivery methods if no store is available
       if (process.env.NODE_ENV === 'development') {
-        console.log('No store available, clearing delivery methods');
+        // console.log('No store available, clearing delivery methods');
       }
       setDeliveryMethods([]);
       hasInitialized.current = false;

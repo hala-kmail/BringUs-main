@@ -122,7 +122,15 @@ const Categories = () => {
                 (activeMainCategory ? subcategories : allSubcategories).map((subcategory) => (
                   <div key={subcategory._id} className="subcategory-circle-wrapper">
                     <button className="subcategory-circle" onClick={() => handleSubcategoryClick(subcategory)}>
-                      <img className="subcategory-circle-image" src={subcategory.image} alt={currentLang === 'ar' ? subcategory.nameAr : subcategory.nameEn} />
+                      <img 
+                        className="subcategory-circle-image" 
+                        src={subcategory.image} 
+                        alt={currentLang === 'ar' ? subcategory.nameAr : subcategory.nameEn}
+                        onError={(e) => {
+                          console.log('Category image failed to load:', subcategory.image);
+                          e.target.style.display = 'none';
+                        }}
+                      />
                     </button>
                     <div className="subcategory-name">{currentLang === 'ar' ? subcategory.nameAr : subcategory.nameEn}</div>
                   </div>

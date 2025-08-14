@@ -138,7 +138,14 @@ const Carousel = () => {
               <div key={slideData.id} className="carousel-slide">
                 {/* Image slide only */}
                 <a href={slideData.link} className="slide-image">
-                  <img src={slideData.image} alt={slideData.title} />
+                  <img 
+                    src={slideData.image} 
+                    alt={slideData.title}
+                    onError={(e) => {
+                      console.log('Carousel image failed to load:', slideData.image);
+                      e.target.style.display = 'none';
+                    }}
+                  />
                   <div className="slide-overlay"></div>
                 </a>
                 <div className="slide-content">

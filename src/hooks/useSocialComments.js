@@ -101,7 +101,7 @@ export const useSocialComments = () => {
     // Only fetch if we have a store ID and haven't initialized for this store
     if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing social comments for store ID:', currentStoreId);
+        // console.log('Initializing social comments for store ID:', currentStoreId);
       }
       hasInitialized.current = true;
       storeId.current = currentStoreId;
@@ -109,7 +109,7 @@ export const useSocialComments = () => {
     } else if (!currentStoreId && comments.length > 0) {
       // Clear comments if no store is available
       if (process.env.NODE_ENV === 'development') {
-        console.log('No store available, clearing social comments');
+        // console.log('No store available, clearing social comments');
       }
       setComments([]);
       hasInitialized.current = false;

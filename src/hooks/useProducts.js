@@ -223,7 +223,7 @@ const useProducts = () => {
       const now = Date.now();
       if (isGlobalFetching || (now - lastFetchTime < FETCH_COOLDOWN)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('Products fetch blocked - already in progress or cooldown active');
+          // console.log('Products fetch blocked - already in progress or cooldown active');
         }
         return;
       }
@@ -251,7 +251,7 @@ const useProducts = () => {
             
             const url = `${API_BASE_URL}/products/${currentStoreId}/without-variants?page=1&limit=20&sort=newest`;
             if (process.env.NODE_ENV === 'development') {
-              console.log('Fetching products from:', url);
+              // console.log('Fetching products from:', url);
             }
             
             const response = await fetch(url, {
@@ -271,7 +271,7 @@ const useProducts = () => {
               updateProducts(result.data);
               setPagination(result.pagination);
               if (process.env.NODE_ENV === 'development') {
-                console.log('Products fetched successfully:', result.data.length, 'products');
+                // console.log('Products fetched successfully:', result.data.length, 'products');
               }
             } else {
               throw new Error('Failed to fetch products');
@@ -291,7 +291,7 @@ const useProducts = () => {
     } else if (!currentStoreId && hasInitialized.current) {
       // Clear products if no store is available
       if (process.env.NODE_ENV === 'development') {
-        console.log('No store available, clearing products');
+        // console.log('No store available, clearing products');
       }
       updateProducts(null);
       hasInitialized.current = false;
@@ -313,7 +313,7 @@ const useProducts = () => {
     // Check if we're already fetching for this store
     if (isGlobalFetching && storeId.current === targetStoreId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Already fetching all products for store:', targetStoreId);
+        // console.log('Already fetching all products for store:', targetStoreId);
       }
       return null;
     }
@@ -322,13 +322,13 @@ const useProducts = () => {
     const now = Date.now();
     if (now - lastFetchTime < FETCH_COOLDOWN) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Fetch cooldown active, skipping fetch for store:', targetStoreId);
+        // console.log('Fetch cooldown active, skipping fetch for store:', targetStoreId);
       }
       return null;
     }
 
     if (!targetStoreId) {
-      console.log('No store ID available for fetching all products');
+      // console.log('No store ID available for fetching all products');
       return null;
     }
 
@@ -402,7 +402,7 @@ const useProducts = () => {
         const firstProduct = allProducts[0];
         if (firstProduct && (firstProduct.storeId === currentStoreId || firstProduct.store?._id === currentStoreId)) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('Using existing all products from state:', allProducts.length, 'products');
+            // console.log('Using existing all products from state:', allProducts.length, 'products');
           }
           return; // Don't fetch if we already have valid data in state
         }
@@ -419,7 +419,7 @@ const useProducts = () => {
             const firstProduct = parsedProducts[0];
             if (firstProduct && (firstProduct.storeId === currentStoreId || firstProduct.store?._id === currentStoreId)) {
               if (process.env.NODE_ENV === 'development') {
-                console.log('Using cached all products from localStorage:', parsedProducts.length, 'products');
+                // console.log('Using cached all products from localStorage:', parsedProducts.length, 'products');
               }
               setAllProducts(parsedProducts);
               if (updateAllProducts) {
@@ -436,7 +436,7 @@ const useProducts = () => {
       
       // Only fetch if we don't have valid data anywhere
       if (process.env.NODE_ENV === 'development') {
-        console.log('Fetching all products for store:', currentStoreId);
+        // console.log('Fetching all products for store:', currentStoreId);
       }
       fetchAllProductsByStore(currentStoreId);
     }
@@ -445,7 +445,7 @@ const useProducts = () => {
   // Fetch single product by ID
   const fetchProductById = useCallback(async (productId) => {
     if (!productId) {
-      console.log('No product ID provided');
+      // console.log('No product ID provided');
       return null;
     }
 
@@ -480,13 +480,13 @@ const useProducts = () => {
   // Fetch single product with its variants
   const fetchProductWithVariants = useCallback(async (productId) => {
     if (!productId) {
-      console.log('No product ID provided');
+      // console.log('No product ID provided');
       return null;
     }
 
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available for fetching product with variants');
+      // console.log('No store ID available for fetching product with variants');
       return null;
     }
 
@@ -534,13 +534,13 @@ const useProducts = () => {
   // Fetch products by category with pagination and filters
   const fetchProductsByCategory = useCallback(async (categoryId, options = {}) => {
     if (!categoryId) {
-      console.log('No category ID provided');
+      // console.log('No category ID provided');
       return null;
     }
 
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available');
+      // console.log('No store ID available');
       return null;
     }
 
@@ -551,7 +551,7 @@ const useProducts = () => {
   const fetchFeaturedProducts = useCallback(async (options = {}) => {
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available');
+      // console.log('No store ID available');
       return null;
     }
     // API does not support featured flag, so we fetch all products
@@ -563,7 +563,7 @@ const useProducts = () => {
   const fetchNewArrivals = useCallback(async (options = {}) => {
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available');
+      // console.log('No store ID available');
       return null;
     }
     return fetchProducts(currentStoreId, { ...options, sort: 'newest' });

@@ -54,6 +54,10 @@ const CategoriesGrid = () => {
                         src={category.image}
                         alt={currentLang === 'ar' ? category.nameAr : category.nameEn}
                         className="category-image"
+                        onError={(e) => {
+                          console.log('Category grid image failed to load:', category.image);
+                          e.target.style.display = 'none';
+                        }}
                       />
                     </div>
                     <div className="category-name">

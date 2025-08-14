@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import Categories from '../Categories/Categories';
 import './SecondaryNavbar.css';
 
 const SecondaryNavbar = () => {
   const { t } = useTranslation();
+  const { navigate } = useAffiliateNavigation();
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(window.scrollY);
@@ -43,9 +45,9 @@ const SecondaryNavbar = () => {
         <div className="secondary-nav-section navigation-section">
           <nav className="navigation-links">
             {navigationLinks.map((link) => (
-              <Link
+              <button
                 key={link.id}
-                to={link.path}
+                onClick={() => navigate(link.path)}
                 className={`nav-link ${
                   location.pathname === link.path || 
                   (link.path === '/home' && location.pathname === '/') 
@@ -53,7 +55,7 @@ const SecondaryNavbar = () => {
                 }`}
               >
                 {link.name}
-              </Link>
+              </button>
             ))}
           </nav>
         </div>
@@ -64,12 +66,12 @@ const SecondaryNavbar = () => {
             <span className="offer-text">{t('secondary_nav.trending_products')}</span>
           </Link> */}
           
-          <Link to="/almost-finished-sale" className="offer-link almost-finished">
+          <button onClick={() => navigate('/almost-finished-sale')} className="offer-link almost-finished">
             <span className="offer-text">{t('secondary_nav.almost_finished')}</span>
             <span className="sale-badge">
               {t('secondary_nav.sale')}
             </span>
-          </Link>
+          </button>
         </div>
       </div>
     </div>
