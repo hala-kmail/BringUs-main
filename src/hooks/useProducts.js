@@ -211,6 +211,7 @@ const useProducts = () => {
     } finally {
       setLoading(false);
     }
+    
   }, [updateProducts, token]);
 
   // Auto-fetch products when store changes (only once per store) - IMPROVED VERSION
