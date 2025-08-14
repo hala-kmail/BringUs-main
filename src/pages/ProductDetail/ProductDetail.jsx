@@ -181,7 +181,15 @@ const ProductDetail = () => {
     ...(product.mainImage ? [{ type: 'image', url: product.mainImage, thumbnail: product.mainImage, title: getProductName(product, currentLang) }] : []),
     // إضافة باقي الصور
     ...(product.images || []).map(img => ({ type: 'image', url: img, thumbnail: img, title: getProductName(product, currentLang) })),
-    // إضافة الفيديوهات
+    // إضافة الفيديو من videoUrl إذا كان موجوداً
+    ...(product.videoUrl ? [{ 
+      type: 'video', 
+      url: product.videoUrl, 
+      thumbnail: product.mainImage || (product.images && product.images[0]), 
+      title: getProductName(product, currentLang),
+      isExternalVideo: true
+    }] : []),
+    // إضافة الفيديوهات الأخرى
     ...(product.videos || []).map(video => ({ type: 'video', url: video.url, thumbnail: video.thumbnail, title: video.title || getProductName(product, currentLang) }))
   ] : [];
 

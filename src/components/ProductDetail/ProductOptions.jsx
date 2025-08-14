@@ -18,6 +18,9 @@ const ProductOptions = ({
   // استخدم فقط getSimpleColorsFromColorsField
   const simpleColors = getSimpleColorsFromColorsField(product);
   
+  // Add refs for focus management
+  const specOptionsRefs = React.useRef({});
+  const [activeSpecId, setActiveSpecId] = React.useState(null);
 
   // ربط المواصفات مع بيانات meta
   const organizedSpecs = React.useMemo(() => {
@@ -87,7 +90,98 @@ const ProductOptions = ({
         titleEn: specGroup?.meta?.titleEn || title
       }
     }));
+
+    // Set active state on the selected option - this will persist and won't be cleared by mouse movement
+    setActiveSpecId(`${specificationId}-${valueId}`);
   };
+
+  // Handle focus for keyboard navigation only
+  const handleSpecFocus = (specificationId, valueId) => {
+    // Only set active for keyboard navigation, not for mouse hover
+    // The active state should persist on the selected option
+  };
+
+  const handleSpecBlur = () => {
+    // Don't clear active state on blur - it should persist
+    // The active state will only change when another option is selected
+  };
+
+  // Set initial active state based on selected specs
+  React.useEffect(() => {
+    if (selectedSpecs && Object.keys(selectedSpecs).length > 0) {
+      // Set active state for the last selected specification
+      const lastSelectedSpec = Object.entries(selectedSpecs).pop();
+      if (lastSelectedSpec) {
+        const [specId, specData] = lastSelectedSpec;
+        setActiveSpecId(`${specId}-${specData.valueId}`);
+      }
+    }
+  }, [selectedSpecs]);
+
+  // Also set active state when organizedSpecs change (new product loaded)
+  React.useEffect(() => {
+    if (organizedSpecs.length > 0 && selectedSpecs && Object.keys(selectedSpecs).length > 0) {
+      // Find the first selected specification and set as active
+      const firstSelectedSpec = Object.entries(selectedSpecs)[0];
+      if (firstSelectedSpec) {
+        const [specId, specData] = firstSelectedSpec;
+        setActiveSpecId(`${specId}-${specData.valueId}`);
+      }
+    }
+  }, [organizedSpecs, selectedSpecs]);
+
+  // Add keyboard navigation support
+  React.useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (activeSpecId) {
+        const [specId, valueId] = activeSpecId.split('-');
+        const currentGroup = organizedSpecs.find(group => group.specificationId === specId);
+        if (currentGroup) {
+          const currentIndex = currentGroup.values.findIndex(spec => spec._id === valueId);
+          let nextIndex = currentIndex;
+
+          switch (event.key) {
+            case 'ArrowRight':
+            case 'ArrowDown':
+              event.preventDefault();
+              nextIndex = (currentIndex + 1) % currentGroup.values.length;
+              break;
+            case 'ArrowLeft':
+            case 'ArrowUp':
+              event.preventDefault();
+              nextIndex = currentIndex === 0 ? currentGroup.values.length - 1 : currentIndex - 1;
+              break;
+            case 'Enter':
+            case ' ':
+              event.preventDefault();
+              const nextSpec = currentGroup.values[nextIndex];
+              if (nextSpec && Number(nextSpec.quantity) !== 0) {
+                handleSpecSelect(currentGroup.title, nextSpec.value, specId, nextSpec._id);
+              }
+              break;
+            default:
+              return;
+          }
+
+          const nextSpec = currentGroup.values[nextIndex];
+          if (nextSpec) {
+            setActiveSpecId(`${specId}-${nextSpec._id}`);
+            // Focus the next element
+            const nextElement = specOptionsRefs.current[`${specId}-${nextSpec._id}`];
+            if (nextElement) {
+              nextElement.focus();
+            }
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeSpecId, organizedSpecs]);
 
   function getColorStyle(color) {
     if (typeof color === 'string' && color.includes('+')) {
@@ -175,7 +269,8 @@ const ProductOptions = ({
       {simpleColors.length > 0 && (
         <div className="product-color-selection">
           <h3 className="selection-title">
-            {currentLang === 'ar' ? 'اللون' : 'Color'}: <span className="selected-option">{getColorLabel(selectedColor)}</span>
+            {currentLang === 'ar' ? 'اللون' : 'Color'}:
+             {/* <span className="selected-option">{getColorLabel(selectedColor)}</span> */}
           </h3>
           <div className="color-options">
             {simpleColors.map((color, idx) => {
@@ -211,16 +306,18 @@ const ProductOptions = ({
               {group.values.map((spec) => {
                 const value = currentLang === 'ar' ? (spec.valueAr || spec.value) : (spec.valueEn || spec.value);
                 const isSelected = selectedSpecs[group.specificationId]?.valueId === spec._id;
+                
                   const isOut = Number(spec.quantity) === 0;
                   const isLow = Number(spec.quantity) > 0 && Number(spec.quantity) <= 3;
-                return (
-                  <button
-                    key={spec._id}
-                      className={`specification-option${isSelected ? ' selected' : ''}${isOut ? ' out-of-stock' : ''}${isLow ? ' low-stock' : ''}`}
-                      onClick={() => !isOut && handleSpecSelect(group.title, spec.value, group.specificationId, spec._id)}
-                      type="button"
-                      disabled={isOut}
-                  >
+                                 return (
+                   <button
+                     key={spec._id}
+                       className={`specification-option ${isSelected ? ' selected' : ''}${isOut ? ' out-of-stock' : ''}${isLow ? ' low-stock' : ''}${activeSpecId === `${group.specificationId}-${spec._id}` ? ' active' : ''}`}
+                       onClick={() => !isOut && handleSpecSelect(group.title, spec.value, group.specificationId, spec._id) }
+                       type="button"
+                       disabled={isOut}
+                       ref={el => specOptionsRefs.current[`${group.specificationId}-${spec._id}`] = el}
+                   >
                       <span className="spec-value-text">{value}</span>
                       {typeof spec.quantity === 'number' && (
                         <span className="spec-qty-hint" aria-hidden>

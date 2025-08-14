@@ -60,12 +60,12 @@ const Categories = () => {
       </button>
 
       {/* Loading state */}
-      {loading && (
+      {/* {loading && (
         <div className="categories-loading">
           <div className="loading-spinner"></div>
           <span>{currentLang === 'ar' ? 'جاري تحميل الفئات...' : 'Loading categories...'}</span>
         </div>
-      )}
+      )} */}
 
       {/* Error state */}
       {error && (

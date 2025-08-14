@@ -171,7 +171,7 @@
 /* Sidebar Filters */
 .shop-sidebar {
   background: white;
-  border-radius: 12px;
+  border-radius: 5px;
   padding: 16px;
   height: fit-content;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);

@@ -77,18 +77,18 @@ const CheckoutForm = ({
     {/* دائماً: الاسم، الهاتف */}
     <div className="form-row">
       <div className="form-group">
-        <label htmlFor="firstName">{t('checkout.first_name')}*</label>
-        <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder={t('checkout.first_name_placeholder')} className={formErrors.firstName ? 'error' : ''} />
+        <label htmlFor="firstName">{t('profile.first_name')}*</label>
+        <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder={t('profile.first_name_placeholder')} className={formErrors.firstName ? 'error' : ''} />
         {formErrors.firstName && <span className="error-message">{formErrors.firstName}</span>}
       </div>
       <div className="form-group">
-        <label htmlFor="lastName">{t('checkout.last_name')}*</label>
-        <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder={t('checkout.last_name_placeholder')} className={formErrors.lastName ? 'error' : ''} />
+        <label htmlFor="lastName">{t('profile.last_name')}*</label>
+        <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder={t('profile.last_name_placeholder')} className={formErrors.lastName ? 'error' : ''} />
         {formErrors.lastName && <span className="error-message">{formErrors.lastName}</span>}
       </div>
       <div className="form-group">
-        <label htmlFor="phone">{t('checkout.phone')}  *</label>
-        <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder={t('checkout.phone_placeholder')} className={formErrors.phone ? 'error' : ''} />
+        <label htmlFor="phone">{t('profile.phone')}  *</label>
+        <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder={t('profile.phone_placeholder')} className={formErrors.phone ? 'error' : ''} />
         {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
       </div>
     </div>
@@ -98,7 +98,7 @@ const CheckoutForm = ({
       <>
         {/* منطقة التوصيل */}
         <div className="form-group">
-          <label htmlFor="deliveryMethodId">{t('checkout.delivery_area')} *</label>
+          <label htmlFor="deliveryMethodId">{t('profile.delivery_area')} *</label>
           <select 
             id="deliveryMethodId" 
             name="deliveryMethodId" 
@@ -118,12 +118,12 @@ const CheckoutForm = ({
         </div>
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="city">{t('checkout.city')} *</label>
-            <input type="text" id="city" name="city" value={formData.city} onChange={handleInputChange} placeholder={t('checkout.city_placeholder')} className={formErrors.city ? 'error' : ''} />
+            <label htmlFor="city">{t('profile.city')} *</label>
+            <input type="text" id="city" name="city" value={formData.city} onChange={handleInputChange} placeholder={t('profile.city_placeholder')} className={formErrors.city ? 'error' : ''} />
             {formErrors.city && <span className="error-message">{formErrors.city}</span>}
           </div>
           <div className="form-group">
-            <label htmlFor="district">{t('checkout.district')}</label>
+            <label htmlFor="district">{t('profile.district')}</label>
             <input type="text" id="district" name="district" value={formData.district} onChange={handleInputChange} placeholder={t('checkout.district_placeholder')} />
           </div>
         </div>

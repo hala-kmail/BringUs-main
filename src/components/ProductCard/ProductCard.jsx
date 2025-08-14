@@ -10,6 +10,7 @@ import { namer } from 'color-namer';
 import { useAppData } from '../../contexts/AppDataContext';
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 
+
 const ProductCard = ({
   product,
   isInWishlist,
@@ -310,11 +311,31 @@ const ProductCard = ({
         </button>
       </div>
 
+
+
       {/* Product Description - Below Image */}
       <div className="product-description-new">
         <h3 className="product-title-new">{productName}</h3>
         {productDescription && (
           <p className="product-subtitle-new">{productDescription}</p>
+        )}
+        
+        {/* Product Labels - Below Description */}
+        {product.productLabels && product.productLabels.length > 0 && (
+          <div className="product-labels-section">
+            {product.productLabels.map((label, index) => (
+              <span 
+                key={label._id || index} 
+                className="product-label-item"
+                style={{ 
+                  backgroundColor: '#e4e4e4',
+                  color: 'black'
+                }}
+              >
+                {currentLang === 'ar' ? label.nameAr : label.nameEn}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 
@@ -345,7 +366,7 @@ const ProductCard = ({
       <div className="action-buttons-new">
         <button
           className="add-to-cart-btn-new"
-          onClick={handleAddToCartClick}
+          onClick={() => navigateWithAffiliate(`/product/${product._id}`)}
           disabled={
             isAddToCartLoading || product.stock === 0
             // !Array.isArray(product.specificationValues) ||

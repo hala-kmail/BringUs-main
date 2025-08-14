@@ -12,15 +12,9 @@ const ProductInfoSection = ({
   const productName = currentLang === 'ar' ? product.nameAr : product.nameEn;
   const productDescription = currentLang === 'ar' ? product.descriptionAr : product.descriptionEn;
   const { store } = useAppData();
-  const hasNewLabel = product.productLabels?.some(label =>
-    (currentLang === 'ar' ? label.nameAr : label.nameEn)?.toLowerCase().includes(currentLang === 'ar' ? 'جديد' : 'new')
-  );
-  const hasFeaturedLabel = product.productLabels?.some(label =>
-    (currentLang === 'ar' ? label.nameAr : label.nameEn)?.toLowerCase().includes(currentLang === 'ar' ? 'مميز' : 'featured')
-  );
-  const hasSaleLabel = product.productLabels?.some(label =>
-    (currentLang === 'ar' ? label.nameAr : label.nameEn)?.toLowerCase().includes(currentLang === 'ar' ? 'تخفيض' : 'sale')
-  );
+  
+  // عرض جميع الليبلز الموجودة في productLabels
+  const productLabels = product.productLabels || [];
 
   const discountActive = isDiscountActive(product);
   const effectivePrice = getPriceByUserRole(product);
@@ -35,21 +29,21 @@ const ProductInfoSection = ({
     <div className="product-detail-info">
       {/* Product Badges */}
       <div className="product-detail-badges">
-        {hasNewLabel && (
-          <span className="product-detail-badge product-new-badge">
-            {t('product_detail.new')}
+        {/* عرض جميع الليبلز من productLabels */}
+        {productLabels.map((label, index) => (
+          <span 
+            key={label._id || index} 
+            className="product-detail-badge"
+            style={{ 
+              backgroundColor: label.color || '#6B7280',
+              color: 'white'
+            }}
+          >
+            {currentLang === 'ar' ? label.nameAr : label.nameEn}
           </span>
-        )}
-        {hasFeaturedLabel && (
-          <span className="product-detail-badge product-bestseller-badge">
-            {t('product_detail.featured')}
-          </span>
-        )}
-        {hasSaleLabel && (
-           <span className="product-detail-badge product-sale-badge">
-            {t('product_detail.sale')}
-          </span>
-        )}
+        ))}
+        
+        {/* عرض ليبلة التخفيض إذا كان هناك تخفيض */}
         {product.discountPercentage > 0 && (
           <span className="product-detail-badge product-sale-badge">
             -{product.discountPercentage}%

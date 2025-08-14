@@ -800,9 +800,9 @@ h3.product-top-name{
 /* New ProductCard Design Styles */
 .product-card-new {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 5px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 20px;
+  padding: 12px;
   position: relative;
   transition: all 0.3s ease;
   display: flex;
@@ -838,7 +838,7 @@ max-width: 300px;
 
 .product-label-new {
   padding: 4px 8px;
-  border-radius: 16px;
+  border-radius: 5px;
   font-size: 10px;
   color: #ffffff;
   text-align: center;
@@ -886,7 +886,7 @@ max-width: 300px;
     background: linear-gradient(135deg, #fa3737, #af2f20);
     color: #ffffff;
     padding: 6px 13px;
-    border-radius: 0px 15px  0px 30px;
+    border-radius: 0px 5px  0px 30px;
     font-size: 14px;
     font-weight: 700;
     z-index: 10;
@@ -896,7 +896,7 @@ max-width: 300px;
 
 [dir="rtl"] .discount-badge-new {
   right: auto;
-  border-radius: 16px 0px  30px 0px;
+  border-radius: 5px 0px  30px 0px;
    left: 0px;
 }
 
@@ -914,7 +914,7 @@ max-width: 300px;
   width: 100%;
   height: 200px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 5px;
   transition: transform 0.3s ease;
 }
 
@@ -930,6 +930,9 @@ max-width: 300px;
 }
 
 .product-title-new {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 16px;
   font-weight: 600;
   color: #374151;
@@ -952,6 +955,40 @@ max-width: 300px;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
+}
+
+/* Product Labels Section - Below Description */
+.product-labels-section {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.product-labels-section::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.product-label-item {
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.product-label-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Pricing Information */
@@ -994,7 +1031,7 @@ max-width: 300px;
   color: #000000;
   border: none;
   padding: 14px 20px;
-  border-radius: 12px;
+  border-radius: 5px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -1107,7 +1144,7 @@ max-width: 300px;
 /* Responsive Design */
 @media (max-width: 768px) {
   .product-card-new {
-    padding: 16px;
+    padding: 12px;
     min-height: 350px;
   }
   
@@ -1268,5 +1305,77 @@ max-width: 300px;
 
 .product-image-button:hover {
   text-decoration: none;
+}
+
+/* Responsive styles for product labels */
+@media (max-width: 768px) {
+  .product-labels-section {
+    gap: 4px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+  
+  .product-label-item {
+    padding: 3px 6px;
+    font-size: 9px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-labels-section {
+    gap: 3px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+  
+  .product-label-item {
+    padding: 2px 5px;
+    font-size: 8px;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
+  }
+}
+
+/* List view styles for product labels */
+.product-card-new.list-view .product-labels-section {
+  justify-content: flex-start;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+[dir="rtl"] .product-card-new.list-view .product-labels-section {
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .product-card-new.list-view .product-labels-section {
+    justify-content: center;
+  }
+  
+  [dir="rtl"] .product-card-new.list-view .product-labels-section {
+    justify-content: center;
+  }
+}
+
+/* Product Video Styles */
+.product-card-new .product-video-container {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.product-card-new.list-view .product-video-container {
+  margin-top: 0;
+  margin-bottom: 12px;
+  width: 200px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .product-card-new.list-view .product-video-container {
+    width: 100%;
+    height: 120px;
+  }
 }
   

@@ -179,12 +179,14 @@ button:focus-visible {
     height: 32px ;
   }
   .language-name{
+    font-family: 'Tajawal', sans-serif;
     display: none;
   }
   .add-to-cart-btn svg:not(.product-detail .add-to-cart-btn svg),
   .wishlist-add-to-cart-btn svg,
   .related-add-to-cart-btn svg {
     width: 14px !important;
+    
     height: 14px !important;
   }
 

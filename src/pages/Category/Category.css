@@ -98,7 +98,7 @@
 
 .subcategory-item {
   background: white;
-  border-radius: 16px;
+  border-radius: 5px;
   padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -166,8 +166,8 @@
 }
 
 .subcategory-logo {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   object-fit: cover;
   border-radius: 50%;
   background: #f9fafb;
@@ -387,7 +387,7 @@
   
   .subcategory-item {
     padding: 1.25rem;
-    border-radius: 12px;
+   
   }
   
   .subcategory-logo {
@@ -419,7 +419,7 @@
   
   .subcategory-item {
     padding: 1rem;
-    border-radius: 10px;
+   
   }
   
   .subcategory-logo {

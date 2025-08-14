@@ -130,7 +130,7 @@
       "description": "منتجات عالية الجودة مع ضمان الرضا"
     },
     "fast_delivery": {
-      "title": "التوصيل السريع",
+      "title": "التوصيل خلال ساعة واحدة",
       "description": "توصيل سريع وموثوق إلى باب منزلك"
     }
   },
@@ -178,9 +178,7 @@
       "district_placeholder": "اسم الحي (اختياري)",
       "zipCode": "الرمز البريدي",
       "zipCode_placeholder": "أدخل الرمز البريدي",
-      "personal_info": "المعلومات الشخصية",
-      "address_info": "معلومات العنوان",
-      "account_info": "معلومات الحساب",
+     
       "select_area": "اختر المنطقة",
       "checking_email": "جاري التحقق من البريد الإلكتروني...",
       "validation": {
@@ -514,7 +512,7 @@
     "city": "المدينة",
     "city_placeholder": "الرياض",
     "district": "الحي (اختياري)",
-    "district_placeholder": "الملز",
+    "district_placeholder": "الجابريات",
     "address": "العنوان التفصيلي",
     "delivery_area": "منطقة التوصيل",
     "delivery_method": "طريقة التوصيل",
@@ -620,6 +618,8 @@
     "api_failed": "فشل في الاتصال بالخادم"
   },
   "profile": {
+    "edit": "تعديل",
+    "save": "حفظ",
     "title": "الملف الشخصي",
     "subtitle": "إدارة معلوماتك الشخصية والإعدادات",
     "personal_info": "المعلومات الشخصية",
@@ -628,12 +628,20 @@
     "cancel": "إلغاء",
     "profile_updated_successfully": "تم تحديث الملف الشخصي بنجاح!",
     "first_name": "الاسم الأول",
+    "first_name_placeholder": "أدخل الاسم الأول",
     "last_name": "اسم العائلة",
+    "last_name_placeholder": "أدخل اسم العائلة",
     "email": "البريد الإلكتروني",
+    "email_placeholder": "name@example.com",
     "phone": "رقم الهاتف",
+    "phone_placeholder": "+970 50 123 4567",
     "address": "العنوان",
+    "address_placeholder": "اسم الشارع، رقم المبنى، رقم الشقة...",
     "street": "الشارع",
     "city": "المدينة",
+    "city_placeholder": "جنين",
+    "district": "الحي (اختياري)",
+    "district_placeholder": "الجابريات",
     "state": "الولاية/المحافظة",
     "zip_code": "الرمز البريدي",
     "country": "البلد",

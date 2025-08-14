@@ -181,9 +181,6 @@
       "country_placeholder": "Enter country name",
       "select_area": "Select area",
       "checking_email": "Checking email...",
-      "personal_info": "Personal Information",
-      "address_info": "Address Information",
-      "account_info": "Account Information",
       "validation": {
         "firstName_required": "First name is required",
         "firstName_length": "First name must be between 2 and 50 characters",
@@ -202,11 +199,10 @@
         "city_required": "City is required",
         "zipCode_invalid": "Invalid zip code",
         "email_exists": "Email already exists",
-        "password_min_length": "Password must be at least 6 characters",
-        "country_required": "Country is required"
-      }
+        "password_min_length": "Password must be at least 6 characters"
     }
-  },
+  }
+},
   "validation": {
     "email_required": "Email is required",
     "email_invalid": "Invalid email format",
@@ -510,7 +506,7 @@
     "delivery_area": "Delivery Area",
     "city_placeholder": "Riyadh",
     "district": "District (Optional)",
-    "district_placeholder": "Al-Malaz",
+    "district_placeholder": "Al-Jabraat",
     "address": "Detailed Address",
     "delivery_method": "Delivery Method", 
       "delivery_method_placeholder": "Delivery to Address",
@@ -616,6 +612,8 @@
     "api_failed": "Failed to connect to server"
   },
   "profile": {
+    "edit": "Edit",
+    "save": "Save",
     "title": "Profile",
     "subtitle": "Manage your personal information and settings",
     "personal_info": "Personal Information",
@@ -624,12 +622,19 @@
     "cancel": "Cancel",
     "profile_updated_successfully": "Profile updated successfully!",
     "first_name": "First Name",
+    "first_name_placeholder": "Enter your first name",
     "last_name": "Last Name",
+    "last_name_placeholder": "Enter your last name",
     "email": "Email",
+    "email_placeholder": "name@example.com",
     "phone": "Phone Number",
+    "phone_placeholder": "+970 50 123 4567",
     "address": "Address",
     "street": "Street",
     "city": "City",
+    "city_placeholder": "Gaza",
+    "district": "District (Optional)",
+    "district_placeholder": "Al-Jabraat",
     "state": "State/Province",
     "zip_code": "ZIP Code",
     "country": "Country",

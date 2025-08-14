@@ -43,6 +43,7 @@
 }
 
 .logo-text {
+  font-family: 'Tajawal', sans-serif;
   max-width: 150px; 
   white-space: nowrap; 
   overflow: hidden; 

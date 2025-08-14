@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import UniversalVideoPlayer from '../UniversalVideoPlayer/UniversalVideoPlayer';
 
 const ProductMediaGallery = ({
   mediaItems,
@@ -10,6 +11,7 @@ const ProductMediaGallery = ({
   currentLang,
   t
 }) => {
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const getCurrentMedia = () => {
     if (!mediaItems || mediaItems.length === 0) {
@@ -19,6 +21,13 @@ const ProductMediaGallery = ({
   };
 
   const handleZoomToggle = () => setIsZoomModalOpen(!isZoomModalOpen);
+
+  const handleVideoClick = () => {
+    const currentMedia = getCurrentMedia();
+    if (currentMedia.type === 'video' && currentMedia.isExternalVideo) {
+      setShowVideoModal(true);
+    }
+  };
 
   return (
     <div className="product-image-gallery">
@@ -46,14 +55,36 @@ const ProductMediaGallery = ({
           </>
         )}
         {getCurrentMedia().type === 'video' ? (
-          <video 
-            src={getCurrentMedia().url} 
-            controls
-            poster={getCurrentMedia().thumbnail}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          >
-            {t('product_detail.video_not_supported')}
-          </video>
+          getCurrentMedia().isExternalVideo ? (
+            <div 
+              className="external-video-thumbnail"
+              onClick={handleVideoClick}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                backgroundImage: `url(${getCurrentMedia().thumbnail})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                cursor: 'pointer',
+                position: 'relative'
+              }}
+            >
+              <div className="video-play-overlay">
+                <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '60px', height: '60px', color: 'white' }}>
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          ) : (
+            <video 
+              src={getCurrentMedia().url} 
+              controls
+              poster={getCurrentMedia().thumbnail}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            >
+              {t('product_detail.video_not_supported')}
+            </video>
+          )
         ) : (
           <img 
             src={getCurrentMedia().url} 
@@ -98,6 +129,15 @@ const ProductMediaGallery = ({
           ))}
         </div>
       )} */}
+
+      {/* Video Modal for External Videos */}
+      {showVideoModal && (
+        <UniversalVideoPlayer 
+          videoUrl={getCurrentMedia().url} 
+          showInModal={true} 
+          onClose={() => setShowVideoModal(false)}
+        />
+      )}
     </div>
   );
 };

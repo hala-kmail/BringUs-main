@@ -81,6 +81,7 @@ const Checkout = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDirectOrderProcessing, setIsDirectOrderProcessing] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState('delivery'); 
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
@@ -90,6 +91,8 @@ const Checkout = () => {
   const [paymentDone, setPaymentDone] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [cartTotalsState, setCartTotalsState] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successOrderData, setSuccessOrderData] = useState(null);
 
   // تحديث التوتال عند تغيير أي شيء يؤثر عليه
   useEffect(() => {
@@ -294,11 +297,12 @@ const Checkout = () => {
     errors.phone = phoneResult.error || validateRequired(formData.phone, t('checkout.validation.phone_required'));
     
     if (deliveryMethod === 'delivery') {
-      // التحقق من اختيار طريقة التوصيل
+      // التحقق من اختيار طريقة التوصيل فقط إذا كان التوصيل للمنزل
       errors.deliveryMethodId = validateRequired(formData.deliveryMethodId, currentLang === 'ar' ? 'يرجى اختيار منطقة التوصيل' : 'Please select a delivery area');
       errors.address = validateRequired(formData.address, t('checkout.validation.address_required'));
       errors.city = validateRequired(formData.city, t('checkout.validation.city_required'));
     }
+    // لا نحتاج للتحقق من العنوان إذا كان الاستلام من المتجر
     
     setFormErrors(errors);
     return Object.values(errors).every((err) => !err);
@@ -314,7 +318,14 @@ const Checkout = () => {
 const handlePlaceOrderClick = (e) => {
   e.preventDefault();
   if (!validateForm()) return;
-  setShowPaymentPopup(true);
+  
+  // إذا كان الاستلام من المتجر، مباشرة إنشاء الطلب وإرساله للواتساب
+  if (deliveryMethod === 'store') {
+    handleDirectStoreOrder();
+  } else {
+    // إذا كان توصيل، عرض طرق الدفع
+    setShowPaymentPopup(true);
+  }
 };
 //-----------------------------------handleSelectPayment------------------------------------------------  
  const handleSelectPayment = (method) => {
@@ -327,6 +338,163 @@ const handlePlaceOrderClick = (e) => {
  const handlePaymentDone = () => {
   setPaymentDone(true);
 };
+//-----------------------------------handleDirectStoreOrder------------------------------------------------  
+const handleDirectStoreOrder = async () => {
+  try {
+    setIsDirectOrderProcessing(true);
+    console.log('=== STARTING DIRECT STORE ORDER ===');
+    console.log('Store data:', store);
+    console.log('Cart items:', cartItems);
+    console.log('Form data:', formData);
+    console.log('Creating direct store order...');
+    
+    // إنشاء الطلب مباشرة للاستلام من المتجر
+    const orderData = {
+      store: {
+        _id: store?._id,
+        nameAr: store?.nameAr,
+        nameEn: store?.nameEn,
+        logo: store?.logo,
+        contact: store?.contact
+      },
+      user: user?._id || null,
+      items: cartItems.map(item => {
+        let productId = null;
+        
+        if (item.productId) {
+          productId = item.productId;
+        } else if (item.product && typeof item.product === 'string') {
+          productId = item.product;
+        } else if (item.product && typeof item.product === 'object') {
+          productId = item.product._id || item.product.id;
+        } else if (item._id) {
+          productId = item._id;
+        }
+        
+        return {
+          product: productId,
+          quantity: item.quantity
+        };
+      }),
+      cartItems: cartItems.map(item => ({
+        product: item.productId || (item.product && typeof item.product === 'string' ? item.product : item.product?._id || item.product?.id || item._id),
+        quantity: item.quantity,
+        selectedSpecifications: item.selectedSpecifications || [],
+        selectedColors: item.selectedColors || []
+      })),
+      shippingAddress: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email || '',
+        phone: formData.phone,
+        street: storeAddress || 'Store Pickup',
+        city: store?.contact?.address?.city || '',
+        district: store?.contact?.address?.state || '',
+        country: store?.contact?.address?.country || '',
+        zipCode: store?.contact?.address?.zipCode || ''
+      },
+      billingAddress: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email || '',
+        phone: formData.phone,
+        street: storeAddress || 'Store Pickup',
+        city: store?.contact?.address?.city || '',
+        district: store?.contact?.address?.state || '',
+        country: store?.contact?.address?.country || '',
+        zipCode: store?.contact?.address?.zipCode || ''
+      },
+      paymentInfo: {
+        method: 'cash_on_delivery',
+        paymentMethodId: null,
+        status: 'pending'
+      },
+      shippingInfo: {
+        method: 'pickup',
+        cost: 0,
+        deliveryMethodId: null
+      },
+      notes: {
+        customer: formData.notes || ''
+      },
+      isGift: false,
+      giftMessage: '',
+      deliveryArea: undefined,
+      currency: store?.settings.currency || 'ILS'
+    };
+
+    console.log('Creating direct store order with data:', JSON.stringify(orderData, null, 2));
+    
+    // إنشاء الطلب في قاعدة البيانات
+    const createdOrder = await createOrder(orderData);
+    console.log('Direct store order created successfully:', createdOrder);
+
+         // إرسال رسالة الواتساب مع معلومات الطلب
+     const whatsappOrderData = {
+       orderNumber: createdOrder.orderNumber,
+       customerInfo: formData,
+       items: cartItems,
+       pricing: createdOrder.pricing,
+       totals: { ...cartTotalsState, shipping: 0, total: cartTotalsState.subtotal },
+       orderDate: new Date().toISOString(),
+       deliveryMethod: 'store',
+       deliveryMethodId: null,
+       paymentMethod: currentLang === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery'
+     };
+     
+     // إنشاء رسالة الواتساب
+     const message = handleWhatsAppOrder(whatsappOrderData);
+     
+     // الحصول على رقم الواتساب
+     let phoneNumber = store?.contact?.whatsapp;
+     if (!phoneNumber) {
+       phoneNumber = store?.whatsappNumber;
+     }
+     if (!phoneNumber) {
+       phoneNumber = store?.contact?.phone;
+     }
+     
+     // التحقق من وجود رقم الهاتف
+     if (!phoneNumber) {
+       const errorMessage = currentLang === 'ar' 
+         ? 'رقم الواتساب الخاص بالمتجر غير متوفر'
+         : 'Store WhatsApp number is not available';
+       showErrorNotification(errorMessage);
+       return;
+     }
+     
+     // تنظيف رقم الهاتف
+     const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+     let finalPhoneNumber = cleanPhoneNumber;
+     if (!finalPhoneNumber.startsWith('+')) {
+       finalPhoneNumber = '+972' + finalPhoneNumber.replace(/^0/, '');
+     }
+     
+     // إضافة رقم الهاتف للبيانات
+     whatsappOrderData.phoneNumber = finalPhoneNumber;
+     whatsappOrderData.whatsappMessage = message;
+    
+               // عرض رسالة نجاح جميلة (بدون إرسال تلقائي للواتساب)
+      showBeautifulSuccessMessage(whatsappOrderData);
+     
+     // مسح السلة وإعادة التوجيه
+     clearCart();
+     
+          // إعادة التوجيه إلى الصفحة الرئيسية
+     console.log('=== DIRECT STORE ORDER COMPLETED ===');
+     navigate('/');
+     
+      } catch (error) {
+     console.error('Error creating direct store order:', error);
+     const errorMessage = currentLang === 'ar' 
+       ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
+       : 'Error creating order. Please try again.';
+     showErrorNotification(errorMessage);
+   } finally {
+    setIsDirectOrderProcessing(false);
+  }
+};
+
 //-----------------------------------handleSendWhatsApp------------------------------------------------  
 const handleSendWhatsApp = async () => {
   try {
@@ -549,18 +717,18 @@ const handleSendWhatsApp = async () => {
     // إعادة التوجيه إلى صفحة تأكيد الطلب أو الصفحة الرئيسية
     navigate('/');
     
-  } catch (error) {
-    console.error('Error creating order:', error);
-    // إضافة رسالة خطأ للمستخدم
-    const errorMessage = currentLang === 'ar' 
-      ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
-      : 'Error creating order. Please try again.';
-    alert(errorMessage);
-  }
+     } catch (error) {
+     console.error('Error creating order:', error);
+     // إضافة رسالة خطأ للمستخدم
+     const errorMessage = currentLang === 'ar' 
+       ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
+       : 'Error creating order. Please try again.';
+     showErrorNotification(errorMessage);
+   }
 };
 //-----------------------------------handleWhatsAppOrder------------------------------------------------  
   const handleWhatsAppOrder = (orderData) => {
-    const { orderNumber, customerInfo, items, totals } = orderData;
+    const { orderNumber, customerInfo, items, totals, deliveryMethod } = orderData;
     
     // إنشاء رسالة باللغة المختارة فقط
     const isArabic = currentLang === 'ar';
@@ -580,7 +748,19 @@ const handleSendWhatsApp = async () => {
     message += isArabic 
       ? ` *الوقت:* ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}\n\n`
       : ` *Time:* ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}\n\n`;
-      message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+    
+         // إضافة طريقة الاستلام
+     message += isArabic 
+       ? ` *طريقة الاستلام:* ${deliveryMethod === 'store' ? 'استلام من المتجر' : 'توصيل للمنزل'}\n`
+       : ` *Delivery Method:* ${deliveryMethod === 'store' ? 'Store Pickup' : 'Home Delivery'}\n`;
+     
+     // إضافة ملاحظة خاصة للاستلام من المتجر
+     if (deliveryMethod === 'store') {
+       message += isArabic 
+         ? ` *ملاحظة:* العميل سيقوم بالاستلام من المتجر والدفع عند الاستلام\n`
+         : ` *Note:* Customer will pick up from store and pay on delivery\n`;
+     }
+     message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
     // معلومات العميل - Customer Information
     message += isArabic 
       ? ` *معلومات العميل:*\n`
@@ -591,13 +771,31 @@ const handleSendWhatsApp = async () => {
     message += isArabic 
       ? ` الهاتف: ${customerInfo.phone || 'غير محدد'}\n`
       : ` Phone: ${customerInfo.phone || 'N/A'}\n`;
-    message += isArabic 
-      ? ` العنوان: ${customerInfo.address || 'غير محدد'}, ${customerInfo.city || 'غير محدد'}`
-      : ` Address: ${customerInfo.address || 'N/A'}, ${customerInfo.city || 'N/A'}`;
-    if (customerInfo.district) {
-      message += `, ${customerInfo.district}`;
-    }
-    message += '\n\n';
+    
+    // إضافة العنوان فقط إذا كان توصيل
+    if (deliveryMethod === 'delivery') {
+      message += isArabic 
+        ? ` العنوان: ${customerInfo.address || 'غير محدد'}, ${customerInfo.city || 'غير محدد'}`
+        : ` Address: ${customerInfo.address || 'N/A'}, ${customerInfo.city || 'N/A'}`;
+      if (customerInfo.district) {
+        message += `, ${customerInfo.district}`;
+      }
+      message += '\n';
+         } else {
+       // إذا كان استلام من المتجر، إضافة عنوان المتجر
+       message += isArabic 
+         ? ` العنوان: استلام من المتجر - ${storeAddress || 'عنوان المتجر'}\n`
+         : ` Address: Store Pickup - ${storeAddress || 'Store Address'}\n`;
+       
+       // إضافة معلومات المتجر للاستلام
+       if (store?.nameAr || store?.nameEn) {
+         const storeName = currentLang === 'ar' ? store.nameAr : store.nameEn;
+         message += isArabic 
+           ? ` المتجر: ${storeName}\n`
+           : ` Store: ${storeName}\n`;
+       }
+     }
+    message += '\n';
     
     // الملاحظات - Notes
     if (customerInfo.notes) {
@@ -652,16 +850,16 @@ const handleSendWhatsApp = async () => {
         : `   Price: ${currencySymbol}${itemPrice.toFixed(2)}\n`;
       
       // إضافة الألوان المختارة - Colors
-      if (item.selectedColors && item.selectedColors.length > 0) {
-        message += isArabic 
-          ? ` الألوان: `
-          : `  Colors: `;
-        item.selectedColors.forEach((color, colorIndex) => {
-          const colorName = getColorLabel(color, t);
-          message += `${colorName}${colorIndex < item.selectedColors.length - 1 ? ', ' : ''}`;
-        });
-        message += '\n';
-      }
+      // if (item.selectedColors && item.selectedColors.length > 0) {
+      //   message += isArabic 
+      //     ? ` الألوان: `
+      //     : `  Colors: `;
+      //   item.selectedColors.forEach((color, colorIndex) => {
+      //     const colorName = getColorLabel(color, t);
+      //     message += `${colorName}${colorIndex < item.selectedColors.length - 1 ? ', ' : ''}`;
+      //   });
+      //   message += '\n';
+      // }
       
       // إضافة المواصفات - Specifications
       if (item.selectedSpecifications && item.selectedSpecifications.length > 0) {
@@ -700,8 +898,8 @@ const handleSendWhatsApp = async () => {
       message += `━━━━━━━━━━━━━━━━━━━━\n`;
     }
     message += isArabic 
-      ? ` رسوم الشحن: ${orderData.pricing.shipping === 0 ? ' مجاني' : `${currencySymbol}${orderData.pricing.shipping.toFixed(2)}`}\n`
-      : ` Shipping: ${orderData.pricing.shipping === 0 ? ' Free' : `${currencySymbol}${orderData.pricing.shipping.toFixed(2)}`}\n`;
+      ? ` رسوم الشحن: ${deliveryMethod === 'store' ? 'مجاني (استلام من المتجر)' : (orderData.pricing.shipping === 0 ? ' مجاني' : `${currencySymbol}${orderData.pricing.shipping.toFixed(2)}`)}\n`
+      : ` Shipping: ${deliveryMethod === 'store' ? 'Free (Store Pickup)' : (orderData.pricing.shipping === 0 ? ' Free' : `${currencySymbol}${orderData.pricing.shipping.toFixed(2)}`)}\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n`;
     message += isArabic 
       ? ` *الإجمالي النهائي: ${currencySymbol}${orderData.pricing.total.toFixed(2)}*\n`
@@ -709,10 +907,383 @@ const handleSendWhatsApp = async () => {
     
 
     
-    // Get WhatsApp number from store data or use fallback
-    const phoneNumber = store?.contact?.whatsapp || store?.contact?.phone;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+         // Get WhatsApp number from store data - prioritize WhatsApp number
+     let phoneNumber = store?.contact?.whatsapp;
+     
+     // If no WhatsApp number, try to get phone number
+     if (!phoneNumber) {
+       phoneNumber = store?.whatsappNumber;
+     }
+     
+           // If still no number, show error
+      if (!phoneNumber) {
+        const errorMessage = currentLang === 'ar' 
+          ? 'رقم الواتساب الخاص بالمتجر غير متوفر'
+          : 'Store WhatsApp number is not available';
+        showErrorNotification(errorMessage);
+        return;
+      }
+     
+     // Clean the phone number (remove any non-digit characters except +)
+     const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+     
+     // Ensure the number starts with country code
+     let finalPhoneNumber = cleanPhoneNumber;
+     if (!finalPhoneNumber.startsWith('+')) {
+       // If no country code, assume it's a local number and add +972 for Israel
+       finalPhoneNumber = '+972' + finalPhoneNumber.replace(/^0/, '');
+     }
+     
+     console.log('Sending WhatsApp to:', finalPhoneNumber);
+     
+          // Show success notification and WhatsApp confirmation
+     showSuccessNotification(finalPhoneNumber, message);
+     
+     // Return the message for direct store orders
+     return message;
+   };
+
+  //-----------------------------------showSuccessNotification------------------------------------------------  
+  const showSuccessNotification = (phoneNumber, whatsappMessage) => {
+    setSuccessOrderData({
+      phoneNumber,
+      whatsappMessage,
+      deliveryMethod,
+      storeAddress
+    });
+    setShowSuccessModal(true);
+  };
+
+     //-----------------------------------showBeautifulSuccessMessage------------------------------------------------  
+   const showBeautifulSuccessMessage = (whatsappData) => {
+     // إنشاء modal النجاح الجميل
+     const successModal = document.createElement('div');
+     successModal.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       right: 0;
+       bottom: 0;
+       background: rgba(0, 0, 0, 0.7);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       z-index: 10000;
+       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+       animation: fadeIn 0.3s ease-out;
+     `;
+     
+     successModal.innerHTML = `
+       <div style="
+         background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+         border-radius: 20px;
+         padding: 40px;
+         max-width: 500px;
+         width: 90%;
+         text-align: center;
+         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+         border: 1px solid #e9ecef;
+         position: relative;
+         animation: slideInUp 0.4s ease-out;
+       ">
+         <!-- أيقونة النجاح المتحركة -->
+         <div style="
+           width: 80px;
+           height: 80px;
+           border-radius: 50%;
+           background: linear-gradient(135deg, #4CAF50, #45a049);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           margin: 0 auto 24px auto;
+           box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+           animation: bounceIn 0.6s ease-out 0.2s both;
+         ">
+           <svg width="40" height="40" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24" style="animation: checkmark 0.4s ease-out 0.6s both;">
+             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+           </svg>
+         </div>
+         
+         <!-- العنوان الرئيسي -->
+         <h2 style="
+           color: #2E7D32;
+           font-size: 28px;
+           font-weight: 700;
+           margin: 0 0 16px 0;
+           text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+         ">
+           ${currentLang === 'ar' ? '🎉 تم إنشاء الطلب بنجاح! 🎉' : '🎉 Order Created Successfully! 🎉'}
+         </h2>
+         
+         <!-- الرسالة التفصيلية -->
+         <div style="
+           background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+           border-radius: 15px;
+           padding: 24px;
+           margin: 20px 0;
+           border: 2px solid #c8e6c9;
+           position: relative;
+           overflow: hidden;
+         ">
+          
+           
+                       <p style="
+              color: #1b5e20;
+              font-size: 16px;
+              line-height: 1.6;
+              margin: 0;
+              font-weight: 500;
+            ">
+              ${currentLang === 'ar' 
+                ? 'تم إنشاء طلبك بنجاح! يمكنك الآن استلام طلبك من المتجر في أقرب وقت ممكن. اضغط على الزر أدناه لإرسال تفاصيل الطلب للواتساب.'
+                : 'Your order has been created successfully! You can now pick up your order from the store as soon as possible. Click the button below to send order details to WhatsApp.'
+              }
+            </p>
+         </div>
+         
+         <!-- معلومات الاستلام -->
+         <div style="
+           background: #f8f9fa;
+           border-radius: 12px;
+           padding: 20px;
+           margin: 20px 0;
+           border: 1px solid #e9ecef;
+           position: relative;
+         ">
+           <div style="
+             display: flex;
+             align-items: center;
+             gap: 12px;
+             margin-bottom: 12px;
+           ">
+             <div style="
+               width: 32px;
+               height: 32px;
+               border-radius: 50%;
+               background: linear-gradient(135deg, #007bff, #0056b3);
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               color: white;
+               font-size: 16px;
+               font-weight: bold;
+             ">📍</div>
+             <span style="
+               font-weight: 600;
+               color: #333;
+               font-size: 16px;
+             ">
+               ${currentLang === 'ar' ? 'معلومات الاستلام:' : 'Pickup Information:'}
+             </span>
+           </div>
+           <div style="
+             color: #666;
+             font-size: 14px;
+             line-height: 1.5;
+             padding-left: 44px;
+           ">
+             ${currentLang === 'ar' 
+               ? `استلام من المتجر: ${storeAddress || 'عنوان المتجر'}`
+               : `Store Pickup: ${storeAddress || 'Store Address'}`
+             }
+           </div>
+         </div>
+         
+         <!-- أزرار الإجراءات -->
+         <div style="
+           display: flex;
+           gap: 12px;
+           margin-top: 24px;
+           flex-direction: column;
+         ">
+                       <button onclick="window.open('https://wa.me/${whatsappData.phoneNumber}?text=${encodeURIComponent(whatsappData.whatsappMessage)}', '_blank')" style="
+             background: linear-gradient(135deg, #25D366, #128C7E);
+             color: white;
+             border: none;
+             border-radius: 12px;
+             padding: 16px 24px;
+             font-size: 16px;
+             font-weight: 600;
+             cursor: pointer;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 8px;
+             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+             transition: all 0.3s ease;
+             text-decoration: none;
+           " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'">
+             <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+               <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
+             </svg>
+             ${currentLang === 'ar' ? 'إرسال الطلب للواتساب' : 'Send Order to WhatsApp'}
+           </button>
+           
+           <button onclick="closeSuccessModal()" style="
+             background: white;
+             color: #666;
+             border: 2px solid #e9ecef;
+             border-radius: 12px;
+             padding: 14px 24px;
+             font-size: 16px;
+             font-weight: 600;
+             cursor: pointer;
+             transition: all 0.3s ease;
+           " onmouseover="this.style.background='#f8f9fa'; this.style.color='#333'" onmouseout="this.style.background='white'; this.style.color='#666'">
+             ${currentLang === 'ar' ? 'العودة للصفحة الرئيسية' : 'Back to Home'}
+           </button>
+         </div>
+       </div>
+     `;
+     
+     // إضافة CSS للحركات
+     const style = document.createElement('style');
+     style.textContent = `
+       @keyframes fadeIn {
+         from { opacity: 0; }
+         to { opacity: 1; }
+       }
+       
+       @keyframes slideInUp {
+         from {
+           opacity: 0;
+           transform: translateY(30px) scale(0.9);
+         }
+         to {
+           opacity: 1;
+           transform: translateY(0) scale(1);
+         }
+       }
+       
+       @keyframes bounceIn {
+         0% {
+           transform: scale(0.3);
+           opacity: 0;
+         }
+         50% {
+           transform: scale(1.05);
+         }
+         70% {
+           transform: scale(0.9);
+         }
+         100% {
+           transform: scale(1);
+           opacity: 1;
+         }
+       }
+       
+       @keyframes checkmark {
+         0% {
+           stroke-dasharray: 0 50;
+           stroke-dashoffset: 50;
+         }
+         100% {
+           stroke-dasharray: 50 50;
+           stroke-dashoffset: 0;
+         }
+       }
+     `;
+     
+     document.head.appendChild(style);
+     document.body.appendChild(successModal);
+     
+     // دالة إغلاق Modal
+     window.closeSuccessModal = () => {
+       successModal.style.animation = 'fadeOut 0.3s ease-in';
+       setTimeout(() => {
+         if (successModal.parentNode) {
+           successModal.parentNode.removeChild(successModal);
+         }
+         // مسح السلة وإعادة التوجيه
+         clearCart();
+         navigate('/');
+       }, 300);
+     };
+     
+     // إضافة CSS للإغلاق
+     const closeStyle = document.createElement('style');
+     closeStyle.textContent = `
+       @keyframes fadeOut {
+         from { opacity: 1; }
+         to { opacity: 0; }
+       }
+     `;
+     document.head.appendChild(closeStyle);
+   };
+
+   //-----------------------------------showErrorNotification------------------------------------------------  
+   const showErrorNotification = (message) => {
+    // Create a custom error notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      max-width: 400px;
+      font-family: Arial, sans-serif;
+      animation: slideInRight 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #dc3545;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 14px;
+          font-weight: bold;
+        ">✕</div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">
+            ${currentLang === 'ar' ? 'خطأ' : 'Error'}
+          </div>
+          <div style="font-size: 14px;">${message}</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }
+    }, 5000);
+    
+    // Add CSS animations
+    if (!document.getElementById('notification-styles')) {
+      const style = document.createElement('style');
+      style.id = 'notification-styles';
+      style.textContent = `
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
   };
 //-----------------------------------if cartItems is empty------------------------------------------------  
   console.log('Checkout render - cartItems:', cartItems);
@@ -811,7 +1382,7 @@ const handleSendWhatsApp = async () => {
               t={t}
               currentLang={currentLang}
               onPlaceOrder={handlePlaceOrderClick}
-              isProcessing={isProcessing}
+              isProcessing={isProcessing || isDirectOrderProcessing}
               privacyChecked={privacyChecked}
               store={store}
             />
@@ -937,11 +1508,222 @@ const handleSendWhatsApp = async () => {
               </button>
             )}
           </div>
+                 </div>
+       )}
+
+      {/* Success Modal */}
+      {showSuccessModal && successOrderData && (
+        <div className="privacy-popup-overlay" style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0,0,0,0.6)', 
+          zIndex: 3000, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center' 
+        }}>
+          <div className="success-modal" style={{ 
+            background: '#fff', 
+            borderRadius: 16, 
+            maxWidth: 500, 
+            width: '95%', 
+            padding: 40, 
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)', 
+            position: 'relative',
+            textAlign: 'center',
+            animation: 'modalSlideIn 0.3s ease-out'
+          }}>
+            {/* Success Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4CAF50, #45a049)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px auto',
+              boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)'
+            }}>
+              <svg width="40" height="40" fill="none" stroke="#fff" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            {/* Success Title */}
+            <h2 style={{
+              color: '#2E7D32',
+              fontSize: '24px',
+              fontWeight: '700',
+              margin: '0 0 16px 0',
+              fontFamily: 'Arial, sans-serif'
+            }}>
+              {currentLang === 'ar' ? 'تم إنشاء الطلب بنجاح! 🎉' : 'Order Created Successfully! 🎉'}
+            </h2>
+
+            {/* Success Message */}
+            <p style={{
+              color: '#555',
+              fontSize: '16px',
+              lineHeight: '1.6',
+              margin: '0 0 24px 0',
+              fontFamily: 'Arial, sans-serif'
+            }}>
+              {currentLang === 'ar' 
+                ? `تم إنشاء طلبك بنجاح! يمكنك الآن استلامه في أقرب وقت من ${successOrderData.deliveryMethod === 'store' ? 'المتجر' : 'العنوان المحدد'}.`
+                : `Your order has been created successfully! You can now pick it up as soon as possible from ${successOrderData.deliveryMethod === 'store' ? 'the store' : 'the specified address'}.`
+              }
+            </p>
+
+            {/* Delivery Info */}
+            <div style={{
+              background: '#f8f9fa',
+              borderRadius: 12,
+              padding: '20px',
+              margin: '0 0 24px 0',
+              border: '1px solid #e9ecef'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '8px'
+              }}>
+                <div style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: '#007bff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '12px'
+                }}>
+                  📍
+                </div>
+                <span style={{
+                  fontWeight: '600',
+                  color: '#333',
+                  fontSize: '14px'
+                }}>
+                  {currentLang === 'ar' ? 'معلومات الاستلام:' : 'Pickup Information:'}
+                </span>
+              </div>
+              <div style={{
+                color: '#666',
+                fontSize: '14px',
+                lineHeight: '1.5'
+              }}>
+                {successOrderData.deliveryMethod === 'store' 
+                  ? (currentLang === 'ar' 
+                      ? `استلام من المتجر: ${successOrderData.storeAddress || 'عنوان المتجر'}`
+                      : `Store Pickup: ${successOrderData.storeAddress || 'Store Address'}`
+                    )
+                  : (currentLang === 'ar'
+                      ? `توصيل للمنزل: ${formData.address}, ${formData.city}`
+                      : `Home Delivery: ${formData.address}, ${formData.city}`
+                    )
+                }
+              </div>
+            </div>
+
+            {/* WhatsApp Button */}
+            <button 
+              onClick={() => {
+                const whatsappUrl = `https://wa.me/${successOrderData.phoneNumber}?text=${encodeURIComponent(successOrderData.whatsappMessage)}`;
+                window.open(whatsappUrl, '_blank');
+              }}
+              style={{
+                width: '100%',
+                background: '#25D366',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                padding: '16px 0',
+                fontSize: '18px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                marginBottom: '16px',
+                boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#128C7E';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = '#25D366';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              <svg width="24" height="24" fill="#fff" viewBox="0 0 24 24">
+                <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
+              </svg>
+              {currentLang === 'ar' ? 'إرسال الطلب للواتساب' : 'Send Order to WhatsApp'}
+            </button>
+
+            {/* Close Button */}
+            <button 
+              onClick={() => {
+                setShowSuccessModal(false);
+                setSuccessOrderData(null);
+                // مسح السلة وإعادة التوجيه
+                clearCart();
+                navigate('/');
+              }}
+              style={{
+                width: '100%',
+                background: 'none',
+                color: '#666',
+                border: '2px solid #e9ecef',
+                borderRadius: 12,
+                padding: '14px 0',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#f8f9fa';
+                e.target.style.color = '#333';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = 'none';
+                e.target.style.color = '#666';
+              }}
+            >
+              {currentLang === 'ar' ? 'العودة للصفحة الرئيسية' : 'Back to Home'}
+            </button>
+          </div>
         </div>
       )}
 
-    </div>
-  );
-};
+      {/* Add CSS animations */}
+      <style>
+        {`
+          @keyframes modalSlideIn {
+            from {
+              opacity: 0;
+              transform: scale(0.8) translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+            }
+          }
+        `}
+      </style>
+
+     </div>
+   );
+ };
 
 export default Checkout; 
