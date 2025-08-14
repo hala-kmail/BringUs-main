@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
@@ -42,6 +42,7 @@ const Shop = () => {
     searchProducts, 
     fetchProductsByCategory,
     fetchProductsWithFilters,
+    fetchProductsWithComprehensiveFilters,
     fetchAllProductsByStore,
     getAllAvailableColors,
     getAllAvailableColorsForDisplay,
@@ -56,15 +57,16 @@ const Shop = () => {
   const [apiError, setApiError] = useState(null);
   const [apiPagination, setApiPagination] = useState(null);
   
-  // Calculate dynamic max price from all products
-  const getMaxProductPrice = () => {
-    if (!products || !products.length) return 1000;
-    return Math.max(...products.map(product => 
+  // Calculate dynamic max price from all products - IMPROVED VERSION
+  const getMaxProductPrice = useCallback(() => {
+    const allAvailableProducts = products || [];
+    if (!allAvailableProducts || !allAvailableProducts.length) return 1000;
+    return Math.max(...allAvailableProducts.map(product => 
       Math.max(product.originalPrice || 0, product.salePrice || 0, product.price || 0)
     ));
-  };
+  }, [products]);
 
-  const initialMaxPrice = getMaxProductPrice();
+  const initialMaxPrice = useMemo(() => getMaxProductPrice(), [getMaxProductPrice]);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -110,7 +112,7 @@ const Shop = () => {
     }
   }, [products, initialMaxPrice]);
 
-  // API-based filtering function
+  // API-based filtering function with comprehensive filters support
   const applyAPIFilters = useCallback(async () => {
     if (!store?._id) return;
 
@@ -118,82 +120,164 @@ const Shop = () => {
     setApiError(null);
 
     try {
+      console.log('🚀 Applying comprehensive filters in Shop page...');
+
       const apiFilters = {
         page: currentPage,
         limit: itemsPerPage,
         sort: filters.sortBy
       };
 
-      // Add category filter
+      // 1. فلترة الفئات (دعم متعدد)
       if (filters.categories.length > 0) {
-        apiFilters.category = filters.categories[0]; // API supports single category
+        if (filters.categories.length === 1) {
+          // فئة واحدة
+          apiFilters.category = filters.categories[0];
+          console.log('📂 Applied single category filter:', filters.categories[0]);
+        } else {
+          // عدة فئات - استخدام مصفوفة
+          apiFilters.categories = filters.categories;
+          console.log('📂 Applied multiple categories filter:', filters.categories);
+        }
       }
 
-      // Add price filters
+      // 2. فلترة السعر
       if (filters.priceRange.min > 0) {
         apiFilters.minPrice = filters.priceRange.min;
+        console.log('💰 Applied min price filter:', filters.priceRange.min);
       }
       if (filters.priceRange.max < initialMaxPrice) {
         apiFilters.maxPrice = filters.priceRange.max;
+        console.log('💰 Applied max price filter:', filters.priceRange.max);
       }
 
-      
-
-      // Add color filters
+      // 3. فلترة الألوان
       if (filters.colors.length > 0) {
         apiFilters.colors = filters.colors;
+        console.log('🎨 Applied colors filter:', filters.colors);
       }
 
-      // Add product labels filters
+      // 4. فلترة العلامات
       if (filters.productLabels.length > 0) {
         apiFilters.productLabels = filters.productLabels;
+        console.log('🏷️ Applied product labels filter:', filters.productLabels);
       }
 
-      const result = await fetchProductsWithFilters(apiFilters);
-      // console.log('resultttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt', result);
+      // 5. فلترة الميزات (إذا كانت مدعومة)
+      if (filters.features.length > 0) {
+        apiFilters.features = filters.features;
+        console.log('⚙️ Applied features filter:', filters.features);
+      }
+
+      // 6. فلترة الحالة (إذا كانت مدعومة)
+      if (filters.status.length > 0) {
+        apiFilters.status = filters.status;
+        console.log('📊 Applied status filter:', filters.status);
+      }
+
+      console.log('✅ Final API filters:', apiFilters);
+
+      const result = await fetchProductsWithComprehensiveFilters(apiFilters);
+      
       if (result && result.products) {
         setApiProducts(result.products);
         setApiPagination(result.pagination);
+        console.log('✅ Products fetched successfully:', result.products.length, 'products');
       } else {
         setApiProducts([]);
         setApiPagination(null);
+        console.log('⚠️ No products found with current filters');
       }
     } catch (error) {
-      console.error('API filter error:', error);
+      console.error('❌ API filter error:', error);
       setApiError(error.message);
       setApiProducts([]);
     } finally {
       setApiLoading(false);
     }
-  }, [store?._id, currentPage, itemsPerPage, filters, initialMaxPrice, fetchProductsWithFilters]);
+  }, [store?._id, currentPage, itemsPerPage, filters, initialMaxPrice, fetchProductsWithComprehensiveFilters]);
 
-  // Update URL parameters based on current filters
+  // Update URL parameters based on current filters with comprehensive support
   const updateURLParams = useCallback(() => {
     const newParams = new URLSearchParams();
     
+    // 1. فلترة الفئات (دعم متعدد)
     if (filters.categories.length > 0) {
+      if (filters.categories.length === 1) {
+        // فئة واحدة
       newParams.set('category', filters.categories[0]);
+      } else {
+        // عدة فئات - استخدام || separator
+        newParams.set('category', filters.categories.join('||'));
+      }
     }
+    
+    // 2. فلترة الألوان
     if (filters.colors.length > 0) {
-      filters.colors.forEach((c) => newParams.append('colors[]', c));
+      newParams.set('colors', filters.colors.join(','));
     }
+    
+    // 3. فلترة العلامات
     if (filters.productLabels.length > 0) {
       filters.productLabels.forEach((id) => newParams.append('productLabels[]', id));
     }
+    
+    // 4. فلترة الميزات
     if (filters.features.length > 0) {
+      if (filters.features.length === 1) {
       newParams.set('feature', filters.features[0]);
+      } else {
+        newParams.set('feature', filters.features.join('||'));
+      }
+    }
+    
+    // 5. فلترة الحالة
+    if (filters.status.length > 0) {
+      if (filters.status.length === 1) {
+        newParams.set('status', filters.status[0]);
+      } else {
+        newParams.set('status', filters.status.join('||'));
+      }
+    }
+    
+    // 6. نطاق السعر
+    if (filters.priceRange.min > 0) {
+      newParams.set('minPrice', filters.priceRange.min.toString());
+    }
+    if (filters.priceRange.max < initialMaxPrice) {
+      newParams.set('maxPrice', filters.priceRange.max.toString());
+    }
+    
+    // 7. الترتيب
+    if (filters.sortBy && filters.sortBy !== 'newest') {
+      newParams.set('sort', filters.sortBy);
     }
    
     setSearchParams(newParams);
-  }, [filters, setSearchParams]);
+  }, [filters, setSearchParams, initialMaxPrice]);
 
-  // Apply filters when dependencies change
+  // Apply filters when dependencies change - IMPROVED VERSION
   useEffect(() => {
+    console.log('🔄 Filter dependencies changed, applying API filters...');
+    console.log('📊 Current filters state:', filters);
+    console.log('📄 Current page:', currentPage);
+    console.log('📦 Items per page:', itemsPerPage);
+    
+    // Clear previous results immediately when filters change
+    setApiProducts([]);
+    setApiPagination(null);
+    
+    // Apply filters with a small delay to prevent rapid successive calls
+    const timeoutId = setTimeout(() => {
     applyAPIFilters();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [applyAPIFilters]);
 
-  // Update URL parameters when filters change
+  // Update URL parameters when filters change - IMPROVED VERSION
   useEffect(() => {
+    console.log('🔗 Updating URL parameters...');
     updateURLParams();
   }, [updateURLParams]);
 
@@ -237,12 +321,11 @@ const Shop = () => {
       source.forEach(item => {
         const parts = item.split('+').map(s => s.trim()).filter(Boolean);
         parts.forEach(p => {
-          // const name = p.startsWith('#') ? hexToColorName(p) : p;
           const name = p;
           if (name && !collected.includes(name)) collected.push(name);
         });
       });
-      console.log('collectttttttttttttttttttttttttttted', collected);
+      console.log('Parsed colors from URL:', collected);
       setFilters(prev => ({
         ...prev,
         colors: collected
@@ -262,22 +345,25 @@ const Shop = () => {
     }
   }, [searchParams]);
 
-  // Handle filter changes
+  // Handle filter changes with comprehensive support - IMPROVED VERSION
   const handleFilterChange = async (filterType, value, checked = null) => {
     setCurrentPage(1); // Reset to first page when filters change
 
-    
+    console.log('🔍 Filter change:', filterType, value, checked);
+
     if (filterType === 'category') {
       if (checked) {
         setFilters(prev => ({
           ...prev,
           categories: [...prev.categories, value]
         }));
+        console.log('📂 Added category:', value);
       } else {
         setFilters(prev => ({
           ...prev,
           categories: prev.categories.filter(cat => cat !== value)
         }));
+        console.log('📂 Removed category:', value);
       }
     }
     
@@ -286,77 +372,102 @@ const Shop = () => {
         ...prev,
         priceRange: value
       }));
-    } else if (filterType === 'color') {
+      console.log('💰 Updated price range:', value);
+    } 
+    
+    else if (filterType === 'color') {
       if (checked) {
         setFilters(prev => ({
           ...prev,
           colors: [...prev.colors, value]
         }));
+        console.log('🎨 Added color:', value);
       } else {
         setFilters(prev => ({
           ...prev,
           colors: prev.colors.filter(color => color !== value)
         }));
+        console.log('🎨 Removed color:', value);
       }
-    } else if (filterType === 'productLabel') {
+      }
+    
+    else if (filterType === 'productLabel') {
       if (checked) {
         setFilters(prev => ({
           ...prev,
           productLabels: [...prev.productLabels, value]
         }));
+        console.log('🏷️ Added product label:', value);
       } else {
         setFilters(prev => ({
           ...prev,
           productLabels: prev.productLabels.filter(id => id !== value)
         }));
+        console.log('🏷️ Removed product label:', value);
       }
-    } else if (filterType === 'feature') {
+      }
+    
+    else if (filterType === 'feature') {
       if (checked) {
         setFilters(prev => ({
           ...prev,
           features: [...prev.features, value]
         }));
+        console.log('⚙️ Added feature:', value);
       } else {
         setFilters(prev => ({
           ...prev,
           features: prev.features.filter(feat => feat !== value)
         }));
+        console.log('⚙️ Removed feature:', value);
       }
-    } else if (filterType === 'status') {
+      }
+    
+    else if (filterType === 'status') {
       if (checked) {
         setFilters(prev => ({
           ...prev,
           status: [...prev.status, value]
         }));
+        console.log('📊 Added status:', value);
       } else {
         setFilters(prev => ({
           ...prev,
           status: prev.status.filter(status => status !== value)
         }));
+        console.log('📊 Removed status:', value);
       }
     }
+
+    // Force immediate refresh of products
+    console.log('🔄 Forcing immediate product refresh...');
+    setApiProducts([]); // Clear current products immediately
+    setApiPagination(null);
   };
 
-  // Clear all filters
-  const clearFilters = async () => {
+  // Clear all filters - IMPROVED VERSION
+  const clearFilters = () => {
+    console.log('🧹 Clearing all filters...');
     setFilters({
       priceRange: { min: 0, max: initialMaxPrice },
       categories: [],
       subcategories: [],
       features: [],
       colors: [],
+      productLabels: [],
       status: [],
       sortBy: 'newest'
     });
     setCurrentPage(1);
     
-    // Clear URL params
-    setSearchParams({});
+    // Force immediate refresh
+    setApiProducts([]);
+    setApiPagination(null);
   };
 
-  // Remove specific filter
-  const removeFilter = async (filterType, value) => {
-    setCurrentPage(1);
+  // Remove specific filter - IMPROVED VERSION
+  const removeFilter = (filterType, value) => {
+    console.log('🗑️ Removing filter:', filterType, value);
     
     if (filterType === 'category') {
       setFilters(prev => ({
@@ -368,6 +479,11 @@ const Shop = () => {
         ...prev,
         colors: prev.colors.filter(color => color !== value)
       }));
+    } else if (filterType === 'productLabel') {
+      setFilters(prev => ({
+        ...prev,
+        productLabels: prev.productLabels.filter(id => id !== value)
+      }));
     } else if (filterType === 'feature') {
       setFilters(prev => ({
         ...prev,
@@ -378,7 +494,16 @@ const Shop = () => {
         ...prev,
         status: prev.status.filter(status => status !== value)
       }));
+    } else if (filterType === 'priceRange') {
+      setFilters(prev => ({
+        ...prev,
+        priceRange: { min: 0, max: initialMaxPrice }
+      }));
     }
+    
+    // Force immediate refresh
+    setApiProducts([]);
+    setApiPagination(null);
   };
 
   // Handle wishlist toggle
@@ -406,16 +531,25 @@ const Shop = () => {
 
  
 
-  // Handle page change
+  // Handle page change - IMPROVED VERSION
   const handlePageChange = (page) => {
+    console.log('📄 Page change:', page);
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Force immediate refresh
+    setApiProducts([]);
+    setApiPagination(null);
   };
 
-  // Handle items per page change
+  // Handle items per page change - IMPROVED VERSION
   const handleItemsPerPageChange = (newItemsPerPage) => {
+    console.log('📦 Items per page change:', newItemsPerPage);
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1);
+    
+    // Force immediate refresh
+    setApiProducts([]);
+    setApiPagination(null);
   };
 
   // Get visible pages for pagination
@@ -455,10 +589,15 @@ const Shop = () => {
     return rangeWithDots.filter((page, index, array) => array.indexOf(page) === index && page <= totalPages);
   };
 
-  // Handle sort change
-  const handleSortChange = async (newSortBy) => {
-    setFilters(prev => ({ ...prev, sortBy: newSortBy }));
+  // Handle sort change - IMPROVED VERSION
+  const handleSortChange = (sortBy) => {
+    console.log('📊 Sort change:', sortBy);
+    setFilters(prev => ({ ...prev, sortBy }));
     setCurrentPage(1);
+    
+    // Force immediate refresh
+    setApiProducts([]);
+    setApiPagination(null);
   };
 
   // Use scroll to top on change
@@ -511,30 +650,42 @@ const Shop = () => {
     return descendants;
   };
 
-  // Get active filters for display
+  // Get active filters for display with comprehensive support
   const getActiveFilters = () => {
     const active = [];
     
+    // 1. فلاتر الفئات
     filters.categories.forEach(catId => {
       const category = getCategoryById(catId);
       if (category) {
-        active.push({ type: 'category', value: catId, label: currentLang === 'ar' ? category.nameAr : category.nameEn });
+        active.push({ 
+          type: 'category', 
+          value: catId, 
+          label: currentLang === 'ar' ? category.nameAr : category.nameEn 
+        });
       }
     });
     
+    // 2. فلاتر الألوان
     filters.colors.forEach(color => {
       active.push({ type: 'color', value: color, label: color });
     });
 
+    // 3. فلاتر العلامات
     filters.productLabels.forEach(labelId => {
       const label = getLabelById(labelId);
       if (label) {
-        active.push({ type: 'productLabel', value: labelId, label: (currentLang === 'ar' ? label.nameAr : label.nameEn) || labelId });
+        active.push({ 
+          type: 'productLabel', 
+          value: labelId, 
+          label: (currentLang === 'ar' ? label.nameAr : label.nameEn) || labelId 
+        });
       } else {
         active.push({ type: 'productLabel', value: labelId, label: labelId });
       }
     });
     
+    // 4. فلاتر الميزات
     filters.features.forEach(featId => {
       const feature = getFeatureById(featId);
       if (feature) {
@@ -542,21 +693,67 @@ const Shop = () => {
       }
     });
     
+    // 5. فلاتر الحالة
+    filters.status.forEach(status => {
+      active.push({ type: 'status', value: status, label: status });
+    });
+    
+    // 6. نطاق السعر (إذا كان محدد)
+    if (filters.priceRange.min > 0 || filters.priceRange.max < initialMaxPrice) {
+      active.push({ 
+        type: 'priceRange', 
+        value: `${filters.priceRange.min}-${filters.priceRange.max}`, 
+        label: `${filters.priceRange.min} - ${filters.priceRange.max}` 
+      });
+    }
+    
     return active;
   };
 
-  // Loading state
+  // Loading state - IMPROVED VERSION
   const isLoading = productsLoading || categoriesLoading || apiLoading;
 
-  // Error state
+  // Error state - IMPROVED VERSION
   const hasError = productsError || apiError;
 
-  // Products to display (use API products when available, fallback to all products)
-  const displayProducts = apiProducts.length > 0 ? apiProducts : (products || []);
-  // console.log('apiProducts', apiProducts);
-  // console.log('displayProducts', displayProducts);
-  // Total items for pagination
-  const totalItems = apiPagination ? apiPagination.totalItems : (products ? products.length : 0);
+  // Products to display (use API products when available, fallback to all products) - IMPROVED VERSION
+  const displayProducts = useMemo(() => {
+    console.log('🔄 Calculating display products...');
+    console.log('📦 API Products count:', apiProducts.length);
+    console.log('📦 Context Products count:', products?.length || 0);
+    console.log('📦 API Loading:', apiLoading);
+    console.log('📦 Products Loading:', productsLoading);
+    
+    // If we have API products (from filtering), use them
+    if (apiProducts.length > 0) {
+      console.log('✅ Using API products for display');
+      return apiProducts;
+    }
+    
+    // If we're loading API products, show empty array to prevent showing old data
+    if (apiLoading) {
+      console.log('⏳ API loading, showing empty products');
+      return [];
+    }
+    
+    // If we have context products and no API loading, use them as fallback
+    if (products && products.length > 0 && !apiLoading) {
+      console.log('✅ Using context products as fallback');
+      return products;
+    }
+    
+    // Default to empty array
+    console.log('⚠️ No products available, showing empty array');
+    return [];
+  }, [apiProducts, products, apiLoading, productsLoading]);
+
+  // Total items count - IMPROVED VERSION
+  const totalItems = useMemo(() => {
+    if (apiPagination && apiPagination.totalItems) {
+      return apiPagination.totalItems;
+    }
+    return displayProducts.length;
+  }, [apiPagination, displayProducts.length]);
 
   return (
     <div className="shop-page" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>

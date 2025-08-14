@@ -8,7 +8,7 @@ const API_BASE_URL = 'http://localhost:5001/api';
 // Global flag to prevent multiple simultaneous fetches
 let isGlobalFetching = false;
 let lastFetchTime = 0;
-const FETCH_COOLDOWN = 1000; // 1 second cooldown between fetches
+const FETCH_COOLDOWN = 500; // Reduced from 1000ms to 500ms for better responsiveness
 let fetchTimeout = null;
 
 const useProducts = () => {
@@ -99,41 +99,77 @@ const useProducts = () => {
       setLoading(true);
       setError(null);
 
-      // Build parameters for the new API endpoint
+      // Build comprehensive parameters for the API endpoint
       const params = new URLSearchParams();
+      
+      console.log('🔍 Building comprehensive filter with multiple criteria...');
       
       // Pagination parameters
       if (options.page) {
         params.append('page', options.page.toString());
+        console.log('📄 Applied page filter:', options.page);
       }
       if (options.limit) {
         params.append('limit', options.limit.toString());
+        console.log('📄 Applied limit filter:', options.limit);
       }
       
-      // Filter parameters
+      // 1. فلترة الفئات (دعم متعدد)
       if (options.category) {
-        params.append('category', options.category);
+        // دعم فئة واحدة أو عدة فئات مفصولة بـ ||
+        if (Array.isArray(options.category)) {
+          // إذا كانت مصفوفة، ادمجها بـ ||
+          const categoryFilter = options.category.join('||');
+          params.append('category', categoryFilter);
+          console.log('📂 Applied multi-category filter:', options.category);
+        } else if (typeof options.category === 'string' && options.category.includes('||')) {
+          // إذا كانت سلسلة نصية تحتوي على ||
+          params.append('category', options.category);
+          console.log('📂 Applied multi-category filter (string):', options.category);
+        } else {
+          // فئة واحدة
+          params.append('category', options.category);
+          console.log('📂 Applied single category filter:', options.category);
+        }
       }
+      
+      // 2. فلترة السعر
       if (options.minPrice) {
         params.append('minPrice', options.minPrice.toString());
+        console.log('💰 Applied min price filter:', options.minPrice);
       }
       if (options.maxPrice) {
         params.append('maxPrice', options.maxPrice.toString());
+        console.log('💰 Applied max price filter:', options.maxPrice);
       }
-      if (options.sort) {
-        params.append('sort', options.sort);
-      }
+      
+      // 3. فلترة البحث
       if (options.search) {
         params.append('search', options.search);
+        console.log('🔍 Applied search filter:', options.search);
       }
+      
+      // 4. فلترة الألوان
       if (options.colors && options.colors.length > 0) {
-        options.colors.forEach((color) => params.append('colors[]', color));
+        // Send colors as a single comma-separated string instead of array
+        params.append('colors', options.colors.join(','));
+        console.log('🎨 Applied colors filter:', options.colors);
       }
+      
+      // 5. فلترة العلامات
       if (options.productLabels && options.productLabels.length > 0) {
         options.productLabels.forEach((labelId) => params.append('productLabels[]', labelId));
+        console.log('🏷️ Applied product labels filter:', options.productLabels);
+      }
+      
+      // 6. فلترة الترتيب
+      if (options.sort) {
+        params.append('sort', options.sort);
+        console.log('📊 Applied sort filter:', options.sort);
       }
       
       const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?${params}`;
+      console.log('✅ Final URL with comprehensive filters:', url);
  
       const response = await fetch(url, {
         headers: {
@@ -150,12 +186,20 @@ const useProducts = () => {
       
       // Extract data from the response
       if (result.success && result.data) {
-        // Update products in Context if no specific filtering options
-        if (!options.category && !options.search && !options.minPrice && !options.maxPrice && !options.colors && !options.productLabels) {
+        // Only update products in Context if no specific filtering options
+        // This prevents overwriting filtered results with all products
+        const hasFilters = options.category || options.search || options.minPrice || 
+                          options.maxPrice || options.colors || options.productLabels;
+        
+        if (!hasFilters) {
           updateProducts(result.data);
+          console.log('✅ Updated products in context (no filters applied)');
+        } else {
+          console.log('✅ Products fetched with filters, not updating context');
         }
         
         setPagination(result.pagination);
+        console.log('✅ Products fetched successfully with comprehensive filters:', result.data.length, 'products');
         return { products: result.data, pagination: result.pagination };
       } else {
         throw new Error('Invalid response format');
@@ -169,7 +213,7 @@ const useProducts = () => {
     }
   }, [updateProducts, token]);
 
-  // Auto-fetch products when store changes (only once per store)
+  // Auto-fetch products when store changes (only once per store) - IMPROVED VERSION
   useEffect(() => {
     const currentStoreId = getStoreId();
     
@@ -192,8 +236,7 @@ const useProducts = () => {
       // Set a timeout to prevent rapid successive calls
       fetchTimeout = setTimeout(() => {
         if (process.env.NODE_ENV === 'development') {
-          // console.log('Initializing products for store ID:', currentStoreId);
-          // console.log('Components using useProducts:', new Error().stack?.split('\n').slice(1, 6).join('\n'));
+          console.log('Initializing products for store ID:', currentStoreId);
         }
         
         hasInitialized.current = true;
@@ -243,7 +286,7 @@ const useProducts = () => {
         };
         
         loadProducts();
-      }, 100); // Small delay to batch rapid calls
+      }, 50); // Reduced delay for better responsiveness
       
     } else if (!currentStoreId && hasInitialized.current) {
       // Clear products if no store is available
@@ -554,7 +597,7 @@ const useProducts = () => {
     return fetchProducts(currentStoreId, { ...options, search: query.trim() });
   }, [getStoreId, fetchProducts]);
 
-  // Fetch products with advanced filtering
+  // Fetch products with comprehensive filtering
   const fetchProductsWithFilters = useCallback(async (filters = {}) => {
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
@@ -562,16 +605,29 @@ const useProducts = () => {
       return null;
     }
 
+    console.log('🔍 Applying comprehensive filters:', filters);
+
     const options = {
       page: filters.page || 1,
       limit: filters.limit || 20,
       sort: filters.sort || 'newest'
     };
 
-    // Add filter parameters
+    // Add comprehensive filter parameters
     if (filters.category) {
-      options.category = filters.category;
+      // دعم فئة واحدة أو عدة فئات
+      if (Array.isArray(filters.category)) {
+        options.category = filters.category; // سيتم معالجتها في fetchProducts
+      } else {
+        options.category = filters.category;
+      }
     }
+    
+    if (filters.categories && Array.isArray(filters.categories)) {
+      // دعم خاصية categories كبديل لـ category
+      options.category = filters.categories;
+    }
+    
     if (filters.minPrice !== undefined) {
       options.minPrice = filters.minPrice;
     }
@@ -588,6 +644,7 @@ const useProducts = () => {
       options.productLabels = filters.productLabels;
     }
 
+    console.log('✅ Final options for comprehensive filtering:', options);
     return fetchProducts(currentStoreId, options);
   }, [getStoreId, fetchProducts]);
 
@@ -647,6 +704,72 @@ const useProducts = () => {
     return null;
   }, [getStoreId, fetchProducts, updateProducts]);
 
+  // Comprehensive filtering with multiple categories and filters
+  const fetchProductsWithComprehensiveFilters = useCallback(async (comprehensiveFilters = {}) => {
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
+      console.log('No store ID available for comprehensive filtering');
+      return null;
+    }
+
+    console.log('🚀 Applying comprehensive filters with multiple categories:', comprehensiveFilters);
+
+    const options = {
+      page: comprehensiveFilters.page || 1,
+      limit: comprehensiveFilters.limit || 20,
+      sort: comprehensiveFilters.sort || 'newest'
+    };
+
+    // Handle multiple categories
+    if (comprehensiveFilters.categories && Array.isArray(comprehensiveFilters.categories)) {
+      options.category = comprehensiveFilters.categories;
+      console.log('📂 Multiple categories provided:', comprehensiveFilters.categories);
+    } else if (comprehensiveFilters.category) {
+      options.category = comprehensiveFilters.category;
+      console.log('📂 Single category provided:', comprehensiveFilters.category);
+    }
+
+    // Handle price range
+    if (comprehensiveFilters.priceRange) {
+      if (comprehensiveFilters.priceRange.min !== undefined) {
+        options.minPrice = comprehensiveFilters.priceRange.min;
+      }
+      if (comprehensiveFilters.priceRange.max !== undefined) {
+        options.maxPrice = comprehensiveFilters.priceRange.max;
+      }
+      console.log('💰 Price range applied:', comprehensiveFilters.priceRange);
+    } else {
+      // Direct price filters
+      if (comprehensiveFilters.minPrice !== undefined) {
+        options.minPrice = comprehensiveFilters.minPrice;
+      }
+      if (comprehensiveFilters.maxPrice !== undefined) {
+        options.maxPrice = comprehensiveFilters.maxPrice;
+      }
+    }
+
+    // Handle search
+    if (comprehensiveFilters.search) {
+      options.search = comprehensiveFilters.search;
+      console.log('🔍 Search term applied:', comprehensiveFilters.search);
+    }
+
+    // Handle colors
+    if (comprehensiveFilters.colors && comprehensiveFilters.colors.length > 0) {
+      options.colors = comprehensiveFilters.colors;
+      console.log('🎨 Colors filter applied:', comprehensiveFilters.colors);
+    }
+
+    // Handle product labels
+    if (comprehensiveFilters.productLabels && comprehensiveFilters.productLabels.length > 0) {
+      options.productLabels = comprehensiveFilters.productLabels;
+      console.log('🏷️ Product labels filter applied:', comprehensiveFilters.productLabels);
+    }
+
+    console.log('✅ Final comprehensive options:', options);
+    return fetchProducts(currentStoreId, options);
+  }, [getStoreId, fetchProducts]);
+
   return {
     products,
     allProducts,
@@ -662,6 +785,7 @@ const useProducts = () => {
     fetchBestSellers,
     searchProducts,
     fetchProductsWithFilters,
+    fetchProductsWithComprehensiveFilters, // دالة جديدة للفلترة الشاملة
     refreshProducts,
     isInStock,
     getFinalPrice,

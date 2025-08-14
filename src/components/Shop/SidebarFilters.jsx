@@ -364,8 +364,8 @@ const SidebarFilters = ({
                 <label key={color} className="color-filter">
                   <input
                     type="checkbox"
-                    checked={filters.colors.includes(hexToColorName(color))}
-                    onChange={(e) => onFilterChange('color', hexToColorName(color), e.target.checked)}
+                    checked={filters.colors.includes(color)}
+                    onChange={(e) => onFilterChange('color', color, e.target.checked)}
                     disabled={loading}
                   />
                   <span 
