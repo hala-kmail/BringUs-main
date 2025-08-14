@@ -27,7 +27,7 @@ export function saveGuestId(guestId) {
 export function getStoredGuestId() {
   const guestId = localStorage.getItem('guestId');
   if (guestId && process.env.NODE_ENV === 'development') {
-    console.log('📂 Retrieved Guest ID from localStorage:', guestId);
+    // console.log('📂 Retrieved Guest ID from localStorage:', guestId);
   }
   return guestId;
 }
@@ -38,7 +38,7 @@ export function getStoredGuestId() {
 export function clearGuestId() {
   localStorage.removeItem('guestId');
   if (process.env.NODE_ENV === 'development') {
-    console.log('🗑️ Guest ID cleared from localStorage');
+    // console.log('🗑️ Guest ID cleared from localStorage');
   }
 }
 
@@ -84,11 +84,11 @@ export async function handleApiResponse(response) {
     if (!existingGuestId) {
       saveGuestId(guestId);
       if (process.env.NODE_ENV === 'development') {
-        console.log('🆕 New Guest ID received and saved:', guestId);
+        // console.log('🆕 New Guest ID received and saved:', guestId);
       }
     } else if (existingGuestId !== guestId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
+        // console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
       }
     }
   }
@@ -107,7 +107,7 @@ export async function handleApiResponse(response) {
 export async function likeProductAsGuest(productId, storeSlug) {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('👍 Attempting to like product as guest...');
+      // console.log('👍 Attempting to like product as guest...');
     }
     
     const response = await fetch(`${API_BASE_URL}/likes/${productId}?storeSlug=${storeSlug}`, {
@@ -119,12 +119,12 @@ export async function likeProductAsGuest(productId, storeSlug) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Product liked successfully as guest');
+        // console.log('✅ Product liked successfully as guest');
       }
       return result;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to like product:', result.message);
+        // console.error('❌ Failed to like product:', result.message);
       }
       return null;
     }
@@ -144,7 +144,7 @@ export async function getGuestLikes(storeId) {
     const guestId = getStoredGuestId();
     if (!guestId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ No guest ID found, returning empty likes');
+        // console.log('⚠️ No guest ID found, returning empty likes');
       }
       return [];
     }
@@ -157,12 +157,12 @@ export async function getGuestLikes(storeId) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('📋 Guest likes retrieved:', result.data.length, 'products');
+        // console.log('📋 Guest likes retrieved:', result.data.length, 'products');
       }
       return result.data;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to get guest likes:', result.message);
+        // console.error('❌ Failed to get guest likes:', result.message);
       }
       return [];
     }
@@ -181,7 +181,7 @@ export async function getGuestLikes(storeId) {
 export async function unlikeProductAsGuest(productId, storeSlug) {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('👎 Attempting to unlike product as guest...');
+      // console.log('👎 Attempting to unlike product as guest...');
     }
     
     const response = await fetch(`${API_BASE_URL}/likes/${productId}?storeSlug=${storeSlug}`, {
@@ -193,12 +193,12 @@ export async function unlikeProductAsGuest(productId, storeSlug) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Product unliked successfully as guest');
+        // console.log('✅ Product unliked successfully as guest');
       }
       return result;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to unlike product:', result.message);
+        // console.error('❌ Failed to unlike product:', result.message);
       }
       return null;
     }
@@ -321,7 +321,7 @@ export async function loginAndMergeLikes(email, password, storeId) {
  */
 export async function initializeGuestSystem(storeId) {
   if (process.env.NODE_ENV === 'development') {
-    console.log('🚀 Initializing guest system...');
+    // console.log('🚀 Initializing guest system...');
   }
   
   // Check for existing Guest ID

@@ -3,12 +3,13 @@ import { useAppData } from '../contexts/AppDataContext';
 import { saveToken, getToken, removeToken } from '../utils/tokenManager';
 
 const API_BASE_URL = 'http://localhost:5001/api';
-const STORE_ID = '687c9bb0a7b3f2a0831c4675';
+
 
 const useLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [lastLoadTime, setLastLoadTime] = useState(0);
   const { user, store, updateUser, updateStore, clearData, isAuthenticated } = useAppData();
 
 
@@ -69,7 +70,16 @@ const useLogin = () => {
     }
   }, []);
 //-----------------------------------loadStoreInfo------------------------------------------------
-  const loadStoreInfo = useCallback(async (storeId = STORE_ID) => {
+  const loadStoreInfo = useCallback(async (storeId = null) => {
+    // الحصول على معرف المتجر من localStorage إذا لم يتم تمريره
+    if (!storeId) {
+      storeId = JSON.parse(localStorage.getItem('storeData'))._id;
+    }
+    
+    if (!storeId) {
+      console.error('No store ID available');
+      return null;
+    }
     const token = getToken();
     if (!token) {
       console.error('No auth token found');
@@ -79,6 +89,14 @@ const useLogin = () => {
     const storeInfo = await fetchStoreInfo(storeId, token);
     if (storeInfo) {
       updateStore(storeInfo);
+      
+      // حفظ معرف المتجر في localStorage
+      try {
+        localStorage.setItem('storeId', storeId);
+        console.log('Store ID saved to localStorage:', storeId);
+      } catch (e) {
+        console.warn('Could not save store ID to localStorage:', e);
+      }
     }
     return storeInfo;
   }, [fetchStoreInfo, updateStore]);
@@ -86,7 +104,7 @@ const useLogin = () => {
   const loadUserInfo = useCallback(async (userId = null) => {
     const token = getToken();
     if (!token) {
-      console.error('No auth token found');
+      console.log('No auth token found - user not authenticated');
       return null;
     }
 
@@ -99,9 +117,22 @@ const useLogin = () => {
       } else if (currentUser && currentUser._id) {
         userToFetch = currentUser._id;
       } else {
-        console.error('No user ID available');
-        return null;
+        // Try to get from localStorage if available
+        const storedUser = localStorage.getItem('userInfo');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            userToFetch = parsedUser.id || parsedUser._id;
+          } catch (err) {
+            console.log('Error parsing stored user info:', err);
+          }
+        }
       }
+    }
+
+    if (!userToFetch) {
+      console.log('No user ID available - user not authenticated');
+      return null;
     }
 
     console.log('Loading user info for ID:', userToFetch);
@@ -116,7 +147,7 @@ const useLogin = () => {
   const loadUserAndStoreInfo = useCallback(async (userId = null) => {
     const token = getToken();
     if (!token) {
-      console.error('No auth token found');
+      console.log('No auth token found - user not authenticated');
       return null;
     }
 
@@ -142,14 +173,14 @@ const useLogin = () => {
             const parsedUser = JSON.parse(storedUser);
             userToFetch = parsedUser.id || parsedUser._id;
           } catch (err) {
-            console.error('Error parsing stored user info:', err);
+            console.log('Error parsing stored user info:', err);
           }
         }
       }
     }
 
     if (!userToFetch) {
-      console.error('No user ID available for fetching user info');
+      console.log('No user ID available for fetching user info - user not authenticated');
       return null;
     }
 
@@ -159,6 +190,14 @@ const useLogin = () => {
       return null;
     }
 
+    // Prevent too frequent calls (debounce)
+    const now = Date.now();
+    if (now - lastLoadTime < 2000) { // 2 seconds debounce
+      console.log('Data loading called too frequently, skipping...');
+      return null;
+    }
+
+    setLastLoadTime(now);
     setIsLoadingData(true);
 
     try {
@@ -166,26 +205,36 @@ const useLogin = () => {
     const userInfo = await fetchUserInfo(userToFetch, token);
     if (userInfo) {
       updateUser(userInfo);
-      console.log('User info loaded:', userInfo);
+      // console.log('User info loaded:', userInfo);
 
       // Determine store ID from user info
-      let storeIdToUse = STORE_ID;
+      let storeIdToUse = JSON.parse(localStorage.getItem('storeData'))._id;
+      
       if (userInfo.store && userInfo.store._id) {
         storeIdToUse = userInfo.store._id;
-        console.log('Using store ID from user info:', storeIdToUse);
+        // console.log('Using store ID from user info:', storeIdToUse);
       } else if (userInfo.stores && userInfo.stores.length > 0) {
         storeIdToUse = userInfo.stores[0]._id || userInfo.stores[0];
-        console.log('Using store ID from stores array:', storeIdToUse);
+        // console.log('Using store ID from stores array:', storeIdToUse);
       }
 
       // Load store info
       const storeInfo = await fetchStoreInfo(storeIdToUse, token);
       if (storeInfo) {
         updateStore(storeInfo);
-        console.log('Store info loaded:', storeInfo);
-        console.log('Store ID for categories:', storeInfo._id);
-        console.log('Store main color:', storeInfo.settings?.mainColor);
-        console.log('Store settings:', storeInfo.settings);
+        
+        // حفظ معرف المتجر في localStorage
+        try {
+          localStorage.setItem('storeId', storeIdToUse);
+          console.log('Store ID saved to localStorage:', storeIdToUse);
+        } catch (e) {
+          console.warn('Could not save store ID to localStorage:', e);
+        }
+        
+        // console.log('Store info loaded:', storeInfo);
+        // console.log('Store ID for categories:', storeInfo._id);
+        // console.log('Store main color:', storeInfo.settings?.mainColor);
+        // console.log('Store settings:', storeInfo.settings);
       }
 
       return { user: userInfo, store: storeInfo };
@@ -198,7 +247,7 @@ const useLogin = () => {
   } finally {
     setIsLoadingData(false);
   }
-  }, [fetchUserInfo, fetchStoreInfo, user, store, isLoadingData, updateUser, updateStore]);
+  }, [fetchUserInfo, fetchStoreInfo, user, store, isLoadingData, updateUser, updateStore, lastLoadTime]);
 //-----------------------------------login------------------------------------------------
   const login = useCallback(async (email, password) => {
     setLoading(true);
@@ -286,7 +335,7 @@ const useLogin = () => {
       updateUser(completeUserData);
 
       // Determine which store ID to use
-      let storeIdToUse = STORE_ID; // Default to constant store ID
+      let storeIdToUse = JSON.parse(localStorage.getItem('storeData'))._id;
       
       console.log('Complete user data:', completeUserData);
       console.log('User store:', completeUserData?.store);
@@ -309,6 +358,15 @@ const useLogin = () => {
       const storeInfo = await fetchStoreInfo(storeIdToUse, data.token);
       if (storeInfo) {
         updateStore(storeInfo);
+        
+        // حفظ معرف المتجر في localStorage
+        try {
+          localStorage.setItem('storeId', storeIdToUse);
+          console.log('Store ID saved to localStorage:', storeIdToUse);
+        } catch (e) {
+          console.warn('Could not save store ID to localStorage:', e);
+        }
+        
         // Persist slug to localStorage for routing/branding needs
         try {
           const slugFromStore = storeInfo.slug || storeInfo.slugAr || storeInfo.slugEn;

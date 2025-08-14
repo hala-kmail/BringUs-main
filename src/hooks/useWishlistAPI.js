@@ -24,7 +24,7 @@ const useWishlistAPI = () => {
     if (guestId) {
       localStorage.setItem('guestId', guestId);
       if (process.env.NODE_ENV === 'development') {
-        console.log('💾 Guest ID saved to localStorage:', guestId);
+        // console.log('💾 Guest ID saved to localStorage:', guestId);
       }
     }
   }, []);
@@ -33,7 +33,7 @@ const useWishlistAPI = () => {
   const getStoredGuestId = useCallback(() => {
     const guestId = localStorage.getItem('guestId');
     if (guestId && process.env.NODE_ENV === 'development') {
-      console.log('📂 Retrieved Guest ID from localStorage:', guestId);
+      // console.log('📂 Retrieved Guest ID from localStorage:', guestId);
     }
     return guestId;
   }, []);
@@ -48,7 +48,7 @@ const useWishlistAPI = () => {
       const stableGuestId = `guest_${timestamp}_${randomStr}`;
       saveGuestId(stableGuestId);
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 Generated stable Guest ID:', stableGuestId);
+        // console.log('🔧 Generated stable Guest ID:', stableGuestId);
       }
       return stableGuestId;
     }
@@ -59,7 +59,7 @@ const useWishlistAPI = () => {
   const clearGuestId = useCallback(() => {
     localStorage.removeItem('guestId');
     if (process.env.NODE_ENV === 'development') {
-      console.log('🗑️ Guest ID cleared from localStorage');
+      // console.log('🗑️ Guest ID cleared from localStorage');
     }
   }, []);
 
@@ -132,11 +132,11 @@ const useWishlistAPI = () => {
       if (!existingGuestId) {
         saveGuestId(guestId);
         if (process.env.NODE_ENV === 'development') {
-          console.log('🆕 New Guest ID received and saved:', guestId);
+          // console.log('🆕 New Guest ID received and saved:', guestId);
         }
       } else if (existingGuestId !== guestId) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
+          // console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
         }
       }
     }
@@ -151,7 +151,7 @@ const useWishlistAPI = () => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for fetching wishlist');
+        // console.log('Store ID and slug not available for fetching wishlist');
       }
       setWishlistItems([]);
       return;
@@ -182,7 +182,7 @@ const useWishlistAPI = () => {
       if (data.success && data.data) {
         setWishlistItems(data.data);
         if (process.env.NODE_ENV === 'development') {
-          console.log('Wishlist fetched successfully:', data.data.length, 'items');
+          // console.log('Wishlist fetched successfully:', data.data.length, 'items');
         }
       } else {
         setWishlistItems([]);
@@ -203,7 +203,7 @@ const useWishlistAPI = () => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for adding to wishlist');
+        // console.log('Store ID and slug not available for adding to wishlist');
       }
       return false;
     }
@@ -248,7 +248,7 @@ const useWishlistAPI = () => {
         setWishlistItems(prev => [...prev, newWishlistItem]);
         
         if (process.env.NODE_ENV === 'development') {
-          console.log('Product added to wishlist successfully');
+          // console.log('Product added to wishlist successfully');
         }
         
         return true;
@@ -269,7 +269,7 @@ const useWishlistAPI = () => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for removing from wishlist');
+        // console.log('Store ID and slug not available for removing from wishlist');
       }
       return false;
     }
@@ -317,7 +317,7 @@ const useWishlistAPI = () => {
             : `${productName} removed from wishlist successfully!`;
           
           if (process.env.NODE_ENV === 'development') {
-            console.log('Product removed from wishlist successfully');
+            // console.log('Product removed from wishlist successfully');
           }
           
           return updatedItems;
@@ -363,7 +363,7 @@ const useWishlistAPI = () => {
     
     if (!currentStoreId && !currentStoreSlug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Store ID and slug not available for clearing wishlist');
+        // console.log('Store ID and slug not available for clearing wishlist');
       }
       return false;
     }
@@ -469,7 +469,7 @@ const useWishlistAPI = () => {
   // تهيئة النظام عند تحميل الصفحة
   const initializeGuestSystem = useCallback(async () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Initializing guest system...');
+      // console.log('🚀 Initializing guest system...');
     }
     
     // Ensure we have a stable Guest ID
@@ -490,7 +490,7 @@ const useWishlistAPI = () => {
     // Only fetch if we have a store identifier and haven't initialized for this store
     if (storeIdentifier && (!hasInitialized.current || storeId.current !== storeIdentifier)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing wishlist for store:', storeIdentifier);
+        // console.log('Initializing wishlist for store:', storeIdentifier);
       }
       hasInitialized.current = true;
       storeId.current = storeIdentifier;

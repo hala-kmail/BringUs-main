@@ -271,11 +271,11 @@ function App() {
   // Extract affiliate code if present
   const affiliateCode = extractAffiliateCode(window.location.pathname);
   
-  console.log('Affiliate URL detection:', {
-    isAffiliateUrl,
-    affiliateCode,
-    currentPath: window.location.pathname
-  });
+  // console.log('Affiliate URL detection:', {
+  //   isAffiliateUrl,
+  //   affiliateCode,
+  //   currentPath: window.location.pathname
+  // });
   
   // If it's an affiliate URL, we need to handle it differently
   const routerProps = storeSlug ? { basename: `/${storeSlug}` } : {};
@@ -452,6 +452,20 @@ function App() {
               </AffiliateWrapper>
             } />
             
+            {/* Store-specific routes with slug */}
+            <Route path="/:storeSlug" element={<Navigate to="/:storeSlug/home" replace />} />
+            <Route path="/:storeSlug/home" element={<Home />} />
+            <Route path="/:storeSlug/shop" element={<Shop />} />
+            <Route path="/:storeSlug/category/:categorySlug" element={<Category />} />
+            <Route path="/:storeSlug/mobile-categories" element={<MobileCategories />} />
+            <Route path="/:storeSlug/product/:id" element={<ProductDetail />} />
+            <Route path="/:storeSlug/cart" element={<Cart />} />
+            <Route path="/:storeSlug/checkout" element={<Checkout />} />
+            <Route path="/:storeSlug/wishlist" element={<Wishlist />} />
+            <Route path="/:storeSlug/profile" element={<Profile />} />
+            <Route path="/:storeSlug/orders" element={<Orders />} />
+            <Route path="/:storeSlug/almost-finished-sale" element={<AlmostFinishedSale />} />
+            
             {/* Regular routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -525,7 +539,14 @@ function App() {
               toggleMobileSearch: handleMobileSearchToggle,
               closeMobileSearch: handleMobileSearchClose
             }}>
-              <Router key={storeSlug || 'root'} {...routerProps}>
+              <Router 
+                key={storeSlug || 'root'} 
+                {...routerProps}
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true
+                }}
+              >
                 <Suspense fallback={
                   <div style={{ 
                     display: 'flex', 

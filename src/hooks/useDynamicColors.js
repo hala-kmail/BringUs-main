@@ -9,7 +9,7 @@ const useDynamicColors = () => {
     const mainColor = store?.settings?.mainColor;
     
     if (store && mainColor) {
-      console.log('Setting dynamic colors from store settings:', mainColor);
+      // console.log('Setting dynamic colors from store settings:', mainColor);
       
       // تحويل اللون الأساسي إلى ألوان مختلفة
       const primaryColor = mainColor;
@@ -21,16 +21,16 @@ const useDynamicColors = () => {
       document.documentElement.style.setProperty('--primary-light', primaryLight);
       document.documentElement.style.setProperty('--primary-dark', primaryDark);
       
-      console.log('Dynamic colors updated:', {
-        primary: primaryColor,
-        light: primaryLight,
-        dark: primaryDark
-      });
+      // console.log('Dynamic colors updated:', {
+      //   primary: primaryColor,
+      //   light: primaryLight,
+      //   dark: primaryDark
+      // });
     } else {
       // استخدام الألوان الافتراضية إذا لم يكن هناك ستور أو لون
-      console.log('Using default colors - no store or mainColor available');
-      console.log('Store:', store);
-      console.log('Store settings:', store?.settings);
+      // console.log('Using default colors - no store or mainColor available');
+      // console.log('Store:', store);
+      // console.log('Store settings:', store?.settings);
       document.documentElement.style.setProperty('--primary-color', '#1976d2');
       document.documentElement.style.setProperty('--primary-light', '#4791db');
       document.documentElement.style.setProperty('--primary-dark', '#115293');

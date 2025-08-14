@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 const API_BASE_URL = 'http://localhost:5001/api';
-const STORE_ID = '687c9bb0a7b3f2a0831c4675';
 
 export const useCreateUser = () => {
   const [loading, setLoading] = useState(false);
@@ -13,6 +12,15 @@ export const useCreateUser = () => {
     setError(null);
     
     try {
+      // الحصول على معرف المتجر من localStorage
+      const storeId = JSON.parse(localStorage.getItem('storeData'))._id;
+      
+      if (!storeId) {
+        throw new Error('معرف المتجر غير موجود. يرجى إعادة تحميل الصفحة.');
+      }
+
+      console.log('Store ID from localStorage:', storeId);
+
       // تحضير البيانات حسب متطلبات API
       const requestData = {
         firstName: userData.firstName,
@@ -21,7 +29,7 @@ export const useCreateUser = () => {
         password: userData.password,
         phone: userData.phone,
         role: 'client', // ثابت للعملاء
-        store: STORE_ID, // Store ID كـ string
+        store: storeId, // Store ID من localStorage
         addresses: [
           {
             type: 'home',

@@ -27,7 +27,7 @@ export function saveGuestId(guestId) {
 export function getStoredGuestId() {
   const guestId = localStorage.getItem('guestId');
   if (guestId && process.env.NODE_ENV === 'development') {
-    console.log('📂 Retrieved Guest ID from localStorage:', guestId);
+    // console.log('📂 Retrieved Guest ID from localStorage:', guestId);
   }
   return guestId;
 }
@@ -38,7 +38,7 @@ export function getStoredGuestId() {
 export function clearGuestId() {
   localStorage.removeItem('guestId');
   if (process.env.NODE_ENV === 'development') {
-    console.log('🗑️ Guest ID cleared from localStorage');
+    // console.log('🗑️ Guest ID cleared from localStorage');
   }
 }
 
@@ -84,11 +84,11 @@ export async function handleApiResponse(response) {
     if (!existingGuestId) {
       saveGuestId(guestId);
       if (process.env.NODE_ENV === 'development') {
-        console.log('🆕 New Guest ID received and saved:', guestId);
+        // console.log('🆕 New Guest ID received and saved:', guestId);
       }
     } else if (existingGuestId !== guestId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
+        // console.log('⚠️ Guest ID mismatch - keeping existing:', existingGuestId, 'vs received:', guestId);
       }
     }
   }
@@ -107,7 +107,7 @@ export async function handleApiResponse(response) {
 export async function addToCartAsGuest(productData, storeSlug) {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🛒 Adding product to cart as guest...');
+      // console.log('🛒 Adding product to cart as guest...');
     }
     
     const response = await fetch(`${API_BASE_URL}/cart?storeSlug=${storeSlug}`, {
@@ -120,12 +120,12 @@ export async function addToCartAsGuest(productData, storeSlug) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Product added to cart successfully');
+        // console.log('✅ Product added to cart successfully');
       }
       return result;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to add product to cart:', result.message);
+        // console.error('❌ Failed to add product to cart:', result.message);
       }
       return null;
     }
@@ -150,12 +150,12 @@ export async function getGuestCart(storeId) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('📋 Guest cart loaded:', result.data.items.length, 'items');
+        // console.log('📋 Guest cart loaded:', result.data.items.length, 'items');
       }
       return result.data;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to get guest cart:', result.message);
+        // console.error('❌ Failed to get guest cart:', result.message);
       }
       return { items: [] };
     }
@@ -175,7 +175,7 @@ export async function getGuestCart(storeId) {
 export async function updateCartItemAsGuest(productId, quantity, storeSlug) {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Updating cart item as guest...');
+      // console.log('🔄 Updating cart item as guest...');
     }
     
     const response = await fetch(`${API_BASE_URL}/cart/${productId}?storeSlug=${storeSlug}`, {
@@ -188,12 +188,12 @@ export async function updateCartItemAsGuest(productId, quantity, storeSlug) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Cart item updated successfully');
+        // console.log('✅ Cart item updated successfully');
       }
       return result;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to update cart item:', result.message);
+        // console.error('❌ Failed to update cart item:', result.message);
       }
       return null;
     }
@@ -212,7 +212,7 @@ export async function updateCartItemAsGuest(productId, quantity, storeSlug) {
 export async function removeFromCartAsGuest(productId, storeSlug) {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🗑️ Removing item from cart as guest...');
+      //  console.log('🗑️ Removing item from cart as guest...');
     }
     
     const response = await fetch(`${API_BASE_URL}/cart/${productId}?storeSlug=${storeSlug}`, {
@@ -224,12 +224,12 @@ export async function removeFromCartAsGuest(productId, storeSlug) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Item removed from cart successfully');
+        // console.log('✅ Item removed from cart successfully');
       }
       return result;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to remove item from cart:', result.message);
+        // console.error('❌ Failed to remove item from cart:', result.message);
       }
       return null;
     }
@@ -247,7 +247,7 @@ export async function removeFromCartAsGuest(productId, storeSlug) {
 export async function clearCartAsGuest(storeSlug) {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🧹 Clearing cart as guest...');
+      // console.log('🧹 Clearing cart as guest...');
     }
     
     const response = await fetch(`${API_BASE_URL}/cart?storeSlug=${storeSlug}`, {
@@ -259,12 +259,12 @@ export async function clearCartAsGuest(storeSlug) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Cart cleared successfully');
+        // console.log('✅ Cart cleared successfully');
       }
       return result;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to clear cart:', result.message);
+        // console.error('❌ Failed to clear cart:', result.message);
       }
       return null;
     }
@@ -289,12 +289,12 @@ export async function getCartTotalsAsGuest(storeId) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('💰 Cart totals loaded:', result.data);
+        // console.log('💰 Cart totals loaded:', result.data);
       }
       return result.data;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to get cart totals:', result.message);
+        // console.error('❌ Failed to get cart totals:', result.message);
       }
       return null;
     }
@@ -316,13 +316,13 @@ export async function mergeGuestCartAfterLogin(storeId) {
     const guestId = getStoredGuestId();
     if (!guestId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('ℹ️ No guest ID found, nothing to merge');
+        // console.log('ℹ️ No guest ID found, nothing to merge');
       }
       return;
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Merging guest cart to user account...');
+      // console.log('🔄 Merging guest cart to user account...');
     }
 
     const response = await fetch(`${API_BASE_URL}/cart/merge-guest`, {
@@ -338,8 +338,8 @@ export async function mergeGuestCartAfterLogin(storeId) {
     
     if (result.success) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Guest cart merged successfully:', result.message);
-        console.log(`📊 Merged: ${result.mergedCount}, Updated: ${result.updatedCount}`);
+        // console.log('✅ Guest cart merged successfully:', result.message);
+        // console.log(`📊 Merged: ${result.mergedCount}, Updated: ${result.updatedCount}`);
       }
       
       // Clear Guest ID from localStorage after successful merge
@@ -348,7 +348,7 @@ export async function mergeGuestCartAfterLogin(storeId) {
       return result;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Failed to merge guest cart:', result.message);
+        // console.error('❌ Failed to merge guest cart:', result.message);
       }
       return null;
     }
@@ -370,7 +370,7 @@ export async function mergeGuestCartAfterLogin(storeId) {
 export async function loginAndMergeCart(email, password, storeId) {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔐 Logging in and merging cart...');
+      //  console.log('🔐 Logging in and merging cart...');
     }
     
     // Login
@@ -386,19 +386,19 @@ export async function loginAndMergeCart(email, password, storeId) {
       // Save token
       localStorage.setItem('authToken', loginResult.data.token);
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Login successful');
+        // console.log('✅ Login successful');
       }
       
       // Merge guest cart
       await mergeGuestCartAfterLogin(storeId);
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('🎉 Login and cart merge completed successfully!');
+        // console.log('🎉 Login and cart merge completed successfully!');
       }
       return loginResult;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Login failed:', loginResult.message);
+        // console.error('❌ Login failed:', loginResult.message);
       }
       return null;
     }
@@ -417,26 +417,26 @@ export async function loginAndMergeCart(email, password, storeId) {
  */
 export async function initializeGuestCartSystem(storeId) {
   if (process.env.NODE_ENV === 'development') {
-    console.log('🚀 Initializing guest cart system...');
+    // console.log('🚀 Initializing guest cart system...');
   }
   
   // Check for existing Guest ID
   const guestId = getStoredGuestId();
   if (guestId) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('👤 Guest cart session found:', guestId);
+      // console.log('👤 Guest cart session found:', guestId);
     }
     
     // Load and return guest cart
     const guestCart = await getGuestCart(storeId);
     if (process.env.NODE_ENV === 'development') {
-      console.log('📋 Loaded guest cart:', guestCart.items.length, 'items');
+      // console.log('📋 Loaded guest cart:', guestCart.items.length, 'items');
     }
     
     return guestCart;
   } else {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🆕 No guest cart session found, will create new one on first cart action');
+      // console.log('🆕 No guest cart session found, will create new one on first cart action');
     }
     return { items: [] };
   }
@@ -449,7 +449,7 @@ export async function initializeGuestCartSystem(storeId) {
  */
 export function logout() {
   if (process.env.NODE_ENV === 'development') {
-    console.log('🚪 Logging out...');
+    // console.log('🚪 Logging out...');
   }
   
   // Remove token
@@ -458,7 +458,7 @@ export function logout() {
   // Keep Guest ID for guests (don't delete it as it may contain important cart items)
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Logout completed');
+    // console.log('✅ Logout completed');
   }
 }
 
@@ -508,7 +508,7 @@ export function getUserType() {
  */
 export async function completePersistentCartExample(storeId, storeSlug, productId) {
   if (process.env.NODE_ENV === 'development') {
-    console.log('🎯 Starting persistent guest cart example...');
+    // console.log('🎯 Starting persistent guest cart example...');
   }
   
   // 1. Initialize system
@@ -533,7 +533,7 @@ export async function completePersistentCartExample(storeId, storeSlug, productI
   
   // 3. Simulate page refresh
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔄 Simulating page refresh...');
+    // console.log('🔄 Simulating page refresh...');
   }
   
   // 4. Re-initialize system (after refresh)
@@ -542,7 +542,7 @@ export async function completePersistentCartExample(storeId, storeSlug, productI
   // 5. Check that cart still exists
   const cart = await getGuestCart(storeId);
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Cart after refresh:', cart.items.length, 'items');
+    //  console.log('✅ Cart after refresh:', cart.items.length, 'items');
   }
   
   // 6. Login and merge cart

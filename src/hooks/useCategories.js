@@ -31,7 +31,7 @@ const useCategories = () => {
 
   const fetchCategories = useCallback(async (targetStoreId) => {
     if (!targetStoreId) {
-      console.log('No store ID available for fetching categories');
+      // console.log('No store ID available for fetching categories');
       return null;
     }
 
@@ -45,7 +45,7 @@ const useCategories = () => {
       setError(null);
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('Fetching categories for store ID:', targetStoreId);
+        // console.log('Fetching categories for store ID:', targetStoreId);
       }
       
       const url = `${API_BASE_URL}/categories/store/${targetStoreId}`;
@@ -60,7 +60,7 @@ const useCategories = () => {
       // Extract data from the response
       if (result.success && result.data) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('Categories fetched successfully:', result.data.length, 'categories');
+          // console.log('Categories fetched successfully:', result.data.length, 'categories');
         }
         // Update categories in context
         updateCategories(result.data);
@@ -71,7 +71,7 @@ const useCategories = () => {
         updateCategories([]);
         storeId.current = targetStoreId;
         if (process.env.NODE_ENV === 'development') {
-          console.log('No categories found or invalid format, setting to empty array.');
+          // console.log('No categories found or invalid format, setting to empty array.');
         }
         return [];
       }
@@ -91,7 +91,7 @@ const useCategories = () => {
     // Only fetch if we have a store ID and haven't initialized for this store
     if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing categories for store ID:', currentStoreId);
+        // console.log('Initializing categories for store ID:', currentStoreId);
       }
       hasInitialized.current = true;
       storeId.current = currentStoreId;
@@ -99,7 +99,7 @@ const useCategories = () => {
     } else if (!currentStoreId && hasInitialized.current) {
       // Clear categories if no store is available
       if (process.env.NODE_ENV === 'development') {
-        console.log('No store available, clearing categories');
+        // console.log('No store available, clearing categories');
       }
       updateCategories(null);
       hasInitialized.current = false;
@@ -111,7 +111,7 @@ const useCategories = () => {
     const id = targetStoreId || getStoreId();
     
     if (!id) {
-      console.log('No store ID available for loading categories');
+      //  console.log('No store ID available for loading categories');
       return null;
     }
 
@@ -119,7 +119,7 @@ const useCategories = () => {
     
     if (categoriesData) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Categories loaded manually:', categoriesData.length, 'categories');
+        // console.log('Categories loaded manually:', categoriesData.length, 'categories');
       }
       return categoriesData;
     }

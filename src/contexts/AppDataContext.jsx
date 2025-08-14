@@ -67,7 +67,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           const categoriesData = JSON.parse(storedCategories);
           setCategories(categoriesData);
           if (process.env.NODE_ENV === 'development') {
-            console.log('AppData - Categories loaded from localStorage:', categoriesData);
+            // console.log('AppData - Categories loaded from localStorage:', categoriesData);
           }
         }
 
@@ -77,7 +77,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           const productsData = JSON.parse(storedProducts);
           setProducts(productsData);
           if (process.env.NODE_ENV === 'development') {
-            console.log('AppData - Products loaded from localStorage:', productsData.length, 'products');
+            // console.log('AppData - Products loaded from localStorage:', productsData.length, 'products');
           }
         }
 
@@ -87,7 +87,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           const allProductsData = JSON.parse(storedAllProducts);
           setAllProducts(allProductsData);
           if (process.env.NODE_ENV === 'development') {
-            console.log('AppData - All products loaded from localStorage:', allProductsData.length, 'products');
+            // console.log('AppData - All products loaded from localStorage:', allProductsData.length, 'products');
           }
         }
 
@@ -97,14 +97,14 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           const slidersData = JSON.parse(storedSliders);
           setSliders(slidersData);
           if (process.env.NODE_ENV === 'development') {
-            console.log('AppData - Sliders loaded from localStorage:', slidersData.length, 'sliders');
+            // console.log('AppData - Sliders loaded from localStorage:', slidersData.length, 'sliders');
           }
         }
 
         setIsLoading(false);
         setIsInitialized(true);
         if (process.env.NODE_ENV === 'development') {
-          console.log('AppData - Initialization completed');
+          // console.log('AppData - Initialization completed');
         }
       } catch (error) {
         console.error('AppData - Error loading stored data:', error);
@@ -122,7 +122,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
       setStore(initialStoreData);
       localStorage.setItem('storeData', JSON.stringify(initialStoreData));
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Store updated from initialStoreData:', initialStoreData);
+        // console.log('AppData - Store updated from initialStoreData:', initialStoreData);
       }
     }
   }, [initialStoreData, store]);
@@ -130,7 +130,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
   // Update user data
   const updateUser = (userData) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('updateUser called with:', userData);
+      // console.log('updateUser called with:', userData);
     }
     
     if (userData && (userData._id || userData.id)) {
@@ -148,12 +148,12 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
         setUserDiscount(discountInfo);
         localStorage.setItem('userDiscount', JSON.stringify(discountInfo));
         if (process.env.NODE_ENV === 'development') {
-          console.log('AppData - User discount updated:', discountInfo);
+          // console.log('AppData - User discount updated:', discountInfo);
         }
       }
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - User updated:', userData);
+        // console.log('AppData - User updated:', userData);
       }
     } else if (userData === null || userData === undefined) {
       // Only clear user if explicitly passed null/undefined
@@ -162,11 +162,11 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
       localStorage.removeItem('userInfo');
       localStorage.removeItem('userDiscount');
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - User cleared');
+        // console.log('AppData - User cleared');
       }
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Invalid user data, keeping current user');
+        // console.log('AppData - Invalid user data, keeping current user');
       }
     }
   };
@@ -177,12 +177,12 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     if (storeData) {
       localStorage.setItem('storeData', JSON.stringify(storeData));
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Store updated:', storeData);
+        // console.log('AppData - Store updated:', storeData);
       }
     } else {
       localStorage.removeItem('storeData');
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Store cleared');
+        // console.log('AppData - Store cleared');
       }
     }
   };
@@ -193,12 +193,12 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     if (categoriesData) {
       localStorage.setItem('categoriesInfo', JSON.stringify(categoriesData));
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Categories updated:', categoriesData);
+        // console.log('AppData - Categories updated:', categoriesData);
       }
     } else {
       localStorage.removeItem('categoriesInfo');
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Categories cleared');
+        // console.log('AppData - Categories cleared');
       }
     }
   };
@@ -209,12 +209,12 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     if (productsData) {
       localStorage.setItem('productsInfo', JSON.stringify(productsData));
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Products updated:', productsData.length, 'products');
+        // console.log('AppData - Products updated:', productsData.length, 'products');
       }
     } else {
       localStorage.removeItem('productsInfo');
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Products cleared');
+        // console.log('AppData - Products cleared');
       }
     }
   }, []);
@@ -231,12 +231,12 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     if (slidersData) {
       localStorage.setItem('slidersInfo', JSON.stringify(slidersData));
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Sliders updated:', slidersData.length, 'sliders');
+        // console.log('AppData - Sliders updated:', slidersData.length, 'sliders');
       }
     } else {
       localStorage.removeItem('slidersInfo');
       if (process.env.NODE_ENV === 'development') {
-        console.log('AppData - Sliders cleared');
+        // console.log('AppData - Sliders cleared');
       }
     }
   };
@@ -285,7 +285,7 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
     localStorage.removeItem('userAvatar');
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('AppData - All data cleared from localStorage');
+      // console.log('AppData - All data cleared from localStorage');
     }
   };
 
@@ -314,20 +314,20 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
 
   // Only log in development mode
   if (process.env.NODE_ENV === 'development') {
-    console.log('AppDataContext - Current state:', {
-      user: user ? 'User exists' : 'No user',
-      store: store ? `Store ID: ${store._id}` : 'No store',
-      categories: categories ? `${categories.length} categories` : 'No categories',
-      products: products?.length > 0 
-      ? `${products.length} products` 
-      : 'No products',
+    // console.log('AppDataContext - Current state:', {
+    //   user: user ? 'User exists' : 'No user',
+    //   store: store ? `Store ID: ${store._id}` : 'No store',
+    //   categories: categories ? `${categories.length} categories` : 'No categories',
+    //   products: products?.length > 0 
+    //   ? `${products.length} products` 
+    //   : 'No products',
     
-      sliders: sliders ? `${sliders.length} sliders` : 'No sliders',
-      isLoading,
-      isInitialized,
-      isAuthenticated,
-      userDiscount: userDiscount ? `Discount: ${userDiscount.value}` : 'No discount'
-    });
+    //   sliders: sliders ? `${sliders.length} sliders` : 'No sliders',
+    //   isLoading,
+    //   isInitialized,
+    //   isAuthenticated,
+    //   userDiscount: userDiscount ? `Discount: ${userDiscount.value}` : 'No discount'
+    // });
   }
 
   return (

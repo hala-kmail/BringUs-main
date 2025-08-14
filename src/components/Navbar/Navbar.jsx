@@ -243,6 +243,7 @@ const Navbar = () => {
   // Handle switch to register
   const handleSwitchToRegister = () => {
     setIsLoginModalOpen(false);
+    navigate('/register');
     // You can implement register modal opening here if needed
   };
 
@@ -430,7 +431,14 @@ const Navbar = () => {
         {/*-----------------------------------Logo------------------------------------------------   */}
         <button onClick={() => navigate('/home')} className="navbar-logo">
           {storeDataFinal && storeDataFinal.logo ? (
-            <img src={storeDataFinal.logo.url} alt={storeDataFinal.nameEn || storeDataFinal.nameAr || 'Store Logo'} />
+            <img 
+              src={storeDataFinal.logo.url} 
+              alt={storeDataFinal.nameEn || storeDataFinal.nameAr || 'Store Logo'}
+              onError={(e) => {
+                console.log('Logo failed to load:', storeDataFinal.logo.url);
+                e.target.style.display = 'none';
+              }}
+            />
           ) : (
             <img src={logo} alt="Hala Store" />
           )}
@@ -475,9 +483,14 @@ const Navbar = () => {
                       onClick={() => handleProductClick(product._id || product.id)}
                     >
                       <div className="result-image">
-                        <img src={product.mainImage} alt={
-                          currentLang === 'ar' ? product.nameAr : product.nameEn
-                        } />
+                        <img 
+                          src={product.mainImage} 
+                          alt={currentLang === 'ar' ? product.nameAr : product.nameEn}
+                          onError={(e) => {
+                            console.log('Product image failed to load:', product.mainImage);
+                            e.target.style.display = 'none';
+                          }}
+                        />
                       </div>
                       <div className="result-details">
                         <h4 className="result-name">
@@ -673,7 +686,14 @@ const Navbar = () => {
                     }}
                   >
                     <div className="mobile-result-image">
-                      <img src={product.mainImage} alt={currentLang === 'ar' ? product.nameAr : product.nameEn} />
+                      <img 
+                        src={product.mainImage} 
+                        alt={currentLang === 'ar' ? product.nameAr : product.nameEn}
+                        onError={(e) => {
+                          console.log('Mobile product image failed to load:', product.mainImage);
+                          e.target.style.display = 'none';
+                        }}
+                      />
                     </div>
                     <div className="mobile-result-details">
                       <h4 className="mobile-result-name">

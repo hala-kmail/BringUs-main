@@ -57,7 +57,11 @@ const ProductMediaGallery = ({
         ) : (
           <img 
             src={getCurrentMedia().url} 
-            alt={productName} 
+            alt={productName}
+            onError={(e) => {
+              console.log('Image failed to load:', getCurrentMedia().url);
+              e.target.style.display = 'none';
+            }}
           />
         )}
         <button className="product-zoom-btn" onClick={handleZoomToggle}>

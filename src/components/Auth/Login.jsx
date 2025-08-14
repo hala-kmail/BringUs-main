@@ -21,8 +21,17 @@ const Login = () => {
   // Load user and store info on component mount if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      loadUserAndStoreInfo();
+    const userInfo = localStorage.getItem('userInfo');
+    
+    if (token && userInfo) {
+      try {
+        const parsedUser = JSON.parse(userInfo);
+        if (parsedUser && (parsedUser.id || parsedUser._id)) {
+          loadUserAndStoreInfo();
+        }
+      } catch (err) {
+        console.log('Error parsing stored user info, skipping auto-load');
+      }
     }
   }, [loadUserAndStoreInfo]);
 
