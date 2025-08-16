@@ -200,14 +200,14 @@
         "zipCode_invalid": "Invalid zip code",
         "email_exists": "Email already exists",
         "password_min_length": "Password must be at least 6 characters"
+      }
+    },
+    "validation": {
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email format",
+      "password_required": "Password is required",
+      "password_min_length": "Password must be at least 6 characters"
     }
-  }
-},
-  "validation": {
-    "email_required": "Email is required",
-    "email_invalid": "Invalid email format",
-    "password_required": "Password is required",
-    "password_min_length": "Password must be at least 6 characters"
   },
   "footer": {
   "newsletter_title": "Subscribe to our newsletter",
