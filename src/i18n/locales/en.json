@@ -149,6 +149,9 @@
       "signup": "Sign Up"
     },
     "register": {
+      "personal_info": "Personal Information",
+      "address_info": "Address Information",
+      "company_info": "Company Information",
       "title": "Create Account",
       "subtitle": "Create your account to access all features",
       "firstName": "First Name",
@@ -207,6 +210,14 @@
       "email_invalid": "Invalid email format",
       "password_required": "Password is required",
       "password_min_length": "Password must be at least 6 characters"
+    },
+    "store_access": {
+      "access_denied": "Sorry, you cannot access this store. Please register in the store first or contact store management to get access permissions.",
+      "user_data_missing": "User data or store ID is not available",
+      "no_store_access": "User cannot access this store",
+      "access_from_stores_list": "User has access to the store from stores list",
+      "no_stores": "User does not own any store",
+      "store_permission": "User has permission for the store"
     }
   },
   "footer": {
@@ -214,6 +225,7 @@
   "newsletter_desc": "Register your email to get the latest offers and discounts. No spam!",
   "subscribed": "Subscribed successfully!",
   "email_placeholder": "Enter your email",
+  "address_label": "Store Address",
   "subscribe": "Subscribe",
   "phone_label": "Monday-Friday: 08am-9pm",
   "whatsapp_label": "Contact us via WhatsApp",

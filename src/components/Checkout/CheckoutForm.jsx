@@ -98,7 +98,7 @@ const CheckoutForm = ({
       <>
         {/* منطقة التوصيل */}
         <div className="form-group">
-          <label htmlFor="deliveryMethodId">{t('profile.delivery_area')} *</label>
+          <label htmlFor="deliveryMethodId">{t('checkout.delivery_area')} *</label>
           <select 
             id="deliveryMethodId" 
             name="deliveryMethodId" 

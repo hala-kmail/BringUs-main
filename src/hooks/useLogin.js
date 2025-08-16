@@ -1,11 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 import { saveToken, getToken, removeToken } from '../utils/tokenManager';
+import { useTranslation } from 'react-i18next';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
 
 const useLogin = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
@@ -207,15 +209,42 @@ const useLogin = () => {
       updateUser(userInfo);
       // console.log('User info loaded:', userInfo);
 
-      // Determine store ID from user info
-      let storeIdToUse = JSON.parse(localStorage.getItem('storeData'))._id;
+      // الحصول على معرف الستور المطلوب
+      let targetStoreId = null;
+      try {
+        const storeData = localStorage.getItem('storeData');
+        if (storeData) {
+          targetStoreId = JSON.parse(storeData)._id;
+        }
+      } catch (e) {
+        console.warn('Could not parse storeData from localStorage:', e);
+      }
+
+      // التحقق من صلاحيات المستخدم للستور المطلوب
+      if (targetStoreId) {
+        const accessCheck = checkStoreAccess(userInfo, targetStoreId);
+        console.log('Store access check in loadUserAndStoreInfo:', accessCheck);
+        
+        if (!accessCheck.hasAccess) {
+          const errorMessage = t('auth.store_access.access_denied');
+          console.error(`Store access denied: ${accessCheck.reason}`);
+          return { 
+            success: false, 
+            error: errorMessage,
+            storeAccessDenied: true 
+          };
+        }
+      }
+
+      // تحديد معرف الستور للاستخدام
+      let storeIdToUse = targetStoreId;
       
       if (userInfo.store && userInfo.store._id) {
         storeIdToUse = userInfo.store._id;
-        // console.log('Using store ID from user info:', storeIdToUse);
+        console.log('Using store ID from user info:', storeIdToUse);
       } else if (userInfo.stores && userInfo.stores.length > 0) {
         storeIdToUse = userInfo.stores[0]._id || userInfo.stores[0];
-        // console.log('Using store ID from stores array:', storeIdToUse);
+        console.log('Using store ID from stores array:', storeIdToUse);
       }
 
       // Load store info
@@ -334,24 +363,53 @@ const useLogin = () => {
       // Success - store user data
       updateUser(completeUserData);
 
-      // Determine which store ID to use
-      let storeIdToUse = JSON.parse(localStorage.getItem('storeData'))._id;
-      
+      // الحصول على معرف الستور المطلوب من localStorage أو URL
+      let targetStoreId = null;
+      try {
+        const storeData = localStorage.getItem('storeData');
+        if (storeData) {
+          targetStoreId = JSON.parse(storeData)._id;
+        }
+      } catch (e) {
+        console.warn('Could not parse storeData from localStorage:', e);
+      }
+
       console.log('Complete user data:', completeUserData);
       console.log('User store:', completeUserData?.store);
       console.log('User stores:', completeUserData?.stores);
+      console.log('Target store ID:', targetStoreId);
       
-      // If user has a store, use it
+      // التحقق من صلاحيات المستخدم للستور المطلوب
+      if (targetStoreId) {
+        const accessCheck = checkStoreAccess(completeUserData, targetStoreId);
+        console.log('Store access check:', accessCheck);
+        
+        if (!accessCheck.hasAccess) {
+          const errorMessage = t('auth.store_access.access_denied');
+          setError(errorMessage);
+          return { 
+            success: false, 
+            error: errorMessage,
+            storeAccessDenied: true 
+          };
+        }
+      }
+
+      // تحديد معرف الستور للاستخدام
+      let storeIdToUse = targetStoreId;
+      
+      // إذا كان المستخدم لديه ستور محدد، استخدمه
       if (completeUserData && completeUserData.store && completeUserData.store._id) {
         storeIdToUse = completeUserData.store._id;
+        console.log('Using user store ID:', storeIdToUse);
       }
-      // If user has stores array and it's not empty, use the first one
+      // إذا كان لديه مصفوفة ستورز، استخدم الأول
       else if (completeUserData && completeUserData.stores && completeUserData.stores.length > 0) {
         storeIdToUse = completeUserData.stores[0]._id || completeUserData.stores[0];
         console.log('Using first store from stores array:', storeIdToUse);
       }
       else {
-        console.log('Using default store ID:', storeIdToUse);
+        console.log('Using target store ID:', storeIdToUse);
       }
 
       // Fetch store information
@@ -408,6 +466,38 @@ const useLogin = () => {
 
 
 
+  // دالة للتحقق من صلاحيات المستخدم للستور
+  const checkStoreAccess = useCallback((userData, targetStoreId) => {
+    if (!userData || !targetStoreId) {
+      return { hasAccess: false, reason: t('auth.store_access.user_data_missing') };
+    }
+
+    // التحقق من أن المستخدم لديه متجر محدد
+    if (userData.store && userData.store._id) {
+      if (userData.store._id === targetStoreId) {
+        return { hasAccess: true, reason: t('auth.store_access.store_permission') };
+      } else {
+        return { hasAccess: false, reason: t('auth.store_access.no_store_access') };
+      }
+    }
+
+    // التحقق من مصفوفة المتاجر
+    if (userData.stores && userData.stores.length > 0) {
+      const hasAccess = userData.stores.some(store => {
+        const storeId = store._id || store;
+        return storeId === targetStoreId;
+      });
+      
+      if (hasAccess) {
+        return { hasAccess: true, reason: t('auth.store_access.access_from_stores_list') };
+      } else {
+        return { hasAccess: false, reason: t('auth.store_access.no_store_access') };
+      }
+    }
+
+    return { hasAccess: false, reason: t('auth.store_access.no_stores') };
+  }, [t]);
+
   // دالة لحفظ التوكن
   const saveAuthToken = useCallback((token) => {
     const success = saveToken(token);
@@ -445,6 +535,7 @@ const useLogin = () => {
     loadUserAndStoreInfo,
     saveAuthToken,
     removeAuthToken,
+    checkStoreAccess,
   };
 };
 

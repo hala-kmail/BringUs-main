@@ -111,6 +111,19 @@ const TermsModal = ({ isOpen, onClose }) => {
   return (
     <div className="terms-modal-overlay" onClick={handleBackdropClick}>
       <div className="terms-modal" dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
+        {/* Header Section */}
+        <div className="terms-modal-header">
+          <h1 className="terms-modal-title">
+            {currentLang === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions'}
+          </h1>
+          <p className="terms-modal-subtitle">
+            {currentLang === 'ar' 
+              ? 'يرجى قراءة الشروط والأحكام بعناية قبل استخدام الخدمة'
+              : 'Please read the terms and conditions carefully before using the service'
+            }
+          </p>
+        </div>
+
         {/* Close Button */}
         <button 
           className="terms-modal-close" 
