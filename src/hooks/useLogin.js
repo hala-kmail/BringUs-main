@@ -249,9 +249,10 @@ const useLogin = () => {
   }
   }, [fetchUserInfo, fetchStoreInfo, user, store, isLoadingData, updateUser, updateStore, lastLoadTime]);
 //-----------------------------------login------------------------------------------------
-  const login = useCallback(async (email, password) => {
+  const  login = useCallback(async (email, password) => {
     setLoading(true);
     setError(null);
+    
 
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -267,9 +268,14 @@ const useLogin = () => {
 
       const data = await response.json();
 
+
+
       if (!response.ok) {
         // Handle different error cases
         if (response.status === 401) {
+          if(data.message==='Email is not verified'){
+            return { success: false, error: 'Email is not verified', isEmailVerified: false };
+          }
           setError('Invalid email or password');
         } else if (response.status === 422) {
           // Validation errors
@@ -282,6 +288,15 @@ const useLogin = () => {
         return { success: false, error: data.message || 'Login failed' };
       }
 
+      // Check if email is verified from the user data
+      if (data.user && data.user.isEmailVerified === false) {
+        return { 
+          success: false, 
+          error: 'Email not verified', 
+          isEmailVerified: false,
+          data: data.user 
+        };
+      }
       // Store token in localStorage first
       if (data.token) {
         const tokenSaved = saveToken(data.token);
@@ -384,7 +399,8 @@ const useLogin = () => {
         success: true, 
         user: completeUserData, 
         token: data.token,
-        store: storeInfo 
+        store: storeInfo,
+        isEmailVerified: completeUserData.isEmailVerified
       };
     } catch (err) {
       const errorMessage = 'Network error. Please check your connection.';

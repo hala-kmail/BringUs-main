@@ -532,6 +532,89 @@ const useProducts = () => {
     }
   }, [getStoreId, token]);
 
+  // Fetch specific variant details
+  const fetchSpecificVariant = useCallback(async (productId, variantId) => {
+    if (!productId || !variantId) {
+      console.log('No product ID or variant ID provided');
+      return null;
+    }
+
+    const currentStoreId = getStoreId();
+    if (!currentStoreId) {
+      console.log('No store ID available for fetching specific variant');
+      return null;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const url = `${API_BASE_URL}/products/${currentStoreId}/${productId}/variants/${variantId}`;
+
+      const headers = {
+        accept: 'application/json',
+      };
+      if (token) {
+        headers.Authorization = token;
+      }
+
+      const response = await fetch(url, { headers });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // The API returns data in the format: { parentProduct, variant }
+        // We want to return the variant data
+        const variantData = result.data.variant || result.data;
+        
+        if (variantData) {
+          console.log('✅ Specific variant fetched successfully:', {
+            id: variantData._id,
+            name: variantData.nameAr || variantData.nameEn,
+            price: variantData.price,
+            stock: variantData.availableQuantity,
+            images: variantData.images?.length || 0,
+            mainImage: variantData.mainImage,
+            specificationValues: variantData.specificationValues?.length || 0,
+            category: variantData.category?.nameAr || variantData.category?.nameEn
+          });
+          
+          // Ensure the variant has all required fields
+          const enrichedVariantData = {
+            ...variantData,
+            // Ensure these fields exist
+            images: variantData.images || [],
+            mainImage: variantData.mainImage || (variantData.images && variantData.images[0]),
+            specificationValues: variantData.specificationValues || [],
+            availableQuantity: variantData.availableQuantity || 0,
+            price: variantData.price || 0,
+            // Ensure other important fields
+            nameAr: variantData.nameAr || variantData.nameEn,
+            nameEn: variantData.nameEn || variantData.nameAr,
+            descriptionAr: variantData.descriptionAr || variantData.descriptionEn,
+            descriptionEn: variantData.descriptionEn || variantData.descriptionAr
+          };
+          
+          return enrichedVariantData;
+        } else {
+          throw new Error('Variant data not found in response');
+        }
+      } else {
+        throw new Error('Variant not found');
+      }
+    } catch (err) {
+      console.error('Error fetching specific variant:', err);
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [getStoreId, token]);
+
   // Fetch products by category with pagination and filters
   const fetchProductsByCategory = useCallback(async (categoryId, options = {}) => {
     if (!categoryId) {
@@ -780,6 +863,7 @@ const useProducts = () => {
     fetchProducts,
     fetchProductById,
     fetchProductWithVariants,
+    fetchSpecificVariant,
     fetchProductsByCategory,
     fetchFeaturedProducts,
     fetchNewArrivals,
