@@ -244,6 +244,7 @@
 
 .tab-header h2 {
   font-size: 1.5rem;
+  margin: 0;
   font-weight: 600;
   color: #1f2937;
 }

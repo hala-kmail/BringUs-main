@@ -34,14 +34,7 @@
   font-family: 'Tajawal', sans-serif;
 }
 
-.section-subtitle {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1.5rem;
-  font-family: 'Tajawal', sans-serif;
-  max-width: 600px;
-  margin: 0;
-}
+
 
 .view-all-btn {
   display: inline-flex;
@@ -307,10 +300,6 @@
     font-size: 1.1rem;
   }
 
-  .section-subtitle {
-    font-size: 0.8rem;
-    display: none;
-  }
 
  
 

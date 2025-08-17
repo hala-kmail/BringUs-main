@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
@@ -27,6 +27,7 @@ const Checkout = () => {
 
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
+  const location = useLocation();
   const { cartItems, getCartTotals, clearCart, loading: cartLoading, updateShippingArea, shippingAreaId } = useCart();
   const { store, user } = useAppData();
   const currentLang = i18n.language;
@@ -93,6 +94,26 @@ const Checkout = () => {
   const [cartTotalsState, setCartTotalsState] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successOrderData, setSuccessOrderData] = useState(null);
+
+  // إغلاق البوب أب عند تغيير المسار
+  useEffect(() => {
+    if (showSuccessModal) {
+      const timer = setTimeout(() => {
+        setShowSuccessModal(false);
+        setSuccessOrderData(null);
+      }, 5000); // إغلاق تلقائي بعد 5 ثواني
+
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessModal]);
+
+  // إغلاق البوب أب عند تغيير المسار
+  useEffect(() => {
+    if (showSuccessModal && location.pathname.includes('/orders')) {
+      setShowSuccessModal(false);
+      setSuccessOrderData(null);
+    }
+  }, [location.pathname, showSuccessModal]);
 
   // تحديث التوتال عند تغيير أي شيء يؤثر عليه
   useEffect(() => {
@@ -475,14 +496,18 @@ const handleDirectStoreOrder = async () => {
      whatsappOrderData.whatsappMessage = message;
     
                // عرض رسالة نجاح جميلة (بدون إرسال تلقائي للواتساب)
-      showBeautifulSuccessMessage(whatsappOrderData);
+      showBeautifulSuccessMessage({
+        ...whatsappOrderData,
+        deliveryMethod: 'store',
+        customerAddress: storeAddress
+      });
      
      // مسح السلة وإعادة التوجيه
      clearCart();
      
           // إعادة التوجيه إلى الصفحة الرئيسية
      console.log('=== DIRECT STORE ORDER COMPLETED ===');
-     navigate('/');
+    //  navigate('/');
      
       } catch (error) {
      console.error('Error creating direct store order:', error);
@@ -499,7 +524,7 @@ const handleDirectStoreOrder = async () => {
 const handleSendWhatsApp = async () => {
   try {
     console.log('Selected payment method:', selectedPaymentMethod);
-    
+  
     // إضافة logging مفصل لـ cartItems
     console.log('=== CART ITEMS DETAILED ANALYSIS ===');
     cartItems.forEach((item, index) => {
@@ -609,33 +634,8 @@ const handleSendWhatsApp = async () => {
       currency: store?.settings.currency || 'ILS' // استخدام عملة المتجر أو الافتراضية
     };
 
-    // إضافة logging للبيانات المعالجة
-    console.log('=== PROCESSED ORDER DATA ===');
-    console.log('Store:', orderData.store);
-    console.log('User ID:', orderData.user);
-    console.log('Items processed:', orderData.items.map((item, index) => ({
-      index: index + 1,
-      product: item.product,
-      quantity: item.quantity
-    })));
-    console.log('Cart Items with specifications:', orderData.cartItems.map((item, index) => ({
-      index: index + 1,
-      product: item.product,
-      quantity: item.quantity,
-      selectedSpecifications: item.selectedSpecifications,
-      selectedColors: item.selectedColors
-    })));
-    console.log('Delivery Area ID:', orderData.deliveryArea);
-    console.log('Currency:', orderData.currency);
-    console.log('Store Currency:', store?.settings.currency);
-    console.log('Shipping Address:', orderData.shippingAddress);
-    console.log('Payment Info:', orderData.paymentInfo);
-    console.log('=== END PROCESSED ORDER DATA ===');
-
-    console.log('Cart items:', cartItems);
-    console.log('Store ID:', store?._id);
-    console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
-    
+   
+  
     // التحقق من وجود المتجر
     if (!orderData.store._id) {
       throw new Error('معلومات المتجر غير متوفرة');
@@ -715,7 +715,7 @@ const handleSendWhatsApp = async () => {
     setPaymentDone(false);
     
     // إعادة التوجيه إلى صفحة تأكيد الطلب أو الصفحة الرئيسية
-    navigate('/');
+    // navigate('/');
     
      } catch (error) {
      console.error('Error creating order:', error);
@@ -728,6 +728,7 @@ const handleSendWhatsApp = async () => {
 };
 //-----------------------------------handleWhatsAppOrder------------------------------------------------  
   const handleWhatsAppOrder = (orderData) => {
+    
     const { orderNumber, customerInfo, items, totals, deliveryMethod } = orderData;
     
     // إنشاء رسالة باللغة المختارة فقط
@@ -849,18 +850,6 @@ const handleSendWhatsApp = async () => {
         ? `  السعر: ${currencySymbol}${itemPrice.toFixed(2)}\n`
         : `   Price: ${currencySymbol}${itemPrice.toFixed(2)}\n`;
       
-      // إضافة الألوان المختارة - Colors
-      // if (item.selectedColors && item.selectedColors.length > 0) {
-      //   message += isArabic 
-      //     ? ` الألوان: `
-      //     : `  Colors: `;
-      //   item.selectedColors.forEach((color, colorIndex) => {
-      //     const colorName = getColorLabel(color, t);
-      //     message += `${colorName}${colorIndex < item.selectedColors.length - 1 ? ', ' : ''}`;
-      //   });
-      //   message += '\n';
-      // }
-      
       // إضافة المواصفات - Specifications
       if (item.selectedSpecifications && item.selectedSpecifications.length > 0) {
         message += isArabic 
@@ -936,8 +925,14 @@ const handleSendWhatsApp = async () => {
      
      console.log('Sending WhatsApp to:', finalPhoneNumber);
      
-          // Show success notification and WhatsApp confirmation
-     showSuccessNotification(finalPhoneNumber, message);
+          // عرض رسالة نجاح جميلة مع رسالة الواتساب
+     const whatsappData = {
+       phoneNumber: finalPhoneNumber,
+       whatsappMessage: message,
+       deliveryMethod: deliveryMethod,
+       customerAddress: `${formData.address}, ${formData.city}${formData.district ? `, ${formData.district}` : ''}`
+     };
+     showBeautifulSuccessMessage(whatsappData);
      
      // Return the message for direct store orders
      return message;
@@ -956,6 +951,9 @@ const handleSendWhatsApp = async () => {
 
      //-----------------------------------showBeautifulSuccessMessage------------------------------------------------  
    const showBeautifulSuccessMessage = (whatsappData) => {
+     // تحديد نوع التوصيل من البيانات المرسلة
+     const isDelivery = whatsappData.deliveryMethod === 'delivery';
+     
      // إنشاء modal النجاح الجميل
      const successModal = document.createElement('div');
      successModal.style.cssText = `
@@ -971,10 +969,19 @@ const handleSendWhatsApp = async () => {
        z-index: 10000;
        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
        animation: fadeIn 0.3s ease-out;
+       cursor: pointer;
      `;
      
+     // إضافة event listener لإغلاق البوب أب بالنقر خارج النافذة
+     successModal.addEventListener('click', (e) => {
+       if (e.target === successModal) {
+         console.log('Clicked outside modal, closing...');
+         handleCloseModal();
+       }
+     });
+     
      successModal.innerHTML = `
-       <div style="
+       <div class="success-modal" style="
          background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
          border-radius: 20px;
          padding: 40px;
@@ -985,7 +992,29 @@ const handleSendWhatsApp = async () => {
          border: 1px solid #e9ecef;
          position: relative;
          animation: slideInUp 0.4s ease-out;
+         cursor: default;
        ">
+         <!-- زر الإغلاق X -->
+         <button onclick="handleCloseModal()" style="
+           position: absolute;
+           top: 15px;
+           right: 15px;
+           background: none;
+           border: none;
+           font-size: 24px;
+           color: #999;
+           cursor: pointer;
+           width: 30px;
+           height: 30px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           border-radius: 50%;
+           transition: all 0.2s ease;
+           z-index: 10;
+         " onmouseover="this.style.background='#f0f0f0'; this.style.color='#666'" onmouseout="this.style.background='none'; this.style.color='#999'">
+           ✕
+         </button>
          <!-- أيقونة النجاح المتحركة -->
          <div style="
            width: 80px;
@@ -1034,9 +1063,15 @@ const handleSendWhatsApp = async () => {
               margin: 0;
               font-weight: 500;
             ">
-              ${currentLang === 'ar' 
-                ? 'تم إنشاء طلبك بنجاح! يمكنك الآن استلام طلبك من المتجر في أقرب وقت ممكن. اضغط على الزر أدناه لإرسال تفاصيل الطلب للواتساب.'
-                : 'Your order has been created successfully! You can now pick up your order from the store as soon as possible. Click the button below to send order details to WhatsApp.'
+              ${isDelivery 
+                ? (currentLang === 'ar' 
+                    ? 'تم إنشاء طلبك بنجاح! سيصلك طلبك بأسرع وقت ممكن. نشكرك على ثقتك بنا! اضغط على الزر أدناه لإرسال تفاصيل الطلب للواتساب.'
+                    : 'Your order has been created successfully! Your order will reach you as soon as possible. Thank you for your trust in us! Click the button below to send order details to WhatsApp.'
+                  )
+                : (currentLang === 'ar' 
+                    ? 'تم إنشاء طلبك بنجاح! يمكنك الآن استلام طلبك من المتجر في أقرب وقت ممكن. اضغط على الزر أدناه لإرسال تفاصيل الطلب للواتساب.'
+                    : 'Your order has been created successfully! You can now pick up your order from the store as soon as possible. Click the button below to send order details to WhatsApp.'
+                  )
               }
             </p>
          </div>
@@ -1073,7 +1108,10 @@ const handleSendWhatsApp = async () => {
                color: #333;
                font-size: 16px;
              ">
-               ${currentLang === 'ar' ? 'معلومات الاستلام:' : 'Pickup Information:'}
+               ${isDelivery 
+                 ? (currentLang === 'ar' ? 'معلومات التوصيل:' : 'Delivery Information:')
+                 : (currentLang === 'ar' ? 'معلومات الاستلام:' : 'Pickup Information:')
+               }
              </span>
            </div>
            <div style="
@@ -1082,9 +1120,15 @@ const handleSendWhatsApp = async () => {
              line-height: 1.5;
              padding-left: 44px;
            ">
-             ${currentLang === 'ar' 
-               ? `استلام من المتجر: ${storeAddress || 'عنوان المتجر'}`
-               : `Store Pickup: ${storeAddress || 'Store Address'}`
+             ${isDelivery 
+               ? (currentLang === 'ar' 
+                   ? `توصيل للمنزل: ${whatsappData.customerAddress || 'العنوان المحدد'}`
+                   : `Home Delivery: ${whatsappData.customerAddress || 'Specified Address'}`
+                 )
+               : (currentLang === 'ar' 
+                   ? `استلام من المتجر: ${storeAddress || 'عنوان المتجر'}`
+                   : `Store Pickup: ${storeAddress || 'Store Address'}`
+                 )
              }
            </div>
          </div>
@@ -1096,7 +1140,7 @@ const handleSendWhatsApp = async () => {
            margin-top: 24px;
            flex-direction: column;
          ">
-                       <button onclick="window.open('https://wa.me/${whatsappData.phoneNumber}?text=${encodeURIComponent(whatsappData.whatsappMessage)}', '_blank')" style="
+                       <button id="whatsapp-button" style="
              background: linear-gradient(135deg, #25D366, #128C7E);
              color: white;
              border: none;
@@ -1112,29 +1156,80 @@ const handleSendWhatsApp = async () => {
              box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
              transition: all 0.3s ease;
              text-decoration: none;
-           " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'">
+           " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'" onclick="window.open('https://wa.me/${whatsappData.phoneNumber}?text=${encodeURIComponent(whatsappData.whatsappMessage)}', '_blank')">
              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
              </svg>
              ${currentLang === 'ar' ? 'إرسال الطلب للواتساب' : 'Send Order to WhatsApp'}
            </button>
            
-           <button onclick="closeSuccessModal()" style="
-             background: white;
-             color: #666;
-             border: 2px solid #e9ecef;
-             border-radius: 12px;
-             padding: 14px 24px;
-             font-size: 16px;
-             font-weight: 600;
-             cursor: pointer;
-             transition: all 0.3s ease;
-           " onmouseover="this.style.background='#f8f9fa'; this.style.color='#333'" onmouseout="this.style.background='white'; this.style.color='#666'">
-             ${currentLang === 'ar' ? 'العودة للصفحة الرئيسية' : 'Back to Home'}
-           </button>
+         
          </div>
        </div>
      `;
+     
+          // إضافة دالة إغلاق الـ modal
+     window.handleCloseModal = () => {
+       console.log('handleCloseModal called');
+       
+       // إزالة الـ modal من الصفحة
+       if (successModal && successModal.parentNode) {
+         console.log('Removing modal from DOM');
+         document.body.removeChild(successModal);
+       } else {
+         console.log('Modal not found or already removed');
+         // محاولة إزالة جميع modals النجاح
+         const allModals = document.querySelectorAll('.success-modal');
+         allModals.forEach(modal => {
+           if (modal.parentNode) {
+             document.body.removeChild(modal.parentNode);
+           }
+         });
+       }
+       
+       // مسح السلة
+       clearCart();
+       
+       // إعادة التوجيه لصفحة الأوردرات مع slug المتجر
+       const storeSlug = store?.slug || localStorage.getItem('storeSlug');
+       if (storeSlug) {
+         navigate(`/${storeSlug}/orders`);
+       } else {
+         navigate('/orders');
+       }
+     };
+     
+     // إضافة event listeners للأزرار كنسخة احتياطية
+     setTimeout(() => {
+       const whatsappButton = document.getElementById('whatsapp-button');
+       const closeButton = document.getElementById('close-success-modal');
+       
+       if (whatsappButton) {
+         console.log('WhatsApp button found, adding backup click listener');
+         whatsappButton.addEventListener('click', () => {
+           console.log('WhatsApp button clicked via backup listener');
+           if (whatsappData.phoneNumber && whatsappData.whatsappMessage) {
+             const whatsappUrl = `https://wa.me/${whatsappData.phoneNumber}?text=${encodeURIComponent(whatsappData.whatsappMessage)}`;
+             console.log('Opening WhatsApp URL:', whatsappUrl);
+             window.open(whatsappUrl, '_blank');
+           }
+         });
+       }
+       
+       if (closeButton) {
+         console.log('Close button found, adding backup click listener');
+         closeButton.addEventListener('click', () => {
+           console.log('Close button clicked via backup listener');
+           // إزالة الـ modal
+           if (successModal.parentNode) {
+             document.body.removeChild(successModal);
+           }
+           // مسح السلة وإعادة التوجيه
+           clearCart();
+          //  navigate('/');
+         });
+       }
+     }, 100);
      
      // إضافة CSS للحركات
      const style = document.createElement('style');
@@ -1196,7 +1291,7 @@ const handleSendWhatsApp = async () => {
          }
          // مسح السلة وإعادة التوجيه
          clearCart();
-         navigate('/');
+        //  navigate('/');
        }, 300);
      };
      
@@ -1496,7 +1591,7 @@ const handleSendWhatsApp = async () => {
               >
                 {orderLoading ? (
                   <>
-                    <div className="loading-spinner" style={{ width: 20, height: 20, border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <div className="loading-spinner" style={{textAlign: 'center', width: 20, height: 20, border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                     {currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}
                   </>
                 ) : (
@@ -1634,8 +1729,25 @@ const handleSendWhatsApp = async () => {
             {/* WhatsApp Button */}
             <button 
               onClick={() => {
+                // إغلاق البوب أب فوراً
+                setShowSuccessModal(false);
+                setSuccessOrderData(null);
+                
                 const whatsappUrl = `https://wa.me/${successOrderData.phoneNumber}?text=${encodeURIComponent(successOrderData.whatsappMessage)}`;
                 window.open(whatsappUrl, '_blank');
+                
+                // مسح السلة
+                clearCart();
+                
+                // إعادة التوجيه لصفحة الأوردرات مع slug المتجر
+                setTimeout(() => {
+                  const storeSlug = store?.slug || localStorage.getItem('storeSlug');
+                  if (storeSlug) {
+                    navigate(`/${storeSlug}/orders`);
+                  } else {
+                    navigate('/orders');
+                  }
+                }, 500);
               }}
               style={{
                 width: '100%',
@@ -1651,7 +1763,6 @@ const handleSendWhatsApp = async () => {
                 justifyContent: 'center',
                 gap: '12px',
                 cursor: 'pointer',
-                marginBottom: '16px',
                 boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)',
                 transition: 'all 0.2s ease'
               }}
@@ -1664,44 +1775,13 @@ const handleSendWhatsApp = async () => {
                 e.target.style.transform = 'translateY(0)';
               }}
             >
-              <svg width="24" height="24" fill="#fff" viewBox="0 0 24 24">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
               </svg>
               {currentLang === 'ar' ? 'إرسال الطلب للواتساب' : 'Send Order to WhatsApp'}
             </button>
 
-            {/* Close Button */}
-            <button 
-              onClick={() => {
-                setShowSuccessModal(false);
-                setSuccessOrderData(null);
-                // مسح السلة وإعادة التوجيه
-                clearCart();
-                navigate('/');
-              }}
-              style={{
-                width: '100%',
-                background: 'none',
-                color: '#666',
-                border: '2px solid #e9ecef',
-                borderRadius: 12,
-                padding: '14px 0',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.background = '#f8f9fa';
-                e.target.style.color = '#333';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = 'none';
-                e.target.style.color = '#666';
-              }}
-            >
-              {currentLang === 'ar' ? 'العودة للصفحة الرئيسية' : 'Back to Home'}
-            </button>
+
           </div>
         </div>
       )}

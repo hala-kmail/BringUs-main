@@ -28,7 +28,7 @@ const SocialComments = () => {
     return (
       <section className="social-comments-section">
         <div className="container">
-          <div className="section-header">
+          <div className="section-header-title">
             <h2 className="section-title">{t('social_comments.title', 'آراء عملائنا')}</h2>
             <p className="section-subtitle">{t('social_comments.subtitle', 'ماذا يقول عملاؤنا عنا')}</p>
           </div>
@@ -46,55 +46,45 @@ const SocialComments = () => {
     const isAuthError = error.includes('Authentication') || error.includes('login') || error.includes('Access denied');
     
     return (
-      <section className="social-comments-section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">{t('social_comments.title', 'آراء عملائنا')}</h2>
-            <p className="section-subtitle">{t('social_comments.subtitle', 'ماذا يقول عملاؤنا عنا')}</p>
-          </div>
-          <div className={`comments-error ${isAuthError ? 'auth-error' : ''}`}>
-            <div className="auth-error-content">
-              <p>{t('social_comments.auth_required', 'يرجى تسجيل الدخول لعرض التعليقات')}</p>
-              <button 
-                className="login-btn"
-                onClick={handleLoginClick}
-              >
-                {t('common.login', 'تسجيل الدخول')}
-              </button>
-            </div>
-          </div>
-        </div>
+      // <section className="social-comments-section">
+      //   <div className="container">
+      //     <div className="section-header-title">
+      //       <h2 className="section-title">{t('social_comments.title', 'آراء عملائنا')}</h2>
+      //       <p className="section-subtitle">{t('social_comments.subtitle', 'ماذا يقول عملاؤنا عنا')}</p>
+      //     </div>
+      //     <div className={`comments-error ${isAuthError ? 'auth-error' : ''}`}>
+      //       <div className="auth-error-content">
+      //         <p>{t('social_comments.auth_required', 'يرجى تسجيل الدخول لعرض التعليقات')}</p>
+      //         <button 
+      //           className="login-btn"
+      //           onClick={handleLoginClick}
+      //         >
+      //           {t('common.login', 'تسجيل الدخول')}
+      //         </button>
+      //       </div>
+      //     </div>
+      //   </div>
         
-        {/* Login Modal */}
-        <LoginModal 
-          isOpen={isLoginModalOpen}
-          onClose={handleLoginModalClose}
-          onSwitchToRegister={handleSwitchToRegister}
-        />
-      </section>
+      //   {/* Login Modal */}
+      //   <LoginModal 
+      //     isOpen={isLoginModalOpen}
+      //     onClose={handleLoginModalClose}
+      //     onSwitchToRegister={handleSwitchToRegister}
+      //   />
+      // </section>
+      null
     );
   }
 
+  // إذا لم تكن هناك تعليقات، لا تعرض القسم بالكامل
   if (!comments || comments.length === 0) {
-    return (
-      <section className="social-comments-section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">{t('social_comments.title', 'آراء عملائنا')}</h2>
-            <p className="section-subtitle">{t('social_comments.subtitle', 'ماذا يقول عملاؤنا عنا')}</p>
-          </div>
-          <div className="comments-empty">
-            <p>{t('social_comments.no_comments', 'لا توجد تعليقات متاحة حالياً')}</p>
-          </div>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   return (
     <section className="social-comments-section">
       <div className="container">
-        <div className="section-header">
+        <div className="section-header-title">
           <h2 className="section-title">{t('social_comments.title', 'آراء عملائنا')}</h2>
           <p className="section-subtitle">{t('social_comments.subtitle', 'ماذا يقول عملاؤنا عنا')}</p>
         </div>

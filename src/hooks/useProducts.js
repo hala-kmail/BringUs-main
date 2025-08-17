@@ -250,29 +250,18 @@ const useProducts = () => {
             setLoading(true);
             setError(null);
             
-            const url = `${API_BASE_URL}/products/${currentStoreId}/without-variants?page=1&limit=20&sort=newest`;
-            if (process.env.NODE_ENV === 'development') {
-              // console.log('Fetching products from:', url);
-            }
-            
-            const response = await fetch(url, {
-              headers: {
-                'accept': 'application/json',
-                'Authorization': token
-              }
+            // Use the existing fetchProducts function with default pagination parameters
+            const result = await fetchProducts(currentStoreId, {
+              page: 1,
+              limit: 20,
+              sort: 'newest'
             });
             
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.success && result.data) {
-              updateProducts(result.data);
+            if (result && result.products) {
+              updateProducts(result.products);
               setPagination(result.pagination);
               if (process.env.NODE_ENV === 'development') {
-                // console.log('Products fetched successfully:', result.data.length, 'products');
+                console.log('Products fetched successfully:', result.products.length, 'products');
               }
             } else {
               throw new Error('Failed to fetch products');

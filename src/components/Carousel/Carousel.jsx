@@ -95,7 +95,7 @@ const Carousel = () => {
       <div className="carousel-container">
         <div className="carousel-loading">
           <div className="loading-spinner"></div>
-          <p>{currentLang === 'ar' ? 'جاري تحميل السلايدر...' : 'Loading slider...'}</p>
+          {/* <p>{currentLang === 'ar' ? 'جاري تحميل السلايدر...' : 'Loading slider...'}</p> */}
         </div>
       </div>
     );

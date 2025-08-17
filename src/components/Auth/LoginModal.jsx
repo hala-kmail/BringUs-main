@@ -15,6 +15,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     password: '',
   });
   
+  
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
   const [showOTP, setShowOTP] = useState(false);

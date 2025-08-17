@@ -132,12 +132,17 @@
 
 
 .section-subtitle {
+  white-space: nowrap;
   font-size: 0.875rem;
+  text-align: left;
   color: #6b7280;
   margin-bottom: 1.5rem;
   font-family: 'Tajawal', sans-serif;
-  
+  padding-bottom: 12px;
   margin:0;
+}
+[dir="rtl"] .section-subtitle {
+  text-align: right;
 }
 
 .view-all-btn {

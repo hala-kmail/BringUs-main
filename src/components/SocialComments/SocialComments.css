@@ -1,5 +1,5 @@
 .social-comments-section {
-
+padding: 16px;
     position: relative;
     border-radius: 20px;
     overflow: hidden;
@@ -37,12 +37,7 @@
   line-height: 1.2;
 }
 
-.section-subtitle {
-  font-size: 1.1rem;
-  color: #64748b;
-  margin: 0;
-  font-weight: 400;
-}
+
 
 .comments-grid {
   display: grid;
