@@ -220,6 +220,23 @@
       "store_permission": "User has permission for the store"
     }
   },
+  "otp": {
+    "title": "Email Verification",
+    "subtitle": "Verification code sent to",
+    "verification_code": "Verification Code",
+    "enter_code": "Enter the 5-digit code",
+    "verify": "Verify Code",
+    "verifying": "Verifying...",
+    "didnt_receive": "Didn't receive the code?",
+    "resend_code": "Resend Code",
+    "sending": "Sending...",
+    "resend_in": "Resend in {{seconds}} seconds",
+    "wrong_email": "Wrong email?",
+    "change_email": "Change Email",
+    "verification_failed": "Verification failed",
+    "network_error": "Network error, please try again",
+    "resend_failed": "Failed to resend code"
+  },
   "footer": {
   "newsletter_title": "Subscribe to our newsletter",
   "newsletter_desc": "Register your email to get the latest offers and discounts. No spam!",

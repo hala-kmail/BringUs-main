@@ -10,6 +10,7 @@ import DynamicColors from './components/DynamicColors/DynamicColors';
 import MobileSearch from './components/MobileSearch/MobileSearch';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import OTPVerification from './components/Auth/OTPVerification';
 import Home from './pages/Home/Home';
 import Shop from './pages/Shop/Shop';
 import Category from './pages/Category/Category';
@@ -389,7 +390,7 @@ function App() {
         <DynamicColors />
         <AffiliateStateMonitor />
         
-        {/* <AdvertisementPopup /> */}
+         <AdvertisementPopup /> 
         <div className="main-content">
           <Routes>
             {/* Affiliate routes - these will handle all affiliate URLs */}
@@ -451,6 +452,11 @@ function App() {
                 <AlmostFinishedSale />
               </AffiliateWrapper>
             } />
+            <Route path="/affiliate/:affiliateCode/otp-verification" element={
+              <AffiliateWrapper>
+                <OTPVerification />
+              </AffiliateWrapper>
+            } />
             
             {/* Store-specific routes with slug */}
             <Route path="/:storeSlug" element={<Navigate to="/:storeSlug/home" replace />} />
@@ -465,10 +471,12 @@ function App() {
             <Route path="/:storeSlug/profile" element={<Profile />} />
             <Route path="/:storeSlug/orders" element={<Orders />} />
             <Route path="/:storeSlug/almost-finished-sale" element={<AlmostFinishedSale />} />
+            <Route path="/:storeSlug/otp-verification" element={<OTPVerification />} />
             
             {/* Regular routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/otp-verification" element={<OTPVerification />} />
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home />} />
             <Route path="/shop" element={<Shop />} />

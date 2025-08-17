@@ -48,6 +48,7 @@ const ProductDetail = () => {
   const { 
     fetchProductById, 
     fetchProductWithVariants,
+    fetchSpecificVariant,
     getFinalPrice, 
     getMainImage, 
     getProductName, 
@@ -122,33 +123,144 @@ const ProductDetail = () => {
     loadProduct();
   }, [productId, fetchProductWithVariants]);
 
-  const handleVariantClick = useCallback((variant) => {
+  const handleVariantClick = useCallback(async (variant) => {
     if (!variant) return;
-    setProduct(variant);
-    setSelectedImageIndex(0);
-    setSelectedMediaIndex(0);
-    const simpleColors = getSimpleColorsFromColorsField(variant);
-    setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
-    setSelectedSpecs({});
-    // Scroll to top of gallery for better UX
+    
     try {
-      const container = document.querySelector('.product-detail-container');
-      if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (_) {}
-  }, []);
+      console.log('🔄 Fetching detailed variant information for:', {
+      variantId: variant._id || variant.id,
+      variantName: variant.nameAr || variant.nameEn,
+      productId
+    });
+      
+      // Fetch detailed variant information from API
+      const detailedVariant = await fetchSpecificVariant(productId, variant._id || variant.id);
+      
+      if (detailedVariant) {
+        console.log('✅ Variant details loaded successfully:', detailedVariant);
+        console.log('   - Name:', detailedVariant.nameAr || detailedVariant.nameEn);
+        console.log('   - Price:', detailedVariant.price);
+        console.log('   - Stock:', detailedVariant.availableQuantity);
+        console.log('   - Images:', detailedVariant.images?.length || 0);
+        console.log('   - Main Image:', detailedVariant.mainImage);
+        console.log('   - Specification Values:', detailedVariant.specificationValues?.length || 0);
+        console.log('   - Category:', detailedVariant.category?.nameAr || detailedVariant.category?.nameEn);
+        console.log('   - Display Name:', displayName);
+        
+        // The detailedVariant should already be enriched from the hook
+        // Just ensure we have the category information
+        const enrichedVariant = {
+          ...detailedVariant,
+          // Ensure category information is preserved
+          category: detailedVariant.category || baseProduct?.category
+        };
+        
+        console.log('🔄 Setting enriched variant as current product:', {
+          id: enrichedVariant._id,
+          name: enrichedVariant.nameAr || enrichedVariant.nameEn,
+          price: enrichedVariant.price,
+          stock: enrichedVariant.availableQuantity,
+          images: enrichedVariant.images?.length || 0,
+          mainImage: enrichedVariant.mainImage,
+          category: enrichedVariant.category?.nameAr || enrichedVariant.category?.nameEn
+        });
+        setProduct(enrichedVariant);
+        
+        // Reset UI state for the new variant
+        setSelectedImageIndex(0);
+        setSelectedMediaIndex(0);
+        
+        // Set default color for the new variant
+        const simpleColors = getSimpleColorsFromColorsField(enrichedVariant);
+        setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+        setSelectedSpecs({});
+        
+        // Force a small delay to ensure state updates properly
+        setTimeout(() => {
+          // Scroll to top of gallery for better UX
+          try {
+            const container = document.querySelector('.product-detail-container');
+            if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+        }, 100);
+      } else {
+        // Fallback to the variant data we already have
+        console.log('⚠️ Using fallback variant data:', {
+          id: variant._id,
+          name: variant.nameAr || variant.nameEn,
+          price: variant.price,
+          stock: variant.availableQuantity
+        });
+        setProduct(variant);
+        
+        setSelectedImageIndex(0);
+        setSelectedMediaIndex(0);
+        const simpleColors = getSimpleColorsFromColorsField(variant);
+        setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+        setSelectedSpecs({});
+        
+        // Force a small delay to ensure state updates properly
+        setTimeout(() => {
+          try {
+            const container = document.querySelector('.product-detail-container');
+            if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+        }, 100);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching variant details:', error);
+      console.log('🔄 Falling back to original variant data:', {
+        id: variant._id,
+        name: variant.nameAr || variant.nameEn,
+        price: variant.price,
+        stock: variant.availableQuantity
+      });
+      // Fallback to the variant data we already have
+      setProduct(variant);
+      
+      setSelectedImageIndex(0);
+      setSelectedMediaIndex(0);
+      const simpleColors = getSimpleColorsFromColorsField(variant);
+      setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+      setSelectedSpecs({});
+      
+      // Force a small delay to ensure state updates properly
+      setTimeout(() => {
+        try {
+          const container = document.querySelector('.product-detail-container');
+          if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
+      }, 100);
+    }
+  }, [fetchSpecificVariant, productId]);
 
   const handleParentClick = useCallback(() => {
     if (!baseProduct) return;
+    
+    console.log('🔄 Switching to parent product:', {
+      id: baseProduct._id,
+      name: baseProduct.nameAr || baseProduct.nameEn,
+      price: baseProduct.price,
+      stock: baseProduct.availableQuantity,
+      images: baseProduct.images?.length || 0,
+      mainImage: baseProduct.mainImage,
+      category: baseProduct.category?.nameAr || baseProduct.category?.nameEn
+    });
+    
     setProduct(baseProduct);
     setSelectedImageIndex(0);
     setSelectedMediaIndex(0);
     const simpleColors = getSimpleColorsFromColorsField(baseProduct);
     setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
     setSelectedSpecs({});
-    try {
-      const container = document.querySelector('.product-detail-container');
-      if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (_) {}
+    
+    // Force a small delay to ensure state updates properly
+    setTimeout(() => {
+      try {
+        const container = document.querySelector('.product-detail-container');
+        if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (_) {}
+    }, 100);
   }, [baseProduct]);
 
   function getColorKey(hex) {
@@ -176,22 +288,43 @@ const ProductDetail = () => {
     return translation;
   }
   
+  // Get product name early to avoid reference error
+  const productName = getProductName(product, currentLang);
+  const displayName = productName || product?.nameAr || product?.nameEn || (currentLang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
+  
   const mediaItems = product ? [
     // إضافة الصورة الرئيسية أولاً إذا كانت موجودة
-    ...(product.mainImage ? [{ type: 'image', url: product.mainImage, thumbnail: product.mainImage, title: getProductName(product, currentLang) }] : []),
+    ...(product.mainImage ? [{ type: 'image', url: product.mainImage, thumbnail: product.mainImage, title: displayName }] : []),
     // إضافة باقي الصور
-    ...(product.images || []).map(img => ({ type: 'image', url: img, thumbnail: img, title: getProductName(product, currentLang) })),
+    ...(product.images || []).map(img => ({ type: 'image', url: img, thumbnail: img, title: displayName })),
     // إضافة الفيديو من videoUrl إذا كان موجوداً
     ...(product.videoUrl ? [{ 
       type: 'video', 
       url: product.videoUrl, 
       thumbnail: product.mainImage || (product.images && product.images[0]), 
-      title: getProductName(product, currentLang),
+      title: displayName,
       isExternalVideo: true
     }] : []),
     // إضافة الفيديوهات الأخرى
-    ...(product.videos || []).map(video => ({ type: 'video', url: video.url, thumbnail: video.thumbnail, title: video.title || getProductName(product, currentLang) }))
-  ] : [];
+    ...(product.videos || []).map(video => ({ type: 'video', url: video.url, thumbnail: video.thumbnail, title: video.title || displayName }))
+  ].filter(item => item.url && item.url.trim() !== '') : []; // Filter out items without URLs or empty URLs
+
+  // Debug logging for media items
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📸 Media items created:', {
+      totalItems: mediaItems.length,
+      mainImage: product?.mainImage,
+      imagesCount: product?.images?.length || 0,
+      videoUrl: product?.videoUrl,
+      videosCount: product?.videos?.length || 0,
+      mediaItems: mediaItems.map(item => ({
+        type: item.type,
+        url: item.url,
+        title: item.title
+      })),
+      displayName
+    });
+  }
 
 
 
@@ -285,7 +418,26 @@ const ProductDetail = () => {
     );
   }
 
-  const productName = getProductName(product, currentLang);
+  // Debug logging to help identify issues
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Current product state:', {
+      id: product._id,
+      name: product.nameAr || product.nameEn,
+      price: product.price,
+      stock: product.availableQuantity,
+      images: product.images?.length || 0,
+      mainImage: product.mainImage,
+      hasVariants: product.hasVariants,
+      isParent: product.isParent,
+      category: product.category?.nameAr || product.category?.nameEn,
+      specificationValues: product.specificationValues?.length || 0,
+      displayName
+    });
+  }
+
+  
+  
+
   
   return (
     <div className="product-detail-page">
@@ -302,17 +454,18 @@ const ProductDetail = () => {
       <div className="product-detail-container">
         <ProductBreadcrumb 
           category={product.category}
-          productName={productName}
+          productName={displayName}
           currentLang={currentLang}
           t={t}
           allCategories={allCategories || []}
+          key={`breadcrumb-${product._id}`} // Force re-render when product changes
         />
 
         <div className="product-detail-content">
           <div className="product-media-column">
             <ProductMediaGallery
               mediaItems={mediaItems}
-              productName={productName}
+              productName={displayName}
               selectedImageIndex={selectedImageIndex}
               setSelectedImageIndex={setSelectedImageIndex}
               selectedMediaIndex={selectedMediaIndex}
@@ -321,6 +474,7 @@ const ProductDetail = () => {
               setIsZoomModalOpen={setIsZoomModalOpen}
               currentLang={currentLang}
               t={t}
+              key={`gallery-${product._id}`} // Force re-render when product changes
             />
 
             {/* Variant main-image thumbnails + base product thumbnail */}
@@ -328,36 +482,49 @@ const ProductDetail = () => {
               <div className="variant-thumbnails">
                 {/* Base product thumbnail first (only if not currently displayed) */}
                 {baseProduct && product?._id !== baseProduct._id && (
-                  <button
-                    key={`base-${baseProduct._id}`}
-                    type="button"
-                    className="variant-thumb"
-                    title={getProductName(baseProduct, currentLang)}
-                    onClick={handleParentClick}
-                  >
-                    <img
-                      src={baseProduct.mainImage || (baseProduct.images && baseProduct.images[0])}
-                      alt={getProductName(baseProduct, currentLang)}
-                    />
+                                      <button
+                      key={`base-${baseProduct._id}`}
+                      type="button"
+                      className="variant-thumb"
+                      title={getProductName(baseProduct, currentLang) || (currentLang === 'ar' ? 'المنتج الأساسي' : 'Base Product')}
+                      onClick={handleParentClick}
+                    >
+                                            <img
+                          src={baseProduct.mainImage || (baseProduct.images && baseProduct.images[0])}
+                          alt={getProductName(baseProduct, currentLang) || (currentLang === 'ar' ? 'المنتج الأساسي' : 'Base Product')}
+                          onError={(e) => {
+                            console.warn('Failed to load base product image:', baseProduct.mainImage);
+                            e.target.style.display = 'none';
+                          }}
+                        />
                   </button>
                 )}
                 {/* Other variants except the currently displayed one */}
                 {variants && variants.length > 0 && variants
                   .filter((v) => v._id !== product?._id)
-                  .map((v) => (
-                    <button
-                      key={v._id || v.id}
-                      type="button"
-                      className="variant-thumb"
-                      title={getProductName(v, currentLang)}
-                      onClick={() => handleVariantClick(v)}
-                    >
-                      <img
-                        src={v.mainImage || (v.images && v.images[0])}
-                        alt={getProductName(v, currentLang)}
-                      />
-                    </button>
-                  ))}
+                  .map((v) => {
+                    const variantImage = v.mainImage || (v.images && v.images[0]);
+                    const variantName = getProductName(v, currentLang);
+                    
+                    return (
+                                           <button
+                       key={v._id || v.id}
+                       type="button"
+                       className="variant-thumb"
+                                               title={variantName || (currentLang === 'ar' ? 'متغير' : 'Variant')}
+                       onClick={() => handleVariantClick(v)}
+                     >
+                                                 <img
+                           src={variantImage}
+                           alt={variantName || (currentLang === 'ar' ? 'متغير' : 'Variant')}
+                           onError={(e) => {
+                             console.warn('Failed to load variant image:', variantImage);
+                             e.target.style.display = 'none';
+                           }}
+                         />
+                      </button>
+                    );
+                  })}
               </div>
             ) : null}
           </div>
@@ -365,7 +532,7 @@ const ProductDetail = () => {
           <div className="product-info">
             <ProductInfoSection
               product={product}
-              productName={productName}
+              productName={displayName}
               productDescription={getProductDescription(product, currentLang)}
               productPrice={getFinalPrice(product)}
               categoryName={product.category ? (currentLang === 'ar' ? product.category.nameAr : product.category.nameEn) : ''}
@@ -373,6 +540,7 @@ const ProductDetail = () => {
               currentLang={currentLang}
               t={t}
               quantity={quantity}
+              key={`info-${product._id}`} // Force re-render when product changes
             />
 
             <ProductOptions
@@ -388,6 +556,7 @@ const ProductDetail = () => {
               t={t}
               specificationsMeta={specMeta}
               onAvailabilityChange={setEffectiveAvailable}
+              key={`options-${product._id}`} // Force re-render when product changes
             />
 
             <ProductActions
@@ -401,6 +570,7 @@ const ProductDetail = () => {
               currentLang={currentLang}
               t={t}
               canAddToCart={(effectiveAvailable ?? product.availableQuantity ?? 0) > 0}
+              key={`actions-${product._id}`} // Force re-render when product changes
             />
           </div>
         </div>
@@ -410,6 +580,7 @@ const ProductDetail = () => {
         <RelatedProducts 
             currentProduct={product}
             categoryId={product.category?._id || product.category}
+            key={`related-${product._id}`} // Force re-render when product changes
         />
         )}
       </div>

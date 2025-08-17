@@ -7,6 +7,7 @@ import { validateRequired, validatePhone, validateEmail, validateMinLength, vali
 import { useCreateUser } from '../../hooks/useCreateUser';
 import { useCheckEmail } from '../../hooks/useCheckEmail';
 import { useAppData } from '../../contexts/AppDataContext';
+import OTPVerification from './OTPVerification';
 
 const Register = () => {
   const { t } = useTranslation();
@@ -14,6 +15,10 @@ const Register = () => {
   const { createUser, loading, error, reset } = useCreateUser();
   const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();
   const { store } = useAppData();
+  
+  // OTP state
+  const [showOTP, setShowOTP] = useState(false);
+  const [registrationData, setRegistrationData] = useState(null);
   
   //---------------------form fields-------------------------------
   const [firstName, setFirstName] = useState('');
@@ -96,45 +101,102 @@ const Register = () => {
 ///////////////////////////////////////////////////////////////////////////////////////
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
-    // تحضير بيانات المستخدم
-    const userData = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: email.trim(),
-      password,
-      phone: phone.trim(),
-      address: address.trim(),
-      city: city.trim(),
-      state: city.trim(),
-      zipCode: zipCode.trim(),
-      country: country.trim()
-    };
-
-    // استدعاء API لإنشاء المستخدم
-    const result = await createUser(userData);
     
-    if (result.success) {
-      // حفظ البيانات في localStorage للاستخدام اللاحق
-      localStorage.setItem('register_firstName', firstName);
-      localStorage.setItem('register_lastName', lastName);
-      localStorage.setItem('register_phone', phone);
-      localStorage.setItem('register_city', city);
-      localStorage.setItem('register_address', address);
-      localStorage.setItem('register_zipCode', zipCode);
-      localStorage.setItem('register_country', country);
+    console.log('=== Form Submission Started ===');
+    console.log('Form validation result:', validateForm());
+    console.log('isFormValid state:', isFormValid);
+    console.log('loading state:', loading);
+    
+    if (!validateForm()) {
+      console.log('Form validation failed, stopping submission');
+      return;
+    }
+    
+    console.log('Form validation passed, proceeding with submission');
+    
+    // Reset any previous errors using the reset function from useCreateUser
+    reset();
+    
+    try {
+      const userData = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        password: password,
+        phone: phone.trim(),
+        address: address.trim(),
+        city: city.trim(),
+        state: city.trim(),
+        zipCode: zipCode.trim(),
+        country: country.trim()
+      };
       
-      // حفظ بيانات المستخدم في localStorage
-      localStorage.setItem('user', JSON.stringify(result.data));
+      console.log('User data prepared:', userData);
+      console.log('Calling createUser...');
       
-      // التوجيه إلى الصفحة الرئيسية أو صفحة تسجيل الدخول
-      navigate('/login');
-    } else {
-      // التحقق من البريد الإلكتروني إذا كان الخطأ متعلق به
-      checkEmailFromError(result.error);
+      const result = await createUser(userData);
+      
+      console.log('createUser result:', result);
+      
+      if (result.success) {
+        console.log('User creation successful, proceeding with OTP verification');
+        
+        // Save registration data to localStorage
+        localStorage.setItem('register_firstName', firstName);
+        localStorage.setItem('register_lastName', lastName);
+        localStorage.setItem('register_phone', phone);
+        localStorage.setItem('register_city', city);
+        localStorage.setItem('register_address', address);
+        localStorage.setItem('register_zipCode', zipCode);
+        localStorage.setItem('register_country', country);
+        
+        // Save user data to localStorage
+        localStorage.setItem('user', JSON.stringify(result.data));
+        
+        // Show OTP verification component directly since backend sends OTP automatically
+        setRegistrationData(result.data);
+        setShowOTP(true);
+      } else {
+        console.log('User creation failed:', result.error);
+        // Check if error is related to email
+        checkEmailFromError(result.error);
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      // The error will be handled by the useCreateUser hook
     }
   };
+
+  // Handle OTP verification success
+  const handleOTPSuccess = () => {
+    // التوجيه إلى صفحة تسجيل الدخول بعد التحقق الناجح
+    navigate('/login');
+  };
+
+  // Handle OTP resend
+  const handleOTPResend = () => {
+    // يمكن إضافة منطق إضافي هنا إذا لزم الأمر
+    console.log('OTP resent successfully');
+  };
+
+  // Handle back to registration
+  const handleOTPBack = () => {
+    setShowOTP(false);
+    setRegistrationData(null);
+  };
+
+  // Show OTP component if needed
+  if (showOTP) {
+    return (
+      <OTPVerification
+        email={email}
+        onVerificationSuccess={handleOTPSuccess}
+        onResendCode={handleOTPResend}
+        onBack={handleOTPBack}
+      />
+    );
+  }
+
 ///////////////////////////////////////////////////////////////////////////////////////
   return (
     <div className="auth-container">
@@ -398,4 +460,4 @@ const Register = () => {
   );
 };
 
-export default Register; 
+export default Register;

@@ -13,13 +13,34 @@ export const useCreateUser = () => {
     
     try {
       // الحصول على معرف المتجر من localStorage
-      const storeId = JSON.parse(localStorage.getItem('storeData'))._id;
+      let storeId;
+      try {
+        const storeData = localStorage.getItem('storeData');
+        if (storeData) {
+          const parsedStoreData = JSON.parse(storeData);
+          storeId = parsedStoreData._id;
+        }
+      } catch (parseError) {
+        console.error('Error parsing store data from localStorage:', parseError);
+      }
       
       if (!storeId) {
-        throw new Error('معرف المتجر غير موجود. يرجى إعادة تحميل الصفحة.');
+        // Try to get store ID from URL if not in localStorage
+        const pathSegments = window.location.pathname.split('/');
+        const storeSlug = pathSegments[1];
+        
+        if (storeSlug && storeSlug !== 'affiliate') {
+          // For now, we'll use a default store ID or handle this differently
+          // You might want to fetch store data by slug here
+          console.warn('Store ID not found in localStorage, using fallback approach');
+        }
+        
+        // For now, let's proceed without store ID and let the backend handle it
+        // or you can set a default store ID here
+        storeId = null; // Let the backend handle store assignment
       }
 
-      console.log('Store ID from localStorage:', storeId);
+      console.log('Store ID for registration:', storeId);
 
       // تحضير البيانات حسب متطلبات API
       const requestData = {
@@ -29,7 +50,6 @@ export const useCreateUser = () => {
         password: userData.password,
         phone: userData.phone,
         role: 'client', // ثابت للعملاء
-        store: storeId, // Store ID من localStorage
         addresses: [
           {
             type: 'home',
@@ -43,6 +63,11 @@ export const useCreateUser = () => {
         ],
         status: 'active'
       };
+
+      // Add store ID to request if available
+      if (storeId) {
+        requestData.store = storeId;
+      }
 
       console.log('=== API Request ===');
       console.log('URL:', `${API_BASE_URL}/auth/register`);

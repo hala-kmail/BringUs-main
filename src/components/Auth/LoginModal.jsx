@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
+import OTPModal from './OTPModal';
 import './Auth.css';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const { t } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
-  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,6 +18,8 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
+  const [loginData, setLoginData] = useState(null);     
 
   // Load user and store info when modal opens if user is already logged in
   useEffect(() => {
@@ -77,19 +79,37 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log('=== LoginModal Form Submission Started ===');
+    console.log('Form data:', formData);
+    console.log('Is form valid:', isFormValid);
+    
     if (!isFormValid) {
+      console.log('Form validation failed, stopping submission');
       return;
     }
 
+    console.log('Calling login function...');
     const result = await login(formData.email, formData.password);
-    
-    if (result.success) {
+    console.log('Login result:', result);
+    console.log('Result type:', typeof result);
+    console.log('Result keys:', result ? Object.keys(result) : 'result is null/undefined');
+    if (result.isEmailVerified === false) {
+      // Only show OTP if we have user data (coming from registration)
+      console.log('Email not verified from registration, showing OTP');
+      setLoginData(result.data);
+      setShowOTP(true);
+    } 
+    else if (result && result.success) {
+      console.log('Login successful, closing modal and navigating to home');
       // Wait a bit for the context to update
       setTimeout(() => {
         // Close modal and redirect to home page
         onClose();
         navigate('/');
       }, 100);
+    } else {
+      console.log('Login failed or unexpected result:', result);
+      // For wrong email/password, just show the error message
     }
   };
 
@@ -124,6 +144,46 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   }, [isOpen]);
 
   if (!isOpen) return null;
+  
+const handleOTPSuccess = () => {
+  // Close modal and redirect to home page after successful verification
+  onClose();
+  navigate('/');
+};
+
+// Handle OTP resend
+const handleOTPResend = () => {
+  console.log('OTP resent successfully');
+};
+
+// Handle back to login
+const handleOTPBack = () => {
+  setShowOTP(false);
+  setLoginData(null);
+};
+
+// Show OTP component if needed
+if (showOTP) {
+  return (
+    <div className="modal-overlay" onClick={handleClose}>
+      <div className="modal-content auth-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Close Button */}
+        <button className="modal-close-btn" onClick={handleClose}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <OTPModal
+          email={formData.email}
+          onVerificationSuccess={handleOTPSuccess}
+          onResendCode={handleOTPResend}
+          onBack={handleOTPBack}
+        />
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
@@ -222,3 +282,4 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 };
 
 export default LoginModal; 
+
