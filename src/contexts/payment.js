@@ -1,0 +1,31 @@
+
+// Payment API Constants
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+const storeData=JSON.parse(localStorage.getItem('storeData')).settings;
+const lahzaToken=storeData.lahzaToken;
+const storeSlug=localStorage.getItem('storeSlug');
+export const PAYMENT_API_CONFIG = {
+  
+    BASE_URL: 'https://api.lahza.io/transaction',
+    SECRET_KEY: lahzaToken,
+    CALLBACK_URL: `http://localhost:5174/${ localStorage.getItem('storeSlug')}/checkout`,
+    ENDPOINTS: {
+      CHARGES: '/initialize',
+      VERIFY: '/verify'
+    }
+  };
+  
+  // Currency conversion rates (to smallest unit)
+  export const CURRENCY_CONVERSION = {
+    ILS: 100, // 1 ILS = 100 aghora
+    JOD: 100, // 1 JOD = 100 qirsh
+    USD: 100  // 1 USD = 100 cents
+  };
+  
+  // Supported currencies
+  export const SUPPORTED_CURRENCIES = [
+    { code: 'USD', name: 'US Dollar', symbol: '$' },
+    { code: 'ILS', name: 'Israeli Shekel', symbol: '₪' },
+    { code: 'JOD', name: 'Jordanian Dinar', symbol: 'د.أ' }
+  ];
+  

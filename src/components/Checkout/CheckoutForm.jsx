@@ -91,6 +91,11 @@ const CheckoutForm = ({
         <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder={t('profile.phone_placeholder')} className={formErrors.phone ? 'error' : ''} />
         {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
       </div>
+      <div className="form-group">
+        <label htmlFor="email">{t('profile.email')} *</label>
+        <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} placeholder={t('profile.email_placeholder')} className={formErrors.email ? 'error' : ''} />
+        {formErrors.email && <span className="error-message">{formErrors.email}</span>}
+      </div>
     </div>
     
     {/* إذا كان توصيل */}
