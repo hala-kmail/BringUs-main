@@ -373,7 +373,7 @@ const UserOrders = () => {
                 </div>
                 
                 {/* معلومات التوصيل */}
-                {selectedOrder.deliveryArea && (
+                {selectedOrder.deliveryArea && (selectedOrder.deliveryArea.locationAr || selectedOrder.deliveryArea.locationEn) && (
                   <div className="detail-row">
                     <span className="detail-label">{currentLang === 'ar' ? 'منطقة التوصيل:' : 'Delivery Area:'}</span>
                     <span className="detail-value">
@@ -382,7 +382,7 @@ const UserOrders = () => {
                   </div>
                 )}
                 
-                {selectedOrder.deliveryArea && (
+                {selectedOrder.deliveryArea.estimatedDays > 0 && (
                   <div className="detail-row">
                     <span className="detail-label">{currentLang === 'ar' ? 'مدة التوصيل المتوقعة:' : 'Estimated Delivery:'}</span>
                     <span className="detail-value">
@@ -436,11 +436,11 @@ const UserOrders = () => {
                         `${selectedOrder.affiliate.firstName} ${selectedOrder.affiliate.lastName}` : 
                         `${selectedOrder.affiliate.firstName} ${selectedOrder.affiliate.lastName}`
                       }
-                      {selectedOrder.affiliate.percent && (
+                      {/* {selectedOrder.affiliate.percent && (
                         <span className="affiliate-percent">
                           ({selectedOrder.affiliate.percent}%)
                         </span>
-                      )}
+                      )} */}
                     </span>
                   </div>
                 )}
