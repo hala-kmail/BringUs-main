@@ -2620,7 +2620,7 @@ padding-bottom: 1rem;
     min-width: 38px;
     min-height: 32px;
     font-size: 0.95rem;
-    padding: 0.3rem 0.7rem;
+   
   }
 }
 
@@ -2760,7 +2760,7 @@ padding-bottom: 1rem;
   }
 
   .specification-option {
-    padding: 0.5rem 0.75rem;
+   
     min-width: 70px;
     font-size: 0.8125rem;
   }
@@ -2817,7 +2817,7 @@ padding-bottom: 1rem;
   }
 
   .specification-option {
-    padding: 0.375rem 0.5rem;
+ 
     min-width: 60px;
     font-size: 0.75rem;
   }

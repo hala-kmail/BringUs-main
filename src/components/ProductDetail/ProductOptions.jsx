@@ -80,15 +80,24 @@ const ProductOptions = ({
     const specGroup = organizedSpecs.find(group => group.specificationId === specificationId);
     const specValue = specGroup?.values.find(spec => spec._id === valueId);
     
+    const newSelection = {
+      valueId: specValue?.valueId || valueId, // استخدام valueId من specValue أولاً، ثم valueId كبديل
+      valueAr: specValue?.valueAr || value,
+      valueEn: specValue?.valueEn || value,
+      titleAr: specGroup?.meta?.titleAr || title,
+      titleEn: specGroup?.meta?.titleEn || title
+    };
+    
+    console.log('🔍 handleSpecSelect called:', {
+      specificationId,
+      valueId,
+      specValue,
+      newSelection
+    });
+    
     setSelectedSpecs(prev => ({ 
       ...prev, 
-      [specificationId]: {
-        valueId: specValue?.valueId || valueId, // استخدام valueId من specValue أولاً، ثم valueId كبديل
-        valueAr: specValue?.valueAr || value,
-        valueEn: specValue?.valueEn || value,
-        titleAr: specGroup?.meta?.titleAr || title,
-        titleEn: specGroup?.meta?.titleEn || title
-      }
+      [specificationId]: newSelection
     }));
 
     // Set active state on the selected option - this will persist and won't be cleared by mouse movement
@@ -305,7 +314,18 @@ const ProductOptions = ({
             <div className="specification-options">
               {group.values.map((spec) => {
                 const value = currentLang === 'ar' ? (spec.valueAr || spec.value) : (spec.valueEn || spec.value);
-                const isSelected = selectedSpecs[group.specificationId]?.valueId === spec._id;
+                // إصلاح المقارنة - مقارنة مع spec._id أو spec.valueId
+                const isSelected = selectedSpecs[group.specificationId]?.valueId === spec._id || 
+                                 selectedSpecs[group.specificationId]?.valueId === spec.valueId;
+                
+                // Debug logging
+                console.log('🔍 Spec selection debug:', {
+                  specId: spec._id,
+                  specValueId: spec.valueId,
+                  selectedValueId: selectedSpecs[group.specificationId]?.valueId,
+                  isSelected,
+                  specValue: value
+                });
                 
                   const isOut = Number(spec.quantity) === 0;
                   const isLow = Number(spec.quantity) > 0 && Number(spec.quantity) <= 3;
@@ -319,11 +339,11 @@ const ProductOptions = ({
                        ref={el => specOptionsRefs.current[`${group.specificationId}-${spec._id}`] = el}
                    >
                       <span className="spec-value-text">{value}</span>
-                      {typeof spec.quantity === 'number' && (
+                      {/* {typeof spec.quantity === 'number' && (
                         <span className="spec-qty-hint" aria-hidden>
                           {spec.quantity}
                         </span>
-                      )}
+                      )} */}
                   </button>
                 );
               })}

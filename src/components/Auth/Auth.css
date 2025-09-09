@@ -137,6 +137,8 @@ body::before {
 }
 
 .auth-container {
+  margin: 0 auto;
+  max-width: 800px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1185,17 +1187,7 @@ body::before {
   line-height: 1.5;
 }
 
-/* Enhanced error message */
-.error-message {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-bottom: 16px;
-  text-align: center;
-}
+
 
 /* Enhanced auth footer */
 .auth-footer {

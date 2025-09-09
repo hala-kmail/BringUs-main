@@ -1193,9 +1193,9 @@ const handleSendWhatsApp = async () => {
        // إعادة التوجيه لصفحة الأوردرات مع slug المتجر
        const storeSlug = store?.slug || localStorage.getItem('storeSlug');
        if (storeSlug) {
-         navigate(`/${storeSlug}/orders`);
+         navigate(`/${storeSlug}/home`);
        } else {
-         navigate('/orders');
+         navigate('/home');
        }
      };
      
@@ -1743,9 +1743,9 @@ const handleSendWhatsApp = async () => {
                 setTimeout(() => {
                   const storeSlug = store?.slug || localStorage.getItem('storeSlug');
                   if (storeSlug) {
-                    navigate(`/${storeSlug}/orders`);
+                    navigate(`/${storeSlug}/home`);
                   } else {
-                    navigate('/orders');
+                    navigate('/home');
                   }
                 }, 500);
               }}
