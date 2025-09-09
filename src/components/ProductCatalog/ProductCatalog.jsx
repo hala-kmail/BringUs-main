@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useCategories } from '../../hooks/useCategories';
+import { isWholesaler } from '../../utils/productUtils';
 import './ProductCatalog.css';
 
 const ProductCatalog = ({ language = 'en' }) => {
@@ -264,7 +265,7 @@ const ProductCatalog = ({ language = 'en' }) => {
               </div>
               
               <div className="product-pricing">
-                {product.discountPercentage ? (
+                {product.discountPercentage && !isWholesaler() ? (
                   <>
                     <span className="original-price">${product.originalPrice}</span>
                     

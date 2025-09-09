@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
-import { getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
+import { getPriceByUserRole, getOriginalPriceByUserRole, isWholesaler } from '../../utils/productUtils';
 
 const OrderSummary = ({
   cartItems,
@@ -113,7 +113,7 @@ const OrderSummary = ({
                   </div>
                 )}
                 <div className="item-price">
-                  {getPriceByUserRole(item.product) !== getOriginalPriceByUserRole(item.product) && (
+                  {getPriceByUserRole(item.product) !== getOriginalPriceByUserRole(item.product) && !isWholesaler() && (
                     <span className="original-price" style={{ textDecoration: 'line-through', color: '#666', fontSize: '0.9em', marginRight: '8px' }}>
                       {currencySymbol}{getOriginalPriceByUserRole(item.product).toFixed(2)}
                     </span>

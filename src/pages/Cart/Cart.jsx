@@ -5,7 +5,7 @@ import { useAppData } from '../../contexts/AppDataContext';
 import { Link } from 'react-router-dom';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { formatPrice } from '../../utils/currencyUtils';
-import { getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
+import { getPriceByUserRole, getOriginalPriceByUserRole, isWholesaler } from '../../utils/productUtils';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 
 import Navbar from '../../components/Navbar/Navbar';
@@ -492,7 +492,7 @@ const Cart = () => {
                     )}
                     {/* Price */}
                     <div className="cart-item-price">
-                      {item.product.salePercentage > 0 && (
+                      {item.product.salePercentage > 0 && !isWholesaler() && (
                         <span className="original-price">
                           {formatPrice(getOriginalPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}
                         </span>
@@ -653,7 +653,7 @@ const Cart = () => {
                         )}
                         {/* Price */}
                         <div className="cart-item-price">
-                        {item.product.salePercentage > 0 && (
+                        {item.product.salePercentage > 0 && !isWholesaler() && (
                           <span className="original-price">
                             {formatPrice(getOriginalPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}
                           </span>

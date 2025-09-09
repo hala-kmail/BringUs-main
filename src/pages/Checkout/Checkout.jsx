@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
+import { getCurrentAffiliateCode } from '../../App';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useDeliveryMethods } from '../../hooks/useDeliveryMethods';
@@ -1262,11 +1263,18 @@ const handleSendWhatsApp = async () => {
        // مسح السلة
        clearCart();
        
-       // إعادة التوجيه لصفحة الأوردرات مع slug المتجر
+       // إعادة التوجيه - تحقق من وجود كود مسوق
+       const affiliateCode = getCurrentAffiliateCode();
        const storeSlug = store?.slug || localStorage.getItem('storeSlug');
-       if (storeSlug) {
+       
+       if (affiliateCode) {
+         // إذا كان مسوق، اذهب إلى /home فقط
+         navigate('/home');
+       } else if (storeSlug) {
+         // إذا لم يكن مسوق وكان هناك storeSlug
          navigate(`/${storeSlug}/home`);
        } else {
+         // الحالة الافتراضية
          navigate('/home');
        }
      };
@@ -1811,12 +1819,19 @@ const handleSendWhatsApp = async () => {
                 // مسح السلة
                 clearCart();
                 
-                // إعادة التوجيه لصفحة الأوردرات مع slug المتجر
+                // إعادة التوجيه - تحقق من وجود كود مسوق
                 setTimeout(() => {
+                  const affiliateCode = getCurrentAffiliateCode();
                   const storeSlug = store?.slug || localStorage.getItem('storeSlug');
-                  if (storeSlug) {
+                  
+                  if (affiliateCode) {
+                    // إذا كان مسوق، اذهب إلى /home فقط
+                    navigate('/home');
+                  } else if (storeSlug) {
+                    // إذا لم يكن مسوق وكان هناك storeSlug
                     navigate(`/${storeSlug}/home`);
                   } else {
+                    // الحالة الافتراضية
                     navigate('/home');
                   }
                 }, 500);
