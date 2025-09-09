@@ -12,7 +12,9 @@ const useUserOrders = () => {
     currentPage: 1,
     totalPages: 0,
     totalItems: 0,
-    itemsPerPage: 10
+    itemsPerPage: 10,
+    hasNextPage: false,
+    hasPrevPage: false
   });
 
   // جلب جميع طلبات المستخدم
@@ -26,8 +28,11 @@ const useUserOrders = () => {
         throw new Error('No authentication token found');
       }
 
-      // جلب جميع الطلبات بدون فلتر
-      const url = `${API_BASE_URL}/orders/my-orders?page=${page}&limit=${limit}`;
+      // بناء URL مع المعاملات
+      let url = `${API_BASE_URL}/orders/my-orders?page=${page}&limit=${limit}`;
+      if (status && status !== '') {
+        url += `&status=${status}`;
+      }
 
       console.log('🔍 Fetching user orders from:', url);
 
@@ -48,26 +53,20 @@ const useUserOrders = () => {
       }
 
       if (data.success) {
-        const allOrdersData = data.data || [];
-        setAllOrders(allOrdersData);
+        const ordersData = data.data || [];
+        const paginationData = data.pagination || {};
         
-        // فلترة الطلبات حسب الحالة
-        let filteredData = allOrdersData;
-        if (status && status !== '') {
-          filteredData = allOrdersData.filter(order => order.status === status);
-        }
+        setAllOrders(ordersData);
+        setFilteredOrders(ordersData);
         
-        setFilteredOrders(filteredData);
-        
-        // حساب الباجينيشن للطلبات المفلترة
-        const totalFilteredItems = filteredData.length;
-        const totalPages = Math.ceil(totalFilteredItems / limit);
-        
+        // تحديث الباجينيشن من الـ response
         setPagination({
-          currentPage: page,
-          totalPages: totalPages || 1,
-          totalItems: totalFilteredItems,
-          itemsPerPage: limit
+          currentPage: paginationData.currentPage || page,
+          totalPages: paginationData.totalPages || 1,
+          totalItems: paginationData.totalItems || ordersData.length,
+          itemsPerPage: paginationData.itemsPerPage || limit,
+          hasNextPage: paginationData.hasNextPage || false,
+          hasPrevPage: paginationData.hasPrevPage || false
         });
       } else {
         throw new Error(data.message || 'Failed to fetch orders');
@@ -84,26 +83,61 @@ const useUserOrders = () => {
   }, []);
 
   // دالة فلترة الطلبات حسب الحالة
-  const filterOrdersByStatus = useCallback((status) => {
-    let filteredData = allOrders;
-    
-    if (status && status !== '') {
-      filteredData = allOrders.filter(order => order.status === status);
+  const filterOrdersByStatus = useCallback(async (status) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const token = getBearerToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // بناء URL مع فلتر الحالة
+      let url = `${API_BASE_URL}/orders/my-orders?page=1&limit=${pagination.itemsPerPage}`;
+      if (status && status !== '') {
+        url += `&status=${status}`;
+      }
+
+      console.log('🔍 Filtering orders by status:', status, 'URL:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to filter orders');
+      }
+
+      if (data.success) {
+        const ordersData = data.data || [];
+        const paginationData = data.pagination || {};
+        
+        setFilteredOrders(ordersData);
+        
+        // تحديث الباجينيشن للطلبات المفلترة
+        setPagination(prev => ({
+          ...prev,
+          currentPage: 1, // العودة للصفحة الأولى
+          totalPages: paginationData.totalPages || 1,
+          totalItems: paginationData.totalItems || ordersData.length,
+          hasNextPage: paginationData.hasNextPage || false,
+          hasPrevPage: paginationData.hasPrevPage || false
+        }));
+      }
+    } catch (err) {
+      console.error('Error filtering orders:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    
-    setFilteredOrders(filteredData);
-    
-    // إعادة حساب الباجينيشن
-    const totalFilteredItems = filteredData.length;
-    const totalPages = Math.ceil(totalFilteredItems / pagination.itemsPerPage);
-    
-    setPagination(prev => ({
-      ...prev,
-      currentPage: 1, // العودة للصفحة الأولى
-      totalPages: totalPages || 1,
-      totalItems: totalFilteredItems
-    }));
-  }, [allOrders, pagination.itemsPerPage]);
+  }, [pagination.itemsPerPage]);
 
   // جلب تفاصيل طلب محدد
   const getOrderDetails = useCallback(async (orderId) => {
@@ -215,13 +249,16 @@ const useUserOrders = () => {
 
   // إعادة تعيين الحالة
   const reset = useCallback(() => {
-    setOrders([]);
+    setAllOrders([]);
+    setFilteredOrders([]);
     setError(null);
     setPagination({
       currentPage: 1,
       totalPages: 0,
       totalItems: 0,
-      itemsPerPage: 10
+      itemsPerPage: 10,
+      hasNextPage: false,
+      hasPrevPage: false
     });
   }, []);
 

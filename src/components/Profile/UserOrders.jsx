@@ -355,59 +355,105 @@ const UserOrders = () => {
                   </span>
                 </div>
                 
-                                 {/* معلومات التوصيل */}
-                 {selectedOrder.deliveryArea && (
-                   <div className="detail-row">
-                     <span className="detail-label">{currentLang === 'ar' ? 'منطقة التوصيل:' : 'Delivery Area:'}</span>
-                     <span className="detail-value">
-                       {currentLang === 'ar' ? selectedOrder.deliveryArea.locationAr : selectedOrder.deliveryArea.locationEn}
-                     </span>
-                   </div>
-                 )}
-                 
-                 {selectedOrder.deliveryArea && (
-                   <div className="detail-row">
-                     <span className="detail-label">{currentLang === 'ar' ? 'مدة التوصيل المتوقعة:' : 'Estimated Delivery:'}</span>
-                     <span className="detail-value">
-                       {selectedOrder.deliveryArea.estimatedDays} {currentLang === 'ar' ? 'يوم' : 'days'}
-                     </span>
-                   </div>
-                 )}
-                 
-                 {/* تفاصيل الأسعار */}
-                 <div className="detail-row">
-                   <span className="detail-label">{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
-                   <span className="detail-value">
-                     {formatPrice(
-                       selectedOrder.pricing.subtotal, store?.settings?.currency || 'USD'
-                     )}
-                   </span>
-                 </div>
-                 {selectedOrder.pricing.discount > 0 && (
-                   <div className="detail-row">
-                   <span className="detail-label">{currentLang === 'ar' ? 'خصم التاجر الجملة:' : 'Wholesaler Discount:'}</span>
-                   <span className="detail-value">
-                     {selectedOrder.pricing.discount}%(-{formatPrice(selectedOrder.pricing.subtotal * selectedOrder.pricing.discount / 100, store?.settings?.currency || 'USD')})
-                   </span>
-                 </div>
-                 )}
-                 {selectedOrder.deliveryArea && selectedOrder.deliveryArea.price > 0 && (
-                   <div className="detail-row">
-                     <span className="detail-label">{currentLang === 'ar' ? 'رسوم التوصيل:' : 'Shipping Cost:'}</span>
-                     <span className="detail-value">
-                       {formatPrice(selectedOrder.deliveryArea.price, selectedOrder.currency || store?.settings?.currency || 'USD')}
-                     </span>
-                   </div>
-                 )}
-                 
-                 <div className="detail-row total-row">
-                   <span className="detail-label">{currentLang === 'ar' ? 'المجموع النهائي:' : 'Final Total:'}</span>
-                   <span className="detail-value total-amount">
-                     {formatPrice(
-                       (selectedOrder.price)|| store?.settings?.currency || 'USD'
-                     )}
-                   </span>
-                 </div>
+                {/* حالة الدفع */}
+                <div className="detail-row">
+                  <span className="detail-label">{currentLang === 'ar' ? 'حالة الدفع:' : 'Payment Status:'}</span>
+                  <span 
+                    className="detail-value payment-status"
+                    style={{ 
+                      color: selectedOrder.paid ? '#10b981' : '#f59e0b',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {selectedOrder.paid ? 
+                      (currentLang === 'ar' ? 'مدفوع' : 'Paid') : 
+                      (currentLang === 'ar' ? 'غير مدفوع' : 'Unpaid')
+                    }
+                  </span>
+                </div>
+                
+                {/* معلومات التوصيل */}
+                {selectedOrder.deliveryArea && (
+                  <div className="detail-row">
+                    <span className="detail-label">{currentLang === 'ar' ? 'منطقة التوصيل:' : 'Delivery Area:'}</span>
+                    <span className="detail-value">
+                      {currentLang === 'ar' ? selectedOrder.deliveryArea.locationAr : selectedOrder.deliveryArea.locationEn}
+                    </span>
+                  </div>
+                )}
+                
+                {selectedOrder.deliveryArea && (
+                  <div className="detail-row">
+                    <span className="detail-label">{currentLang === 'ar' ? 'مدة التوصيل المتوقعة:' : 'Estimated Delivery:'}</span>
+                    <span className="detail-value">
+                      {selectedOrder.deliveryArea.estimatedDays} {currentLang === 'ar' ? 'يوم' : 'days'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* تفاصيل الأسعار */}
+                <div className="detail-row">
+                  <span className="detail-label">{currentLang === 'ar' ? 'مجموع المنتجات:' : 'Products Total:'}</span>
+                  <span className="detail-value">
+                    {formatPrice(
+                      selectedOrder.pricing.subtotal, store?.settings?.currency || 'USD'
+                    )}
+                  </span>
+                </div>
+                {selectedOrder.pricing.discount > 0 && (
+                  <div className="detail-row">
+                  <span className="detail-label">{currentLang === 'ar' ? 'خصم التاجر الجملة:' : 'Wholesaler Discount:'}</span>
+                  <span className="detail-value">
+                    {selectedOrder.pricing.discount}%(-{formatPrice(selectedOrder.pricing.subtotal * selectedOrder.pricing.discount / 100, store?.settings?.currency || 'USD')})
+                  </span>
+                </div>
+                )}
+                {selectedOrder.deliveryArea && selectedOrder.deliveryArea.price > 0 && (
+                  <div className="detail-row">
+                    <span className="detail-label">{currentLang === 'ar' ? 'رسوم التوصيل:' : 'Shipping Cost:'}</span>
+                    <span className="detail-value">
+                      {formatPrice(selectedOrder.deliveryArea.price, selectedOrder.currency || store?.settings?.currency || 'USD')}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="detail-row total-row">
+                  <span className="detail-label">{currentLang === 'ar' ? 'المجموع النهائي:' : 'Final Total:'}</span>
+                  <span className="detail-value total-amount">
+                    {formatPrice(
+                      selectedOrder.price,
+                      selectedOrder.currency || store?.settings?.currency || 'USD'
+                    )}
+                  </span>
+                </div>
+                
+                {/* معلومات التاجر الجملة */}
+                {selectedOrder.affiliate && selectedOrder.affiliate.firstName && (
+                  <div className="detail-row">
+                    <span className="detail-label">{currentLang === 'ar' ? 'التاجر الجملة:' : 'Affiliate:'}</span>
+                    <span className="detail-value">
+                      {currentLang === 'ar' ? 
+                        `${selectedOrder.affiliate.firstName} ${selectedOrder.affiliate.lastName}` : 
+                        `${selectedOrder.affiliate.firstName} ${selectedOrder.affiliate.lastName}`
+                      }
+                      {selectedOrder.affiliate.percent && (
+                        <span className="affiliate-percent">
+                          ({selectedOrder.affiliate.percent}%)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                
+                {/* ملاحظات الطلب */}
+                {selectedOrder.notes && selectedOrder.notes.trim() !== '' && (
+                  <div className="detail-row">
+                    <span className="detail-label">{currentLang === 'ar' ? 'ملاحظات:' : 'Notes:'}</span>
+                    <span className="detail-value notes">
+                      {selectedOrder.notes}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="order-items-details">
@@ -422,64 +468,79 @@ const UserOrders = () => {
                         e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg==';
                       }}
                     />
-                                         <div className="item-info">
-                       <h5>{currentLang === 'ar' ? item.productSnapshot.nameAr : item.productSnapshot.nameEn}</h5>
-                       <p className="quantity">{currentLang === 'ar' ? `الكمية: ${item.quantity}` : `Quantity: ${item.quantity}`}</p>
-                       
-                       {/* عرض الألوان المحددة */}
-                       {item.selectedColors && item.selectedColors.length > 0 && (
-                         <div className="item-colors">
-                           <span className="item-colors-label">
-                             {currentLang === 'ar' ? 'اللون:' : 'Color:'}
-                           </span>
-                           {item.selectedColors.map((color, colorIndex) => (
-                             <span key={colorIndex} className="color-preview" style={{ backgroundColor: color.split('+')[0] }}>
-                               {/* {color.split('+').length > 1 && (
-                                
-                               )} */}
-                             </span>
-                           ))}
-                         </div>
-                       )}
-                       
-                       {/* عرض المواصفات المحددة */}
-                       {item.selectedSpecifications && item.selectedSpecifications.length > 0 && (
-                         <div className="item-specifications">
-                           {item.selectedSpecifications.map((spec, specIndex) => (
-                             <span key={specIndex} className="specification-tag">
-                               {currentLang === 'ar' ? `${spec.titleAr}: ${spec.valueAr}` : `${spec.titleEn}: ${spec.valueEn}`}
-                             </span>
-                           ))}
-                         </div>
-                       )}
-                       
-                       <p className="item-price">
-                         {formatPrice(
-                           getPriceByUserRole({ 
-                             compareAtPrice: item.pricePerUnit,
-                             finalPrice: item.pricePerUnit 
-                           }), 
-                           selectedOrder.currency || store?.settings?.currency || 'USD'
-                         )} 
-                         {currentLang === 'ar' ? ' لكل قطعة' : ' per unit'}
-                       </p>
-                     </div>
-                     <div className="item-total">
-                       <span className="total-amount">
-                         {formatPrice(
-                           getPriceByUserRole({ 
-                             compareAtPrice: item.pricePerUnit,
-                             finalPrice: item.pricePerUnit 
-                           }) * item.quantity,
-                           selectedOrder.currency || store?.settings?.currency || 'USD'
-                         )}
-                       </span>
-                       <span className="total-label">
-                         {currentLang === 'ar' ? 'المجموع' : 'Total'}
-                       </span>
-                     </div>
+                    <div className="item-info">
+                      <h5>{item.name}</h5>
+                      <p className="quantity">{currentLang === 'ar' ? `الكمية: ${item.quantity}` : `Quantity: ${item.quantity}`}</p>
+                      
+                      {/* عرض الألوان المحددة */}
+                      {item.selectedColors && item.selectedColors.length > 0 && (
+                        <div className="item-colors">
+                          <span className="item-colors-label">
+                            {currentLang === 'ar' ? 'اللون:' : 'Color:'}
+                          </span>
+                          {item.selectedColors.map((color, colorIndex) => (
+                            <span key={colorIndex} className="color-preview" style={{ backgroundColor: color.split('+')[0] }}>
+                              {/* {color.split('+').length > 1 && (
+                               
+                              )} */}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* عرض المواصفات المحددة */}
+                      {item.selectedSpecifications && item.selectedSpecifications.length > 0 && (
+                        <div className="item-specifications">
+                          {item.selectedSpecifications.map((spec, specIndex) => (
+                            <span key={specIndex} className="specification-tag">
+                              {currentLang === 'ar' ? `${spec.titleAr}: ${spec.valueAr}` : `${spec.titleEn}: ${spec.valueEn}`}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <p className="item-price">
+                        {formatPrice(
+                          item.pricePerUnit, 
+                          selectedOrder.currency || store?.settings?.currency || 'USD'
+                        )} 
+                        {currentLang === 'ar' ? ' لكل قطعة' : ' per unit'}
+                      </p>
+                    </div>
+                    <div className="item-total">
+                      <span className="total-amount">
+                        {formatPrice(
+                          item.total,
+                          selectedOrder.currency || store?.settings?.currency || 'USD'
+                        )}
+                      </span>
+                      <span className="total-label">
+                        {currentLang === 'ar' ? 'المجموع' : 'Total'}
+                      </span>
+                    </div>
                   </div>
                 ))}
+              </div>
+              
+              {/* أزرار الإجراءات */}
+              <div className="order-actions">
+                {canCancelOrder(selectedOrder) && (
+                  <button 
+                    className="cancel-order-btn"
+                    onClick={() => {
+                      setShowOrderDetails(false);
+                      openCancelModal(selectedOrder);
+                    }}
+                  >
+                    {currentLang === 'ar' ? 'إلغاء الطلب' : 'Cancel Order'}
+                  </button>
+                )}
+                <button 
+                  className="close-details-btn"
+                  onClick={() => setShowOrderDetails(false)}
+                >
+                  {currentLang === 'ar' ? 'إغلاق' : 'Close'}
+                </button>
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useDeliveryMethods } from '../../hooks/useDeliveryMethods';
 import usePaymentMethods from '../../hooks/usePaymentMethods';
+import usePaymentVerification from '../../hooks/usePaymentVerification';
 import useOrders from '../../hooks/useOrders';
 import palpayImg from '../../assets/PALPAY.png';
 import paypalImg from '../../assets/Paypal_2014_logo.png';
@@ -42,7 +43,10 @@ const Checkout = () => {
   const { deliveryMethods, loading: deliveryMethodsLoading, error: deliveryMethodsError } = useDeliveryMethods(store?._id);
   
   // جلب طرق الدفع من API
-  const { paymentMethods: apiPaymentMethods, loading: paymentMethodsLoading, error: paymentMethodsError } = usePaymentMethods(store?._id);
+  const { paymentMethods: apiPaymentMethods, loading: paymentMethodsLoading, error: paymentMethodsError, initializeLahzaPayment, verifyLahzaPayment } = usePaymentMethods();
+  
+  // التحقق من الدفع
+  const { isVerifying, verificationResult, checkPaymentFromURL } = usePaymentVerification();
   
   // إدارة الطلبات
   const { createOrder, loading: orderLoading, error: orderError } = useOrders();
@@ -94,6 +98,10 @@ const Checkout = () => {
   const [cartTotalsState, setCartTotalsState] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successOrderData, setSuccessOrderData] = useState(null);
+  const [lahzaPaymentData, setLahzaPaymentData] = useState(null);
+  const [showLahzaPayment, setShowLahzaPayment] = useState(false);
+  const [showPaymentVerificationModal, setShowPaymentVerificationModal] = useState(false);
+  const [paymentVerificationData, setPaymentVerificationData] = useState(null);
 
   // إغلاق البوب أب عند تغيير المسار
   useEffect(() => {
@@ -106,6 +114,26 @@ const Checkout = () => {
       return () => clearTimeout(timer);
     }
   }, [showSuccessModal]);
+
+  // التحقق من الدفع عند تحميل الصفحة
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      const result = await checkPaymentFromURL();
+      if (result && result.status === 'success') {
+        console.log('Payment verification successful:', result);
+        setPaymentVerificationData(result);
+        setShowPaymentVerificationModal(true);
+      } else if (result && result.status === 'failed') {
+        console.log('Payment verification failed:', result);
+        const errorMessage = currentLang === 'ar' 
+          ? 'فشل في عملية الدفع. يرجى المحاولة مرة أخرى.'
+          : 'Payment failed. Please try again.';
+        showErrorNotification(errorMessage);
+      }
+    };
+
+    checkPaymentStatus();
+  }, [checkPaymentFromURL, currentLang]);
 
   // إغلاق البوب أب عند تغيير المسار
   useEffect(() => {
@@ -184,6 +212,8 @@ const Checkout = () => {
         return 'paypal';
       case 'visa':
         return 'credit_card';
+      case 'lahza':
+        return 'lahza';
       default:
         console.log('Unknown payment method type:', methodType, 'using default: cash_on_delivery');
         return 'cash_on_delivery';
@@ -266,6 +296,7 @@ const Checkout = () => {
           firstName: user.firstName || '',
           lastName: user.lastName || '',
           phone: user.phone || '',
+          email: user.email || '',
           address: defaultAddress?.street || '',
           district: defaultAddress?.state || '',
           city: defaultAddress?.city || '',
@@ -349,11 +380,52 @@ const handlePlaceOrderClick = (e) => {
   }
 };
 //-----------------------------------handleSelectPayment------------------------------------------------  
- const handleSelectPayment = (method) => {
-  setSelectedPaymentMethod(method);
-  setShowPaymentPopup(false);
-  setShowPaymentConfirm(true);
-  setPaymentDone(false);
+ const handleSelectPayment = async (method) => {
+  console.log('Selected payment method:', method);
+  
+  // Check if it's Lahza payment method
+  if (method.methodType === 'lahza') {
+    try {
+      console.log('Initializing Lahza payment...');
+      
+      // Prepare order data for Lahza
+      const orderData = {
+        email: formData.email,
+        total: cartTotalsState.total + getShippingPrice(),
+        currency: store?.settings?.currency || 'ILS',
+        orderNumber: `ORDER-${Date.now()}`, // Generate temporary order number
+        customerInfo: formData,
+        deliveryMethod: deliveryMethod
+      };
+      
+      // Initialize Lahza payment
+
+      //lahza payment
+      
+      const lahzaResult = await initializeLahzaPayment(orderData);
+      
+      if (lahzaResult.success) {
+        setLahzaPaymentData(lahzaResult);
+        setSelectedPaymentMethod(method);
+        setShowPaymentPopup(false);
+        setShowLahzaPayment(true);
+      } else {
+        throw new Error('Failed to initialize Lahza payment');
+      }
+    } catch (error) {
+      console.error('Error initializing Lahza payment:', error);
+      const errorMessage = currentLang === 'ar' 
+        ? 'حدث خطأ في تهيئة الدفع. يرجى المحاولة مرة أخرى.'
+        : 'Error initializing payment. Please try again.';
+      showErrorNotification(errorMessage);
+    }
+  } else {
+    // Handle other payment methods as before
+    setSelectedPaymentMethod(method);
+    setShowPaymentPopup(false);
+    setShowPaymentConfirm(true);
+    setPaymentDone(false);
+  }
 };
 //-----------------------------------handlePaymentDone------------------------------------------------  
  const handlePaymentDone = () => {
@@ -1802,8 +1874,569 @@ const handleSendWhatsApp = async () => {
         `}
       </style>
 
+      {/* Lahza Payment Modal */}
+      {showLahzaPayment && lahzaPaymentData && (
+        <div className="privacy-popup-overlay" style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0,0,0,0.6)', 
+          zIndex: 2200, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center' 
+        }}>
+          <div className="privacy-popup" style={{ 
+            background: '#fff', 
+            borderRadius: 16, 
+            maxWidth: 600, 
+            width: '95%', 
+            padding: 40, 
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)', 
+            position: 'relative',
+            textAlign: 'center',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <button 
+              type="button" 
+              onClick={() => { 
+                setShowLahzaPayment(false); 
+                setLahzaPaymentData(null); 
+                setSelectedPaymentMethod(null); 
+              }} 
+              style={{ 
+                position: 'absolute', 
+                top: 16, 
+                right: 16, 
+                background: 'none', 
+                border: 'none', 
+                fontSize: 24, 
+                cursor: 'pointer', 
+                color: '#888',
+                zIndex: 10
+              }} 
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            {/* Lahza Payment Header */}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)'
+              }}>
+                <svg width="40" height="40" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <h3 style={{ 
+                color: '#667eea', 
+                fontSize: '24px', 
+                fontWeight: '700', 
+                margin: '0 0 8px 0' 
+              }}>
+                {currentLang === 'ar' ? 'الدفع عبر Lahza' : 'Pay with Lahza'}
+              </h3>
+              <p style={{ 
+                color: '#666', 
+                fontSize: '16px', 
+                margin: 0 
+              }}>
+                {currentLang === 'ar' 
+                  ? 'سيتم توجيهك إلى صفحة الدفع الآمنة' 
+                  : 'You will be redirected to the secure payment page'
+                }
+              </p>
+            </div>
+
+            {/* Payment Details */}
+            <div style={{
+              background: '#f8f9fa',
+              borderRadius: 12,
+              padding: 20,
+              margin: '24px 0',
+              border: '1px solid #e9ecef'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 12
+              }}>
+                <span style={{ fontWeight: '600', color: '#333' }}>
+                  {currentLang === 'ar' ? 'المبلغ الإجمالي:' : 'Total Amount:'}
+                </span>
+                <span style={{ fontWeight: '700', fontSize: '18px', color: '#667eea' }}>
+                  {getCurrencySymbol(store?.settings?.currency || 'ILS')}{(cartTotalsState.total + getShippingPrice()).toFixed(2)}
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '14px',
+                color: '#666'
+              }}>
+                <span>{currentLang === 'ar' ? 'طريقة الدفع:' : 'Payment Method:'}</span>
+                <span style={{ fontWeight: '600' }}>
+                  {selectedPaymentMethod?.label || 'Lahza'}
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Instructions */}
+            <div style={{
+              background: '#e8f4fd',
+              borderRadius: 12,
+              padding: 16,
+              margin: '20px 0',
+              border: '1px solid #bee5eb'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                marginBottom: 8
+              }}>
+                <div style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: '#17a2b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '12px'
+                }}>
+                  ℹ️
+                </div>
+                <span style={{ fontWeight: '600', color: '#0c5460' }}>
+                  {currentLang === 'ar' ? 'تعليمات الدفع:' : 'Payment Instructions:'}
+                </span>
+              </div>
+              <ul style={{
+                margin: 0,
+                paddingLeft: 20,
+                color: '#0c5460',
+                fontSize: '14px',
+                lineHeight: '1.5'
+              }}>
+                <li>{currentLang === 'ar' ? 'اضغط على زر الدفع أدناه' : 'Click the payment button below'}</li>
+                <li>{currentLang === 'ar' ? 'ستتم إعادة توجيهك إلى صفحة الدفع الآمنة' : 'You will be redirected to the secure payment page'}</li>
+                <li>{currentLang === 'ar' ? 'أكمل عملية الدفع' : 'Complete the payment process'}</li>
+                <li>{currentLang === 'ar' ? 'ستتم إعادة توجيهك تلقائياً بعد اكتمال الدفع' : 'You will be redirected back automatically after payment'}</li>
+              </ul>
+            </div>
+
+            {/* Payment Button */}
+            <button 
+              onClick={() => {
+                if (lahzaPaymentData.paymentUrl) {
+                  window.open(lahzaPaymentData.paymentUrl, '_blank');
+                }
+              }}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                padding: '16px 0',
+                fontSize: '18px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 12,
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                transition: 'all 0.3s ease',
+                marginBottom: 12
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+              }}
+            >
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              {currentLang === 'ar' ? 'الدفع الآن' : 'Pay Now'}
+            </button>
+
+            {/* Cancel Button */}
+            <button 
+              onClick={() => { 
+                setShowLahzaPayment(false); 
+                setLahzaPaymentData(null); 
+                setSelectedPaymentMethod(null); 
+              }}
+              style={{
+                width: '100%',
+                background: 'none',
+                color: '#667eea',
+                border: '2px solid #667eea',
+                borderRadius: 12,
+                padding: '14px 0',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#667eea';
+                e.target.style.color = '#fff';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = 'none';
+                e.target.style.color = '#667eea';
+              }}
+            >
+              {currentLang === 'ar' ? 'إلغاء' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add CSS animations */}
+      <style>
+        {`
+          @keyframes modalSlideIn {
+            from {
+              opacity: 0;
+              transform: scale(0.8) translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+            }
+          }
+        `}
+      </style>
+
+      {/* Payment Verification Modal */}
+      {showPaymentVerificationModal && paymentVerificationData && (
+        <div className="privacy-popup-overlay" style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0,0,0,0.6)', 
+          zIndex: 2500, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center' 
+        }}>
+          <div className="privacy-popup" style={{ 
+            background: '#fff', 
+            borderRadius: 16, 
+            maxWidth: 500, 
+            width: '95%', 
+            padding: 40, 
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)', 
+            position: 'relative',
+            textAlign: 'center',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <button 
+              type="button" 
+              onClick={() => { 
+                setShowPaymentVerificationModal(false); 
+                setPaymentVerificationData(null); 
+              }} 
+              style={{ 
+                position: 'absolute', 
+                top: 16, 
+                right: 16, 
+                background: 'none', 
+                border: 'none', 
+                fontSize: 24, 
+                cursor: 'pointer', 
+                color: '#888',
+                zIndex: 10
+              }} 
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            {/* Payment Verification Header */}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto',
+                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)'
+              }}>
+                <svg width="40" height="40" fill="none" stroke="#fff" strokeWidth="3" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 style={{ 
+                color: '#10b981', 
+                fontSize: '24px', 
+                fontWeight: '700', 
+                margin: '0 0 8px 0' 
+              }}>
+                {currentLang === 'ar' ? 'تم الدفع بنجاح!' : 'Payment Successful!'}
+              </h3>
+              <p style={{ 
+                color: '#666', 
+                fontSize: '16px', 
+                margin: 0 
+              }}>
+                {currentLang === 'ar' 
+                  ? 'تم التحقق من عملية الدفع بنجاح' 
+                  : 'Payment verification completed successfully'
+                }
+              </p>
+            </div>
+
+            {/* Payment Details */}
+            <div style={{
+              background: '#f0fdf4',
+              borderRadius: 12,
+              padding: 20,
+              margin: '24px 0',
+              border: '1px solid #bbf7d0'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 12
+              }}>
+                <span style={{ fontWeight: '600', color: '#166534' }}>
+                  {currentLang === 'ar' ? 'حالة الدفع:' : 'Payment Status:'}
+                </span>
+                <span style={{ fontWeight: '700', fontSize: '16px', color: '#10b981' }}>
+                  {currentLang === 'ar' ? 'مكتمل' : 'Completed'}
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '14px',
+                color: '#166534'
+              }}>
+                <span>{currentLang === 'ar' ? 'المبلغ:' : 'Amount:'}</span>
+                <span style={{ fontWeight: '600' }}>
+                  {getCurrencySymbol(store?.settings?.currency || 'ILS')}{(cartTotalsState.total + getShippingPrice()).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div style={{
+              background: '#eff6ff',
+              borderRadius: 12,
+              padding: 16,
+              margin: '20px 0',
+              border: '1px solid #bfdbfe'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                marginBottom: 8
+              }}>
+                <div style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: '#3b82f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '12px'
+                }}>
+                  ℹ️
+                </div>
+                <span style={{ fontWeight: '600', color: '#1e40af' }}>
+                  {currentLang === 'ar' ? 'الخطوة التالية:' : 'Next Step:'}
+                </span>
+              </div>
+              <p style={{
+                margin: 0,
+                color: '#1e40af',
+                fontSize: '14px',
+                lineHeight: '1.5'
+              }}>
+                {currentLang === 'ar' 
+                  ? 'اضغط على الزر أدناه لإرسال تفاصيل الطلب للواتساب وإكمال عملية الطلب'
+                  : 'Click the button below to send order details to WhatsApp and complete the order process'
+                }
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: 12, flexDirection: 'column' }}>
+              <button 
+                onClick={handlePaymentVerificationSuccess}
+                disabled={orderLoading}
+                style={{
+                  width: '100%',
+                  background: orderLoading ? '#ccc' : '#25D366',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '16px 0',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 12,
+                  cursor: orderLoading ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 15px rgba(37, 211, 102, 0.3)',
+                  transition: 'all 0.3s ease',
+                  marginBottom: 12
+                }}
+                onMouseOver={(e) => {
+                  if (!orderLoading) {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 20px rgba(37, 211, 102, 0.4)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!orderLoading) {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 15px rgba(37, 211, 102, 0.3)';
+                  }
+                }}
+              >
+                {orderLoading ? (
+                  <>
+                    <div className="loading-spinner" style={{width: 20, height: 20, border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    {currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
+                    </svg>
+                    {currentLang === 'ar' ? 'إرسال الطلب للواتساب' : 'Send Order to WhatsApp'}
+                  </>
+                )}
+              </button>
+
+              <button 
+                onClick={() => { 
+                  setShowPaymentVerificationModal(false); 
+                  setPaymentVerificationData(null); 
+                }}
+                style={{
+                  width: '100%',
+                  background: 'none',
+                  color: '#10b981',
+                  border: '2px solid #10b981',
+                  borderRadius: 12,
+                  padding: '14px 0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = '#10b981';
+                  e.target.style.color = '#fff';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'none';
+                  e.target.style.color = '#10b981';
+                }}
+              >
+                {currentLang === 'ar' ? 'إغلاق' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
      </div>
    );
  };
+
+//-----------------------------------handleLahzaPaymentSuccess------------------------------------------------
+const handleLahzaPaymentSuccess = async (transactionId) => {
+  try {
+    console.log('Lahza payment successful, verifying transaction:', transactionId);
+    
+    // Verify the payment
+    const verificationResult = await verifyLahzaPayment(transactionId);
+    
+    if (verificationResult.success && verificationResult.paymentStatus === 'completed') {
+      console.log('Lahza payment verified successfully');
+      
+      // Create the order with payment information
+      await handleSendWhatsApp();
+      
+      // Close Lahza payment modal
+      setShowLahzaPayment(false);
+      setLahzaPaymentData(null);
+      setSelectedPaymentMethod(null);
+    } else {
+      throw new Error('Payment verification failed');
+    }
+  } catch (error) {
+    console.error('Error handling Lahza payment success:', error);
+    const errorMessage = currentLang === 'ar' 
+      ? 'حدث خطأ في التحقق من الدفع. يرجى المحاولة مرة أخرى.'
+      : 'Error verifying payment. Please try again.';
+    showErrorNotification(errorMessage);
+  }
+};
+
+//-----------------------------------handlePaymentVerificationSuccess------------------------------------------------
+const handlePaymentVerificationSuccess = async () => {
+  try {
+    console.log('Payment verification successful, creating order...');
+    
+    // إنشاء الطلب مع معلومات الدفع
+    await handleSendWhatsApp();
+    
+    // إغلاق modal التحقق من الدفع
+    setShowPaymentVerificationModal(false);
+    setPaymentVerificationData(null);
+    
+    // تنظيف URL من معاملات الدفع
+    const url = new URL(window.location);
+    url.searchParams.delete('reference');
+    url.searchParams.delete('tap_id');
+    url.searchParams.delete('transaction_id');
+    window.history.replaceState({}, '', url);
+    
+  } catch (error) {
+    console.error('Error handling payment verification success:', error);
+    const errorMessage = currentLang === 'ar' 
+      ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
+      : 'Error creating order. Please try again.';
+    showErrorNotification(errorMessage);
+  }
+};
 
 export default Checkout; 

@@ -277,37 +277,67 @@
 /* Order Actions */
 .order-actions {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.view-details-btn,
-.cancel-order-btn {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  font-size: 0.85rem;
-}
-
-.view-details-btn {
-  background: var(--primary-color);
-  color: white;
-}
-
-.view-details-btn:hover {
-  background: var(--primary-color-dark);
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .cancel-order-btn {
+  padding: 12px 24px;
   background: #ef4444;
   color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .cancel-order-btn:hover {
   background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.close-details-btn {
+  padding: 12px 24px;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.close-details-btn:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Payment Status */
+.payment-status {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Affiliate Percent */
+.affiliate-percent {
+  color: #10b981;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+/* Notes */
+.notes {
+  font-style: italic;
+  color: #6b7280;
+  background: #f9fafb;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-color);
 }
 
 /* Pagination */
@@ -732,7 +762,7 @@
 
   .order-actions {
     flex-direction: column;
-    width: 100%;
+    align-items: center;
   }
 
   .view-details-btn,
@@ -801,6 +831,12 @@
   .cancel-btn,
   .confirm-cancel-btn {
     width: 100%;
+  }
+
+  .cancel-order-btn,
+  .close-details-btn {
+    width: 100%;
+    max-width: 200px;
   }
 }
 
