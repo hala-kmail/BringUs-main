@@ -33,10 +33,10 @@ const MobileFilters = ({
       <div className="mobile-filters-content">
         {/* Header */}
         <div className="mobile-filters-header">
-          <h3>{currentLang === 'ar' ? 'الفلاتر' : 'Filters'}</h3>
-          {activeCount > 0 && (
+          <h3>{currentLang === 'ar' ? 'الفلاتر' : 'Filters'}{activeCount > 0 && (
             <span className="active-filters-badge">{activeCount}</span>
-          )}
+          )}</h3>
+          
           <button className="close-button" onClick={onClose} aria-label="Close">✕</button>
         </div>
 

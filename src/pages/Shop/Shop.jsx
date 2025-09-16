@@ -506,15 +506,12 @@ const Shop = () => {
     setApiPagination(null);
   };
 
-  // Handle wishlist toggle
-  const handleWishlistToggle = async (product) => {
-    await toggleWishlist(product);
-  };
+
 
   // Handle add to cart
   const handleAddToCart = (product) => {
-    // Implement add to cart logic
-    console.log('Adding to cart:', product);
+    // Navigate to product detail page
+    navigate(`/product/${product._id || product.id}`);
   };
 
 
@@ -921,7 +918,7 @@ const Shop = () => {
                 <ProductsGrid
                   products={displayProducts}
                   viewMode={viewMode}
-                  onWishlistToggle={handleWishlistToggle}
+                  onWishlistToggle={toggleWishlist}
                   onAddToCart={handleAddToCart}
                   isInWishlist={isInWishlist}
                 />

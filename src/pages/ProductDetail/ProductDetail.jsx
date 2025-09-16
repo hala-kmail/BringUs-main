@@ -15,6 +15,7 @@ import ProductInfoSection from '../../components/ProductDetail/ProductInfoSectio
 import ProductOptions from '../../components/ProductDetail/ProductOptions';
 import ProductActions from '../../components/ProductDetail/ProductActions';
 import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
+import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
 import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 import './ProductDetail.css';
@@ -44,6 +45,8 @@ const ProductDetail = () => {
   const [variants, setVariants] = useState([]);
   const [baseProduct, setBaseProduct] = useState(null);
   const [effectiveAvailable, setEffectiveAvailable] = useState(null);
+  const [showWishlistModal, setShowWishlistModal] = useState(false);
+  const [wishlistAction, setWishlistAction] = useState(null); // 'add' or 'remove'
 
   const { 
     fetchProductById, 
@@ -386,7 +389,20 @@ const ProductDetail = () => {
   };
 
   const handleWishlistToggle = async () => {
+    const isCurrentlyInWishlist = isInWishlist(product._id || product.id);
+    setWishlistAction(isCurrentlyInWishlist ? 'remove' : 'add');
+    setShowWishlistModal(true);
+  };
+
+  const handleConfirmWishlistToggle = async () => {
     await toggleWishlist(product);
+    setShowWishlistModal(false);
+    setWishlistAction(null);
+  };
+
+  const handleCancelWishlistToggle = () => {
+    setShowWishlistModal(false);
+    setWishlistAction(null);
   };
 
   const handleShare = async () => {
@@ -628,6 +644,18 @@ const ProductDetail = () => {
         />
         )}
       </div>
+
+      {/* Wishlist Toggle Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showWishlistModal}
+        onClose={handleCancelWishlistToggle}
+        onConfirm={handleConfirmWishlistToggle}
+        title={wishlistAction === 'add' ? t('wishlist.confirm_add_title') : t('wishlist.confirm_remove_title')}
+        message={wishlistAction === 'add' ? t('wishlist.confirm_add_message') : t('wishlist.confirm_remove_message')}
+        confirmText={wishlistAction === 'add' ? t('wishlist.add_to_wishlist') : t('wishlist.remove_from_wishlist')}
+        cancelText={t('common.cancel')}
+        type="info"
+      />
     </div>
   );
 };

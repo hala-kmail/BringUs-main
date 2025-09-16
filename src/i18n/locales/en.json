@@ -4,7 +4,9 @@
     "retry": "Retry",
     "previous": "Previous",
     "next": "Next",
-    "login": "Login"
+    "login": "Login",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "navbar": {
     "search_placeholder": "Search products...",
@@ -407,7 +409,15 @@
     "empty_description": "Start adding products you love to your wishlist",
     "continue_shopping": "Continue Shopping",
     "clear_all": "Clear All",
-    "confirm_clear": "Are you sure you want to clear all items from your wishlist?"
+    "confirm_clear": "Are you sure you want to clear all items from your wishlist?",
+    "confirm_clear_title": "Clear Wishlist",
+    "confirm_clear_message": "This action will remove all products from your wishlist and cannot be undone.",
+    "confirm_add_title": "Add to Wishlist",
+    "confirm_add_message": "Do you want to add this product to your wishlist?",
+    "confirm_remove_title": "Remove from Wishlist",
+    "confirm_remove_message": "Do you want to remove this product from your wishlist?",
+    "error_add": "Failed to add product to wishlist!",
+    "error_remove": "Failed to remove product from wishlist!"
   },
   "filters": {
     "title": "Filters",
