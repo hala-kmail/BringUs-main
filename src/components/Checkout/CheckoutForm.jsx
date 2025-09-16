@@ -34,7 +34,7 @@ const CheckoutForm = ({
   return (
   <form className="checkout-form">
     {/* طريقة الاستلام */}
-    <div className="form-group">
+    {/* <div className="form-group">
       <label style={{ fontWeight: 600 }}>{t('checkout.delivery_method')} *</label>
       <div style={{ display: 'flex', gap: 24, marginTop: 8 }}>
         <label>
@@ -46,7 +46,7 @@ const CheckoutForm = ({
           {t('checkout.pickup_from_store')}
         </label>
       </div>
-    </div>
+    </div> */}
     
     {/* عنوان المتجر إذا كان الاستلام من المتجر */}
     {deliveryMethod === 'store' && storeAddress && (

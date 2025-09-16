@@ -91,7 +91,7 @@ const useProducts = () => {
 
   const fetchProducts = useCallback(async (targetStoreId, options = {}) => {
     if (!targetStoreId) {
-      console.log('No store ID available for fetching products');
+    
       return null;
     }
 
@@ -102,16 +102,16 @@ const useProducts = () => {
       // Build comprehensive parameters for the API endpoint
       const params = new URLSearchParams();
       
-      console.log('🔍 Building comprehensive filter with multiple criteria...');
+      
       
       // Pagination parameters
       if (options.page) {
         params.append('page', options.page.toString());
-        console.log('📄 Applied page filter:', options.page);
+      
       }
       if (options.limit) {
         params.append('limit', options.limit.toString());
-        console.log('📄 Applied limit filter:', options.limit);
+      
       }
       
       // 1. فلترة الفئات (دعم متعدد)

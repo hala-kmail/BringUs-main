@@ -389,6 +389,52 @@ const ProductDetail = () => {
     await toggleWishlist(product);
   };
 
+  const handleShare = async () => {
+    try {
+      // Get current URL with affiliate code if present
+      const currentUrl = window.location.href;
+      
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        const shareData = {
+          title: displayName,
+          text: currentLang === 'ar' 
+            ? `تحقق من هذا المنتج: ${displayName}` 
+            : `Check out this product: ${displayName}`,
+          url: currentUrl
+        };
+        
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy link to clipboard
+        await navigator.clipboard.writeText(currentUrl);
+        
+        // Show success message
+        const message = currentLang === 'ar' 
+          ? 'تم نسخ رابط المنتج إلى الحافظة!' 
+          : 'Product link copied to clipboard!';
+        alert(message);
+      }
+    } catch (error) {
+      console.error('Error sharing product:', error);
+      
+      // Fallback: Try to copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const message = currentLang === 'ar' 
+          ? 'تم نسخ رابط المنتج إلى الحافظة!' 
+          : 'Product link copied to clipboard!';
+        alert(message);
+      } catch (clipboardError) {
+        console.error('Error copying to clipboard:', clipboardError);
+        const errorMessage = currentLang === 'ar' 
+          ? 'حدث خطأ في مشاركة المنتج' 
+          : 'Error sharing product';
+        alert(errorMessage);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="product-detail-page">
@@ -562,13 +608,11 @@ const ProductDetail = () => {
             <ProductActions
               product={product}
               quantity={quantity}
-              isInStock={isInStock(product)}
               addToCartLoading={addToCartLoading}
               handleAddToCart={handleAddToCart}
-              handleWishlistToggle={handleWishlistToggle}
               isInWishlist={isInWishlist}
-              currentLang={currentLang}
-              t={t}
+              handleWishlistToggle={handleWishlistToggle}
+              handleShare={handleShare}
               canAddToCart={(effectiveAvailable ?? product.availableQuantity ?? 0) > 0}
               key={`actions-${product._id}`} // Force re-render when product changes
             />

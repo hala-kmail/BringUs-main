@@ -756,6 +756,7 @@
   text-decoration: none;
   border-radius: 8px;
   font-size: 0.875rem;
+  text-overflow: ellipsis;
   font-weight: 500;
   transition: all 0.3s ease;
   border: none;

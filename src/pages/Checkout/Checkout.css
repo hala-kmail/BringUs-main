@@ -94,7 +94,7 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+
 }
 
 .form-group label {
@@ -475,7 +475,7 @@
 @media (max-width: 480px) {
   .checkout-content {
    
-    padding: 1rem; padding-bottom: 5rem;
+    padding: 1rem 0; padding-bottom: 5rem;
   }
   
   .page-title {
@@ -488,7 +488,7 @@
   }
   
   .checkout-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
   }
   
   .form-group input,

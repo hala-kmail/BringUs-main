@@ -246,11 +246,7 @@ const ProductCard = ({
             {currentLang === 'ar' ? 'جديد' : 'New'}
           </span>
         )}
-        {hasFeaturedLabel && (
-          <span className="product-label-new product-featured-label">
-            {currentLang === 'ar' ? 'مميز' : 'Featured'}
-          </span>
-        )}
+        
         {hasSaleLabel && !isWholesaler() && (
           <span className="product-label-new product-sale-label">
             {currentLang === 'ar' ? 'تخفيض' : 'Sale'}

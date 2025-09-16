@@ -15,7 +15,8 @@ const SidebarFilters = ({
   allColors = [],
   allProductLabels = [],
   maxPrice = 1000,
-  loading = false
+  loading = false,
+  isMobile = false
 }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
@@ -54,11 +55,12 @@ const SidebarFilters = ({
     { value: 'in_stock', label: { ar: 'متوفر', en: 'In Stock' } },
     { value: 'on_sale', label: { ar: 'على الخصم', en: 'On Sale' } },
     { value: 'new', label: { ar: 'جديد', en: 'New' } },
-    { value: 'featured', label: { ar: 'مميز', en: 'Featured' } }
+   
   ];
 
   // Helper function to get product colors
   const getProductColors = (product) => {
+    
     return getSimpleColorsFromColorsField(product);
   };
 
@@ -118,70 +120,8 @@ const SidebarFilters = ({
     }
   }
 
-  function getColorLabelLocal(color, t) {
-    if (typeof color === 'string' && color.includes('+')) {
-      return currentLang === 'ar' ? 'متعدد الألوان' : 'Mixed';
-    }
-    const colorKey = getColorKey(color);
-    const colorMap = {
-      'red': { ar: 'أحمر', en: 'Red' },
-      'green': { ar: 'أخضر', en: 'Green' },
-      'blue': { ar: 'أزرق', en: 'Blue' },
-      'yellow': { ar: 'أصفر', en: 'Yellow' },
-      'orange': { ar: 'برتقالي', en: 'Orange' },
-      'purple': { ar: 'بنفسجي', en: 'Purple' },
-      'white': { ar: 'أبيض', en: 'White' },
-      'black': { ar: 'أسود', en: 'Black' },
-      'brown': { ar: 'بني', en: 'Brown' },
-      'pink': { ar: 'وردي', en: 'Pink' },
-      'grey': { ar: 'رمادي', en: 'Grey' },
-      'gray': { ar: 'رمادي', en: 'Gray' },
-      'beige': { ar: 'بيج', en: 'Beige' },
-      'gold': { ar: 'ذهبي', en: 'Gold' },
-      'silver': { ar: 'فضي', en: 'Silver' },
-      'cyan': { ar: 'سماوي', en: 'Cyan' },
-      'teal': { ar: 'فيروزي', en: 'Teal' },
-      'olive': { ar: 'زيتوني', en: 'Olive' },
-      'navy': { ar: 'كحلي', en: 'Navy' },
-      'maroon': { ar: 'كستنائي', en: 'Maroon' },
-      'lime': { ar: 'ليموني', en: 'Lime' },
-      'coral': { ar: 'مرجاني', en: 'Coral' },
-      'indigo': { ar: 'نيلي', en: 'Indigo' },
-      'amber': { ar: 'كهرماني', en: 'Amber' },
-      'golden': { ar: 'ذهبي', en: 'Golden' },
-      'mixed': { ar: 'متعدد الألوان', en: 'Mixed' }
-    };
-    
-    const colorName = colorKey.toLowerCase();
-    return colorMap[colorName]?.[currentLang] || colorKey;
-  }
-
-  function getColorStyle(color) {
-    
-    if (typeof color === 'string' && color.includes('+')) {
-      const parts = color.split('+').map(c => c.trim());
-      const segment = 100 / parts.length;
-      const stops = parts
-        .map((c, idx) => {
-          const start = Math.round(idx * segment);
-          const end = Math.round((idx + 1) * segment);
-          return `${c} ${start}%, ${c} ${end}%`;
-        })
-        .join(', ');
-      const borderNeeded = parts.some(p => {
-        const lower = p.toLowerCase();
-        return lower === '#ffffff' || lower === '#fff' || lower === 'white';
-      });
-      return {
-        background: `linear-gradient(90deg, ${stops})`,
-        border: borderNeeded ? '2px solid #e2e8f0' : 'none'
-      };
-    }
-    return {
-      backgroundColor: color,
-      border: color.toLowerCase() === '#ffffff' || color.toLowerCase() === '#fff' ? '2px solid #e2e8f0' : 'none'
-    };
-  }
+ 
+ 
 
   // Render category tree
   const renderCategoryTree = (parentId = null, level = 0) => {
@@ -333,8 +273,30 @@ const SidebarFilters = ({
         </div>
         
         {!collapsedSections.categories && (
-          <div className="category-list">
-            {renderCategoryTree()}
+          <div className={isMobile ? "mobile-categories-tabs" : "category-list"}>
+            {isMobile ? (
+              // Mobile: Show categories as tabs
+              categories.filter(cat => !cat.parentId && !cat.parent).map(category => {
+                const categoryId = category.id || category._id;
+                const isSelected = filters.categories.includes(categoryId);
+                return (
+                  <button
+                    key={categoryId}
+                    className={`mobile-category-tab ${isSelected ? 'selected' : ''}`}
+                    onClick={() => onFilterChange('category', categoryId, !isSelected)}
+                    disabled={loading}
+                  >
+                    <span className="mobile-category-tab-name">
+                      {currentLang === 'ar' ? category.nameAr : category.nameEn}
+                    </span>
+                    <span className="mobile-category-tab-count">(0)</span>
+                  </button>
+                );
+              })
+            ) : (
+              // Desktop: Show category tree
+              renderCategoryTree()
+            )}
           </div>
         )}
       </div>
@@ -374,7 +336,7 @@ const SidebarFilters = ({
                       background: isMixed ? `linear-gradient(45deg, ${color.split('+').join(', ')})` : color,
                       border: color === "#fff" || color === "#ffffff" ? "2px solid #e2e8f0" : undefined
                     }}
-                    title={getColorLabelLocal(color, t)}
+                   
                   ></span>
                 </label>
               )})}
@@ -399,19 +361,40 @@ const SidebarFilters = ({
           </div>
 
           {!collapsedSections.productLabels && (
-            <div className="feature-filters">
-              {allProductLabels.map(label => (
-                <label key={label._id} className="filter-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={filters.productLabels.includes(label._id)}
-                    onChange={(e) => onFilterChange('productLabel', label._id, e.target.checked)}
-                    disabled={loading}
-                  />
-                  <span className="checkmark"></span>
-                  <span>{currentLang === 'ar' ? label.nameAr : label.nameEn}</span>
-                </label>
-              ))}
+            <div className={isMobile ? "mobile-labels-tabs" : "feature-filters"}>
+              {isMobile ? (
+                // Mobile: Show labels as tabs
+                allProductLabels.map(label => {
+                  const isSelected = filters.productLabels.includes(label._id);
+                  return (
+                    <button
+                      key={label._id}
+                      className={`mobile-label-tab ${isSelected ? 'selected' : ''}`}
+                      onClick={() => onFilterChange('productLabel', label._id, !isSelected)}
+                      disabled={loading}
+                    >
+                      <span className="mobile-label-tab-name">
+                        {currentLang === 'ar' ? label.nameAr : label.nameEn}
+                      </span>
+                      <span className="mobile-label-tab-count">(0)</span>
+                    </button>
+                  );
+                })
+              ) : (
+                // Desktop: Show labels as checkboxes
+                allProductLabels.map(label => (
+                  <label key={label._id} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={filters.productLabels.includes(label._id)}
+                      onChange={(e) => onFilterChange('productLabel', label._id, e.target.checked)}
+                      disabled={loading}
+                    />
+                    <span className="checkmark"></span>
+                    <span>{currentLang === 'ar' ? label.nameAr : label.nameEn}</span>
+                  </label>
+                ))
+              )}
             </div>
           )}
         </div>
@@ -469,19 +452,40 @@ const SidebarFilters = ({
         </div>
         
         {!collapsedSections.status && (
-          <div className="status-filters-shop-sidebar">
-            {statusOptions.map(status => (
-              <label key={status.value} className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  checked={filters.status.includes(status.value)}
-                  onChange={(e) => onFilterChange('status', status.value, e.target.checked)}
-                  disabled={loading}
-                />
-                <span className="checkmark"></span>
-                <span>{status.label[currentLang]}</span>
-              </label>
-            ))}
+          <div className={isMobile ? "mobile-status-tabs" : "status-filters-shop-sidebar"}>
+            {isMobile ? (
+              // Mobile: Show status as tabs
+              statusOptions.map(status => {
+                const isSelected = filters.status.includes(status.value);
+                return (
+                  <button
+                    key={status.value}
+                    className={`mobile-status-tab ${isSelected ? 'selected' : ''}`}
+                    onClick={() => onFilterChange('status', status.value, !isSelected)}
+                    disabled={loading}
+                  >
+                    <span className="mobile-status-tab-name">
+                      {status.label[currentLang]}
+                    </span>
+                    <span className="mobile-status-tab-count">(0)</span>
+                  </button>
+                );
+              })
+            ) : (
+              // Desktop: Show status as checkboxes
+              statusOptions.map(status => (
+                <label key={status.value} className="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={filters.status.includes(status.value)}
+                    onChange={(e) => onFilterChange('status', status.value, e.target.checked)}
+                    disabled={loading}
+                  />
+                  <span className="checkmark"></span>
+                  <span>{status.label[currentLang]}</span>
+                </label>
+              ))
+            )}
           </div>
         )}
       </div>

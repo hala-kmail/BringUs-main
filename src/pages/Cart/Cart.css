@@ -1186,6 +1186,10 @@
   }
 
   .cart-item-name {
+    text-overflow: ellipsis;
+    width: 80%;
+    overflow: hidden;
+    white-space: nowrap;
     font-size: 0.9rem;
   }
 

@@ -126,11 +126,11 @@ const MobileCategories = () => {
 
         {/* Subcategories Section */}
         <div className="subcategories-section">
-          <div className="section-header">
+          {/* <div className="section-header">
             <h3 className="section-title">
               {selectedCategory ? (currentLang === 'ar' ? selectedCategory.nameAr : selectedCategory.nameEn) : t('mobile_categories.subtitle')}
             </h3>
-          </div>
+          </div> */}
           
           {subCategories && subCategories.length > 0 ? (
             <div className="subcategories-grid mobile-subcategories-grid">

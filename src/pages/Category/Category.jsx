@@ -287,18 +287,18 @@ const Category = () => {
               <h2 className="subcategories-title">
                 {currentLang === 'ar' ? 'الفروع الفرعية' : 'Subcategories'}
               </h2>
-            <div className="subcategories-grid">
+            <div className="subcategories-grid-desktop">
                 {subCategories.map((subCat) => (
                   <div 
                     key={subCat._id}
                     className={`subcategory-item ${selectedCategoryId === subCat._id ? 'active' : ''}`}
                     onClick={() => handleCategoryClick(subCat)}
                 >
-                    <div className="subcategory-content">
+                    <div className="subcategory-content" title={getCategoryName(subCat)}>
                       {subCat.image && (
                         <img src={subCat.image} alt={getCategoryName(subCat)} className="subcategory-logo" />
                       )}
-                      <h3>{getCategoryName(subCat)}</h3>
+                      <h3 title={getCategoryName(subCat)}>{getCategoryName(subCat)}</h3>
                   </div>
                   </div>
               ))}

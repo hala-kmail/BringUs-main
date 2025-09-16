@@ -24,6 +24,7 @@ const ProductOptions = ({
 
   // ربط المواصفات مع بيانات meta
   const organizedSpecs = React.useMemo(() => {
+    
     if (!product.specificationValues || !Array.isArray(product.specificationValues) || !specificationsMeta || specificationsMeta.length === 0) return [];
     const grouped = {};
     product.specificationValues.forEach(spec => {
@@ -37,7 +38,7 @@ const ProductOptions = ({
       // مطابقة valueId أو valueAr فقط
       let metaValue = meta?.values?.find(v => v._id === spec.valueId);
       if (!metaValue) {
-        metaValue = meta?.values?.find(v => v.valueAr === spec.value);
+        metaValue = meta?.values?.find(v => v.valueEn === spec.value);
       }
       grouped[specKey].values.push({
         ...spec,
@@ -313,6 +314,7 @@ const ProductOptions = ({
             </div>
             <div className="specification-options">
               {group.values.map((spec) => {
+                
                 const value = currentLang === 'ar' ? (spec.valueAr || spec.value) : (spec.valueEn || spec.value);
                 // إصلاح المقارنة - مقارنة مع spec._id أو spec.valueId
                 const isSelected = selectedSpecs[group.specificationId]?.valueId === spec._id || 

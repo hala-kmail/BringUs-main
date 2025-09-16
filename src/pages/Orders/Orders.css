@@ -226,7 +226,9 @@
     text-align: center;
     gap: 15px;
   }
-
+  .mobile-filters .header-content{
+    flex-direction: row;
+  }
   .header-text h1 {
     font-size: 1.8rem;
   }

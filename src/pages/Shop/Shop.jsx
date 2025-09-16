@@ -768,13 +768,16 @@ const Shop = () => {
         isOpen={isMobileFiltersOpen}
         onClose={handleMobileFiltersClose}
         filters={filters}
-        onFiltersChange={handleFilterChange}
+        onFilterChange={handleFilterChange}
+        onClearFilters={clearFilters}
+        onRemoveFilter={removeFilter}
+        activeFilters={getActiveFilters()}
         categories={categories}
         features={features}
-        colors={allColorsForDisplay}
-        allProducts={products}
-        t={t}
-        currentLang={currentLang}
+        allColors={allColorsForDisplay}
+        allProductLabels={allProductLabels}
+        maxPrice={initialMaxPrice}
+        loading={categoriesLoading}
       />
 
       <div className="shop-container">
