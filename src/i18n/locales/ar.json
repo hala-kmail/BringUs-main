@@ -600,7 +600,8 @@
     "subtitle": "سارع في الشراء قبل نفاد الكمية! هذه المنتجات لديها مخزون محدود",
     "browse_all": "تصفح جميع المنتجات",
     "no_products": "لا توجد منتجات على وشك النفاد",
-    "no_products_description": "جميع المنتجات متوفرة حالياً بمخزون كافي"
+    "no_products_description": "جميع المنتجات متوفرة حالياً بمخزون كافي",
+    "no_almost_finished_products": "لا توجد منتجات على وشك النفاد حالياً"
   },
   "stock": {
     "critical": "كمية حرجة",
@@ -762,5 +763,6 @@
     "preview_title": "معاينة الشهادة",
     "not_specified": "غير محدد",
     "fill_required_fields": "يرجى ملء جميع الحقول المطلوبة"
-  }
+  },
+  "error_loading_products": "خطأ في تحميل المنتجات"
 } 

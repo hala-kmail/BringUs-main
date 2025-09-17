@@ -19,10 +19,251 @@
 }
 
 .almost-finished-container {
-  padding-top: 5vw;
-  max-width: 85%;
+  padding-top: 2rem;
+  max-width: 95%;
   margin: 0 auto;
+}
+
+/* Enhanced Header Styles */
+.almost-finished-header {
+  position: relative;
  
+  margin: 0.5rem 0 1rem 0;
+  padding: 1rem;
+  overflow: hidden;
+ 
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.header-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.header-pattern {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 20% 70%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
+  animation: float 6s ease-in-out infinite;
+}
+
+.header-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    transparent 30%, 
+    transparent 70%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.almost-finished-title-section {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: white;
+  margin-bottom: 0rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  gap: 0rem;
+  flex-wrap: wrap;
+}
+
+.title-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: linear-gradient(135deg, #ef4444 0%, #b21a1a 100%);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+.badge-icon {
+  font-size: 1.2rem;
+  animation: iconSpin 2s linear infinite;
+}
+
+.badge-text {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.almost-finished-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.1;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.title-highlight {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleGlow 3s ease-in-out infinite;
+}
+
+.title-accent {
+  color: #ef4444;
+  font-size: 2.2rem;
+  animation: accentBounce 2s ease-in-out infinite;
+}
+
+.almost-finished-subtitle {
+  font-size: 0.85rem;
+  color: #213547;
+  margin: 0;
+  margin-top: 0.5rem;
+  opacity: 0.9;
+  line-height: 1.3;
+  max-width: 300px;
+  font-weight: 400;
+  display: inline-block;
+  align-self: center;
+}
+
+.urgency-indicators {
+  display: none;
+}
+
+.urgency-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  animation: urgencyFloat 3s ease-in-out infinite;
+}
+
+.urgency-item:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.urgency-item:nth-child(3) {
+  animation-delay: 1s;
+}
+
+.urgency-item:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.urgency-icon {
+  font-size: 1.3rem;
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+.urgency-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.countdown-section {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Animations */
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 12px 30px rgba(245, 158, 11, 0.4);
+  }
+}
+
+@keyframes iconSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes titleGlow {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes accentBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes urgencyFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Hero Section */
@@ -625,7 +866,45 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
- 
+  .almost-finished-header {
+    padding: 0.75rem 0.8rem;
+    margin: 0.5rem 0 0.75rem 0;
+  }
+  
+  .almost-finished-title-section {
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: auto;
+  }
+  
+  .almost-finished-title {
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  
+  .title-accent {
+    font-size: 1.8rem;
+  }
+  
+  .almost-finished-subtitle {
+    font-size: 0.8rem;
+    margin: 0;
+    max-width: 100%;
+  }
+  
+  .urgency-indicators {
+    display: none;
+  }
+  
+  .urgency-item {
+    display: none;
+  }
+  
+  .title-badge {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.65rem;
+  }
   
   .almost-finished-hero {
     padding: 2rem 1.5rem;
@@ -735,6 +1014,44 @@
 }
 
 @media (max-width: 480px) {
+  .almost-finished-header {
+    padding: 0.6rem 0.5rem;
+    margin: 0.3rem 0 0.5rem 0;
+  }
+  
+  .almost-finished-title-section {
+    flex-direction: column;
+    gap: 0.3rem;
+    min-height: auto;
+  }
+  
+  .almost-finished-title {
+    font-size: 1.3rem;
+  }
+  
+  .title-accent {
+    font-size: 1.5rem;
+  }
+  
+  .almost-finished-subtitle {
+    font-size: 0.75rem;
+    margin: 0;
+    max-width: 100%;
+  }
+  
+  .urgency-indicators {
+    display: none;
+  }
+  
+  .urgency-item {
+    display: none;
+  }
+  
+  .title-badge {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.6rem;
+  }
+  
   .almost-finished-hero {
     padding: 1.5rem 1rem;
   }

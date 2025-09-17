@@ -2,53 +2,41 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
-import useProducts from '../../hooks/useProducts';
+import useAlmostFinishedSale from '../../hooks/useAlmostFinishedSale';
 import useCategories from '../../hooks/useCategories';
 import ProductCard from '../../components/ProductCard/ProductCard';
-import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
+import Navbar from '../../components/Navbar/Navbar';
+import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import './AlmostFinishedSale.css';
 
 const AlmostFinishedSale = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const [almostFinishedProducts, setAlmostFinishedProducts] = useState([]);
   const { categories } = useCategories();
 
   const { 
     products,
-    loading, 
+    loading,
     error,
-    getFinalPrice,
-    getMainImage,
-    getProductName,
-    isInStock
-  } = useProducts();
+    fetchAlmostSoldProducts
+  } = useAlmostFinishedSale();
 
   const currentLang = i18n.language;
-
+  
   useEffect(() => {
-    if (products && products.length > 0) {
-      // Filter products that are almost finished (low stock)
-      const filtered = products.filter(product => {
-        const stock = product.stock || 0;
-        const lowStockThreshold = product.lowStockThreshold || 5;
-        return stock > 0 && stock <= lowStockThreshold;
-      });
+    const storedStore = localStorage.getItem('storeData');
+    const storeId = storedStore ? JSON.parse(storedStore)._id : null;
 
-      // Sort by stock level (lowest first)
-      const sorted = filtered.sort((a, b) => {
-        const stockA = a.stock || 0;
-        const stockB = b.stock || 0;
-        return stockA - stockB;
-      });
-      
-      setAlmostFinishedProducts(sorted.slice(0, 8));
+    if (storeId) {
+      fetchAlmostSoldProducts(storeId);
     }
-  }, [products]);
-
+  }, [fetchAlmostSoldProducts]);
+  
+ 
+ 
   const handleAddToCart = (product) => {
-    if (isInStock(product)) {
+    if (product.stock > 0) {
       addToCart(product, { quantity: 1 });
     }
   };
@@ -57,39 +45,89 @@ const AlmostFinishedSale = () => {
     await toggleWishlist(product);
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <section className="almost-finished-sale">
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="almost-finished-container">
+          <div className="loading-message">
+            <p>{t('loading')}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <section className="almost-finished-sale">
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="almost-finished-container">
+          <div className="error-message">
+            <p>{t('error_loading_products')}: {error}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   // Don't render if no almost finished products
-  if (almostFinishedProducts.length === 0) {
+  if (!products || products.length === 0) {
     return null;
   }
 
   return (
     <section className="almost-finished-sale">
+      <Navbar />
+      <SecondaryNavbar />
       <div className="almost-finished-container">
-        {/* Section Header */}
+        {/* Enhanced Section Header */}
         <div className="almost-finished-header">
-          <div className="almost-finished-title-section">
-            <h2 className="almost-finished-title">{t('almost_finished.title')}</h2>
-            <p className="almost-finished-subtitle">{t('almost_finished.subtitle')}</p>
+          <div className="header-background">
+            <div className="header-pattern"></div>
+            <div className="header-glow"></div>
           </div>
-          <CountdownTimer />
+          <div className="almost-finished-title-section">
+            <div className="title-badge">
+              <span className="badge-icon">⚡</span>
+              <span className="badge-text">{t('almost_finished_sale.title')}</span>
+            </div>
+            {/* <h2 className="almost-finished-title">
+              <span className="title-highlight">{t('almost_finished.title')}</span>
+              <span className="title-accent">!</span>
+            </h2> */}
+            <p className="almost-finished-subtitle">{t('almost_finished_sale.subtitle')}</p>
+          
+          </div>
+          
         </div>
 
         {/* Products Grid */}
         <div className="products-grid">
-          {almostFinishedProducts.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              currentLang={currentLang}
-              t={t}
-              isInWishlist={isInWishlist}
-              handleWishlistToggle={handleWishlistToggle}
-              handleAddToCart={() => handleAddToCart(product)}
-              getFeatureById={() => null}
-              getCategoryById={() => null}
-              categories={categories}
-            />
-          ))}
+          {products && products.length > 0 ? (
+            products.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                currentLang={currentLang}
+                t={t}
+                isInWishlist={isInWishlist}
+                handleWishlistToggle={handleWishlistToggle}
+                handleAddToCart={() => handleAddToCart(product)}
+                getFeatureById={() => null}
+                getCategoryById={() => null}
+                categories={categories}
+              />
+            ))
+          ) : (
+            <div className="no-products-message">
+              <p>{t('no_almost_finished_products')}</p>
+            </div>
+          )}
         </div>
       </div>
     </section>

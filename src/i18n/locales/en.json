@@ -634,7 +634,8 @@
     "subtitle": "Hurry up and buy before they run out! These products have limited stock",
     "browse_all": "Browse All Products",
     "no_products": "No products running out",
-    "no_products_description": "All products are currently available with sufficient stock"
+    "no_products_description": "All products are currently available with sufficient stock",
+    "no_almost_finished_products": "No products are running out at the moment"
   },
   "error_add": "Failed to add product to wishlist!",
   "error_remove": "Failed to remove product from wishlist!",
@@ -757,5 +758,6 @@
     "preview_title": "Certificate Preview",
     "not_specified": "Not specified",
     "fill_required_fields": "Please fill in all required fields"
-  }
+  },
+  "error_loading_products": "Error loading products"
 }
