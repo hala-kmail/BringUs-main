@@ -58,21 +58,9 @@ const SidebarFilters = ({
    
   ];
 
-  // Helper function to get product colors
-  const getProductColors = (product) => {
-    
-    return getSimpleColorsFromColorsField(product);
-  };
+ 
 
-  // Get category by ID
-  const getCategoryById = (id) => {
-    return categories.find(category => category.id === id || category._id === id);
-  };
-
-  // Get feature by ID
-  const getFeatureById = (id) => {
-    return features.find(feature => feature.id === id || feature._id === id);
-  };
+ 
 
   // Get subcategories for a category
   const getSubCategories = (categoryId) => {
@@ -92,20 +80,8 @@ const SidebarFilters = ({
     return ids;
   }, [categories]);
 
-  // Get category product count (placeholder for now)
-  const getCategoryProductCount = useCallback((categoryId) => {
-    return 0; // Hide counts for now
-  }, []);
-
-  // Get color count (placeholder for now)
-  const getColorCount = useCallback((color) => {
-    return 0; // Hide counts for now
-  }, []);
-
-  // Get category count (placeholder for now)
-  const getCategoryCount = useCallback((categoryId) => {
-    return 0; // Hide counts for now
-  }, []);
+ 
+  
 
   // Color utility functions
   function getColorKey(hex) {

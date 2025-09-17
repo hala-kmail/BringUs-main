@@ -352,20 +352,62 @@ const Shop = () => {
     console.log('🔍 Filter change:', filterType, value, checked);
 
     if (filterType === 'category') {
-      if (checked) {
-        setFilters(prev => ({
+      const getAllDescendants = (id) => {
+        const directSubs = getSubCategories(id);
+        let all = [...directSubs.map(s => s._id || s.id)];
+        for (let sub of directSubs) {
+          all = [...all, ...getAllDescendants(sub._id || sub.id)];
+        }
+        return all;
+      };
+    
+      const getParentId = (id) => {
+        const cat = categories.find(c => (c._id || c.id) === id);
+        return cat?.parent?._id || cat?.parentId || null;
+      };
+    
+      setFilters(prev => {
+        let newSelected = [...prev.categories];
+    
+        if (checked) {
+          
+          const descendants = getAllDescendants(value);
+          newSelected = Array.from(new Set([...newSelected, value, ...descendants]));
+    
+          
+          let parentId = getParentId(value);
+          while (parentId) {
+            const siblings = getSubCategories(parentId).map(s => s._id || s.id);
+            const allSelected = siblings.every(sid => newSelected.includes(sid));
+            if (allSelected && !newSelected.includes(parentId)) {
+              newSelected.push(parentId);
+            }
+            parentId = getParentId(parentId);
+          }
+        } else {
+        
+          const descendants = getAllDescendants(value);
+          newSelected = newSelected.filter(id => id !== value && !descendants.includes(id));
+    
+         
+          let parentId = getParentId(value);
+          while (parentId) {
+            const siblings = getSubCategories(parentId).map(s => s._id || s.id);
+            const hasAnySelected = siblings.some(sid => newSelected.includes(sid));
+            if (!hasAnySelected) {
+              newSelected = newSelected.filter(id => id !== parentId);
+            }
+            parentId = getParentId(parentId);
+          }
+        }
+    
+        return {
           ...prev,
-          categories: [...prev.categories, value]
-        }));
-        console.log('📂 Added category:', value);
-      } else {
-        setFilters(prev => ({
-          ...prev,
-          categories: prev.categories.filter(cat => cat !== value)
-        }));
-        console.log('📂 Removed category:', value);
-      }
+          categories: newSelected
+        };
+      });
     }
+    
     
     else if (filterType === 'priceRange') {
       setFilters(prev => ({
