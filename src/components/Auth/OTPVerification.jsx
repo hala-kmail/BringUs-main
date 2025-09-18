@@ -12,7 +12,7 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
   // Change from 6 to 5 digits
   const [otp, setOtp] = useState(['', '', '', '', '']);
   const [resendLoading, setResendLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
+  const [countdown, setCountdown] = useState(60);
   const [isFormValid, setIsFormValid] = useState(false);
 
   // Update refs to 5 inputs
@@ -88,10 +88,10 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
       // Get storeSlug from URL or context
       const storeSlug = window.location.pathname.split('/')[1] || 'default';
       const result = await resendOTP(email, storeSlug);
-      if (result.success) {
+      // if (result.success) {
         setCountdown(60);
         onResendCode && onResendCode();
-      }
+      // }
     } catch (err) {
       console.error('Resend OTP error:', err);
     } finally {

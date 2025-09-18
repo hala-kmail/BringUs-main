@@ -148,7 +148,8 @@
       "submit": "Sign In",
       "loading": "Signing in...",
       "no_account": "Don't have an account?",
-      "signup": "Sign Up"
+      "signup": "Sign Up",
+      "forgot_password": "Forgot Password?"
     },
     "register": {
       "personal_info": "Personal Information",
@@ -220,6 +221,45 @@
       "access_from_stores_list": "User has access to the store from stores list",
       "no_stores": "User does not own any store",
       "store_permission": "User has permission for the store"
+    },
+    "forgot_password": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email and we'll send you a password reset link",
+      "email": "Email",
+      "email_placeholder": "Enter your email",
+      "send": "Send",
+      "sending": "Sending...",
+      "success_message": "Password reset link sent to your email",
+      "back_to_login": "Back to Login",
+      "remember_password": "Remember your password?",
+      "validation": {
+        "email_required": "Email is required",
+        "email_invalid": "Invalid email format"
+      },
+      "error_generic": "An error occurred, please try again",
+      "error_network": "Connection error, please check your internet connection"
+    },
+    "reset_password": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password",
+      "new_password": "New Password",
+      "new_password_placeholder": "Enter your new password",
+      "confirm_password": "Confirm Password",
+      "confirm_password_placeholder": "Re-enter your new password",
+      "reset": "Reset Password",
+      "resetting": "Resetting...",
+      "success_message": "Password reset successfully",
+      "back_to_login": "Back to Login",
+      "remember_password": "Remember your password?",
+      "validation": {
+        "password_required": "Password is required",
+        "password_min_length": "Password must be at least 6 characters",
+        "confirm_password_required": "Confirm password is required",
+        "passwords_not_match": "Passwords do not match"
+      },
+      "error_generic": "An error occurred, please try again",
+      "error_network": "Connection error, please check your internet connection",
+      "error_no_token": "Invalid or expired reset link"
     }
   },
   "otp": {

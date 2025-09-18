@@ -147,7 +147,8 @@
       "submit": "تسجيل الدخول",
       "loading": "جاري تسجيل الدخول...",
       "no_account": "ليس لديك حساب؟",
-      "signup": "إنشاء حساب"
+      "signup": "إنشاء حساب",
+      "forgot_password": "هل نسيت كلمة المرور؟"
     },
     "register": {
       "personal_info": "المعلومات الشخصية",
@@ -238,6 +239,45 @@
       "verification_failed": "فشل في التحقق من الرمز",
       "network_error": "خطأ في الشبكة، يرجى المحاولة مرة أخرى",
       "resend_failed": "فشل في إعادة إرسال الرمز"
+    },
+    "forgot_password": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور",
+      "email": "البريد الإلكتروني",
+      "email_placeholder": "أدخل بريدك الإلكتروني",
+      "send": "إرسال",
+      "sending": "جاري الإرسال...",
+      "success_message": "تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني",
+      "back_to_login": "العودة لتسجيل الدخول",
+      "remember_password": "تذكرت كلمة المرور؟",
+      "validation": {
+        "email_required": "البريد الإلكتروني مطلوب",
+        "email_invalid": "صيغة البريد الإلكتروني غير صحيحة"
+      },
+      "error_generic": "حدث خطأ، يرجى المحاولة مرة أخرى",
+      "error_network": "خطأ في الاتصال، يرجى التحقق من اتصالك بالإنترنت"
+    },
+    "reset_password": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل كلمة المرور الجديدة",
+      "new_password": "كلمة المرور الجديدة",
+      "new_password_placeholder": "أدخل كلمة المرور الجديدة",
+      "confirm_password": "تأكيد كلمة المرور",
+      "confirm_password_placeholder": "أعد إدخال كلمة المرور الجديدة",
+      "reset": "إعادة تعيين",
+      "resetting": "جاري إعادة التعيين...",
+      "success_message": "تم إعادة تعيين كلمة المرور بنجاح",
+      "back_to_login": "العودة لتسجيل الدخول",
+      "remember_password": "تذكرت كلمة المرور؟",
+      "validation": {
+        "password_required": "كلمة المرور مطلوبة",
+        "password_min_length": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+        "confirm_password_required": "تأكيد كلمة المرور مطلوب",
+        "passwords_not_match": "كلمتا المرور غير متطابقتين"
+      },
+      "error_generic": "حدث خطأ، يرجى المحاولة مرة أخرى",
+      "error_network": "خطأ في الاتصال، يرجى التحقق من اتصالك بالإنترنت",
+      "error_no_token": "رابط إعادة التعيين غير صحيح أو منتهي الصلاحية"
     }
   },
   "footer": {   "newsletter_title": "اشترك في النشرة البريدية",

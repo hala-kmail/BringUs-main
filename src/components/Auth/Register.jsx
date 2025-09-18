@@ -10,7 +10,7 @@ import { useAppData } from '../../contexts/AppDataContext';
 import OTPVerification from './OTPVerification';
 
 const Register = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { createUser, loading, error, reset } = useCreateUser();
   const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();

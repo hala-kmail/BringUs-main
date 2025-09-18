@@ -11,6 +11,8 @@ import MobileSearch from './components/MobileSearch/MobileSearch';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import OTPVerification from './components/Auth/OTPVerification';
+import ForgotPassword from './components/Auth/ForgotPassword';
+import ResetPassword from './components/Auth/ResetPassword';
 import Home from './pages/Home/Home';
 import Shop from './pages/Shop/Shop';
 import Category from './pages/Category/Category';
@@ -457,6 +459,16 @@ function App() {
                 <OTPVerification />
               </AffiliateWrapper>
             } />
+            <Route path="/affiliate/:affiliateCode/forgot-password" element={
+              <AffiliateWrapper>
+                <ForgotPassword />
+              </AffiliateWrapper>
+            } />
+            <Route path="/affiliate/:affiliateCode/reset-password" element={
+              <AffiliateWrapper>
+                <ResetPassword />
+              </AffiliateWrapper>
+            } />
             
             {/* Store-specific routes with slug */}
             <Route path="/:storeSlug" element={<Navigate to="/:storeSlug/home" replace />} />
@@ -472,11 +484,15 @@ function App() {
             <Route path="/:storeSlug/orders" element={<Orders />} />
             <Route path="/:storeSlug/almost-finished-sale" element={<AlmostFinishedSale />} />
             <Route path="/:storeSlug/otp-verification" element={<OTPVerification />} />
+            <Route path="/:storeSlug/forgot-password" element={<ForgotPassword />} />
+            <Route path="/:storeSlug/reset-password" element={<ResetPassword />} />
             
             {/* Regular routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/otp-verification" element={<OTPVerification />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
