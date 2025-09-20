@@ -187,8 +187,26 @@ const useStoreSlug = () => {
           console.warn('Could not save storeSlug to localStorage:', err);
         }
         
-        // Fetch store data
-        const storeInfo = await fetchStoreBySlug(slug);
+        // Check if we already have store data in localStorage for this slug
+        let storeInfo = null;
+        try {
+          const storedData = localStorage.getItem('storeData');
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            if (parsedData && parsedData.slug === slug) {
+              storeInfo = parsedData;
+              setStoreData(storeInfo);
+              setCurrentUrl(newUrl);
+              hasInitialized.current = true;
+              return { slug, storeData: storeInfo };
+            }
+          }
+        } catch (err) {
+          // Continue to fetch from API if localStorage fails
+        }
+        
+        // Fetch store data from API if not found in localStorage
+        storeInfo = await fetchStoreBySlug(slug);
         if (storeInfo) {
           setStoreData(storeInfo);
           
@@ -223,7 +241,7 @@ const useStoreSlug = () => {
       hasInitialized.current = true;
       return { slug: '', storeData: null };
     }
-  }, [getCurrentUrl, hasUrlChanged, extractSlugFromPath, extractSlugFromSubdomain, fetchStoreBySlug]);
+  }, []);
 
   // Monitor URL changes
   useEffect(() => {
@@ -250,7 +268,7 @@ const useStoreSlug = () => {
     return () => {
       window.removeEventListener('popstate', handleUrlChange);
     };
-  }, [getCurrentUrl, hasUrlChanged, currentUrl, initializeStore]);
+  }, []);
 
   // Load store data from localStorage on mount
   useEffect(() => {
@@ -287,7 +305,7 @@ const useStoreSlug = () => {
     if (!hasInitialized.current) {
       initializeStore(false);
     }
-  }, [initializeStore]);
+  }, []);
 
   // Update URL when slug changes (only for initial redirect)
   useEffect(() => {

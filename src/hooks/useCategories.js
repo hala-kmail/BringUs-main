@@ -36,8 +36,23 @@ const useCategories = () => {
     }
 
     // Don't fetch if we already have categories and they're for the same store
-    if (categories !== null && storeId.current === targetStoreId) {
+    if (categories !== null && storeId.current === targetStoreId && categories.length > 0) {
       return categories;
+    }
+
+    // Check if we already have categories in localStorage for this store
+    try {
+      const storedCategories = localStorage.getItem('categoriesInfo');
+      if (storedCategories) {
+        const parsedCategories = JSON.parse(storedCategories);
+        if (parsedCategories && parsedCategories.length > 0) {
+          updateCategories(parsedCategories);
+          storeId.current = targetStoreId;
+          return parsedCategories;
+        }
+      }
+    } catch (err) {
+      // Ignore localStorage errors
     }
 
     try {
@@ -64,6 +79,9 @@ const useCategories = () => {
         }
         // Update categories in context
         updateCategories(result.data);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Categories fetched successfully:', result.data);
+        }
         storeId.current = targetStoreId;
         return result.data;
       } else {
@@ -82,7 +100,7 @@ const useCategories = () => {
     } finally {
       setLoading(false);
     }
-  }, [categories, updateCategories]);
+  }, []);
 
   // Auto-fetch categories when store changes (only once per store)
   useEffect(() => {
@@ -90,6 +108,22 @@ const useCategories = () => {
     
     // Only fetch if we have a store ID and haven't initialized for this store
     if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
+      // Check if we already have categories in localStorage first
+      const storedCategories = localStorage.getItem('categoriesInfo');
+      if (storedCategories) {
+        try {
+          const parsedCategories = JSON.parse(storedCategories);
+          if (parsedCategories && parsedCategories.length > 0) {
+            updateCategories(parsedCategories);
+            hasInitialized.current = true;
+            storeId.current = currentStoreId;
+            return;
+          }
+        } catch (err) {
+          // Continue to fetch from API if localStorage fails
+        }
+      }
+      
       if (process.env.NODE_ENV === 'development') {
         // console.log('Initializing categories for store ID:', currentStoreId);
       }
@@ -105,7 +139,7 @@ const useCategories = () => {
       hasInitialized.current = false;
       storeId.current = null;
     }
-  }, [store?._id, getStoreId, fetchCategories, updateCategories]);
+  }, [store?._id]);
 
   const loadCategories = useCallback(async (targetStoreId = null) => {
     const id = targetStoreId || getStoreId();

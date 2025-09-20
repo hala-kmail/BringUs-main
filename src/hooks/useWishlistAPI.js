@@ -496,10 +496,9 @@ const useWishlistAPI = () => {
       storeId.current = storeIdentifier;
       
       // تهيئة نظام الضيوف أولاً
-      initializeGuestSystem().then(() => {
-        // ثم جلب اللايكات
-        fetchWishlist();
-      });
+      initializeGuestSystem();
+      // ثم جلب اللايكات
+      fetchWishlist();
     } else if (!storeIdentifier && hasInitialized.current) {
       // Clear wishlist if no store is available
       if (process.env.NODE_ENV === 'development') {
@@ -509,7 +508,7 @@ const useWishlistAPI = () => {
       hasInitialized.current = false;
       storeId.current = null;
     }
-  }, [store?._id, store?.slug, getStoreId, getStoreSlug, fetchWishlist, initializeGuestSystem]);
+  }, [store?._id, store?.slug]);
 
   return {
     wishlistItems,

@@ -9,6 +9,7 @@ import BestSellers from '../../components/BestSellers/BestSellers';
 import AlmostFinishedCard from '../../components/AlmostFinishedCard/AlmostFinishedCard';
 import SocialComments from '../../components/SocialComments/SocialComments';
 import WholesaleRegisterModal from '../../components/WholesaleRegisterModal';
+import ShowCategoryProduct from '../../components/ShowCategoryProduct/ShowCategoryProduct';
 import './Home.css';
 import { useTranslation } from 'react-i18next';
 //-----------------------------------Home------------------------------------------------  
@@ -97,6 +98,10 @@ const Home = () => {
 
         <LazyRevealSection>
           <BestSellers />
+        </LazyRevealSection>
+
+        <LazyRevealSection>
+          <ShowCategoryProduct />
         </LazyRevealSection>
 
         <LazyRevealSection>

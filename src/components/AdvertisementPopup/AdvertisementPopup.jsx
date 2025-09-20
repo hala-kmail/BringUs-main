@@ -24,11 +24,12 @@ const AdvertisementPopup = () => {
 
   // Show advertisement immediately when loaded
   useEffect(() => {
-    if (advertisements.length > 0 && !isVisible && !hasBeenClosed) {
+    if (advertisements.length > 0 && !isVisible && !hasBeenClosed && !hasBeenShown) {
         // console.log('Setting advertisement visible immediately');
       setIsVisible(true);
+      setHasBeenShown(true);
     }
-  }, [advertisements, isVisible, hasBeenClosed]);
+  }, [advertisements, isVisible, hasBeenClosed, hasBeenShown]);
 
   // Auto-close advertisement after 10 seconds
   useEffect(() => {
@@ -42,13 +43,13 @@ const AdvertisementPopup = () => {
   }, [isVisible, advertisements]);
 
 
-  // Clear localStorage when user logs out
+  // Clear localStorage when user logs out (disabled - don't show on logout)
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'authToken' && !e.newValue) {
-        // User logged out, clear advertisement history
-        localStorage.removeItem('shownAdvertisements');
-        // console.log('User logged out, cleared advertisement history');
+        // User logged out - don't clear advertisement history to prevent showing again
+        // localStorage.removeItem('shownAdvertisements');
+        // console.log('User logged out, keeping advertisement history');
       }
     };
 
@@ -59,7 +60,7 @@ const AdvertisementPopup = () => {
     };
   }, []);
 
-  // Clear localStorage when user logs out (same tab)
+  // Clear localStorage when user logs out (same tab) - disabled
   useEffect(() => {
     let lastAuthStatus = null;
     
@@ -70,9 +71,9 @@ const AdvertisementPopup = () => {
       // Only log and clear if auth status actually changed
       if (lastAuthStatus !== null && lastAuthStatus !== currentAuthStatus) {
         if (!currentAuthStatus) {
-          // User logged out, clear advertisement history
-          localStorage.removeItem('shownAdvertisements');
-          // console.log('User logged out, cleared advertisement history');
+          // User logged out - don't clear advertisement history to prevent showing again
+          // localStorage.removeItem('shownAdvertisements');
+          // console.log('User logged out, keeping advertisement history');
         }
       }
       
@@ -88,10 +89,9 @@ const AdvertisementPopup = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Clear localStorage when store changes
+  // Reset states when store changes
   useEffect(() => {
     if (storeId) {
-      // Don't clear localStorage here - this was causing the issue
       // Reset states for new store
       setHasBeenShown(false);
       setHasBeenClosed(false);
@@ -99,41 +99,51 @@ const AdvertisementPopup = () => {
     }
   }, [storeId]);
 
-  // Reset states when user logs in
+  // Reset states when user logs in (disabled - don't show again)
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      // User is logged in, reset advertisement states
-      setHasBeenShown(false);
-      setHasBeenClosed(false);
-      setIsVisible(false);
+      // User is logged in - don't reset advertisement states to prevent showing again
+      // setHasBeenShown(false);
+      // setHasBeenClosed(false);
+      // setIsVisible(false);
     }
   }, []);
 
-  // Check if advertisement was already shown in this session
+  // Check if advertisement was already shown for this user
   const checkIfAlreadyShown = (advertisementId) => {
-    const shownAds = JSON.parse(localStorage.getItem('shownAdvertisements') || '[]');
-    return shownAds.includes(advertisementId);
+    const userInfo = localStorage.getItem('userInfo');
+    if (!userInfo) return false; // No user, can show advertisement
+    
+    try {
+      const userId = JSON.parse(userInfo)._id;
+      const shownAds = JSON.parse(localStorage.getItem(`shownAdvertisements_${userId}`) || '[]');
+      return shownAds.includes(advertisementId);
+    } catch (err) {
+      console.warn('Error checking advertisement history:', err);
+      return false;
+    }
   };
 
-  // Mark advertisement as shown
+  // Mark advertisement as shown for this user
   const markAsShown = (advertisementId) => {
-    const shownAds = JSON.parse(localStorage.getItem('shownAdvertisements') || '[]');
-    if (!shownAds.includes(advertisementId)) {
-      shownAds.push(advertisementId);
-      localStorage.setItem('shownAdvertisements', JSON.stringify(shownAds));
+    const userInfo = localStorage.getItem('userInfo');
+    if (!userInfo) return; // No user, don't mark as shown
+    
+    try {
+      const userId = JSON.parse(userInfo)._id;
+      const shownAds = JSON.parse(localStorage.getItem(`shownAdvertisements_${userId}`) || '[]');
+      if (!shownAds.includes(advertisementId)) {
+        shownAds.push(advertisementId);
+        localStorage.setItem(`shownAdvertisements_${userId}`, JSON.stringify(shownAds));
+      }
+    } catch (err) {
+      console.warn('Error marking advertisement as shown:', err);
     }
   };
 
   useEffect(() => {
     if (storeId) {
-      // Check if we already have advertisement data in localStorage
-      const storedAds = JSON.parse(localStorage.getItem('shownAdvertisements') || '[]');
-      if (storedAds.length > 0) {
-        // console.log('Advertisement already shown, not fetching from API');
-        return;
-      }
-      
       // console.log('Fetching advertisements for storeId:', storeId);
       fetchAdvertisements();
     }
@@ -144,6 +154,15 @@ const AdvertisementPopup = () => {
   const fetchAdvertisements = async () => {
     try {
       setError(null);
+      
+      // Check if user is logged in
+      const userInfo = localStorage.getItem('userInfo');
+      console.log('AdvertisementPopup - User info:', userInfo ? 'Found' : 'Not found');
+      
+      if (!userInfo) {
+        console.log('No user logged in, not fetching advertisements');
+        return;
+      }
       
       // Get auth token if available
       const token = localStorage.getItem('authToken');
@@ -194,13 +213,14 @@ const AdvertisementPopup = () => {
         // console.log('Has been shown:', hasBeenShown);
         
         if (!hasBeenShown) {
-          // console.log('Setting advertisement as visible');
+          console.log('Setting advertisement as visible');
           setAdvertisements(adsArray);
           // Set visible immediately
           setIsVisible(true);
+          setHasBeenShown(true);
           markAsShown(advertisementId);
         } else {
-          // console.log('Advertisement already shown, not displaying');
+          console.log('Advertisement already shown, not displaying');
           setAdvertisements([]);
         }
       } else {
@@ -223,7 +243,10 @@ const AdvertisementPopup = () => {
 
  
 
-  if (!storeId || isAuthPage) {
+  // Check if user is logged in
+  const userInfo = localStorage.getItem('userInfo');
+  
+  if (!storeId || isAuthPage || !userInfo) {
     return null;
   }
 
