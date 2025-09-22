@@ -26,9 +26,12 @@ export const getSimpleColorsFromColorsField = (product) => {
   
   colorsArray.forEach(colorItem => {
     if (Array.isArray(colorItem)) {
-      // بدل ما نفصلهم، نجمعهم بـ +
-      const joinedColors = colorItem.join('+');
-      extractedColors.push(joinedColors);
+      // إضافة كل لون منفصل
+      colorItem.forEach(color => {
+        if (color && typeof color === 'string') {
+          extractedColors.push(color);
+        }
+      });
     } else if (typeof colorItem === 'string') {
       extractedColors.push(colorItem);
     }
@@ -67,15 +70,12 @@ export const getOriginalColorsFromColorsField = (product) => {
   
   colorsArray.forEach(colorItem => {
     if (Array.isArray(colorItem)) {
-      // إذا كان اللون مصفوفة (ألوان متعددة)
-      if (colorItem.length === 1) {
-        // لون واحد فقط
-        extractedColors.push(colorItem[0]);
-      } else if (colorItem.length > 1) {
-        // ألوان متعددة - دمجها
-        const mixedColor = colorItem.join('+');
-        extractedColors.push(mixedColor);
-      }
+      // إضافة كل لون منفصل
+      colorItem.forEach(color => {
+        if (color && typeof color === 'string') {
+          extractedColors.push(color);
+        }
+      });
     } else if (typeof colorItem === 'string') {
       // لون واحد كسطر نصي
       extractedColors.push(colorItem);

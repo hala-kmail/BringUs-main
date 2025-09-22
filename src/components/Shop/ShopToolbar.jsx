@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 
 const defaultSortOptions = [
   { value: 'newest', label: { ar: 'الاحدث', en: 'Newest' } },
-  { value: 'oldest', label: { ar: 'الاخير', en: 'Oldest' } },
-  { value: 'price_desc', label: { ar: 'الاقل سعرا', en: 'Price Low to High' } },
-  { value: 'name_asc', label: { ar: 'الاعلى سعرا', en: 'Price High to Low' } },
-  { value: 'name_asc', label: { ar: 'الاسم :؟أ-ي', en: 'Name A-Z' } },
-  { value: 'name_desc', label: { ar: 'الاسم :؟ي-أ', en: 'Name Z-A' } },
+  { value: 'oldest', label: { ar: 'الاقدم', en: 'Oldest' } },
+  { value: 'price_asc', label: { ar: 'الاقل سعرا', en: 'Price Low to High' } },
+  { value: 'price_desc', label: { ar: 'الاعلى سعرا', en: 'Price High to Low' } },
+  { value: 'name_asc', label: { ar: 'الاسم أ-ي', en: 'Name A-Z' } },
+  { value: 'name_desc', label: { ar: 'الاسم ي-أ', en: 'Name Z-A' } },
+
 ];
 
 const ShopToolbar = ({

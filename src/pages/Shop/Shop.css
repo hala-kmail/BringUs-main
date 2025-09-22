@@ -257,6 +257,26 @@
   opacity: 1;
 }
 
+/* Active filter color styles */
+.shop-sidebar .active-filter-color {
+  display: flex;
+  align-items: center;
+}
+
+.shop-sidebar .active-filter-color .color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+
+  flex-shrink: 0;
+}
+
+[dir="rtl"] .shop-sidebar .active-filter-color .color-swatch {
+  margin-right: 0;
+  
+}
+
 .shop-sidebar .clear-category-btn {
   background: #ef4444;
   color: white;
@@ -2650,6 +2670,9 @@
 .shop-sidebar .active-filters .active-filter {
   font-size: 12px;
   font-weight: 500;
+  display: flex;
+  width: fit-content;
+  gap: 10px;
 }
 
 /* Enhanced checkbox styles for subcategories */

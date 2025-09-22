@@ -433,7 +433,7 @@
   /* Hide wishlist text on mobile, only show icons */
   .action-item,
   .action-item {
-   display: none;
+   display: none !important;
   }
 
   .action-label {

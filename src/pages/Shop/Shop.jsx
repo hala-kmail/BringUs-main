@@ -135,8 +135,8 @@ const Shop = () => {
           apiFilters.category = filters.categories[0];
           console.log('📂 Applied single category filter:', filters.categories[0]);
         } else {
-          // عدة فئات - استخدام مصفوفة
-          apiFilters.categories = filters.categories;
+          // عدة فئات - استخدام || separator
+          apiFilters.category = filters.categories.join('||');
           console.log('📂 Applied multiple categories filter:', filters.categories);
         }
       }
@@ -176,6 +176,13 @@ const Shop = () => {
       }
 
       console.log('✅ Final API filters:', apiFilters);
+      console.log('🔍 API filters type check:', {
+        category: typeof apiFilters.category,
+        colors: Array.isArray(apiFilters.colors),
+        productLabels: Array.isArray(apiFilters.productLabels),
+        minPrice: typeof apiFilters.minPrice,
+        maxPrice: typeof apiFilters.maxPrice
+      });
 
       const result = await fetchProductsWithComprehensiveFilters(apiFilters);
       
@@ -303,7 +310,7 @@ const Shop = () => {
     
     if (feature) {
       const featureId = feature;
-      console.log('featureIhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhd', featureId);
+   
       if (!isNaN(featureId)) {
         setFilters(prev => ({
           ...prev,
@@ -630,7 +637,8 @@ const Shop = () => {
 
   // Handle sort change - IMPROVED VERSION
   const handleSortChange = (sortBy) => {
-    console.log('📊 Sort change:', sortBy);
+    console.log('📊 Sort change in Shop:', sortBy);
+    console.log('📊 Sort change type:', typeof sortBy);
     setFilters(prev => ({ ...prev, sortBy }));
     setCurrentPage(1);
     
@@ -707,7 +715,12 @@ const Shop = () => {
     
     // 2. فلاتر الألوان
     filters.colors.forEach(color => {
-      active.push({ type: 'color', value: color, label: color });
+      active.push({ 
+        type: 'color', 
+        value: color, 
+        label: color,
+        isColor: true // Add flag to identify color filters
+      });
     });
 
     // 3. فلاتر العلامات
@@ -912,17 +925,17 @@ const Shop = () => {
                     disabled={isLoading}
                   >
                     <option value="newest">{currentLang === 'ar' ? 'الاحدث' : 'Newest'}</option>
-                    <option value="oldest">{currentLang === 'ar' ? 'الاخير' : 'Oldest'}</option>
-                    <option value="price_desc">{currentLang === 'ar' ? 'الاقل سعرا' : 'Price Low to High'}</option>
-                    <option value="name_asc">{currentLang === 'ar' ? 'الاعلى سعرا' : 'Price High to Low'}</option>
-                    <option value="name_asc">{currentLang === 'ar' ? 'الاسم :؟أ-ي' : 'Name A-Z'}</option>
-                    <option value="name_desc">{currentLang === 'ar' ? 'الاسم :؟ي-أ' : 'Name Z-A'}</option>
+                    <option value="oldest">{currentLang === 'ar' ? 'الاقدم' : 'Oldest'}</option>
+                    <option value="price_asc">{currentLang === 'ar' ? 'الاقل سعرا' : 'Price Low to High'}</option>
+                    <option value="price_desc">{currentLang === 'ar' ? 'الاعلى سعرا' : 'Price High to Low'}</option>
+                    <option value="name_asc">{currentLang === 'ar' ? 'الاسم أ-ي' : 'Name A-Z'}</option>
+                    <option value="name_desc">{currentLang === 'ar' ? 'الاسم ي-أ' : 'Name Z-A'}</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            {/* <ShopToolbar
+            <ShopToolbar
               totalItems={totalItems}
               currentPage={currentPage}
               itemsPerPage={itemsPerPage}
@@ -930,11 +943,10 @@ const Shop = () => {
               onViewModeChange={setViewMode}
               onSortChange={handleSortChange}
               onItemsPerPageChange={handleItemsPerPageChange}
-              onMobileSearchToggle={handleMobileSearchToggle}
               onMobileFiltersToggle={handleMobileFiltersToggle}
               sortBy={filters.sortBy}
               loading={isLoading}
-            /> */}
+            />
 
             {/* Products Grid */}
             {isLoading ? (

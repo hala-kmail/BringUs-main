@@ -151,14 +151,15 @@ const useProducts = () => {
       
       // 4. فلترة الألوان
       if (options.colors && options.colors.length > 0) {
-        // Send colors as a single comma-separated string instead of array
-        params.append('colors', options.colors.join(','));
+        // Send colors as JSON array string
+        params.append('colors', JSON.stringify(options.colors));
         console.log('🎨 Applied colors filter:', options.colors);
       }
       
       // 5. فلترة العلامات
       if (options.productLabels && options.productLabels.length > 0) {
-        options.productLabels.forEach((labelId) => params.append('productLabels[]', labelId));
+        // Send productLabels as JSON array string
+        params.append('productLabels', JSON.stringify(options.productLabels));
         console.log('🏷️ Applied product labels filter:', options.productLabels);
       }
       
@@ -166,10 +167,14 @@ const useProducts = () => {
       if (options.sort) {
         params.append('sort', options.sort);
         console.log('📊 Applied sort filter:', options.sort);
+        console.log('📊 Sort parameter type:', typeof options.sort);
+      } else {
+        console.log('⚠️ No sort parameter provided, using default');
       }
       
       const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?${params}`;
       console.log('✅ Final URL with comprehensive filters:', url);
+      console.log('🔍 URL parameters:', params.toString());
  
       const response = await fetch(url, {
         headers: {
@@ -840,6 +845,13 @@ const useProducts = () => {
     }
 
     console.log('✅ Final comprehensive options:', options);
+    console.log('🔍 Options type check:', {
+      category: typeof options.category,
+      colors: Array.isArray(options.colors),
+      productLabels: Array.isArray(options.productLabels),
+      minPrice: typeof options.minPrice,
+      maxPrice: typeof options.maxPrice
+    });
     return fetchProducts(currentStoreId, options);
   }, [getStoreId, fetchProducts]);
 

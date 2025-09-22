@@ -50,13 +50,7 @@ const SidebarFilters = ({
     }));
   };
 
-  // Status options
-  const statusOptions = [
-    { value: 'in_stock', label: { ar: 'متوفر', en: 'In Stock' } },
-    { value: 'on_sale', label: { ar: 'على الخصم', en: 'On Sale' } },
-    { value: 'new', label: { ar: 'جديد', en: 'New' } },
-   
-  ];
+ 
 
  
 
@@ -175,7 +169,21 @@ const SidebarFilters = ({
         <div className="active-filters">
           {activeFilters.map((filter, index) => (
             <div key={`${filter.type}-${filter.value}`} className="active-filter">
-              <span>{filter.label}</span>
+              {filter.isColor ? (
+                <div className="active-filter-color">
+                  <span 
+                    className="color-swatch"
+                    style={{
+                      background: filter.value.includes('+') 
+                        ? `linear-gradient(45deg, ${filter.value.split('+').join(', ')})` 
+                        : filter.value,
+                      border: filter.value === "#fff" || filter.value === "#ffffff" ? "2px solid #e2e8f0" : undefined
+                    }}
+                  ></span>
+                </div>
+              ) : (
+                <span>{filter.label}</span>
+              )}
               <button
                 className="filter-close"
                 onClick={() => onRemoveFilter(filter.type, filter.value)}
@@ -413,7 +421,7 @@ const SidebarFilters = ({
         </div>
       )}
 
-      {/* Status Filter */}
+      {/* Status Filter 
       <div className="filter-section">
         <div 
           className="filter-section-header"
@@ -464,7 +472,7 @@ const SidebarFilters = ({
             )}
           </div>
         )}
-      </div>
+      </div>*/}
     </div>
   );
 };

@@ -33,12 +33,16 @@
 }
 
 /* Category Header */
-.category-header {
+.category-header-main {
   background: transparent;
   color: #374151;
   padding: 1rem 0;
   text-align: center;
   position: relative;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
 }
 

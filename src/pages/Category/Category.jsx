@@ -267,7 +267,7 @@ const Category = () => {
         />
         
         {/* Category Header */}
-        <div className="category-header">
+        <div className="category-header-main">
             {(selectedCategory || currentCategory).image && (
               <div className="category-icon">
                 <img src={(selectedCategory || currentCategory).image} alt={getCategoryName(selectedCategory || currentCategory)} />
