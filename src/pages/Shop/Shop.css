@@ -218,6 +218,8 @@
 /* Active Filters */
 .shop-sidebar .active-filters {
   margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
   padding: 15px;
   background: #f8fafc;
   border-radius: 10px;
