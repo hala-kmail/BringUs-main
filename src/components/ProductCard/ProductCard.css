@@ -1277,12 +1277,6 @@ max-width: 300px;
 }
 
 @media (max-width: 768px) {
-  .product-card-new.list-view {
-  
-  }
-  
- 
-  
   .product-card-new.list-view .product-pricing-new {
     text-align: center;
     align-items: center;
