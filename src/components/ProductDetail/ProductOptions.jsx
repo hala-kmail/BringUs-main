@@ -49,12 +49,7 @@ const ProductOptions = ({
     return Object.values(grouped).sort((a, b) => (a.meta?.sortOrder || 0) - (b.meta?.sortOrder || 0));
   }, [product.specificationValues, specificationsMeta, currentLang]);
 
-  // --- Debugging ---
-  console.log('specificationsMeta:', specificationsMeta);
-  console.log('product.specificationValues:', product.specificationValues);
-  console.log('organizedSpecs:', organizedSpecs);
 
-  // إدارة اختيار المواصفات (حجم، طول، ...)
   // سنستخدم selectedSpecs ككائن: {specificationId: {valueId, valueAr, valueEn, titleAr, titleEn}}
   React.useEffect(() => {
     // تعيين القيم الافتراضية عند تحميل المنتج
@@ -223,12 +218,7 @@ const ProductOptions = ({
     // Start with product availableQuantity if provided, else a large number
     let available = Number.isFinite(product?.availableQuantity) ? product.availableQuantity : Number.POSITIVE_INFINITY;
     
-    console.log('🔍 Computing effective availability:', {
-      productAvailableQuantity: product?.availableQuantity,
-      initialAvailable: available,
-      organizedSpecs: organizedSpecs.length,
-      selectedSpecs: selectedSpecs
-    });
+   
     
     // Reduce by selected spec quantities (take the minimum among selected specs that have a defined quantity)
     if (organizedSpecs.length > 0 && selectedSpecs) {
@@ -236,15 +226,10 @@ const ProductOptions = ({
         const selected = selectedSpecs[group.specificationId];
         if (selected) {
           const match = group.values.find(v => v.valueId === selected.valueId);
-          console.log('🔍 Checking spec:', {
-            groupTitle: group.title,
-            selectedValueId: selected.valueId,
-            match: match,
-            matchQuantity: match?.quantity
-          });
+         
           if (typeof match?.quantity === 'number') {
             available = Math.min(available, match.quantity);
-            console.log('🔍 Updated available to:', available);
+          
           }
         }
       });
@@ -253,11 +238,9 @@ const ProductOptions = ({
     // If still Infinity (no limits found), fallback to product.availableQuantity or 0
     if (!Number.isFinite(available)) {
       available = product?.availableQuantity ?? 0;
-      console.log('🔍 Using fallback available:', available);
     }
     
     const finalAvailable = Math.max(0, available);
-    console.log('🔍 Final effective available:', finalAvailable);
     
     return finalAvailable;
   }, [product?.availableQuantity, organizedSpecs, selectedSpecs]);
@@ -320,14 +303,7 @@ const ProductOptions = ({
                 const isSelected = selectedSpecs[group.specificationId]?.valueId === spec._id || 
                                  selectedSpecs[group.specificationId]?.valueId === spec.valueId;
                 
-                // Debug logging
-                console.log('🔍 Spec selection debug:', {
-                  specId: spec._id,
-                  specValueId: spec.valueId,
-                  selectedValueId: selectedSpecs[group.specificationId]?.valueId,
-                  isSelected,
-                  specValue: value
-                });
+               
                 
                   const isOut = Number(spec.quantity) === 0;
                   const isLow = Number(spec.quantity) > 0 && Number(spec.quantity) <= 3;

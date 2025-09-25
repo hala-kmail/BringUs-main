@@ -16,7 +16,8 @@ const SidebarFilters = ({
   allProductLabels = [],
   maxPrice = 1000,
   loading = false,
-  isMobile = false
+  isMobile = false,
+  isSearching = false
 }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
@@ -164,11 +165,49 @@ const SidebarFilters = ({
         </button>
       </div>
 
+      {/* Search Box */}
+      <div className="search-filter-section">
+        <div className="search-filter-container">
+          <input
+            type="text"
+            placeholder={currentLang === 'ar' ? 'البحث في المنتجات...' : 'Search products...'}
+            value={filters.search || ''}
+            onChange={(e) => onFilterChange('search', e.target.value)}
+            className="search-filter-input"
+            disabled={loading}
+            autoComplete="off"
+          />
+          <div className="search-filter-icon">
+            {isSearching ? (
+              <div className="search-loading-spinner"></div>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            )}
+          </div>
+          {filters.search && (
+            <button
+              className="search-clear-btn"
+              onClick={() => onFilterChange('search', '')}
+              title={currentLang === 'ar' ? 'مسح البحث' : 'Clear search'}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+       
+      </div>
+
       {/* Active Filters */}
       {activeFilters.length > 0 && (
         <div className="active-filters">
           {activeFilters.map((filter, index) => (
-            <div key={`${filter.type}-${filter.value}`} className="active-filter">
+            <div key={`${filter.type}-${filter.value}`} className="active-filter" data-type={filter.type}>
               {filter.isColor ? (
                 <div className="active-filter-color">
                   <span 

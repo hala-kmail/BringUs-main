@@ -57,8 +57,8 @@ const OrderSummary = ({
       <div className="order-summary">
         {/* Items List */}
         <div className="order-items">
-          {cartItems.map((item) => (
-            <div key={item.cartItemId || item._id} className="order-item">
+          {cartItems.map((item, index) => (
+            <div key={`order-item-${index}`} className="order-item">
               <div className="item-image">
                 <img src={item.mainImage || item.product?.mainImage} alt={getItemName(item, currentLang)} />
                 <span className="item-quantity">{item.quantity}</span>

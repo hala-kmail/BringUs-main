@@ -10,7 +10,7 @@ const ProductActions = ({
   handleWishlistToggle,
   handleShare,
   handleWhatsAppOrder,
-  key,
+  
   product,
   canAddToCart
 }) => {

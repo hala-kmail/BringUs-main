@@ -60,7 +60,7 @@ const Pagination = ({
           disabled={currentPage === 1 || loading}
           title={currentLang === 'ar' ? 'السابق' : 'Previous'}
         >
-          {currentLang === 'ar' ? '‹' : '‹'}
+          {currentLang === 'ar' ? '‹' : '›'}
         </button>
         
         {visiblePages.map((page, index) => (
@@ -82,7 +82,7 @@ const Pagination = ({
           disabled={currentPage === totalPages || loading}
           title={currentLang === 'ar' ? 'التالي' : 'Next'}
         >
-          {currentLang === 'ar' ? '›' : '›'}
+          {currentLang === 'ar' ? '›' : '‹'}
         </button>
       </div>
     </div>

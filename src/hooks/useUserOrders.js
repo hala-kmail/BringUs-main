@@ -8,17 +8,18 @@ const useUserOrders = () => {
   const [filteredOrders, setFilteredOrders] = useState([]); // الطلبات المفلترة
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentFilter, setCurrentFilter] = useState(null); // تتبع الفلتر الحالي
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 0,
     totalItems: 0,
-    itemsPerPage: 10,
+    itemsPerPage: 5,
     hasNextPage: false,
     hasPrevPage: false
   });
 
   // جلب جميع طلبات المستخدم
-  const getUserOrders = useCallback(async (page = 1, limit = 10, status = null) => {
+  const getUserOrders = useCallback(async (page = 1, limit = 5, status = null) => {
     try {
       setLoading(true);
       setError(null);
@@ -34,7 +35,7 @@ const useUserOrders = () => {
         url += `&status=${status}`;
       }
 
-      console.log('🔍 Fetching user orders from:', url);
+     
 
       const response = await fetch(url, {
         method: 'GET',
@@ -46,7 +47,7 @@ const useUserOrders = () => {
 
       const data = await response.json();
 
-      console.log('🔍 User orders response:', data);
+    
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch orders');
@@ -58,6 +59,7 @@ const useUserOrders = () => {
         
         setAllOrders(ordersData);
         setFilteredOrders(ordersData);
+        setCurrentFilter(status); // حفظ الفلتر الحالي
         
         // تحديث الباجينيشن من الـ response
         setPagination({
@@ -83,7 +85,7 @@ const useUserOrders = () => {
   }, []);
 
   // دالة فلترة الطلبات حسب الحالة
-  const filterOrdersByStatus = useCallback(async (status) => {
+  const filterOrdersByStatus = useCallback(async (status, page = 1) => {
     try {
       setLoading(true);
       setError(null);
@@ -93,14 +95,13 @@ const useUserOrders = () => {
         throw new Error('No authentication token found');
       }
 
-      // بناء URL مع فلتر الحالة
-      let url = `${API_BASE_URL}/orders/my-orders?page=1&limit=${pagination.itemsPerPage}`;
+      // بناء URL مع فلتر الحالة ورقم الصفحة
+      let url = `${API_BASE_URL}/orders/my-orders?page=${page}&limit=${pagination.itemsPerPage}`;
       if (status && status !== '') {
         url += `&status=${status}`;
       }
 
-      console.log('🔍 Filtering orders by status:', status, 'URL:', url);
-
+ 
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -120,11 +121,12 @@ const useUserOrders = () => {
         const paginationData = data.pagination || {};
         
         setFilteredOrders(ordersData);
+        setCurrentFilter(status); // حفظ الفلتر الحالي
         
         // تحديث الباجينيشن للطلبات المفلترة
         setPagination(prev => ({
           ...prev,
-          currentPage: 1, // العودة للصفحة الأولى
+          currentPage: paginationData.currentPage || page,
           totalPages: paginationData.totalPages || 1,
           totalItems: paginationData.totalItems || ordersData.length,
           hasNextPage: paginationData.hasNextPage || false,
@@ -152,7 +154,7 @@ const useUserOrders = () => {
 
       const url = `${API_BASE_URL}/orders/my-orders/${orderId}`;
 
-      console.log('🔍 Fetching order details from:', url);
+    
 
       const response = await fetch(url, {
         method: 'GET',
@@ -164,7 +166,7 @@ const useUserOrders = () => {
 
       const data = await response.json();
 
-      console.log('🔍 Order details response:', data);
+    
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch order details');
@@ -236,10 +238,10 @@ const useUserOrders = () => {
       // استخدام دالة تحديث الحالة لتغيير حالة الطلب إلى "cancelled"
       const result = await updateOrderStatus(orderId, 'cancelled', reason);
       
-      console.log('Order cancelled successfully:', result);
+    
       return result;
     } catch (err) {
-      console.error('Error cancelling order:', err);
+   
       setError(err.message);
       throw err;
     } finally {
@@ -247,16 +249,26 @@ const useUserOrders = () => {
     }
   }, [updateOrderStatus]); // Dependency on updateOrderStatus
 
+  // دالة لجلب الطلبات مع الفلتر الحالي وصفحة محددة
+  const getOrdersWithCurrentFilter = useCallback(async (page = 1) => {
+    if (currentFilter) {
+      await filterOrdersByStatus(currentFilter, page);
+    } else {
+      await getUserOrders(page, pagination.itemsPerPage);
+    }
+  }, [currentFilter, filterOrdersByStatus, getUserOrders, pagination.itemsPerPage]);
+
   // إعادة تعيين الحالة
   const reset = useCallback(() => {
     setAllOrders([]);
     setFilteredOrders([]);
+    setCurrentFilter(null);
     setError(null);
     setPagination({
       currentPage: 1,
       totalPages: 0,
       totalItems: 0,
-      itemsPerPage: 10,
+      itemsPerPage: 5,
       hasNextPage: false,
       hasPrevPage: false
     });
@@ -268,8 +280,10 @@ const useUserOrders = () => {
     loading,
     error,
     pagination,
+    currentFilter, // الفلتر الحالي
     getUserOrders,
     filterOrdersByStatus, // دالة الفلترة الجديدة
+    getOrdersWithCurrentFilter, // دالة جلب الطلبات مع الفلتر الحالي
     getOrderDetails,
     cancelOrder,
     updateOrderStatus,

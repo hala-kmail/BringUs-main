@@ -476,7 +476,7 @@ const useWishlistAPI = () => {
     const guestId = generateStableGuestId();
     if (guestId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('👤 Guest session ready:', guestId);
+       
       }
     }
   }, [generateStableGuestId]);

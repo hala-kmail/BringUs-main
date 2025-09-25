@@ -75,9 +75,48 @@ const AlmostFinishedSale = () => {
     );
   }
 
-  // Don't render if no almost finished products
+  // Show empty state when no almost finished products
   if (!products || products.length === 0) {
-    return null;
+    return (
+      <section className="almost-finished-sale">
+        <Navbar />
+        <SecondaryNavbar />
+        <div className="almost-finished-container">
+          <div className="almost-finished-header">
+            <div className="header-background">
+              <div className="header-pattern"></div>
+              <div className="header-glow"></div>
+            </div>
+            <div className="almost-finished-title-section">
+              <div className="title-badge">
+                <span className="badge-icon">⚡</span>
+                <span className="badge-text">{t('almost_finished_sale.title')}</span>
+              </div>
+              <p className="almost-finished-subtitle">{t('almost_finished_sale.subtitle')}</p>
+            </div>
+          </div>
+          
+          <div className="no-products-container">
+            <div className="no-products-icon">
+              <svg width="64" height="64" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <h3 className="no-products-title">
+              {t('almost_finished_sale.no_products_title')}
+            </h3>
+            <p className="no-products-message">
+              {t('almost_finished_sale.no_products_message')}
+            </p>
+            <div className="no-products-actions">
+              <a href="/shop" className="browse-shop-btn">
+                {t('almost_finished_sale.browse_shop')}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -109,20 +148,23 @@ const AlmostFinishedSale = () => {
         {/* Products Grid */}
         <div className="products-grid">
           {products && products.length > 0 ? (
-            products.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                currentLang={currentLang}
-                t={t}
-                isInWishlist={isInWishlist}
-                handleWishlistToggle={handleWishlistToggle}
-                handleAddToCart={() => handleAddToCart(product)}
-                getFeatureById={() => null}
-                getCategoryById={() => null}
-                categories={categories}
-              />
-            ))
+            products.map((product) => {
+              // التأكد من وجود productLabels في البيانات
+              const productWithLabels = {
+                ...product,
+                productLabels: product.productLabels || []
+              };
+              
+              return (
+                <ProductCard
+                  key={product._id}
+                  product={productWithLabels}
+                  isInWishlist={isInWishlist}
+                  handleWishlistToggle={handleWishlistToggle}
+                  categories={categories}
+                />
+              );
+            })
           ) : (
             <div className="no-products-message">
               <p>{t('no_almost_finished_products')}</p>

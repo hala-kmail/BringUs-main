@@ -18,8 +18,10 @@ const UserOrders = () => {
     loading,
     error,
     pagination,
+    currentFilter,
     getUserOrders,
     filterOrdersByStatus,
+    getOrdersWithCurrentFilter,
     getOrderDetails,
     cancelOrder
   } = useUserOrders();
@@ -34,8 +36,13 @@ const UserOrders = () => {
 
   // جلب الطلبات عند تحميل المكون
   useEffect(() => {
-    getUserOrders(1, 10);
+    getUserOrders(1, 5);
   }, [getUserOrders]);
+
+  // مزامنة selectedStatus مع currentFilter من الـ hook
+  useEffect(() => {
+    setSelectedStatus(currentFilter || '');
+  }, [currentFilter]);
 
   // دالة لتغيير حالة الفلتر
   const handleStatusFilter = (status) => {
@@ -90,7 +97,8 @@ const UserOrders = () => {
 
   // دالة لتغيير الصفحة
   const handlePageChange = (page) => {
-    getUserOrders(page, pagination.itemsPerPage);
+    // استخدام الفلتر الحالي عند تغيير الصفحة
+    getOrdersWithCurrentFilter(page);
   };
 
   // دالة للحصول على حالة الطلب المترجمة
@@ -153,7 +161,7 @@ const UserOrders = () => {
     return (
       <div className="user-orders-error">
         <p>{error}</p>
-        <button onClick={() => getUserOrders(1, 10, selectedStatus)}>
+        <button onClick={() => getUserOrders(1, 5, selectedStatus)}>
           {currentLang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
         </button>
       </div>
@@ -296,7 +304,7 @@ const UserOrders = () => {
             disabled={pagination.currentPage === 1}
             onClick={() => handlePageChange(pagination.currentPage - 1)}
           >
-            {currentLang === 'ar' ? 'السابق' : 'Previous'}
+   ‹
           </button>
           
           <div className="page-numbers">
@@ -316,7 +324,7 @@ const UserOrders = () => {
             disabled={pagination.currentPage === pagination.totalPages}
             onClick={() => handlePageChange(pagination.currentPage + 1)}
           >
-            {currentLang === 'ar' ? 'التالي' : 'Next'}
+       ›
           </button>
         </div>
       )}

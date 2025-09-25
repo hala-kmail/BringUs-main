@@ -151,6 +151,7 @@
       "forgot_password": "هل نسيت كلمة المرور؟"
     },
     "register": {
+      "account_info": "المعلومات الحسابية",
       "personal_info": "المعلومات الشخصية",
       "address_info": "المعلومات الشخصية",
       "company_info": "المعلومات الشخصية",
@@ -625,7 +626,7 @@
     "payment_successful": "تم الدفع بنجاح!",
     "pay_later": "سأدفع لاحقاً",
     "i_have_paid": "لقد قمت بالدفع",
-    "send_whatsapp": "إرسال عبر واتساب",
+    "send_whatsapp": "انشاء الطلب",
     "scan_qr_code": "امسح رمز QR للدفع",
     "payment_instructions": "تعليمات الدفع",
     "privacy_policy_title": "سياسة الخصوصية",
@@ -641,7 +642,10 @@
     "browse_all": "تصفح جميع المنتجات",
     "no_products": "لا توجد منتجات على وشك النفاد",
     "no_products_description": "جميع المنتجات متوفرة حالياً بمخزون كافي",
-    "no_almost_finished_products": "لا توجد منتجات على وشك النفاد حالياً"
+    "no_almost_finished_products": "لا توجد منتجات على وشك النفاد حالياً",
+    "no_products_title": "لا توجد منتجات على وشك النفاد",
+    "no_products_message": "جميع المنتجات متوفرة حالياً بمخزون كافي. تصفح المتجر للعثور على منتجات رائعة!",
+    "browse_shop": "تصفح المتجر"
   },
   "stock": {
     "critical": "كمية حرجة",

@@ -80,7 +80,12 @@ const Wishlist = () => {
   const getProductData = (wishlistItem) => {
     // إذا كان المنتج موجود في البيانات (من API likes)
     if (wishlistItem.product) {
-      return wishlistItem.product;
+      // التأكد من وجود productLabels في البيانات
+      const productData = {
+        ...wishlistItem.product,
+        productLabels: wishlistItem.product.productLabels || wishlistItem.productLabels || []
+      };
+      return productData;
     }
     
     // إذا كان المنتج موجود في البيانات مباشرة (من API)

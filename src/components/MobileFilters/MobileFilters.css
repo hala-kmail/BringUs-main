@@ -175,6 +175,181 @@
   min-height: 0; /* Important for flexbox scrolling */
 }
 
+/* Mobile Search Filter Container */
+.mobile-filters-body .search-filter-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0; /* Remove margin since we're using padding in parent */
+  transition: all 0.3s ease;
+  order: -1; /* Ensure search appears at the top */
+  z-index: 10;
+}
+
+/* Search Filter Section */
+.mobile-filters-body .search-filter-section {
+  order: -1; /* Ensure search section appears at the top */
+  margin-bottom: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 0rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.mobile-filters-body .search-filter-container:hover .search-filter-input {
+  border-color: #cbd5e1;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-filters-body .search-filter-input {
+  width: 100%;
+  padding: 14px 16px 14px 40px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px; /* Prevent zoom on iOS */
+  transition: all 0.3s ease;
+  background: #f8fafc;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[dir="rtl"] .mobile-filters-body .search-filter-input {
+  padding: 14px 40px 14px 16px;
+  font-family: 'Tajawal', 'Arial', sans-serif;
+  font-weight: 500;
+}
+
+.mobile-filters-body .search-filter-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(99, 76, 159, 0.1), 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.mobile-filters-body .search-filter-input::placeholder {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+[dir="rtl"] .mobile-filters-body .search-filter-input::placeholder {
+  font-family: 'Tajawal', 'Arial', sans-serif;
+  font-weight: 500;
+}
+
+.mobile-filters-body .search-filter-icon {
+  position: absolute;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+[dir="rtl"] .mobile-filters-body .search-filter-icon {
+  left: auto;
+  right: 14px;
+}
+
+.mobile-filters-body .search-filter-input:focus + .search-filter-icon,
+.mobile-filters-body .search-filter-container:hover .search-filter-icon {
+  color: var(--primary-color);
+}
+
+.mobile-filters-body .search-clear-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[dir="rtl"] .mobile-filters-body .search-clear-btn {
+  right: auto;
+  left: 14px;
+}
+
+.mobile-filters-body .search-clear-btn:hover {
+  color: var(--primary-color);
+  background: #f1f5f9;
+}
+
+.mobile-filters-body .search-clear-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Search loading spinner */
+.mobile-filters-body .search-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: searchSpin 1s linear infinite;
+}
+
+@keyframes searchSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Ensure proper ordering of filter sections */
+.mobile-filters-body > * {
+  order: 1; /* Default order for all sections */
+}
+
+.mobile-filters-body .search-filter-section {
+  order: -1; /* Search section always at top */
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  
+  
+  .mobile-filters-body .search-filter-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 14px 12px 36px;
+  }
+  
+  [dir="rtl"] .mobile-filters-body .search-filter-input {
+    padding: 12px 36px 12px 14px;
+  }
+  
+  .mobile-filters-body .search-filter-icon {
+    left: 12px;
+  }
+  
+  [dir="rtl"] .mobile-filters-body .search-filter-icon {
+    left: auto;
+    right: 12px;
+  }
+  
+  .mobile-filters-body .search-clear-btn {
+    right: 12px;
+  }
+  
+  [dir="rtl"] .mobile-filters-body .search-clear-btn {
+    right: auto;
+    left: 12px;
+  }
+}
+
 .mobile-filter-section {
  
   border-bottom: 1px solid #f1f5f9;

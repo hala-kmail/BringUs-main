@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
-import { PAYMENT_API_CONFIG, CURRENCY_CONVERSION } from '../contexts/payment';
+import { PAYMENT_API_CONFIG, CURRENCY_CONVERSION, getCallbackUrl } from '../contexts/payment';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
 
@@ -64,7 +64,7 @@ const usePaymentMethods = () => {
         //   email: orderData.customerInfo.email || 'customer@example.com',
         //   phone: orderData.customerInfo.phone
         // },
-        callback_url: PAYMENT_API_CONFIG.CALLBACK_URL,
+        callback_url: getCallbackUrl(),
         metadata: {
           store_id: storeData._id,
           order_type: orderData.deliveryMethod,
@@ -221,12 +221,12 @@ const usePaymentMethods = () => {
         // Filter only active payment methods
         const activeMethods = data.data.filter(method => method.isActive);
         setPaymentMethods(activeMethods);
-        console.log('Payment methods loaded:', activeMethods);
+        
       } else {
         throw new Error('Invalid response format');
       }
     } catch (err) {
-      console.error('Error fetching payment methods:', err);
+      
       setError(err.message);
     } finally {
       setLoading(false);
@@ -239,7 +239,7 @@ const usePaymentMethods = () => {
     // Only fetch if we have a store ID and haven't initialized for this store
     if (storeId && (!hasInitialized.current || currentStoreId.current !== storeId)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing payment methods for store ID:', storeId);
+      
       }
       hasInitialized.current = true;
       currentStoreId.current = storeId;

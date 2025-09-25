@@ -16,7 +16,7 @@ export const saveToken = (token) => {
     }
     
     localStorage.setItem(TOKEN_KEY, token);
-    console.log('Token saved successfully to localStorage');
+   
     return true;
   } catch (error) {
     console.error('Error saving token:', error);
@@ -36,13 +36,11 @@ export const getToken = () => {
     } else {
       // Only log once per session to avoid spam
       if (!window.tokenLogged) {
-        console.log('No token found in localStorage');
         window.tokenLogged = true;
       }
       return null;
     }
   } catch (error) {
-    console.error('Error getting token:', error);
     return null;
   }
 };

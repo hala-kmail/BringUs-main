@@ -4,6 +4,7 @@ import { PAYMENT_API_CONFIG } from '../contexts/payment';
 const usePaymentVerification = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
+  const [hasChecked, setHasChecked] = useState(false);
 
   const verifyPayment = async (reference) => {
     setIsVerifying(true);
@@ -29,8 +30,21 @@ const usePaymentVerification = () => {
       };
 
       // تحليل حالة الدفع من الاستجابة
-      if (data.data) {
+     
+      
+      if (data.status === true) {
+        // إذا كان API يعيد status: true، فهذا يعني نجاح الدفع
+        result.status = 'success';
+        result.message = 'Payment completed successfully';
+       
+      } else if (data.status === false) {
+        // إذا كان API يعيد status: false، فهذا يعني فشل الدفع
+        result.status = 'failed';
+        result.message = 'Payment failed';
+       
+      } else if (data.data) {
         const paymentData = data.data;
+        console.log('🔍 Payment data details:', paymentData);
         
         if (paymentData.status === 'CAPTURED' || paymentData.status === 'SUCCESS' || paymentData.status === 'COMPLETED') {
           result.status = 'success';
@@ -66,12 +80,13 @@ const usePaymentVerification = () => {
   const checkPaymentFromURL = async () => {
     // التحقق من وجود reference في URL
     const urlParams = new URLSearchParams(window.location.search);
-    const reference = urlParams.get('reference') || urlParams.get('tap_id') || urlParams.get('transaction_id') || urlParams.get('id');
+    const reference = urlParams.get('reference') || urlParams.get('trxref') || urlParams.get('tap_id') || urlParams.get('transaction_id') || urlParams.get('id');
     
     if (!reference) {
       return null;
     }
 
+  
     // حفظ reference في localStorage إذا لم يكن موجوداً
     if (!localStorage.getItem('lahza_reference')) {
       localStorage.setItem('lahza_reference', reference);
@@ -80,24 +95,54 @@ const usePaymentVerification = () => {
     return await verifyPayment(reference);
   };
 
-  // التحقق التلقائي عند تحميل الصفحة
-  useEffect(() => {
-    const checkPayment = async () => {
-      const result = await checkPaymentFromURL();
-      if (result && result.status === 'success') {
-        // إزالة reference من localStorage بعد التحقق الناجح
-        localStorage.removeItem('lahza_reference');
-      }
-    };
+  const clearPaymentParams = () => {
+    // تنظيف URL من معاملات الدفع
+    const url = new URL(window.location);
+    url.searchParams.delete('reference');
+    url.searchParams.delete('trxref');
+    url.searchParams.delete('tap_id');
+    url.searchParams.delete('transaction_id');
+    url.searchParams.delete('id');
+    window.history.replaceState({}, '', url);
+    
+    // تنظيف localStorage
+    localStorage.removeItem('lahza_reference');
+  };
 
-    checkPayment();
-  }, []);
+  // التحقق التلقائي عند تحميل الصفحة - معطل للسماح للتحكم اليدوي
+  // useEffect(() => {
+  //   // منع إعادة التشغيل إذا تم التحقق بالفعل
+  //   if (hasChecked) {
+  //     return;
+  //   }
+
+  //   const checkPayment = async () => {
+  //     try {
+  //       const result = await checkPaymentFromURL();
+  //       if (result) {
+  //         console.log('📊 Payment verification result:', result);
+  //         // لا ننظف المعاملات هنا - نتركها للفحص اليدوي
+  //         // سيتم تنظيفها لاحقاً عند إغلاق بوب أب الفحص
+  //       }
+  //       setHasChecked(true);
+  //     } catch (error) {
+  //       console.error('Error in payment check:', error);
+  //       // تنظيف المعاملات عند حدوث خطأ لتجنب الحلقة اللانهائية
+  //       clearPaymentParams();
+  //       setHasChecked(true);
+  //     }
+  //   };
+
+  //   checkPayment();
+  // }, [hasChecked]);
 
   return {
     verifyPayment,
     checkPaymentFromURL,
+    clearPaymentParams,
     isVerifying,
-    verificationResult
+    verificationResult,
+    hasChecked
   };
 };
 

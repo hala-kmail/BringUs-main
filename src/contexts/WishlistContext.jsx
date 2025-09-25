@@ -67,7 +67,7 @@ export const WishlistProvider = ({ children }) => {
   const clearGuestId = useCallback(() => {
     localStorage.removeItem('guestId');
     if (process.env.NODE_ENV === 'development') {
-      console.log('🗑️ Guest ID cleared from localStorage');
+     
     }
   }, []);
 

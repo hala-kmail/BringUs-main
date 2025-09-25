@@ -79,6 +79,7 @@ const Checkout = () => {
     firstName: '',
     lastName: '',
     phone: '',
+    email: '',
     deliveryMethodId: '',
     address: '',
     city: '',
@@ -103,6 +104,7 @@ const Checkout = () => {
   const [showLahzaPayment, setShowLahzaPayment] = useState(false);
   const [showPaymentVerificationModal, setShowPaymentVerificationModal] = useState(false);
   const [paymentVerificationData, setPaymentVerificationData] = useState(null);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
   // إغلاق البوب أب عند تغيير المسار
   useEffect(() => {
@@ -119,22 +121,78 @@ const Checkout = () => {
   // التحقق من الدفع عند تحميل الصفحة
   useEffect(() => {
     const checkPaymentStatus = async () => {
-      const result = await checkPaymentFromURL();
-      if (result && result.status === 'success') {
-        console.log('Payment verification successful:', result);
-        setPaymentVerificationData(result);
-        setShowPaymentVerificationModal(true);
-      } else if (result && result.status === 'failed') {
-        console.log('Payment verification failed:', result);
-        const errorMessage = currentLang === 'ar' 
-          ? 'فشل في عملية الدفع. يرجى المحاولة مرة أخرى.'
-          : 'Payment failed. Please try again.';
-        showErrorNotification(errorMessage);
+      try {
+        // التحقق من وجود معاملات الدفع في URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasPaymentParams = urlParams.get('reference') || urlParams.get('trxref') || urlParams.get('tap_id') || urlParams.get('transaction_id');
+        
+        if (!hasPaymentParams) {
+       
+          return;
+        }
+        
+       
+        const result = await checkPaymentFromURL();
+       
+        if (result && result.status === 'success') {
+        
+          // حماية من إنشاء الطلب المكرر
+          if (isCreatingOrder) {
+            console.log('⚠️ Order creation already in progress, skipping...');
+            return;
+          }
+          
+          // إنشاء الطلب مباشرة عند نجاح الدفع
+          try {
+            setIsCreatingOrder(true);
+            
+            // انتظار قصير فقط لضمان تحميل البيانات
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await handleCreateOrderAndShowWhatsApp();
+            console.log('🎉 Order created successfully after payment verification');
+            
+            // تنظيف URL من معاملات الدفع بعد إنشاء الطلب بنجاح
+            const url = new URL(window.location);
+            url.searchParams.delete('reference');
+            url.searchParams.delete('trxref');
+            url.searchParams.delete('tap_id');
+            url.searchParams.delete('transaction_id');
+            window.history.replaceState({}, '', url);
+            
+          } catch (error) {
+            console.error('❌ Error creating order after payment verification:', error);
+            const errorMessage = currentLang === 'ar' 
+              ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
+              : 'Error creating order. Please try again.';
+            showErrorNotification(errorMessage);
+          } finally {
+            setIsCreatingOrder(false);
+          }
+        } else if (result && result.status === 'failed') {
+          console.log('❌ Payment verification failed:', result);
+          const errorMessage = currentLang === 'ar' 
+            ? 'فشل في عملية الدفع. يرجى المحاولة مرة أخرى.'
+            : 'Payment failed. Please try again.';
+          showErrorNotification(errorMessage);
+        } else if (result) {
+          console.log('⚠️ Payment status unknown or pending:', result);
+          console.log('⚠️ Showing verification modal for manual confirmation');
+          // عرض بوب أب الفحص للحالات غير المعروفة
+          setPaymentVerificationData(result);
+          setShowPaymentVerificationModal(true);
+        } else {
+          console.log('❌ No payment result returned');
+        }
+      } catch (error) {
+        console.error('Error checking payment status:', error);
+        // لا نعرض رسالة خطأ هنا لتجنب إزعاج المستخدم
       }
     };
 
+    // التحقق مرة واحدة فقط عند تحميل الصفحة
     checkPaymentStatus();
-  }, [checkPaymentFromURL, currentLang]);
+  }, []); // إزالة dependencies لتجنب إعادة التشغيل
 
   // إغلاق البوب أب عند تغيير المسار
   useEffect(() => {
@@ -146,19 +204,17 @@ const Checkout = () => {
 
   // تحديث التوتال عند تغيير أي شيء يؤثر عليه
   useEffect(() => {
-    console.log('🔄 useEffect triggered - recalculating cart totals');
     const totals = getCartTotals();
-    console.log('💰 Cart totals updated:', totals);
     setCartTotalsState(totals);
   }, [cartItems, getCartTotals, shippingAreaId]);
 
   // دالة لتحديث منطقة التوصيل وإعادة حساب التوتال
   const handleShippingAreaChange = (areaId) => {
-    console.log('🔄 Changing shipping area to:', areaId);
+   
     updateShippingArea(areaId);
     // إعادة حساب التوتال
     const newTotals = getCartTotals();
-    console.log('💰 New cart totals:', newTotals);
+
     setCartTotalsState(newTotals);
   };
 //-----------------------------------paymentMethods------------------------------------------------  
@@ -245,39 +301,24 @@ const Checkout = () => {
 
 //-----------------------------------useEffect------------------------------------------------  
   useEffect(() => {
-    console.log('Checkout useEffect - cartItems:', cartItems);
-    console.log('Checkout useEffect - cartItems.length:', cartItems?.length);
-    console.log('Checkout useEffect - cartItems type:', typeof cartItems);
-    console.log('Checkout useEffect - cartLoading:', cartLoading);
-    
     // لا نتحقق من السلة الفارغة أثناء التحميل
     if (cartLoading) {
-      console.log('Cart is still loading, waiting...');
       return;
     }
     
-    // التحقق من أن cartItems موجود وليس فارغاً بعد انتهاء التحميل
-    // تأكد من أن cartItems ليس undefined أو null أولاً
-    // if (!cartItems) {
-    //   console.log('Cart items is null/undefined, waiting for data...');
-    //   return;
-    // }
-    
-    // // ثم تحقق من أنه array وليس فارغاً
-    // if (Array.isArray(cartItems) && cartItems.length === 0) {
-    //   console.log('Cart is empty after loading, redirecting to /cart');
-    //   navigate('/cart');
+    // إذا كانت السلة فارغة بعد انتهاء التحميل، أعد التوجيه إلى صفحة السلة
+    if (!cartItems || cartItems.length === 0) {
+      return;
+    }
     
   }, [cartItems, cartLoading, navigate]);
   
   // Monitor cart changes for debugging
   useEffect(() => {
-    console.log('🛒 Cart state changed:', {
-      cartItems: cartItems,
-      cartItemsLength: cartItems?.length,
-      cartLoading: cartLoading,
-      timestamp: new Date().toISOString()
-    });
+    // Only log when cart actually changes, not on every render
+    if (process.env.NODE_ENV === 'development') {
+    
+    }
   }, [cartItems, cartLoading]);
   
   //-----------------------------------useEffect------------------------------------------------  
@@ -287,7 +328,6 @@ const Checkout = () => {
       const userInfo = localStorage.getItem('userInfo');
       if (userInfo) {
         const user = JSON.parse(userInfo);
-        console.log('Loading user data for checkout:', user);
         
         // الحصول على العنوان الافتراضي
         const defaultAddress = user.addresses?.find(addr => addr.isDefault) || user.addresses?.[0];
@@ -388,6 +428,15 @@ const handlePlaceOrderClick = (e) => {
   if (method.methodType === 'lahza') {
     try {
       console.log('Initializing Lahza payment...');
+      
+      // حفظ البيانات قبل الدفع
+      saveCheckoutData();
+      
+      // ضمان وجود storeSlug في localStorage قبل الدفع
+      if (store?.slug && !localStorage.getItem('storeSlug')) {
+        localStorage.setItem('storeSlug', store.slug);
+        console.log('💾 Store slug saved before payment:', store.slug);
+      }
       
       // Prepare order data for Lahza
       const orderData = {
@@ -971,20 +1020,45 @@ const handleSendWhatsApp = async () => {
     
          // Get WhatsApp number from store data - prioritize WhatsApp number
      let phoneNumber = store?.contact?.whatsapp;
+     console.log('📞 WhatsApp numbers available:', {
+       contactWhatsapp: store?.contact?.whatsapp,
+       storeWhatsappNumber: store?.whatsappNumber,
+       contactPhone: store?.contact?.phone
+     });
      
      // If no WhatsApp number, try to get phone number
      if (!phoneNumber) {
        phoneNumber = store?.whatsappNumber;
      }
      
-           // If still no number, show error
-      if (!phoneNumber) {
-        const errorMessage = currentLang === 'ar' 
-          ? 'رقم الواتساب الخاص بالمتجر غير متوفر'
-          : 'Store WhatsApp number is not available';
-        showErrorNotification(errorMessage);
-        return;
-      }
+     // If still no number, try to get contact phone
+     if (!phoneNumber) {
+       phoneNumber = store?.contact?.phone;
+     }
+     
+     // If still no number, try to get from localStorage storeData
+     if (!phoneNumber) {
+       try {
+         const storedStoreData = localStorage.getItem('storeData');
+         if (storedStoreData) {
+           const parsedStoreData = JSON.parse(storedStoreData);
+           phoneNumber = parsedStoreData?.whatsappNumber || parsedStoreData?.contact?.whatsapp || parsedStoreData?.contact?.phone;
+           console.log('📦 Using WhatsApp number from localStorage:', phoneNumber);
+         }
+       } catch (error) {
+         console.warn('Could not get WhatsApp number from localStorage:', error);
+       }
+     }
+     
+     // If still no number, show error instead of using default
+     if (!phoneNumber) {
+       console.error('❌ No WhatsApp number found in store data or localStorage');
+       const errorMessage = currentLang === 'ar' 
+         ? 'رقم الواتساب غير متوفر في بيانات المتجر'
+         : 'WhatsApp number not available in store data';
+       showErrorNotification(errorMessage);
+       return message; // Return the message without sending WhatsApp
+     }
      
      // Clean the phone number (remove any non-digit characters except +)
      const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
@@ -1003,7 +1077,7 @@ const handleSendWhatsApp = async () => {
        phoneNumber: finalPhoneNumber,
        whatsappMessage: message,
        deliveryMethod: deliveryMethod,
-       customerAddress: `${formData.address}, ${formData.city}${formData.district ? `, ${formData.district}` : ''}`
+       customerAddress: `${customerInfo.address}, ${customerInfo.city}${customerInfo.district ? `, ${customerInfo.district}` : ''}`
      };
      showBeautifulSuccessMessage(whatsappData);
      
@@ -1229,7 +1303,7 @@ const handleSendWhatsApp = async () => {
              box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
              transition: all 0.3s ease;
              text-decoration: none;
-           " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'" onclick="window.open('https://wa.me/${whatsappData.phoneNumber}?text=${encodeURIComponent(whatsappData.whatsappMessage)}', '_blank')">
+           " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'">
              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
              </svg>
@@ -1285,9 +1359,9 @@ const handleSendWhatsApp = async () => {
        const closeButton = document.getElementById('close-success-modal');
        
        if (whatsappButton) {
-         console.log('WhatsApp button found, adding backup click listener');
+         console.log('WhatsApp button found, adding click listener');
          whatsappButton.addEventListener('click', () => {
-           console.log('WhatsApp button clicked via backup listener');
+           console.log('WhatsApp button clicked');
            if (whatsappData.phoneNumber && whatsappData.whatsappMessage) {
              const whatsappUrl = `https://wa.me/${whatsappData.phoneNumber}?text=${encodeURIComponent(whatsappData.whatsappMessage)}`;
              console.log('Opening WhatsApp URL:', whatsappUrl);
@@ -1460,12 +1534,322 @@ const handleSendWhatsApp = async () => {
       document.head.appendChild(style);
     }
   };
+
+  //-----------------------------------saveCheckoutData------------------------------------------------
+  const saveCheckoutData = () => {
+    const checkoutData = {
+      store: store,
+      user: user,
+      cartItems: cartItems,
+      formData: formData,
+      cartTotals: cartTotalsState,
+      deliveryMethod: deliveryMethod,
+      selectedPaymentMethod: selectedPaymentMethod,
+      timestamp: Date.now()
+    };
+    
+    localStorage.setItem('checkout_data', JSON.stringify(checkoutData));
+    
+    // حفظ storeSlug بشكل منفصل لضمان الوصول إليه
+    if (store?.slug) {
+      localStorage.setItem('storeSlug', store.slug);
+      console.log('💾 Store slug saved:', store.slug);
+    }
+    
+    console.log('💾 Checkout data saved to localStorage');
+  };
+
+  //-----------------------------------loadCheckoutData------------------------------------------------
+  const loadCheckoutData = () => {
+    try {
+      const savedData = localStorage.getItem('checkout_data');
+      if (savedData) {
+        const checkoutData = JSON.parse(savedData);
+        console.log('📂 Checkout data loaded from localStorage:', checkoutData);
+        
+        // ضمان وجود storeSlug في localStorage
+        if (checkoutData.store?.slug && !localStorage.getItem('storeSlug')) {
+          localStorage.setItem('storeSlug', checkoutData.store.slug);
+          console.log('💾 Store slug restored from checkout data:', checkoutData.store.slug);
+        }
+        
+        return checkoutData;
+      }
+    } catch (error) {
+      console.error('Error loading checkout data:', error);
+    }
+    return null;
+  };
+
+  //-----------------------------------clearCheckoutData------------------------------------------------
+  const clearCheckoutData = () => {
+    localStorage.removeItem('checkout_data');
+    console.log('🗑️ Checkout data cleared from localStorage');
+  };
+
+  //-----------------------------------handleCreateOrderAndShowWhatsApp------------------------------------------------
+  const handleCreateOrderAndShowWhatsApp = async () => {
+    try {
+      console.log('Creating order and showing WhatsApp popup...');
+      
+      // حماية إضافية من إنشاء الطلب المكرر
+      if (isCreatingOrder) {
+        console.log('⚠️ Order creation already in progress, skipping duplicate...');
+        return;
+      }
+      
+      // حماية إضافية باستخدام localStorage
+      const orderCreationKey = 'order_creation_in_progress';
+      if (localStorage.getItem(orderCreationKey)) {
+        console.log('⚠️ Order creation already in progress (localStorage check), skipping duplicate...');
+        return;
+      }
+      
+      // تعيين علامة إنشاء الطلب
+      localStorage.setItem(orderCreationKey, 'true');
+      
+      // محاولة تحميل البيانات من localStorage أولاً
+      const savedData = loadCheckoutData();
+      let storeData = store;
+      let userData = user;
+      let cartData = cartItems;
+      let formDataToUse = formData;
+      let cartTotalsData = cartTotalsState;
+      let deliveryMethodData = deliveryMethod;
+      let selectedPaymentMethodData = selectedPaymentMethod;
+      
+      if (savedData) {
+    
+        storeData = savedData.store || store;
+        userData = savedData.user || user;
+        cartData = savedData.cartItems || cartItems;
+        formDataToUse = savedData.formData || formData;
+        cartTotalsData = savedData.cartTotals || cartTotalsState;
+        deliveryMethodData = savedData.deliveryMethod || deliveryMethod;
+        selectedPaymentMethodData = savedData.selectedPaymentMethod || selectedPaymentMethod;
+      }
+     
+    
+      // إنشاء الطلب أولاً
+      const orderData = {
+        store: {
+          _id: storeData?._id,
+          nameAr: storeData?.nameAr,
+          nameEn: storeData?.nameEn,
+          logo: storeData?.logo,
+          contact: storeData?.contact
+        },
+        user: userData?._id || null,
+        items: cartData.map(item => {
+          let productId = null;
+          
+          if (item.productId) {
+            productId = item.productId;
+          } else if (item.product && typeof item.product === 'string') {
+            productId = item.product;
+          } else if (item.product && typeof item.product === 'object') {
+            productId = item.product._id || item.product.id;
+          } else if (item._id) {
+            productId = item._id;
+          }
+          
+          return {
+            product: productId,
+            quantity: item.quantity
+          };
+        }),
+        cartItems: cartData.map(item => ({
+          product: item.productId || (item.product && typeof item.product === 'string' ? item.product : item.product?._id || item.product?.id || item._id),
+          quantity: item.quantity,
+          selectedSpecifications: item.selectedSpecifications || [],
+          selectedColors: item.selectedColors || []
+        })),
+        shippingAddress: {
+          firstName: formDataToUse.firstName,
+          lastName: formDataToUse.lastName,
+          email: formDataToUse.email || '',
+          phone: formDataToUse.phone,
+          street: formDataToUse.address,
+          city: formDataToUse.city,
+          district: formDataToUse.district,
+          country: '',
+          zipCode: ''
+        },
+        billingAddress: {
+          firstName: formDataToUse.firstName,
+          lastName: formDataToUse.lastName,
+          email: formDataToUse.email || '',
+          phone: formDataToUse.phone,
+          street: formDataToUse.address,
+          city: formDataToUse.city,
+          district: formDataToUse.district,
+          country: '',
+          zipCode: ''
+        },
+        paymentInfo: {
+          method: getPaymentMethodForAPI(selectedPaymentMethodData?.methodType),
+          paymentMethodId: selectedPaymentMethodData?.key,
+          status: 'completed' // تم الدفع بنجاح
+        },
+        shippingInfo: {
+          method: deliveryMethodData === 'delivery' ? 'delivery' : 'pickup',
+          cost: getShippingPrice(),
+          deliveryMethodId: formDataToUse.deliveryMethodId || null
+        },
+        notes: {
+          customer: formDataToUse.notes || ''
+        },
+        isGift: false,
+        giftMessage: '',
+        deliveryArea: formDataToUse.deliveryMethodId || undefined,
+        currency: storeData?.settings.currency || 'ILS'
+      };
+
+      // التحقق من وجود المتجر
+      if (!orderData.store._id) {
+        throw new Error('معلومات المتجر غير متوفرة');
+      }
+      
+      // التحقق من وجود المستخدم (يمكن أن يكون null للضيوف)
+      if (orderData.user === undefined) {
+        throw new Error('معلومات المستخدم غير متوفرة');
+      }
+
+      // التحقق من البيانات الأساسية المطلوبة
+      if (!formDataToUse.firstName || !formDataToUse.lastName || !formDataToUse.phone) {
+        console.log('⚠️ Missing required customer information, using default values');
+        // استخدام قيم افتراضية إذا لم يتم ملء البيانات
+        orderData.shippingAddress.firstName = formDataToUse.firstName || 'عميل';
+        orderData.shippingAddress.lastName = formDataToUse.lastName || 'غير محدد';
+        orderData.shippingAddress.phone = formDataToUse.phone || 'غير محدد';
+        orderData.billingAddress.firstName = formDataToUse.firstName || 'عميل';
+        orderData.billingAddress.lastName = formDataToUse.lastName || 'غير محدد';
+        orderData.billingAddress.phone = formDataToUse.phone || 'غير محدد';
+      }
+
+      // التحقق من العنوان
+      if (!formDataToUse.address || !formDataToUse.city) {
+        console.log('⚠️ Missing address information, using default values');
+        orderData.shippingAddress.street = formDataToUse.address || 'العنوان غير محدد';
+        orderData.shippingAddress.city = formDataToUse.city || 'المدينة غير محددة';
+        orderData.billingAddress.street = formDataToUse.address || 'العنوان غير محدد';
+        orderData.billingAddress.city = formDataToUse.city || 'المدينة غير محددة';
+      }
+      
+      // التحقق من أن جميع المنتجات تحتوي على ID صحيح
+      const invalidItems = orderData.items.filter(item => !item.product);
+      if (invalidItems.length > 0) {
+        console.error('Invalid items found:', invalidItems);
+        throw new Error('بعض المنتجات لا تحتوي على معرف صحيح');
+      }
+      
+      // التحقق من أن جميع المنتجات تحتوي على كمية صحيحة
+      const itemsWithInvalidQuantity = orderData.items.filter(item => !item.quantity || item.quantity <= 0);
+      if (itemsWithInvalidQuantity.length > 0) {
+        console.error('Items with invalid quantity:', itemsWithInvalidQuantity);
+        throw new Error('بعض المنتجات لا تحتوي على كمية صحيحة');
+      }
+      
+      // التحقق من وجود deliveryMethodId إذا كانت طريقة التوصيل هي delivery
+      if (deliveryMethodData === 'delivery' && !formDataToUse.deliveryMethodId) {
+        console.log('⚠️ No delivery method selected, using pickup instead');
+        // تغيير طريقة التوصيل إلى pickup إذا لم يتم اختيار طريقة توصيل
+        orderData.shippingInfo.method = 'pickup';
+        orderData.shippingInfo.deliveryMethodId = null;
+        orderData.shippingInfo.cost = 0;
+      }
+      
+      console.log('All validations passed. Creating order...');
+      
+      // إنشاء الطلب في قاعدة البيانات
+      const createdOrder = await createOrder(orderData);
+      console.log('Order created successfully:', createdOrder);
+
+      // إرسال رسالة الواتساب مع معلومات الطلب
+      const whatsappOrderData = {
+        orderNumber: createdOrder.orderNumber,
+        customerInfo: formDataToUse,
+        items: cartData,
+        pricing: createdOrder.pricing,
+        totals: { ...cartTotalsData, shipping: getShippingPrice(), total: cartTotalsData.subtotal + getShippingPrice() },
+        orderDate: new Date().toISOString(),
+        deliveryMethod: deliveryMethodData,
+        deliveryMethodId: formDataToUse.deliveryMethodId,
+        paymentMethod: selectedPaymentMethodData?.label
+      };
+      
+      // عرض بوب أب الواتساب
+      handleWhatsAppOrder(whatsappOrderData);
+      
+      // عرض بوب أب النجاح مباشرة
+      setSuccessOrderData({
+        orderNumber: createdOrder.orderNumber,
+        total: cartTotalsData.total,
+        items: cartData
+      });
+      setShowSuccessModal(true);
+      
+      // مسح السلة
+      clearCart();
+      setShowPaymentConfirm(false);
+      setSelectedPaymentMethod(null);
+      setShowPaymentPopup(false);
+      setPaymentDone(false);
+      
+      // تنظيف البيانات المحفوظة
+      clearCheckoutData();
+      
+      // إزالة علامة إنشاء الطلب
+      localStorage.removeItem('order_creation_in_progress');
+      
+    } catch (error) {
+      console.error('Error creating order and showing WhatsApp popup:', error);
+      const errorMessage = currentLang === 'ar' 
+        ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
+        : 'Error creating order. Please try again.';
+      showErrorNotification(errorMessage);
+      
+      // إزالة علامة إنشاء الطلب في حالة الخطأ
+      localStorage.removeItem('order_creation_in_progress');
+    }
+  };
+
+  //-----------------------------------handleLahzaPaymentSuccess------------------------------------------------
+  const handleLahzaPaymentSuccess = async (transactionId) => {
+    try {
+      console.log('Lahza payment successful, verifying transaction:', transactionId);
+      
+      // Verify the payment
+      const verificationResult = await verifyLahzaPayment(transactionId);
+      
+      if (verificationResult.success && verificationResult.paymentStatus === 'completed') {
+        console.log('Lahza payment verified successfully');
+        
+        // Close Lahza payment modal
+        setShowLahzaPayment(false);
+        setLahzaPaymentData(null);
+        setSelectedPaymentMethod(null);
+        
+        // Note: Order creation will be handled by useEffect when returning from payment
+        console.log('Payment completed, order will be created automatically on return');
+      } else {
+        throw new Error('Payment verification failed');
+      }
+    } catch (error) {
+      console.error('Error handling Lahza payment success:', error);
+      const errorMessage = currentLang === 'ar' 
+        ? 'حدث خطأ في التحقق من الدفع. يرجى المحاولة مرة أخرى.'
+        : 'Error verifying payment. Please try again.';
+      showErrorNotification(errorMessage);
+    }
+  };
+
+
 //-----------------------------------if cartItems is empty------------------------------------------------  
-  console.log('Checkout render - cartItems:', cartItems);
-  console.log('Checkout render - cartItems.length:', cartItems?.length);
-  console.log('Checkout render - cartItems type:', typeof cartItems);
-  console.log('Checkout render - cartLoading:', cartLoading);
-  console.log('Checkout render - cartItems is Array:', Array.isArray(cartItems));
+  // Debug logging only in development
+  if (process.env.NODE_ENV === 'development') {
+ 
+  }
   
   // إظهار loading state أثناء تحميل السلة
   if (cartLoading) {
@@ -1485,17 +1869,14 @@ const handleSendWhatsApp = async () => {
   
   // التحقق من أن cartItems موجود وليس فارغاً بعد انتهاء التحميل
   if (!cartItems) {
-    console.log('Cart items is null/undefined in render, returning null');
     return null;
   }
   
   if (!Array.isArray(cartItems)) {
-    console.log('Cart items is not an array in render, returning null');
     return null;
   }
   
   if (cartItems.length === 0) {
-    console.log('Cart is empty in render after loading, returning null');
     return null; 
   }
 //-----------------------------------return------------------------------------------------  
@@ -1616,7 +1997,7 @@ const handleSendWhatsApp = async () => {
                 </div>
               )}
               
-              {/* Payment Images - Show if payment method has additional images */}
+              {/* Payment Images - Show if payment method has additional images 
               {selectedPaymentMethod?.paymentImages && selectedPaymentMethod.paymentImages.length > 0 && (
                 <div style={{ margin: '16px 0' }}>
                   <p style={{ marginBottom: 8, fontSize: 14, color: '#666' }}>{t('checkout.payment_instructions')}</p>
@@ -1637,7 +2018,7 @@ const handleSendWhatsApp = async () => {
                     ))}
                   </div>
                 </div>
-              )}
+              )}*/}
             </div>
             {!paymentDone ? (
               <>
@@ -1676,7 +2057,6 @@ const handleSendWhatsApp = async () => {
                   </>
                 ) : (
                   <>
-                    <svg width="22" height="22" fill="#fff" viewBox="0 0 24 24" style={{ marginLeft: 8 }}><path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/></svg>
                     {t('checkout.send_whatsapp')}
                   </>
                 )}
@@ -2010,7 +2390,7 @@ const handleSendWhatsApp = async () => {
               </div>
             </div>
 
-            {/* Payment Instructions */}
+            {/* Payment Instructions 
             <div style={{
               background: '#e8f4fd',
               borderRadius: 12,
@@ -2054,7 +2434,7 @@ const handleSendWhatsApp = async () => {
                 <li>{currentLang === 'ar' ? 'ستتم إعادة توجيهك تلقائياً بعد اكتمال الدفع' : 'You will be redirected back automatically after payment'}</li>
               </ul>
             </div>
-
+*/}
             {/* Payment Button */}
             <button 
               onClick={() => {
@@ -2312,7 +2692,9 @@ const handleSendWhatsApp = async () => {
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: 12, flexDirection: 'column' }}>
               <button 
-                onClick={handlePaymentVerificationSuccess}
+                onClick={() => {
+                  console.log('Payment verification button clicked - this should not happen in automatic flow');
+                }}
                 disabled={orderLoading}
                 style={{
                   width: '100%',
@@ -2394,64 +2776,6 @@ const handleSendWhatsApp = async () => {
       )}
      </div>
    );
- };
-
-//-----------------------------------handleLahzaPaymentSuccess------------------------------------------------
-const handleLahzaPaymentSuccess = async (transactionId) => {
-  try {
-    console.log('Lahza payment successful, verifying transaction:', transactionId);
-    
-    // Verify the payment
-    const verificationResult = await verifyLahzaPayment(transactionId);
-    
-    if (verificationResult.success && verificationResult.paymentStatus === 'completed') {
-      console.log('Lahza payment verified successfully');
-      
-      // Create the order with payment information
-      await handleSendWhatsApp();
-      
-      // Close Lahza payment modal
-      setShowLahzaPayment(false);
-      setLahzaPaymentData(null);
-      setSelectedPaymentMethod(null);
-    } else {
-      throw new Error('Payment verification failed');
-    }
-  } catch (error) {
-    console.error('Error handling Lahza payment success:', error);
-    const errorMessage = currentLang === 'ar' 
-      ? 'حدث خطأ في التحقق من الدفع. يرجى المحاولة مرة أخرى.'
-      : 'Error verifying payment. Please try again.';
-    showErrorNotification(errorMessage);
-  }
-};
-
-//-----------------------------------handlePaymentVerificationSuccess------------------------------------------------
-const handlePaymentVerificationSuccess = async () => {
-  try {
-    console.log('Payment verification successful, creating order...');
-    
-    // إنشاء الطلب مع معلومات الدفع
-    await handleSendWhatsApp();
-    
-    // إغلاق modal التحقق من الدفع
-    setShowPaymentVerificationModal(false);
-    setPaymentVerificationData(null);
-    
-    // تنظيف URL من معاملات الدفع
-    const url = new URL(window.location);
-    url.searchParams.delete('reference');
-    url.searchParams.delete('tap_id');
-    url.searchParams.delete('transaction_id');
-    window.history.replaceState({}, '', url);
-    
-  } catch (error) {
-    console.error('Error handling payment verification success:', error);
-    const errorMessage = currentLang === 'ar' 
-      ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
-      : 'Error creating order. Please try again.';
-    showErrorNotification(errorMessage);
-  }
-};
+  };
 
 export default Checkout; 

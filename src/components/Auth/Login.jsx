@@ -68,7 +68,6 @@ const Login = () => {
           loadUserAndStoreInfo();
         }
       } catch (err) {
-        console.log('Error parsing stored user info, skipping auto-load');
       }
     }
   }, [loadUserAndStoreInfo]);
@@ -122,19 +121,14 @@ const Login = () => {
       return;
     }
 
-    console.log('Calling login function...');
     const result = await login(formData.email, formData.password);
-    console.log('Login result:', result);
-    console.log('Result type:', typeof result);
-    console.log('Result keys:', result ? Object.keys(result) : 'result is null/undefined');
+   
     
     if (result && result.success) {
-      console.log('Login successful, navigating to home');
-      // Email is verified, redirect to home page
+    
       navigate('/');
     } else if (result && result.isEmailVerified === false) {
-      console.log('Email not verified, showing OTP');
-      // Email not verified, show OTP verification
+    
       setLoginData(result.data);
       setShowOTP(true);
     } else {

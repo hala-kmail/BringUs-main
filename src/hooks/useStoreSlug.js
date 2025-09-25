@@ -68,7 +68,7 @@ const useStoreSlug = () => {
     
     try {
       if (process.env.NODE_ENV === 'development') {
-        // console.log('🌐 Fetching store data for slug:', slug);
+        console.log('🌐 Fetching store data for slug:', slug);
       }
 
       const response = await fetch(`${API_BASE_URL}/stores/slug/${slug}`, {
@@ -81,12 +81,26 @@ const useStoreSlug = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        console.warn(`⚠️ Store not found for slug: ${slug}, status: ${response.status}`);
+        // إذا لم نجد المتجر، جرب استخدام البيانات المحفوظة في localStorage
+        try {
+          const storedData = localStorage.getItem('storeData');
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            if (parsedData && parsedData.slug === slug) {
+              console.log('📦 Using stored store data as fallback');
+              return parsedData;
+            }
+          }
+        } catch (err) {
+          console.warn('Could not use stored store data:', err);
+        }
         throw new Error(data.message || 'Failed to fetch store data');
       }
 
       if (data.success && data.data) {
         if (process.env.NODE_ENV === 'development') {
-          // console.log('✅ Store data fetched successfully:', data.data.nameAr || data.data.nameEn);
+          console.log('✅ Store data fetched successfully:', data.data.nameAr || data.data.nameEn);
         }
         return data.data;
       } else {

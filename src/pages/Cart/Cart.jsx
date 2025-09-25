@@ -116,12 +116,7 @@ const Cart = () => {
     const selectedSpecs = getSelectedSpecsFromCartItem(cartItem);
     
     // Debug logging
-    console.log('Checking canIncreaseQuantity for cart item:', {
-      productId: cartItem.product._id || cartItem.product.id,
-      selectedColor,
-      selectedSpecs,
-      cartItemSelectedSpecs: cartItem.selectedSpecifications
-    });
+  
     
     return canIncreaseQuantity(cartItem.product._id || cartItem.product.id, selectedColor, selectedSpecs);
   };

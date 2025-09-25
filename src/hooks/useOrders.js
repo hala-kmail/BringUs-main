@@ -10,13 +10,8 @@ const useOrders = () => {
   const hasInitialized = useRef(false);
   const storeId = useRef(null);
   
-  // Debug logging for store data
-  console.log('useOrders - Store from context:', store);
-  console.log('useOrders - Store ID from context:', store?._id);
-  console.log('useOrders - User from context:', user);
-  
   const getStoreId = useCallback(() => {
-    console.log('getStoreId called - store from context:', store);
+    
     if (store && store._id) {
       return store._id;
     }
@@ -25,7 +20,7 @@ const useOrders = () => {
       const storedStore = localStorage.getItem('storeData');
       if (storedStore) {
         const parsedStore = JSON.parse(storedStore);
-        console.log('parsedStore', parsedStore);
+       
         return parsedStore._id;
       }
     } catch (err) {
@@ -41,7 +36,7 @@ const useOrders = () => {
     // Only fetch if we have a store ID and haven't initialized for this store
     if (currentStoreId && (!hasInitialized.current || storeId.current !== currentStoreId)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Initializing categories for store ID:', currentStoreId);
+        
       }
       hasInitialized.current = true;
     }
@@ -90,7 +85,6 @@ const useOrders = () => {
 
       // Determine if this is a guest order
       const isGuestOrder = !user || !user._id;
-      console.log('createOrder - isGuestOrder:', isGuestOrder);
 
       let endpoint;
       let requestData;
@@ -135,13 +129,7 @@ const useOrders = () => {
           // Add affiliate ID if available
           ...(affiliateId && { affiliate: affiliateId })
         };
-        console.log('createOrder - Authenticated order data:', requestData);
       }
-
-      console.log('createOrder - Endpoint:', endpoint);
-      console.log('createOrder - Request data:', requestData);
-      console.log('createOrder - Affiliate ID being sent:', affiliateId);
-      console.log('createOrder - Request data affiliate field:', requestData.affiliate);
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -236,9 +224,6 @@ const useOrders = () => {
         ...(guestAffiliateId && { affiliate: guestAffiliateId })
       };
 
-      console.log('Creating guest order with data:', requestData);
-      console.log('Store ID:', storeId);
-      console.log('Guest order - Affiliate ID being sent:', guestAffiliateId);
 
       const response = await fetch(`${API_BASE_URL}/orders/store/${storeId}/guest`, {
         method: 'POST',
@@ -264,11 +249,9 @@ const useOrders = () => {
       const guestAffiliateCode = localStorage.getItem('affiliateCode');
       const guestAffiliateInfo = localStorage.getItem('affiliateInfo');
       if (guestAffiliateCode) {
-        console.log('Clearing affiliate code after successful guest order:', guestAffiliateCode);
         localStorage.removeItem('affiliateCode');
       }
       if (guestAffiliateInfo) {
-        console.log('Clearing affiliate info after successful guest order');
         localStorage.removeItem('affiliateInfo');
       }
       
@@ -283,7 +266,7 @@ const useOrders = () => {
   }, [getStoreId]);
 
   // Get user orders
-  const getUserOrders = useCallback(async (page = 1, limit = 10, status = null) => {
+  const getUserOrders = useCallback(async (page = 1, limit = 5, status = null) => {
     try {
       setLoading(true);
       setError(null);

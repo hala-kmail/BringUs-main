@@ -312,23 +312,7 @@ const ProductDetail = () => {
     ...(product.videos || []).map(video => ({ type: 'video', url: video.url, thumbnail: video.thumbnail, title: video.title || displayName }))
   ].filter(item => item.url && item.url.trim() !== '') : []; // Filter out items without URLs or empty URLs
 
-  // Debug logging for media items
-  if (process.env.NODE_ENV === 'development') {
-    console.log('📸 Media items created:', {
-      totalItems: mediaItems.length,
-      mainImage: product?.mainImage,
-      imagesCount: product?.images?.length || 0,
-      videoUrl: product?.videoUrl,
-      videosCount: product?.videos?.length || 0,
-      mediaItems: mediaItems.map(item => ({
-        type: item.type,
-        url: item.url,
-        title: item.title
-      })),
-      displayName
-    });
-  }
-
+  
 
 
   const handleAddToCart = async () => {
@@ -369,30 +353,31 @@ const ProductDetail = () => {
         ...selectedSpecs
       };
       
-      // طباعة المواصفات المختارة في الكونسول
-      console.log('🛒 Selected Options before adding to cart:');
-      console.log('   Color:', selectedColor);
-      console.log('   Quantity:', quantity);
-      console.log('   Selected Specs:', selectedSpecs);
-      console.log('   Full Options Object:', selectedOptions);
-      
+     
       const success = await addToCart(product, selectedOptions);
       
       if (success) {
-       
+    
+      } else {
+        // Show error message
+        const errorMessage = currentLang === 'ar' 
+          ? 'حدث خطأ في إضافة المنتج إلى السلة' 
+          : 'Error adding product to cart';
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
+      
+      // Show error message
+      const errorMessage = currentLang === 'ar' 
+        ? 'حدث خطأ في إضافة المنتج إلى السلة' 
+        : 'Error adding product to cart';
+      alert(errorMessage);
     } finally {
       setAddToCartLoading(false);
     }
   };
 
-  const handleWishlistToggle = async () => {
-    const isCurrentlyInWishlist = isInWishlist(product._id || product.id);
-    setWishlistAction(isCurrentlyInWishlist ? 'remove' : 'add');
-    setShowWishlistModal(true);
-  };
 
   const handleConfirmWishlistToggle = async () => {
     await toggleWishlist(product);
@@ -400,10 +385,7 @@ const ProductDetail = () => {
     setWishlistAction(null);
   };
 
-  const handleCancelWishlistToggle = () => {
-    setShowWishlistModal(false);
-    setWishlistAction(null);
-  };
+ 
 
   const handleShare = async () => {
     try {
@@ -480,27 +462,6 @@ const ProductDetail = () => {
     );
   }
 
-  // Debug logging to help identify issues
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 Current product state:', {
-      id: product._id,
-      name: product.nameAr || product.nameEn,
-      price: product.price,
-      stock: product.availableQuantity,
-      images: product.images?.length || 0,
-      mainImage: product.mainImage,
-      hasVariants: product.hasVariants,
-      isParent: product.isParent,
-      category: product.category?.nameAr || product.category?.nameEn,
-      specificationValues: product.specificationValues?.length || 0,
-      displayName
-    });
-  }
-
-  
-  
-
-  
   return (
     <div className="product-detail-page">
       <Navbar />
@@ -627,7 +588,7 @@ const ProductDetail = () => {
               addToCartLoading={addToCartLoading}
               handleAddToCart={handleAddToCart}
               isInWishlist={isInWishlist}
-              handleWishlistToggle={handleWishlistToggle}
+              handleWishlistToggle={handleConfirmWishlistToggle}
               handleShare={handleShare}
               canAddToCart={(effectiveAvailable ?? product.availableQuantity ?? 0) > 0}
               key={`actions-${product._id}`} // Force re-render when product changes
@@ -645,17 +606,7 @@ const ProductDetail = () => {
         )}
       </div>
 
-      {/* Wishlist Toggle Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showWishlistModal}
-        onClose={handleCancelWishlistToggle}
-        onConfirm={handleConfirmWishlistToggle}
-        title={wishlistAction === 'add' ? t('wishlist.confirm_add_title') : t('wishlist.confirm_remove_title')}
-        message={wishlistAction === 'add' ? t('wishlist.confirm_add_message') : t('wishlist.confirm_remove_message')}
-        confirmText={wishlistAction === 'add' ? t('wishlist.add_to_wishlist') : t('wishlist.remove_from_wishlist')}
-        cancelText={t('common.cancel')}
-        type="info"
-      />
+     
     </div>
   );
 };

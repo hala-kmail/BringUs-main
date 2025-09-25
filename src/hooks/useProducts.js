@@ -121,61 +121,51 @@ const useProducts = () => {
           // إذا كانت مصفوفة، ادمجها بـ ||
           const categoryFilter = options.category.join('||');
           params.append('category', categoryFilter);
-          console.log('📂 Applied multi-category filter:', options.category);
         } else if (typeof options.category === 'string' && options.category.includes('||')) {
           // إذا كانت سلسلة نصية تحتوي على ||
           params.append('category', options.category);
-          console.log('📂 Applied multi-category filter (string):', options.category);
         } else {
           // فئة واحدة
           params.append('category', options.category);
-          console.log('📂 Applied single category filter:', options.category);
         }
       }
       
       // 2. فلترة السعر
       if (options.minPrice) {
         params.append('minPrice', options.minPrice.toString());
-        console.log('💰 Applied min price filter:', options.minPrice);
       }
       if (options.maxPrice) {
         params.append('maxPrice', options.maxPrice.toString());
-        console.log('💰 Applied max price filter:', options.maxPrice);
       }
       
       // 3. فلترة البحث
       if (options.search) {
         params.append('search', options.search);
-        console.log('🔍 Applied search filter:', options.search);
       }
       
       // 4. فلترة الألوان
       if (options.colors && options.colors.length > 0) {
         // Send colors as JSON array string
         params.append('colors', JSON.stringify(options.colors));
-        console.log('🎨 Applied colors filter:', options.colors);
       }
       
       // 5. فلترة العلامات
       if (options.productLabels && options.productLabels.length > 0) {
         // Send productLabels as JSON array string
         params.append('productLabels', JSON.stringify(options.productLabels));
-        console.log('🏷️ Applied product labels filter:', options.productLabels);
+      
       }
       
       // 6. فلترة الترتيب
       if (options.sort) {
         params.append('sort', options.sort);
-        console.log('📊 Applied sort filter:', options.sort);
-        console.log('📊 Sort parameter type:', typeof options.sort);
+      
       } else {
-        console.log('⚠️ No sort parameter provided, using default');
+       
       }
       
       const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?${params}`;
-      console.log('✅ Final URL with comprehensive filters:', url);
-      console.log('🔍 URL parameters:', params.toString());
- 
+     
       const response = await fetch(url, {
         headers: {
           'accept': 'application/json',
@@ -198,19 +188,19 @@ const useProducts = () => {
         
         if (!hasFilters) {
           updateProducts(result.data);
-          console.log('✅ Updated products in context (no filters applied)');
+         
         } else {
-          console.log('✅ Products fetched with filters, not updating context');
+         
         }
         
         setPagination(result.pagination);
-        console.log('✅ Products fetched successfully with comprehensive filters:', result.data.length, 'products');
+       
         return { products: result.data, pagination: result.pagination };
       } else {
         throw new Error('Invalid response format');
       }
     } catch (err) {
-      console.error('Error fetching products:', err);
+    
       setError(err.message);
       return null;
     } finally {
@@ -242,7 +232,7 @@ const useProducts = () => {
       // Set a timeout to prevent rapid successive calls
       fetchTimeout = setTimeout(() => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('Initializing products for store ID:', currentStoreId);
+          
         }
         
         hasInitialized.current = true;
@@ -266,7 +256,6 @@ const useProducts = () => {
               updateProducts(result.products);
               setPagination(result.pagination);
               if (process.env.NODE_ENV === 'development') {
-                console.log('Products fetched successfully:', result.products.length, 'products');
               }
             } else {
               throw new Error('Failed to fetch products');
@@ -529,13 +518,11 @@ const useProducts = () => {
   // Fetch specific variant details
   const fetchSpecificVariant = useCallback(async (productId, variantId) => {
     if (!productId || !variantId) {
-      console.log('No product ID or variant ID provided');
       return null;
     }
 
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available for fetching specific variant');
       return null;
     }
 
@@ -566,16 +553,7 @@ const useProducts = () => {
         const variantData = result.data.variant || result.data;
         
         if (variantData) {
-          console.log('✅ Specific variant fetched successfully:', {
-            id: variantData._id,
-            name: variantData.nameAr || variantData.nameEn,
-            price: variantData.price,
-            stock: variantData.availableQuantity,
-            images: variantData.images?.length || 0,
-            mainImage: variantData.mainImage,
-            specificationValues: variantData.specificationValues?.length || 0,
-            category: variantData.category?.nameAr || variantData.category?.nameEn
-          });
+         
           
           // Ensure the variant has all required fields
           const enrichedVariantData = {
@@ -651,7 +629,6 @@ const useProducts = () => {
   const fetchBestSellers = useCallback(async (options = {}) => {
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available');
       return null;
     }
     // API does not support best sellers sorting, so we fetch all products
@@ -662,13 +639,13 @@ const useProducts = () => {
   // Search products with pagination
   const searchProducts = useCallback(async (query, options = {}) => {
     if (!query || query.trim() === '') {
-      console.log('No search query provided');
+    
       return null;
     }
 
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available');
+      
       return null;
     }
 
@@ -679,11 +656,10 @@ const useProducts = () => {
   const fetchProductsWithFilters = useCallback(async (filters = {}) => {
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available');
+      
       return null;
     }
 
-    console.log('🔍 Applying comprehensive filters:', filters);
 
     const options = {
       page: filters.page || 1,
@@ -722,7 +698,7 @@ const useProducts = () => {
       options.productLabels = filters.productLabels;
     }
 
-    console.log('✅ Final options for comprehensive filtering:', options);
+   
     return fetchProducts(currentStoreId, options);
   }, [getStoreId, fetchProducts]);
 
@@ -786,12 +762,11 @@ const useProducts = () => {
   const fetchProductsWithComprehensiveFilters = useCallback(async (comprehensiveFilters = {}) => {
     const currentStoreId = getStoreId();
     if (!currentStoreId) {
-      console.log('No store ID available for comprehensive filtering');
+    
       return null;
     }
 
-    console.log('🚀 Applying comprehensive filters with multiple categories:', comprehensiveFilters);
-
+  
     const options = {
       page: comprehensiveFilters.page || 1,
       limit: comprehensiveFilters.limit || 20,
@@ -801,10 +776,9 @@ const useProducts = () => {
     // Handle multiple categories
     if (comprehensiveFilters.categories && Array.isArray(comprehensiveFilters.categories)) {
       options.category = comprehensiveFilters.categories;
-      console.log('📂 Multiple categories provided:', comprehensiveFilters.categories);
     } else if (comprehensiveFilters.category) {
       options.category = comprehensiveFilters.category;
-      console.log('📂 Single category provided:', comprehensiveFilters.category);
+     
     }
 
     // Handle price range
@@ -815,7 +789,7 @@ const useProducts = () => {
       if (comprehensiveFilters.priceRange.max !== undefined) {
         options.maxPrice = comprehensiveFilters.priceRange.max;
       }
-      console.log('💰 Price range applied:', comprehensiveFilters.priceRange);
+      
     } else {
       // Direct price filters
       if (comprehensiveFilters.minPrice !== undefined) {
@@ -829,29 +803,22 @@ const useProducts = () => {
     // Handle search
     if (comprehensiveFilters.search) {
       options.search = comprehensiveFilters.search;
-      console.log('🔍 Search term applied:', comprehensiveFilters.search);
+      
     }
 
     // Handle colors
     if (comprehensiveFilters.colors && comprehensiveFilters.colors.length > 0) {
       options.colors = comprehensiveFilters.colors;
-      console.log('🎨 Colors filter applied:', comprehensiveFilters.colors);
+     
     }
 
     // Handle product labels
     if (comprehensiveFilters.productLabels && comprehensiveFilters.productLabels.length > 0) {
       options.productLabels = comprehensiveFilters.productLabels;
-      console.log('🏷️ Product labels filter applied:', comprehensiveFilters.productLabels);
+    
     }
 
-    console.log('✅ Final comprehensive options:', options);
-    console.log('🔍 Options type check:', {
-      category: typeof options.category,
-      colors: Array.isArray(options.colors),
-      productLabels: Array.isArray(options.productLabels),
-      minPrice: typeof options.minPrice,
-      maxPrice: typeof options.maxPrice
-    });
+  
     return fetchProducts(currentStoreId, options);
   }, [getStoreId, fetchProducts]);
 

@@ -71,7 +71,7 @@ const getPathWithoutAffiliate = (pathname) => {
 // Utility function to clear affiliate code from localStorage
 const clearAffiliateCode = () => {
   localStorage.removeItem('affiliateCode');
-  console.log('Affiliate code cleared from localStorage');
+ 
 };
 
 // Utility function to check if current path is an affiliate path
@@ -96,7 +96,6 @@ const getCurrentAffiliateCode = () => {
       return storedCode;
     }
   } catch (err) {
-    console.warn('Could not read affiliate code from localStorage:', err);
   }
   
   // Fallback to URL parsing
@@ -113,7 +112,6 @@ const getCurrentAffiliateInfo = () => {
       return JSON.parse(storedInfo);
     }
   } catch (err) {
-    console.warn('Could not read affiliate info from localStorage:', err);
   }
   return null;
 };
@@ -145,9 +143,7 @@ const AffiliateRedirect = ({ affiliateCode }) => {
   useEffect(() => {
     // Store affiliate code in localStorage for tracking
     if (actualAffiliateCode) {
-      localStorage.setItem('affiliateCode', actualAffiliateCode);
-      console.log('Affiliate code stored:', actualAffiliateCode);
-    }
+      localStorage.setItem('affiliateCode', actualAffiliateCode);    }
   }, [actualAffiliateCode]);
   
   // Redirect to home page with affiliate code

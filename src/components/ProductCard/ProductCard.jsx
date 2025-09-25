@@ -317,7 +317,7 @@ const ProductCard = ({
         )}
         
         {/* Product Labels - Below Description */}
-        {product.productLabels && product.productLabels.length > 0 && (
+        {product.productLabels && Array.isArray(product.productLabels) && product.productLabels.length > 0 && (
           <div className="product-labels-section">
             {product.productLabels.map((label, index) => (
               <span 
@@ -328,7 +328,7 @@ const ProductCard = ({
                   color: 'black'
                 }}
               >
-                {currentLang === 'ar' ? label.nameAr : label.nameEn}
+                {currentLang === 'ar' ? (label.nameAr || label.name) : (label.nameEn || label.name)}
               </span>
             ))}
           </div>

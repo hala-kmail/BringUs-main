@@ -152,6 +152,7 @@
       "forgot_password": "Forgot Password?"
     },
     "register": {
+      "account_info": "Account Information",
       "personal_info": "Personal Information",
       "address_info": "Address Information",
       "company_info": "Company Information",
@@ -619,7 +620,7 @@
     "pay_later": "Pay Later",
     "clear_cart": "Clear Cart",
     "i_have_paid": "I have paid",
-    "send_whatsapp": "Send via WhatsApp",
+    "send_whatsapp": "Create Order",
     "scan_qr_code": "Scan QR Code to Pay",
     "payment_instructions": "Payment Instructions",
     "privacy_policy_title": "Privacy Policy",
@@ -675,7 +676,10 @@
     "browse_all": "Browse All Products",
     "no_products": "No products running out",
     "no_products_description": "All products are currently available with sufficient stock",
-    "no_almost_finished_products": "No products are running out at the moment"
+    "no_almost_finished_products": "No products are running out at the moment",
+    "no_products_title": "No Products Running Out",
+    "no_products_message": "All products are currently available with sufficient stock. Browse the shop to find amazing products!",
+    "browse_shop": "Browse Shop"
   },
   "error_add": "Failed to add product to wishlist!",
   "error_remove": "Failed to remove product from wishlist!",

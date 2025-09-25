@@ -80,7 +80,7 @@ const useCategories = () => {
         // Update categories in context
         updateCategories(result.data);
         if (process.env.NODE_ENV === 'development') {
-          console.log('Categories fetched successfully:', result.data);
+        
         }
         storeId.current = targetStoreId;
         return result.data;
@@ -125,7 +125,6 @@ const useCategories = () => {
       }
       
       if (process.env.NODE_ENV === 'development') {
-        // console.log('Initializing categories for store ID:', currentStoreId);
       }
       hasInitialized.current = true;
       storeId.current = currentStoreId;

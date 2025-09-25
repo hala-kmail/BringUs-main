@@ -96,20 +96,16 @@ const Category = () => {
       return;
     }
 
-    console.log('Filtering products for category ID:', selectedCategoryId);
-    console.log('Total products available:', allProducts.length);
-    
+  
     // Get all descendant category IDs (including subcategories)
     const descendantCategoryIds = getAllDescendantCategoryIds(selectedCategoryId);
-    console.log('Descendant category IDs:', descendantCategoryIds);
-    
+ 
     // Filter products by category ID (including all descendants)
     const categoryProducts = allProducts.filter(product => {
       const productCategoryId = product.category?._id || product.category?.id;
       return descendantCategoryIds.includes(productCategoryId);
     });
-    
-    console.log('Filtered products count:', categoryProducts.length);
+   
     setFilteredProducts(categoryProducts);
   }, [selectedCategoryId, allProducts, getSubCategories]);
       
@@ -153,8 +149,7 @@ const Category = () => {
 
   // Handle category click
   const handleCategoryClick = (category) => {
-    console.log('Category clicked:', category);
-    
+ 
     // تحديث الكاتيجوري المحددة
     setSelectedCategoryId(category._id);
     setSelectedCategory(category);

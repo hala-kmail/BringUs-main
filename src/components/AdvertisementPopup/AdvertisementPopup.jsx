@@ -157,10 +157,8 @@ const AdvertisementPopup = () => {
       
       // Check if user is logged in
       const userInfo = localStorage.getItem('userInfo');
-      console.log('AdvertisementPopup - User info:', userInfo ? 'Found' : 'Not found');
       
       if (!userInfo) {
-        console.log('No user logged in, not fetching advertisements');
         return;
       }
       
@@ -220,7 +218,7 @@ const AdvertisementPopup = () => {
           setHasBeenShown(true);
           markAsShown(advertisementId);
         } else {
-          console.log('Advertisement already shown, not displaying');
+          
           setAdvertisements([]);
         }
       } else {
@@ -228,7 +226,7 @@ const AdvertisementPopup = () => {
         setAdvertisements([]);
       }
     } catch (err) {
-      console.error('Error fetching advertisements:', err);
+     
       setError(t('advertisement.error'));
       setAdvertisements([]);
     }
