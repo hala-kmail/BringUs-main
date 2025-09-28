@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../contexts/AppDataContext';
 import useCategories from '../../hooks/useCategories';
 import ProductCard from '../ProductCard/ProductCard';
-import useWishlistAPI from '../../hooks/useWishlistAPI';
+import { useWishlist } from '../../contexts/WishlistContext';
 import './ShowCategoryProduct.css';
 
 const ShowCategoryProduct = () => {
@@ -15,7 +15,7 @@ const ShowCategoryProduct = () => {
     addToWishlist, 
     removeFromWishlist, 
     isInWishlist 
-  } = useWishlistAPI();
+  } = useWishlist();
   
   const [visibleCategories, setVisibleCategories] = useState([]);
   const [categoryRefs, setCategoryRefs] = useState({});
@@ -85,7 +85,7 @@ const ShowCategoryProduct = () => {
     if (isInWishlist(productId)) {
       await removeFromWishlist(productId);
     } else {
-      await addToWishlist(productId);
+      await addToWishlist(product);
     }
   };
 
