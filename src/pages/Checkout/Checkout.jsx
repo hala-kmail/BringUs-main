@@ -115,25 +115,23 @@ const Checkout = () => {
     }
   }, [showSuccessModal]);
 
-  // التحقق من الدفع عند تحميل الصفحة
+  // الاستماع لنتيجة التحقق من الدفع
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      const result = await checkPaymentFromURL();
-      if (result && result.status === 'success') {
-        console.log('Payment verification successful:', result);
-        setPaymentVerificationData(result);
-        setShowPaymentVerificationModal(true);
-      } else if (result && result.status === 'failed') {
-        console.log('Payment verification failed:', result);
-        const errorMessage = currentLang === 'ar' 
-          ? 'فشل في عملية الدفع. يرجى المحاولة مرة أخرى.'
-          : 'Payment failed. Please try again.';
-        showErrorNotification(errorMessage);
-      }
-    };
-
-    checkPaymentStatus();
-  }, [checkPaymentFromURL, currentLang]);
+    if (verificationResult && verificationResult.status === 'success') {
+      console.log('Payment verification successful:', verificationResult);
+      setPaymentVerificationData(verificationResult);
+      setShowPaymentVerificationModal(true);
+      
+      // Show WhatsApp confirmation popup for successful payment
+      showWhatsAppConfirmationPopup(verificationResult);
+    } else if (verificationResult && verificationResult.status === 'failed') {
+      console.log('Payment verification failed:', verificationResult);
+      const errorMessage = currentLang === 'ar' 
+        ? 'فشل في عملية الدفع. يرجى المحاولة مرة أخرى.'
+        : 'Payment failed. Please try again.';
+      showErrorNotification(errorMessage);
+    }
+  }, [verificationResult, currentLang]);
 
   // إغلاق البوب أب عند تغيير المسار
   useEffect(() => {
@@ -532,7 +530,9 @@ const handleDirectStoreOrder = async () => {
        orderDate: new Date().toISOString(),
        deliveryMethod: 'store',
        deliveryMethodId: null,
-       paymentMethod: currentLang === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery'
+       paymentMethod: currentLang === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery',
+       // Add payment verification data if available (for store pickup, this will be null)
+       paymentVerificationData: null
      };
      
      // إنشاء رسالة الواتساب
@@ -690,7 +690,16 @@ const handleSendWhatsApp = async () => {
       paymentInfo: {
         method: getPaymentMethodForAPI(selectedPaymentMethod?.methodType),
         paymentMethodId: selectedPaymentMethod?.key,
-        status: 'pending'
+        status: paymentVerificationData?.status === 'success' ? 'completed' : 'pending',
+        // Add payment verification data if available
+        ...(paymentVerificationData?.data?.data && {
+          transactionId: paymentVerificationData.data.data.reference,
+          paymentAmount: paymentVerificationData.data.data.amount,
+          paymentCurrency: paymentVerificationData.data.data.currency,
+          paymentStatus: paymentVerificationData.data.data.status,
+          paymentDate: paymentVerificationData.data.data.paidAt,
+          gatewayResponse: paymentVerificationData.data.data.gateway_response
+        })
       },
       shippingInfo: {
         method: deliveryMethod === 'delivery' ? 'delivery' : 'pickup',
@@ -774,7 +783,9 @@ const handleSendWhatsApp = async () => {
       orderDate: new Date().toISOString(),
       deliveryMethod: deliveryMethod,
       deliveryMethodId: formData.deliveryMethodId,
-      paymentMethod: selectedPaymentMethod?.label
+      paymentMethod: selectedPaymentMethod?.label,
+      // Add payment verification data if available
+      paymentVerificationData: paymentVerificationData
     };
     
     handleWhatsAppOrder(whatsappOrderData);
@@ -801,7 +812,7 @@ const handleSendWhatsApp = async () => {
 //-----------------------------------handleWhatsAppOrder------------------------------------------------  
   const handleWhatsAppOrder = (orderData) => {
     
-    const { orderNumber, customerInfo, items, totals, deliveryMethod } = orderData;
+    const { orderNumber, customerInfo, items, totals, deliveryMethod, paymentVerificationData: orderPaymentData } = orderData;
     
     // إنشاء رسالة باللغة المختارة فقط
     const isArabic = currentLang === 'ar';
@@ -966,9 +977,37 @@ const handleSendWhatsApp = async () => {
       ? ` *الإجمالي النهائي: ${currencySymbol}${orderData.pricing.total.toFixed(2)}*\n`
       : ` *Final Total: ${currencySymbol}${orderData.pricing.total.toFixed(2)}*\n`;
     
-
+    // إضافة معلومات الدفع إذا كانت متوفرة
+    if (orderPaymentData?.status === 'success' && orderPaymentData?.data?.data) {
+      const paymentData = orderPaymentData.data.data;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += isArabic 
+        ? ` *معلومات الدفع:*\n`
+        : ` *Payment Information:*\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += isArabic 
+        ? ` حالة الدفع: مكتمل ✅\n`
+        : ` Payment Status: Completed ✅\n`;
+      message += isArabic 
+        ? ` رقم المرجع: ${paymentData.reference}\n`
+        : ` Reference: ${paymentData.reference}\n`;
+      message += isArabic 
+        ? ` طريقة الدفع: ${paymentData.channel === 'card' ? 'بطاقة ائتمان' : paymentData.channel}\n`
+        : ` Payment Method: ${paymentData.channel === 'card' ? 'Credit Card' : paymentData.channel}\n`;
+      if (paymentData.gateway_response) {
+        message += isArabic 
+          ? ` استجابة البوابة: ${paymentData.gateway_response}\n`
+          : ` Gateway Response: ${paymentData.gateway_response}\n`;
+      }
+      if (paymentData.paidAt) {
+        const paidDate = new Date(paymentData.paidAt).toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
+        message += isArabic 
+          ? ` تاريخ الدفع: ${paidDate}\n`
+          : ` Payment Date: ${paidDate}\n`;
+      }
+    }
     
-         // Get WhatsApp number from store data - prioritize WhatsApp number
+    // Get WhatsApp number from store data - prioritize WhatsApp number
      let phoneNumber = store?.contact?.whatsapp;
      
      // If no WhatsApp number, try to get phone number
@@ -1452,6 +1491,276 @@ const handleSendWhatsApp = async () => {
       document.head.appendChild(style);
     }
   };
+
+   //-----------------------------------showWhatsAppConfirmationPopup------------------------------------------------  
+   const showWhatsAppConfirmationPopup = (verificationResult) => {
+     // Create WhatsApp confirmation popup
+     const popup = document.createElement('div');
+     popup.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       right: 0;
+       bottom: 0;
+       background: rgba(0, 0, 0, 0.7);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       z-index: 10001;
+       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+       animation: fadeIn 0.3s ease-out;
+     `;
+     
+     // Get payment details from verification result
+     const paymentData = verificationResult.data?.data;
+     const amount = paymentData?.amount ? (parseInt(paymentData.amount) / 100).toFixed(2) : '0.00';
+     const currency = paymentData?.currency || 'ILS';
+     const reference = paymentData?.reference || 'N/A';
+     
+     popup.innerHTML = `
+       <div style="
+         background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+         border-radius: 20px;
+         padding: 40px;
+         max-width: 500px;
+         width: 90%;
+         text-align: center;
+         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+         border: 1px solid #e9ecef;
+         position: relative;
+         animation: slideInUp 0.4s ease-out;
+       ">
+         <!-- Close Button -->
+         <button onclick="closeWhatsAppPopup()" style="
+           position: absolute;
+           top: 15px;
+           right: 15px;
+           background: none;
+           border: none;
+           font-size: 24px;
+           color: #999;
+           cursor: pointer;
+           width: 30px;
+           height: 30px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           border-radius: 50%;
+           transition: all 0.2s ease;
+           z-index: 10;
+         " onmouseover="this.style.background='#f0f0f0'; this.style.color='#666'" onmouseout="this.style.background='none'; this.style.color='#999'">
+           ✕
+         </button>
+         
+         <!-- Success Icon -->
+         <div style="
+           width: 80px;
+           height: 80px;
+           border-radius: 50%;
+           background: linear-gradient(135deg, #4CAF50, #45a049);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           margin: 0 auto 24px auto;
+           box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+           animation: bounceIn 0.6s ease-out 0.2s both;
+         ">
+           <svg width="40" height="40" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24" style="animation: checkmark 0.4s ease-out 0.6s both;">
+             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+           </svg>
+         </div>
+         
+         <!-- Title -->
+         <h2 style="
+           color: #2E7D32;
+           font-size: 28px;
+           font-weight: 700;
+           margin: 0 0 16px 0;
+           text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+         ">
+           ${currentLang === 'ar' ? '🎉 تم الدفع بنجاح! 🎉' : '🎉 Payment Successful! 🎉'}
+         </h2>
+         
+         <!-- Payment Details -->
+         <div style="
+           background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+           border-radius: 15px;
+           padding: 24px;
+           margin: 20px 0;
+           border: 2px solid #c8e6c9;
+           position: relative;
+           overflow: hidden;
+         ">
+           <div style="
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 12px;
+           ">
+             <span style="font-weight: 600; color: #1b5e20;">
+               ${currentLang === 'ar' ? 'المبلغ:' : 'Amount:'}
+             </span>
+             <span style="font-weight: 700; font-size: 18px; color: #2E7D32;">
+               ${getCurrencySymbol(currency)}${amount}
+             </span>
+           </div>
+           <div style="
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 12px;
+           ">
+             <span style="font-weight: 600; color: #1b5e20;">
+               ${currentLang === 'ar' ? 'رقم المرجع:' : 'Reference:'}
+             </span>
+             <span style="font-weight: 600; color: #2E7D32;">
+               ${reference}
+             </span>
+           </div>
+           <div style="
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+           ">
+             <span style="font-weight: 600; color: #1b5e20;">
+               ${currentLang === 'ar' ? 'الحالة:' : 'Status:'}
+             </span>
+             <span style="
+               background: #4CAF50;
+               color: white;
+               padding: 4px 12px;
+               border-radius: 20px;
+               font-size: 12px;
+               font-weight: 600;
+             ">
+               ${currentLang === 'ar' ? 'مكتمل' : 'Completed'}
+             </span>
+           </div>
+         </div>
+         
+         <!-- Message -->
+         <p style="
+           color: #1b5e20;
+           font-size: 16px;
+           line-height: 1.6;
+           margin: 20px 0;
+           font-weight: 500;
+         ">
+           ${currentLang === 'ar' 
+             ? 'تم الدفع بنجاح! اضغط على الزر أدناه لإرسال تفاصيل الطلب للواتساب وإكمال عملية الطلب.'
+             : 'Payment completed successfully! Click the button below to send order details to WhatsApp and complete the order process.'
+           }
+         </p>
+         
+         <!-- WhatsApp Button -->
+         <button id="whatsapp-confirmation-btn" style="
+           background: linear-gradient(135deg, #25D366, #128C7E);
+           color: white;
+           border: none;
+           border-radius: 12px;
+           padding: 16px 24px;
+           font-size: 16px;
+           font-weight: 600;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           gap: 8px;
+           box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+           transition: all 0.3s ease;
+           text-decoration: none;
+           width: 100%;
+           margin-top: 20px;
+         " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'">
+           <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+             <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
+           </svg>
+           ${currentLang === 'ar' ? 'إرسال الطلب للواتساب' : 'Send Order to WhatsApp'}
+         </button>
+       </div>
+     `;
+     
+     // Add close function to window
+     window.closeWhatsAppPopup = () => {
+       if (popup.parentNode) {
+         popup.style.animation = 'fadeOut 0.3s ease-in';
+         setTimeout(() => {
+           if (popup.parentNode) {
+             popup.parentNode.removeChild(popup);
+           }
+         }, 300);
+       }
+     };
+     
+     // Add click event for WhatsApp button
+     setTimeout(() => {
+       const whatsappBtn = document.getElementById('whatsapp-confirmation-btn');
+       if (whatsappBtn) {
+         whatsappBtn.addEventListener('click', () => {
+           // Create order and send to WhatsApp
+           handlePaymentVerificationSuccess();
+           // Close popup
+           window.closeWhatsAppPopup();
+         });
+       }
+     }, 100);
+     
+     // Add CSS animations
+     const style = document.createElement('style');
+     style.textContent = `
+       @keyframes fadeIn {
+         from { opacity: 0; }
+         to { opacity: 1; }
+       }
+       
+       @keyframes slideInUp {
+         from {
+           opacity: 0;
+           transform: translateY(30px) scale(0.9);
+         }
+         to {
+           opacity: 1;
+           transform: translateY(0) scale(1);
+         }
+       }
+       
+       @keyframes bounceIn {
+         0% {
+           transform: scale(0.3);
+           opacity: 0;
+         }
+         50% {
+           transform: scale(1.05);
+         }
+         70% {
+           transform: scale(0.9);
+         }
+         100% {
+           transform: scale(1);
+           opacity: 1;
+         }
+       }
+       
+       @keyframes checkmark {
+         0% {
+           stroke-dasharray: 0 50;
+           stroke-dashoffset: 50;
+         }
+         100% {
+           stroke-dasharray: 50 50;
+           stroke-dashoffset: 0;
+         }
+       }
+       
+       @keyframes fadeOut {
+         from { opacity: 1; }
+         to { opacity: 0; }
+       }
+     `;
+     
+     document.head.appendChild(style);
+     document.body.appendChild(popup);
+   };
 //-----------------------------------if cartItems is empty------------------------------------------------  
   console.log('Checkout render - cartItems:', cartItems);
   console.log('Checkout render - cartItems.length:', cartItems?.length);
@@ -2044,7 +2353,8 @@ const handleSendWhatsApp = async () => {
             <button 
               onClick={() => {
                 if (lahzaPaymentData.paymentUrl) {
-                  window.open(lahzaPaymentData.paymentUrl, '_blank');
+                  // Open payment in same window instead of new window
+                  window.location.href = lahzaPaymentData.paymentUrl;
                 }
               }}
               style={{

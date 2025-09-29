@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PAYMENT_API_CONFIG } from '../contexts/payment';
 
 const usePaymentVerification = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
+  const hasChecked = useRef(false);
 
   const verifyPayment = async (reference) => {
     setIsVerifying(true);
@@ -20,6 +21,7 @@ const usePaymentVerification = () => {
 
       const data = await response.json();
       console.log('Payment verification response:', data);
+      console.log('Payment status:', data.data?.status);
 
       const result = {
         success: true,
@@ -32,13 +34,14 @@ const usePaymentVerification = () => {
       if (data.data) {
         const paymentData = data.data;
         
-        if (paymentData.status === 'CAPTURED' || paymentData.status === 'SUCCESS' || paymentData.status === 'COMPLETED') {
+        // Handle Lahza API specific status values
+        if (paymentData.status === 'success' || paymentData.status === 'CAPTURED' || paymentData.status === 'SUCCESS' || paymentData.status === 'COMPLETED') {
           result.status = 'success';
           result.message = 'Payment completed successfully';
-        } else if (paymentData.status === 'PENDING' || paymentData.status === 'INITIATED' || paymentData.status === 'AUTHORIZED') {
+        } else if (paymentData.status === 'pending' || paymentData.status === 'PENDING' || paymentData.status === 'INITIATED' || paymentData.status === 'AUTHORIZED') {
           result.status = 'pending';
           result.message = 'Payment is still pending';
-        } else if (paymentData.status === 'FAILED' || paymentData.status === 'CANCELLED' || paymentData.status === 'DECLINED' || paymentData.status === 'VOIDED') {
+        } else if (paymentData.status === 'failed' || paymentData.status === 'FAILED' || paymentData.status === 'CANCELLED' || paymentData.status === 'DECLINED' || paymentData.status === 'VOIDED') {
           result.status = 'failed';
           result.message = 'Payment failed or was cancelled';
         }
@@ -80,18 +83,39 @@ const usePaymentVerification = () => {
     return await verifyPayment(reference);
   };
 
-  // التحقق التلقائي عند تحميل الصفحة
+  // التحقق التلقائي عند تحميل الصفحة - مرة واحدة فقط
   useEffect(() => {
+    if (hasChecked.current) {
+      return; // لا تتحقق مرة أخرى
+    }
+
     const checkPayment = async () => {
+      hasChecked.current = true; // علامة أن التحقق تم
+      
       const result = await checkPaymentFromURL();
-      if (result && result.status === 'success') {
-        // إزالة reference من localStorage بعد التحقق الناجح
-        localStorage.removeItem('lahza_reference');
+      
+      if (result) {
+        if (result.status === 'success') {
+          // إزالة reference من localStorage بعد التحقق الناجح
+          localStorage.removeItem('lahza_reference');
+          console.log('✅ Payment verification successful:', result);
+        } else if (result.status === 'failed') {
+          console.log('❌ Payment verification failed:', result);
+          console.log('Payment status:', result.data?.data?.status);
+          console.log('Full response:', result.data);
+        } else if (result.status === 'pending') {
+          console.log('⏳ Payment is still pending:', result);
+          console.log('Payment status:', result.data?.data?.status);
+        } else {
+          console.log('❓ Unknown payment status:', result);
+          console.log('Payment status:', result.data?.data?.status);
+          console.log('Full response:', result.data);
+        }
       }
     };
 
     checkPayment();
-  }, []);
+  }, []); // dependency array فارغ = يعمل مرة واحدة فقط
 
   return {
     verifyPayment,

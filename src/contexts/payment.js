@@ -1,14 +1,23 @@
 
 // Payment API Constants
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-const storeData=JSON.parse(localStorage.getItem('storeData')).settings;
-const lahzaToken=storeData.lahzaToken;
+// const storeData=JSON.parse(localStorage.getItem('storeData')).settings;
+// const lahzaToken=storeData.lahzaToken;
 const storeSlug=localStorage.getItem('storeSlug');
+
+// Get current domain dynamically
+const getCurrentDomain = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return 'http://localhost:5175';
+};
+
 export const PAYMENT_API_CONFIG = {
   
     BASE_URL: 'https://api.lahza.io/transaction',
-    SECRET_KEY: lahzaToken,
-    CALLBACK_URL: `http://localhost:5174/${ localStorage.getItem('storeSlug')}/checkout`,
+    // SECRET_KEY: lahzaToken,
+    CALLBACK_URL: `${getCurrentDomain()}/${storeSlug}/checkout`,
     ENDPOINTS: {
       CHARGES: '/initialize',
       VERIFY: '/verify'
