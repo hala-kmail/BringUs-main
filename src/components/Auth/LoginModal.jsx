@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
+import useStoreSlug from '../../hooks/useStoreSlug';
 import OTPModal from './OTPModal';
 import './Auth.css';
 
@@ -10,6 +11,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const { t } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
+  const { storeSlug } = useStoreSlug();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -251,6 +253,23 @@ if (showOTP) {
               {errors.password && (
                 <span className="error-text">{errors.password}</span>
               )}
+            </div>
+            
+            <div className="forgot-password-link">
+              <button 
+                type="button"
+                onClick={() => {
+                  onClose(); // Close the modal
+                  // Navigate to forgot password page with storeSlug if available
+                  const forgotPasswordPath = storeSlug 
+                    ? `/${storeSlug}/forgot-password` 
+                    : '/forgot-password';
+                  navigate(forgotPasswordPath);
+                }} 
+                className="forgot-password-btn"
+              >
+                {t('auth.login.forgot_password')}
+              </button>
             </div>
             
             <button 

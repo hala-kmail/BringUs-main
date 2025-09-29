@@ -129,13 +129,13 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
 
   // Update user data
   const updateUser = (userData) => {
-    if (process.env.NODE_ENV === 'development') {
-      // console.log('updateUser called with:', userData);
-    }
+    console.log('updateUser called with:', userData);
+    console.log('User addresses in updateUser:', userData?.addresses);
     
     if (userData && (userData._id || userData.id)) {
       setUser(userData);
       localStorage.setItem('userInfo', JSON.stringify(userData));
+      console.log('User data updated in state and localStorage');
       
       // Extract and store user discount if available
       if (userData.store && userData.store.discount !== undefined) {

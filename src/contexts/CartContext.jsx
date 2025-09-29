@@ -72,7 +72,7 @@ export const CartProvider = ({ children }) => {
   const clearGuestId = useCallback(() => {
     localStorage.removeItem('guestId');
     if (process.env.NODE_ENV === 'development') {
-      console.log('🗑️ Guest ID cleared from localStorage');
+      
     }
   }, []);
 
@@ -162,11 +162,11 @@ export const CartProvider = ({ children }) => {
     return localStorage.getItem('defaultAreaId') || null;
   };
 
-  const getShippingPriceByAreaId = (areaId) => {
+  const getShippingPriceByAreaId = useCallback((areaId) => {
     const shippingPrice = deliveryMethods.find(method => method._id === areaId)?.price || 0;
     // console.log('shippingPrice', shippingPrice);
     return shippingPrice;
-  };
+  }, [deliveryMethods]);
 
   // جلب الكارت من API
   const fetchCart = useCallback(async () => {
@@ -950,7 +950,7 @@ export const CartProvider = ({ children }) => {
   }, [getStoredGuestId, getStoreId, getHeaders, clearGuestId, fetchCart]);
 
   // Get cart totals
-  const getCartTotals = () => {
+  const getCartTotals = useCallback(() => {
     const subtotal = cartItems.reduce((total, item) => {
       // استخدم السعر الصحيح حسب دور المستخدم (بدون خصم المستخدم على المنتجات الفردية)
       const itemPrice = getPriceByUserRole(item.product);
@@ -984,7 +984,7 @@ export const CartProvider = ({ children }) => {
       total: total,
       itemsCount: itemsCount
     };
-  };
+  }, [cartItems, shippingAreaId, getShippingPriceByAreaId]);
 
   // تحديث منطقة التوصيل وإعادة حساب التوتال
   const updateShippingArea = (areaId) => {

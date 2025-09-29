@@ -96,20 +96,16 @@ const Category = () => {
       return;
     }
 
-    console.log('Filtering products for category ID:', selectedCategoryId);
-    console.log('Total products available:', allProducts.length);
-    
+  
     // Get all descendant category IDs (including subcategories)
     const descendantCategoryIds = getAllDescendantCategoryIds(selectedCategoryId);
-    console.log('Descendant category IDs:', descendantCategoryIds);
-    
+ 
     // Filter products by category ID (including all descendants)
     const categoryProducts = allProducts.filter(product => {
       const productCategoryId = product.category?._id || product.category?.id;
       return descendantCategoryIds.includes(productCategoryId);
     });
-    
-    console.log('Filtered products count:', categoryProducts.length);
+   
     setFilteredProducts(categoryProducts);
   }, [selectedCategoryId, allProducts, getSubCategories]);
       
@@ -153,8 +149,7 @@ const Category = () => {
 
   // Handle category click
   const handleCategoryClick = (category) => {
-    console.log('Category clicked:', category);
-    
+ 
     // تحديث الكاتيجوري المحددة
     setSelectedCategoryId(category._id);
     setSelectedCategory(category);
@@ -267,7 +262,7 @@ const Category = () => {
         />
         
         {/* Category Header */}
-        <div className="category-header">
+        <div className="category-header-main">
             {(selectedCategory || currentCategory).image && (
               <div className="category-icon">
                 <img src={(selectedCategory || currentCategory).image} alt={getCategoryName(selectedCategory || currentCategory)} />
@@ -287,18 +282,18 @@ const Category = () => {
               <h2 className="subcategories-title">
                 {currentLang === 'ar' ? 'الفروع الفرعية' : 'Subcategories'}
               </h2>
-            <div className="subcategories-grid">
+            <div className="subcategories-grid-desktop">
                 {subCategories.map((subCat) => (
                   <div 
                     key={subCat._id}
                     className={`subcategory-item ${selectedCategoryId === subCat._id ? 'active' : ''}`}
                     onClick={() => handleCategoryClick(subCat)}
                 >
-                    <div className="subcategory-content">
+                    <div className="subcategory-content" title={getCategoryName(subCat)}>
                       {subCat.image && (
                         <img src={subCat.image} alt={getCategoryName(subCat)} className="subcategory-logo" />
                       )}
-                      <h3>{getCategoryName(subCat)}</h3>
+                      <h3 title={getCategoryName(subCat)}>{getCategoryName(subCat)}</h3>
                   </div>
                   </div>
               ))}

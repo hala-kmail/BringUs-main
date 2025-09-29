@@ -3,6 +3,7 @@ import React from 'react';
 import { getEffectivePrice, isDiscountActive, getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
 import { useAppData } from '../../contexts/AppDataContext';
 import { formatPrice } from '../../utils/currencyUtils';
+import { isWholesaler } from '../../utils/productUtils';
 const ProductInfoSection = ({
   product,
   currentLang,
@@ -56,7 +57,7 @@ const ProductInfoSection = ({
       </div>
       {/* Product Price */}
       <div className="product-detail-price">
-        {discountActive ? (
+        {discountActive && !isWholesaler() ? (
           <>
             <span className="product-current-price">
               {formatPrice(effectivePrice, store?.settings?.currency || 'ILS')}

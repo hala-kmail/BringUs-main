@@ -476,7 +476,7 @@
 @media (max-width: 600px) {
   .carousel-container {
     width: auto;
-    margin: 1rem;
+    margin: 0rem;
     border-radius: 1rem;
   }
   

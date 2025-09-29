@@ -4,7 +4,9 @@
     "retry": "Retry",
     "previous": "Previous",
     "next": "Next",
-    "login": "Login"
+    "login": "Login",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "navbar": {
     "search_placeholder": "Search products...",
@@ -146,9 +148,11 @@
       "submit": "Sign In",
       "loading": "Signing in...",
       "no_account": "Don't have an account?",
-      "signup": "Sign Up"
+      "signup": "Sign Up",
+      "forgot_password": "Forgot Password?"
     },
     "register": {
+      "account_info": "Account Information",
       "personal_info": "Personal Information",
       "address_info": "Address Information",
       "company_info": "Company Information",
@@ -218,6 +222,45 @@
       "access_from_stores_list": "User has access to the store from stores list",
       "no_stores": "User does not own any store",
       "store_permission": "User has permission for the store"
+    },
+    "forgot_password": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email and we'll send you a password reset link",
+      "email": "Email",
+      "email_placeholder": "Enter your email",
+      "send": "Send",
+      "sending": "Sending...",
+      "success_message": "Password reset link sent to your email",
+      "back_to_login": "Back to Login",
+      "remember_password": "Remember your password?",
+      "validation": {
+        "email_required": "Email is required",
+        "email_invalid": "Invalid email format"
+      },
+      "error_generic": "An error occurred, please try again",
+      "error_network": "Connection error, please check your internet connection"
+    },
+    "reset_password": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password",
+      "new_password": "New Password",
+      "new_password_placeholder": "Enter your new password",
+      "confirm_password": "Confirm Password",
+      "confirm_password_placeholder": "Re-enter your new password",
+      "reset": "Reset Password",
+      "resetting": "Resetting...",
+      "success_message": "Password reset successfully",
+      "back_to_login": "Back to Login",
+      "remember_password": "Remember your password?",
+      "validation": {
+        "password_required": "Password is required",
+        "password_min_length": "Password must be at least 6 characters",
+        "confirm_password_required": "Confirm password is required",
+        "passwords_not_match": "Passwords do not match"
+      },
+      "error_generic": "An error occurred, please try again",
+      "error_network": "Connection error, please check your internet connection",
+      "error_no_token": "Invalid or expired reset link"
     }
   },
   "otp": {
@@ -407,7 +450,15 @@
     "empty_description": "Start adding products you love to your wishlist",
     "continue_shopping": "Continue Shopping",
     "clear_all": "Clear All",
-    "confirm_clear": "Are you sure you want to clear all items from your wishlist?"
+    "confirm_clear": "Are you sure you want to clear all items from your wishlist?",
+    "confirm_clear_title": "Clear Wishlist",
+    "confirm_clear_message": "This action will remove all products from your wishlist and cannot be undone.",
+    "confirm_add_title": "Add to Wishlist",
+    "confirm_add_message": "Do you want to add this product to your wishlist?",
+    "confirm_remove_title": "Remove from Wishlist",
+    "confirm_remove_message": "Do you want to remove this product from your wishlist?",
+    "error_add": "Failed to add product to wishlist!",
+    "error_remove": "Failed to remove product from wishlist!"
   },
   "filters": {
     "title": "Filters",
@@ -569,7 +620,7 @@
     "pay_later": "Pay Later",
     "clear_cart": "Clear Cart",
     "i_have_paid": "I have paid",
-    "send_whatsapp": "Send via WhatsApp",
+    "send_whatsapp": "Create Order",
     "scan_qr_code": "Scan QR Code to Pay",
     "payment_instructions": "Payment Instructions",
     "privacy_policy_title": "Privacy Policy",
@@ -624,7 +675,11 @@
     "subtitle": "Hurry up and buy before they run out! These products have limited stock",
     "browse_all": "Browse All Products",
     "no_products": "No products running out",
-    "no_products_description": "All products are currently available with sufficient stock"
+    "no_products_description": "All products are currently available with sufficient stock",
+    "no_almost_finished_products": "No products are running out at the moment",
+    "no_products_title": "No Products Running Out",
+    "no_products_message": "All products are currently available with sufficient stock. Browse the shop to find amazing products!",
+    "browse_shop": "Browse Shop"
   },
   "error_add": "Failed to add product to wishlist!",
   "error_remove": "Failed to remove product from wishlist!",
@@ -747,5 +802,6 @@
     "preview_title": "Certificate Preview",
     "not_specified": "Not specified",
     "fill_required_fields": "Please fill in all required fields"
-  }
+  },
+  "error_loading_products": "Error loading products"
 }

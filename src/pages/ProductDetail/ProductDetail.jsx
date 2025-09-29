@@ -15,6 +15,7 @@ import ProductInfoSection from '../../components/ProductDetail/ProductInfoSectio
 import ProductOptions from '../../components/ProductDetail/ProductOptions';
 import ProductActions from '../../components/ProductDetail/ProductActions';
 import RelatedProducts from '../../components/RelatedProducts/RelatedProducts';
+import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
 import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 import './ProductDetail.css';
@@ -44,6 +45,8 @@ const ProductDetail = () => {
   const [variants, setVariants] = useState([]);
   const [baseProduct, setBaseProduct] = useState(null);
   const [effectiveAvailable, setEffectiveAvailable] = useState(null);
+  const [showWishlistModal, setShowWishlistModal] = useState(false);
+  const [wishlistAction, setWishlistAction] = useState(null); // 'add' or 'remove'
 
   const { 
     fetchProductById, 
@@ -309,23 +312,7 @@ const ProductDetail = () => {
     ...(product.videos || []).map(video => ({ type: 'video', url: video.url, thumbnail: video.thumbnail, title: video.title || displayName }))
   ].filter(item => item.url && item.url.trim() !== '') : []; // Filter out items without URLs or empty URLs
 
-  // Debug logging for media items
-  if (process.env.NODE_ENV === 'development') {
-    console.log('📸 Media items created:', {
-      totalItems: mediaItems.length,
-      mainImage: product?.mainImage,
-      imagesCount: product?.images?.length || 0,
-      videoUrl: product?.videoUrl,
-      videosCount: product?.videos?.length || 0,
-      mediaItems: mediaItems.map(item => ({
-        type: item.type,
-        url: item.url,
-        title: item.title
-      })),
-      displayName
-    });
-  }
-
+  
 
 
   const handleAddToCart = async () => {
@@ -366,27 +353,84 @@ const ProductDetail = () => {
         ...selectedSpecs
       };
       
-      // طباعة المواصفات المختارة في الكونسول
-      console.log('🛒 Selected Options before adding to cart:');
-      console.log('   Color:', selectedColor);
-      console.log('   Quantity:', quantity);
-      console.log('   Selected Specs:', selectedSpecs);
-      console.log('   Full Options Object:', selectedOptions);
-      
+     
       const success = await addToCart(product, selectedOptions);
       
       if (success) {
-       
+    
+      } else {
+        // Show error message
+        const errorMessage = currentLang === 'ar' 
+          ? 'حدث خطأ في إضافة المنتج إلى السلة' 
+          : 'Error adding product to cart';
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
+      
+      // Show error message
+      const errorMessage = currentLang === 'ar' 
+        ? 'حدث خطأ في إضافة المنتج إلى السلة' 
+        : 'Error adding product to cart';
+      alert(errorMessage);
     } finally {
       setAddToCartLoading(false);
     }
   };
 
-  const handleWishlistToggle = async () => {
+
+  const handleConfirmWishlistToggle = async () => {
     await toggleWishlist(product);
+    setShowWishlistModal(false);
+    setWishlistAction(null);
+  };
+
+ 
+
+  const handleShare = async () => {
+    try {
+      // Get current URL with affiliate code if present
+      const currentUrl = window.location.href;
+      
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        const shareData = {
+          title: displayName,
+          text: currentLang === 'ar' 
+            ? `تحقق من هذا المنتج: ${displayName}` 
+            : `Check out this product: ${displayName}`,
+          url: currentUrl
+        };
+        
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy link to clipboard
+        await navigator.clipboard.writeText(currentUrl);
+        
+        // Show success message
+        const message = currentLang === 'ar' 
+          ? 'تم نسخ رابط المنتج إلى الحافظة!' 
+          : 'Product link copied to clipboard!';
+        alert(message);
+      }
+    } catch (error) {
+      console.error('Error sharing product:', error);
+      
+      // Fallback: Try to copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const message = currentLang === 'ar' 
+          ? 'تم نسخ رابط المنتج إلى الحافظة!' 
+          : 'Product link copied to clipboard!';
+        alert(message);
+      } catch (clipboardError) {
+        console.error('Error copying to clipboard:', clipboardError);
+        const errorMessage = currentLang === 'ar' 
+          ? 'حدث خطأ في مشاركة المنتج' 
+          : 'Error sharing product';
+        alert(errorMessage);
+      }
+    }
   };
 
   if (loading) {
@@ -418,27 +462,6 @@ const ProductDetail = () => {
     );
   }
 
-  // Debug logging to help identify issues
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 Current product state:', {
-      id: product._id,
-      name: product.nameAr || product.nameEn,
-      price: product.price,
-      stock: product.availableQuantity,
-      images: product.images?.length || 0,
-      mainImage: product.mainImage,
-      hasVariants: product.hasVariants,
-      isParent: product.isParent,
-      category: product.category?.nameAr || product.category?.nameEn,
-      specificationValues: product.specificationValues?.length || 0,
-      displayName
-    });
-  }
-
-  
-  
-
-  
   return (
     <div className="product-detail-page">
       <Navbar />
@@ -562,13 +585,11 @@ const ProductDetail = () => {
             <ProductActions
               product={product}
               quantity={quantity}
-              isInStock={isInStock(product)}
               addToCartLoading={addToCartLoading}
               handleAddToCart={handleAddToCart}
-              handleWishlistToggle={handleWishlistToggle}
               isInWishlist={isInWishlist}
-              currentLang={currentLang}
-              t={t}
+              handleWishlistToggle={handleConfirmWishlistToggle}
+              handleShare={handleShare}
               canAddToCart={(effectiveAvailable ?? product.availableQuantity ?? 0) > 0}
               key={`actions-${product._id}`} // Force re-render when product changes
             />
@@ -584,6 +605,8 @@ const ProductDetail = () => {
         />
         )}
       </div>
+
+     
     </div>
   );
 };

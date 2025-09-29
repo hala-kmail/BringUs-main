@@ -68,7 +68,7 @@ const useStoreSlug = () => {
     
     try {
       if (process.env.NODE_ENV === 'development') {
-        // console.log('🌐 Fetching store data for slug:', slug);
+        console.log('🌐 Fetching store data for slug:', slug);
       }
 
       const response = await fetch(`${API_BASE_URL}/stores/slug/${slug}`, {
@@ -81,12 +81,26 @@ const useStoreSlug = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        console.warn(`⚠️ Store not found for slug: ${slug}, status: ${response.status}`);
+        // إذا لم نجد المتجر، جرب استخدام البيانات المحفوظة في localStorage
+        try {
+          const storedData = localStorage.getItem('storeData');
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            if (parsedData && parsedData.slug === slug) {
+              console.log('📦 Using stored store data as fallback');
+              return parsedData;
+            }
+          }
+        } catch (err) {
+          console.warn('Could not use stored store data:', err);
+        }
         throw new Error(data.message || 'Failed to fetch store data');
       }
 
       if (data.success && data.data) {
         if (process.env.NODE_ENV === 'development') {
-          // console.log('✅ Store data fetched successfully:', data.data.nameAr || data.data.nameEn);
+          console.log('✅ Store data fetched successfully:', data.data.nameAr || data.data.nameEn);
         }
         return data.data;
       } else {
@@ -187,8 +201,26 @@ const useStoreSlug = () => {
           console.warn('Could not save storeSlug to localStorage:', err);
         }
         
-        // Fetch store data
-        const storeInfo = await fetchStoreBySlug(slug);
+        // Check if we already have store data in localStorage for this slug
+        let storeInfo = null;
+        try {
+          const storedData = localStorage.getItem('storeData');
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            if (parsedData && parsedData.slug === slug) {
+              storeInfo = parsedData;
+              setStoreData(storeInfo);
+              setCurrentUrl(newUrl);
+              hasInitialized.current = true;
+              return { slug, storeData: storeInfo };
+            }
+          }
+        } catch (err) {
+          // Continue to fetch from API if localStorage fails
+        }
+        
+        // Fetch store data from API if not found in localStorage
+        storeInfo = await fetchStoreBySlug(slug);
         if (storeInfo) {
           setStoreData(storeInfo);
           
@@ -223,7 +255,7 @@ const useStoreSlug = () => {
       hasInitialized.current = true;
       return { slug: '', storeData: null };
     }
-  }, [getCurrentUrl, hasUrlChanged, extractSlugFromPath, extractSlugFromSubdomain, fetchStoreBySlug]);
+  }, []);
 
   // Monitor URL changes
   useEffect(() => {
@@ -250,7 +282,7 @@ const useStoreSlug = () => {
     return () => {
       window.removeEventListener('popstate', handleUrlChange);
     };
-  }, [getCurrentUrl, hasUrlChanged, currentUrl, initializeStore]);
+  }, []);
 
   // Load store data from localStorage on mount
   useEffect(() => {
@@ -287,7 +319,7 @@ const useStoreSlug = () => {
     if (!hasInitialized.current) {
       initializeStore(false);
     }
-  }, [initializeStore]);
+  }, []);
 
   // Update URL when slug changes (only for initial redirect)
   useEffect(() => {

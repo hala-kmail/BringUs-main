@@ -246,12 +246,8 @@ const ProductCard = ({
             {currentLang === 'ar' ? 'جديد' : 'New'}
           </span>
         )}
-        {hasFeaturedLabel && (
-          <span className="product-label-new product-featured-label">
-            {currentLang === 'ar' ? 'مميز' : 'Featured'}
-          </span>
-        )}
-        {hasSaleLabel && (
+        
+        {hasSaleLabel && !isWholesaler() && (
           <span className="product-label-new product-sale-label">
             {currentLang === 'ar' ? 'تخفيض' : 'Sale'}
           </span>
@@ -287,7 +283,7 @@ const ProductCard = ({
       </div>
 
       {/* Discount Badge - Top Left */}
-      {!isWholesalerUser() && product.salePercentage > 0 && (
+      {!isWholesalerUser() && product.salePercentage > 0 && !isWholesaler() && (
         <div className="discount-badge-new">
           -{product.salePercentage}%
         </div>
@@ -321,7 +317,7 @@ const ProductCard = ({
         )}
         
         {/* Product Labels - Below Description */}
-        {product.productLabels && product.productLabels.length > 0 && (
+        {product.productLabels && Array.isArray(product.productLabels) && product.productLabels.length > 0 && (
           <div className="product-labels-section">
             {product.productLabels.map((label, index) => (
               <span 
@@ -332,7 +328,7 @@ const ProductCard = ({
                   color: 'black'
                 }}
               >
-                {currentLang === 'ar' ? label.nameAr : label.nameEn}
+                {currentLang === 'ar' ? (label.nameAr || label.name) : (label.nameEn || label.name)}
               </span>
             ))}
           </div>
@@ -352,7 +348,7 @@ const ProductCard = ({
             <div className="current-price-new">
               {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
             </div>
-            {product.salePercentage > 0 && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && (
+            {product.salePercentage > 0 && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && !isWholesaler() && (
               <div className="original-price-new">
                 {formatPrice(getOriginalPriceByUserRole(product), store?.settings?.currency || 'ILS')}
               </div>

@@ -10,11 +10,18 @@ import SecondaryNavbar from '../../components/SecondaryNavbar/SecondaryNavbar';
 import MobileSearch from '../../components/MobileSearch/MobileSearch';
 import BottomNavigation from '../../components/BottomNavigation/BottomNavigation';
 import ProductCard from '../../components/ProductCard/ProductCard';
+import ConfirmationModal from '../../components/ConfirmationModal/ConfirmationModal';
 import useCategories from '../../hooks/useCategories';
+
 import './Wishlist.css';
 
 const Wishlist = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [showToggleModal, setShowToggleModal] = useState(false);
+ 
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [toggleAction, setToggleAction] = useState(null); // 'add' or 'remove'
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const currentLang = i18n.language;
@@ -48,25 +55,37 @@ const Wishlist = () => {
     setIsMobileSearchOpen(false);
   };
 
-  const handleWishlistToggle = async (product) => {
-    await toggleWishlist(product);
-  };
+
+
+
 
   const handleAddToCart = (product) => {
     navigate(`/product/${product._id || product.id}`);
   };
 
-  const handleClearWishlist = async () => {
-    if (window.confirm(t('wishlist.confirm_clear'))) {
-      await clearWishlist();
-    }
+  const handleClearWishlist = () => {
+    setShowClearModal(true);
+  };
+
+  const handleConfirmClear = async () => {
+    await clearWishlist();
+    setShowClearModal(false);
+  };
+
+  const handleCancelClear = () => {
+    setShowClearModal(false);
   };
 
   // تحويل البيانات من API إلى الشكل المطلوب للمكونات
   const getProductData = (wishlistItem) => {
     // إذا كان المنتج موجود في البيانات (من API likes)
     if (wishlistItem.product) {
-      return wishlistItem.product;
+      // التأكد من وجود productLabels في البيانات
+      const productData = {
+        ...wishlistItem.product,
+        productLabels: wishlistItem.product.productLabels || wishlistItem.productLabels || []
+      };
+      return productData;
     }
     
     // إذا كان المنتج موجود في البيانات مباشرة (من API)
@@ -144,12 +163,7 @@ const Wishlist = () => {
         </div>
 
         {/* Loading State */}
-        {loading && (
-          <div className="wishlist-loading">
-            <div className="loading-spinner"></div>
-            <p>{t('common.loading')}</p>
-          </div>
-        )}
+        
 
         {/* Error State */}
         {error && (
@@ -162,7 +176,7 @@ const Wishlist = () => {
         )}
 
         {/* Wishlist Content */}
-        {!loading && !error && wishlistItems.length > 0 ? (
+        { !error && wishlistItems.length > 0 ? (
           <div className="wishlist-content">
             <div className="products-grid">
               {wishlistItems.map((wishlistItem) => {
@@ -174,7 +188,7 @@ const Wishlist = () => {
                   currentLang={currentLang}
                   t={t}
                   isInWishlist={() => true} // Always true since item is in wishlist
-                  handleWishlistToggle={handleWishlistToggle}
+                  handleWishlistToggle={toggleWishlist}
                   handleAddToCart={handleAddToCart}
                   getFeatureById={getFeatureById}
                   getCategoryById={getCategoryById}
@@ -184,7 +198,7 @@ const Wishlist = () => {
               })}
             </div>
           </div>
-        ) : !loading && !error ? (
+        ) :   !error ? (
           <div className="empty-wishlist">
             <div className="empty-wishlist-icon">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,6 +215,20 @@ const Wishlist = () => {
       </div>
 
       <BottomNavigation />
+
+      {/* Clear Wishlist Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showClearModal}
+        onClose={handleCancelClear}
+        onConfirm={handleConfirmClear}
+        title={t('wishlist.confirm_clear_title')}
+        message={t('wishlist.confirm_clear_message')}
+        confirmText={t('wishlist.clear_all')}
+        cancelText={t('common.cancel')}
+        type="danger"
+      />
+
+     
     </div>
   );
 };

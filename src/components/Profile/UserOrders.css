@@ -143,6 +143,7 @@
 
 /* Order Card - Compact Design */
 .order-card {
+  cursor: pointer;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
@@ -323,12 +324,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Affiliate Percent */
-.affiliate-percent {
-  color: #10b981;
-  font-weight: 600;
-  margin-left: 5px;
-}
+
 
 /* Notes */
 .notes {

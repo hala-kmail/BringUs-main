@@ -21,13 +21,7 @@ export const useAffiliateNavigation = () => {
     // Create path with affiliate code if present
     const affiliatePath = createAffiliateLink(path, currentAffiliateCode);
     
-    console.log('Affiliate Navigation:', {
-      originalPath: path,
-      affiliateCode: currentAffiliateCode,
-      affiliatePath: affiliatePath,
-      currentLocation: location.pathname,
-      options
-    });
+   
     
     // Navigate with affiliate path
     navigate(affiliatePath, options);

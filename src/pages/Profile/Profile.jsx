@@ -133,8 +133,14 @@ const Profile = () => {
         ]
       };
 
+      console.log('Profile data being sent:', JSON.stringify(profileData, null, 2));
+      console.log('Current form data address:', formData.address);
+
       // Call API to update profile
       const updatedUser = await updateProfile(profileData);
+      
+      console.log('Updated user received:', JSON.stringify(updatedUser, null, 2));
+      console.log('Updated user addresses:', updatedUser?.addresses);
       
       // Only update user if we got valid data back
       if (updatedUser && updatedUser._id) {
@@ -151,6 +157,15 @@ const Profile = () => {
               zipCode: '',
               country: ''
             };
+
+        console.log('User address from updated user:', userAddress);
+        console.log('Setting form data with address:', {
+          street: userAddress.street || '',
+          city: userAddress.city || '',
+          state: userAddress.state || '',
+          zipCode: userAddress.zipCode || '',
+          country: userAddress.country || ''
+        });
 
         setFormData({
           firstName: updatedUser.firstName || '',

@@ -4,14 +4,16 @@ import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
 import useOTP from '../../hooks/useOTP';
+import useStoreSlug from '../../hooks/useStoreSlug';
 import OTPVerification from './OTPVerification';
 import './Auth.css';
 
 const Login = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
   const { verifyOTP, resendOTP, loading: otpLoading, error: otpError, reset: resetOTP } = useOTP();
+  const { storeSlug } = useStoreSlug();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -25,6 +27,35 @@ const Login = () => {
   const [showOTP, setShowOTP] = useState(false);
   const [loginData, setLoginData] = useState(null);
 
+  // Set document direction when language changes
+  useEffect(() => {
+    document.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = i18n.language;
+  }, [i18n.language]);
+
+  // Force re-render when language changes
+  const [, forceUpdate] = useState({});
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      forceUpdate({});
+    };
+    
+    i18n.on('languageChanged', handleLanguageChange);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'ar' ? 'en' : 'ar';
+    i18n.changeLanguage(newLang).then(() => {
+      document.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = newLang;
+      localStorage.setItem('i18nextLng', newLang);
+    });
+  };
+
   // Load user and store info on component mount if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -37,7 +68,6 @@ const Login = () => {
           loadUserAndStoreInfo();
         }
       } catch (err) {
-        console.log('Error parsing stored user info, skipping auto-load');
       }
     }
   }, [loadUserAndStoreInfo]);
@@ -91,19 +121,14 @@ const Login = () => {
       return;
     }
 
-    console.log('Calling login function...');
     const result = await login(formData.email, formData.password);
-    console.log('Login result:', result);
-    console.log('Result type:', typeof result);
-    console.log('Result keys:', result ? Object.keys(result) : 'result is null/undefined');
+   
     
     if (result && result.success) {
-      console.log('Login successful, navigating to home');
-      // Email is verified, redirect to home page
+    
       navigate('/');
     } else if (result && result.isEmailVerified === false) {
-      console.log('Email not verified, showing OTP');
-      // Email not verified, show OTP verification
+    
       setLoginData(result.data);
       setShowOTP(true);
     } else {
@@ -143,6 +168,20 @@ const Login = () => {
 
   return (
     <div className="auth-container">
+      {/* Language Switcher */}
+      <button
+        onClick={toggleLanguage}
+        className="language-switcher"
+        style={{
+          position: 'fixed',
+          top: '2rem',
+          [i18n.language === 'ar' ? 'left' : 'right']: '2rem',
+          zIndex: 1000
+        }}
+      >
+        {i18n.language === 'ar' ? 'English' : 'العربية'}
+      </button>
+
       <div className="auth-card">
         <div className="auth-header">
           {/* Display store logo if available */}
@@ -199,6 +238,22 @@ const Login = () => {
             {errors.password && (
               <span className="error-text">{errors.password}</span>
             )}
+          </div>
+          
+          <div className="forgot-password-link">
+            <button 
+              type="button"
+              onClick={() => {
+                // Navigate to forgot password page with storeSlug if available
+                const forgotPasswordPath = storeSlug 
+                  ? `/${storeSlug}/forgot-password` 
+                  : '/forgot-password';
+                navigate(forgotPasswordPath);
+              }} 
+              className="forgot-password-btn"
+            >
+              {t('auth.login.forgot_password')}
+            </button>
           </div>
           
           <button 

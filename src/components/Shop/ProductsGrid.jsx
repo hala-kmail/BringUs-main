@@ -40,8 +40,8 @@ const ProductsGrid = ({
           currentLang={currentLang}
           t={t}
           isInWishlist={isInWishlist}
-          onWishlistToggle={onWishlistToggle}
-          onAddToCart={onAddToCart}
+          handleWishlistToggle={onWishlistToggle}
+          handleAddToCart={onAddToCart}
           isListView={viewMode === 'list'}
         />
       ))}

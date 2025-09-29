@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext js,jsx --fix",
+    "lint:duplicates": "eslint . --ext js,jsx --rule 'no-duplicate-imports: error'",
+    "check-performance": "eslint . --ext js,jsx --rule 'react-hooks/exhaustive-deps: error' --rule 'no-console: warn'",
     "preview": "vite preview"
   },
   "dependencies": {

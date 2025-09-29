@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
-import { getPriceByUserRole, getOriginalPriceByUserRole } from '../../utils/productUtils';
+import { getPriceByUserRole, getOriginalPriceByUserRole, isWholesaler } from '../../utils/productUtils';
 
 const OrderSummary = ({
   cartItems,
@@ -57,8 +57,8 @@ const OrderSummary = ({
       <div className="order-summary">
         {/* Items List */}
         <div className="order-items">
-          {cartItems.map((item) => (
-            <div key={item.cartItemId || item._id} className="order-item">
+          {cartItems.map((item, index) => (
+            <div key={`order-item-${index}`} className="order-item">
               <div className="item-image">
                 <img src={item.mainImage || item.product?.mainImage} alt={getItemName(item, currentLang)} />
                 <span className="item-quantity">{item.quantity}</span>
@@ -113,7 +113,7 @@ const OrderSummary = ({
                   </div>
                 )}
                 <div className="item-price">
-                  {getPriceByUserRole(item.product) !== getOriginalPriceByUserRole(item.product) && (
+                  {getPriceByUserRole(item.product) !== getOriginalPriceByUserRole(item.product) && !isWholesaler() && (
                     <span className="original-price" style={{ textDecoration: 'line-through', color: '#666', fontSize: '0.9em', marginRight: '8px' }}>
                       {currencySymbol}{getOriginalPriceByUserRole(item.product).toFixed(2)}
                     </span>

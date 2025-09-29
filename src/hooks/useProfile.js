@@ -72,7 +72,7 @@ const useProfile = () => {
         throw new Error('No authentication token found');
       }
 
-      console.log('Sending profile data:', profileData);
+      console.log('Sending profile data:', JSON.stringify(profileData, null, 2));
 
       const response = await fetch(`${API_BASE_URL}/users/profile`, {
         method: 'PUT',
@@ -84,7 +84,8 @@ const useProfile = () => {
       });
 
       const data = await response.json();
-      console.log('API Response:', data);
+      console.log('API Response:', JSON.stringify(data, null, 2));
+      console.log('Addresses in response:', data.user?.addresses);
 
       if (!response.ok) {
         if (data.errors && Array.isArray(data.errors)) {
@@ -96,6 +97,9 @@ const useProfile = () => {
 
       // After successful update, fetch the complete user data using the same endpoint as useLogin.js
       let completeUserData = data.user || data;
+      console.log('Initial response user data:', completeUserData);
+      console.log('Addresses in initial response:', completeUserData?.addresses);
+      
       try {
         // Get user ID from the updated data or localStorage
         const userId = completeUserData.id || completeUserData._id;
@@ -113,6 +117,7 @@ const useProfile = () => {
           if (userResponse.ok && (userData.data || userData.user)) {
             completeUserData = userData.data || userData.user;
             console.log('Complete user data fetched after update:', completeUserData);
+            console.log('Addresses in fetched data:', completeUserData?.addresses);
           }
         }
       } catch (err) {
@@ -120,6 +125,8 @@ const useProfile = () => {
       }
 
       // Return the complete user data
+      console.log('Final complete user data being returned:', completeUserData);
+      console.log('Final addresses being returned:', completeUserData?.addresses);
       return completeUserData;
     } catch (err) {
       setError(err.message);
