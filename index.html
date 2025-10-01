@@ -2,12 +2,86 @@
 <html >
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" id="favicon" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
-    <title>Hala Store</title>
+    <title id="page-title">Store</title>
+    <script>
+      // Function to update page title and favicon based on store data
+      function updateStoreBranding() {
+        try {
+          // Try to get store data from localStorage
+          const storeData = localStorage.getItem('storeData');
+          const storeInfo = localStorage.getItem('storeInfo');
+          
+          let store = null;
+          
+          // Parse store data (prioritize storeData over storeInfo)
+          if (storeData) {
+            store = JSON.parse(storeData);
+          } else if (storeInfo) {
+            store = JSON.parse(storeInfo);
+          }
+          
+          if (store) {
+            // Update page title
+            const titleElement = document.getElementById('page-title');
+            const faviconElement = document.getElementById('favicon');
+            
+            // Get store name (prefer Arabic, fallback to English)
+            const storeName = store.nameEn || store.nameAr || 'Store';
+            
+            if (titleElement) {
+              titleElement.textContent = storeName;
+              document.title = storeName;
+            }
+            
+            // Update favicon if store has logo
+            if (store.logo && store.logo.url && faviconElement) {
+              // Create a new favicon link
+              const newFavicon = document.createElement('link');
+              newFavicon.rel = 'icon';
+              newFavicon.type = 'image/png';
+              newFavicon.href = store.logo.url;
+              newFavicon.id = 'favicon';
+              
+              // Remove old favicon and add new one
+              const oldFavicon = document.getElementById('favicon');
+              if (oldFavicon) {
+                oldFavicon.remove();
+              }
+              document.head.appendChild(newFavicon);
+            }
+            
+            // Add store name to meta description
+            const metaDescription = document.querySelector('meta[name="description"]');
+            if (!metaDescription) {
+              const newMetaDescription = document.createElement('meta');
+              newMetaDescription.name = 'description';
+              newMetaDescription.content = `متجر ${storeName} - تسوق آمن وسريع`;
+              document.head.appendChild(newMetaDescription);
+            }
+          }
+        } catch (error) {
+          console.log('Could not update store branding:', error);
+        }
+      }
+      
+      // Update branding when page loads
+      document.addEventListener('DOMContentLoaded', updateStoreBranding);
+      
+      // Also update when localStorage changes (for dynamic updates)
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'storeData' || e.key === 'storeInfo') {
+          updateStoreBranding();
+        }
+      });
+      
+      // Make updateStoreBranding available globally for React app
+      window.updateStoreBranding = updateStoreBranding;
+    </script>
   </head>
   <body>
     <div id="root"></div>

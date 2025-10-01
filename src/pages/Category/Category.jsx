@@ -251,15 +251,15 @@ const Category = () => {
         onClose={handleMobileSearchClose}
       />
       
-      <div className="category-container">
-        <div className="category-main">
-        {/* Breadcrumb */}
-        <Breadcrumb
+      <div className="category-container"> <Breadcrumb
             category={selectedCategory || currentCategory}
           currentLang={currentLang}
           t={t}
             allCategories={categories}
         />
+        <div className="category-main">
+        {/* Breadcrumb */}
+       
         
         {/* Category Header */}
         <div className="category-header-main">

@@ -59,6 +59,11 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
           if (process.env.NODE_ENV === 'development') {
             // console.log('AppData - Store loaded from localStorage:', storeData);
           }
+          
+          // Update page title and favicon when store data is loaded
+          if (typeof window !== 'undefined' && window.updateStoreBranding) {
+            window.updateStoreBranding();
+          }
         }
 
         // Load categories data
@@ -178,6 +183,11 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
       localStorage.setItem('storeData', JSON.stringify(storeData));
       if (process.env.NODE_ENV === 'development') {
         // console.log('AppData - Store updated:', storeData);
+      }
+      
+      // Update page title and favicon when store data changes
+      if (typeof window !== 'undefined' && window.updateStoreBranding) {
+        window.updateStoreBranding();
       }
     } else {
       localStorage.removeItem('storeData');
