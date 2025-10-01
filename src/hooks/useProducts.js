@@ -3,7 +3,7 @@ import { useAppData } from '../contexts/AppDataContext';
 import { getBearerToken } from '../utils/tokenManager';
 import { getSimpleColorsFromColorsField, getOriginalColorsFromColorsField } from '../utils/productUtils';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
 
 // Global flag to prevent multiple simultaneous fetches
 let isGlobalFetching = false;
