@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 import { getBearerToken } from '../utils/tokenManager';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
 
 export const useSocialComments = () => {
   const [comments, setComments] = useState([]);

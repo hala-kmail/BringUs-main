@@ -113,7 +113,7 @@ const ResetPassword = () => {
     setMessage('');
 
     try {
-      const API_BASE_URL = 'http://localhost:5001/api';
+      const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
       
       // Get base URL from current window location
       let baseUrl = `${window.location.protocol}//${window.location.host}`;
