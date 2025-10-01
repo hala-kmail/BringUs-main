@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PAYMENT_API_CONFIG } from '../contexts/payment';
 
 const usePaymentVerification = () => {
@@ -21,6 +21,7 @@ const usePaymentVerification = () => {
 
       const data = await response.json();
       console.log('Payment verification response:', data);
+      console.log('Payment status:', data.data?.status);
 
       const result = {
         success: true,
@@ -46,13 +47,14 @@ const usePaymentVerification = () => {
         const paymentData = data.data;
         console.log('🔍 Payment data details:', paymentData);
         
-        if (paymentData.status === 'CAPTURED' || paymentData.status === 'SUCCESS' || paymentData.status === 'COMPLETED') {
+        // Handle Lahza API specific status values
+        if (paymentData.status === 'success' || paymentData.status === 'CAPTURED' || paymentData.status === 'SUCCESS' || paymentData.status === 'COMPLETED') {
           result.status = 'success';
           result.message = 'Payment completed successfully';
-        } else if (paymentData.status === 'PENDING' || paymentData.status === 'INITIATED' || paymentData.status === 'AUTHORIZED') {
+        } else if (paymentData.status === 'pending' || paymentData.status === 'PENDING' || paymentData.status === 'INITIATED' || paymentData.status === 'AUTHORIZED') {
           result.status = 'pending';
           result.message = 'Payment is still pending';
-        } else if (paymentData.status === 'FAILED' || paymentData.status === 'CANCELLED' || paymentData.status === 'DECLINED' || paymentData.status === 'VOIDED') {
+        } else if (paymentData.status === 'failed' || paymentData.status === 'FAILED' || paymentData.status === 'CANCELLED' || paymentData.status === 'DECLINED' || paymentData.status === 'VOIDED') {
           result.status = 'failed';
           result.message = 'Payment failed or was cancelled';
         }

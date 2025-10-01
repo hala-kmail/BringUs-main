@@ -1,36 +1,28 @@
 
 // Payment API Constants
-const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-const storeData = JSON.parse(localStorage.getItem('storeData') || '{}');
-const lahzaToken = storeData?.settings?.lahzaToken || '';
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+// const storeData=JSON.parse(localStorage.getItem('storeData')).settings;
+// const lahzaToken=storeData.lahzaToken;
+const storeSlug=localStorage.getItem('storeSlug');
 
-// دالة للحصول على storeSlug ديناميكياً
-const getStoreSlug = () => {
-  try {
-    return localStorage.getItem('storeSlug') || '';
-  } catch (error) {
-    console.warn('Could not get storeSlug from localStorage:', error);
-    return '';
+// Get current domain dynamically
+const getCurrentDomain = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
   }
-};
-
-// دالة للحصول على CALLBACK_URL ديناميكياً
-export const getCallbackUrl = () => {
-  const storeSlug = getStoreSlug();
-  const callbackUrl = `http://localhost:5173/${storeSlug}/checkout`;
- 
-  return callbackUrl;
+  return 'http://localhost:5175';
 };
 
 export const PAYMENT_API_CONFIG = {
-  BASE_URL: 'https://api.lahza.io/transaction',
-  SECRET_KEY: lahzaToken,
-  CALLBACK_URL: getCallbackUrl(),
-  ENDPOINTS: {
-    CHARGES: '/initialize',
-    VERIFY: '/verify'
-  }
-};
+  
+    BASE_URL: 'https://api.lahza.io/transaction',
+    // SECRET_KEY: lahzaToken,
+    CALLBACK_URL: `${getCurrentDomain()}/${storeSlug}/checkout`,
+    ENDPOINTS: {
+      CHARGES: '/initialize',
+      VERIFY: '/verify'
+    }
+  };
   
   // Currency conversion rates (to smallest unit)
   export const CURRENCY_CONVERSION = {

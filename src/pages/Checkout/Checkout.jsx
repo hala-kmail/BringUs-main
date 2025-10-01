@@ -118,7 +118,7 @@ const Checkout = () => {
     }
   }, [showSuccessModal]);
 
-  // التحقق من الدفع عند تحميل الصفحة
+  // الاستماع لنتيجة التحقق من الدفع
   useEffect(() => {
     const checkPaymentStatus = async () => {
       try {
@@ -582,7 +582,9 @@ const handleDirectStoreOrder = async () => {
        orderDate: new Date().toISOString(),
        deliveryMethod: 'store',
        deliveryMethodId: null,
-       paymentMethod: currentLang === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery'
+       paymentMethod: currentLang === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery',
+       // Add payment verification data if available (for store pickup, this will be null)
+       paymentVerificationData: null
      };
      
      // إنشاء رسالة الواتساب
@@ -740,7 +742,16 @@ const handleSendWhatsApp = async () => {
       paymentInfo: {
         method: getPaymentMethodForAPI(selectedPaymentMethod?.methodType),
         paymentMethodId: selectedPaymentMethod?.key,
-        status: 'pending'
+        status: paymentVerificationData?.status === 'success' ? 'completed' : 'pending',
+        // Add payment verification data if available
+        ...(paymentVerificationData?.data?.data && {
+          transactionId: paymentVerificationData.data.data.reference,
+          paymentAmount: paymentVerificationData.data.data.amount,
+          paymentCurrency: paymentVerificationData.data.data.currency,
+          paymentStatus: paymentVerificationData.data.data.status,
+          paymentDate: paymentVerificationData.data.data.paidAt,
+          gatewayResponse: paymentVerificationData.data.data.gateway_response
+        })
       },
       shippingInfo: {
         method: deliveryMethod === 'delivery' ? 'delivery' : 'pickup',
@@ -824,7 +835,9 @@ const handleSendWhatsApp = async () => {
       orderDate: new Date().toISOString(),
       deliveryMethod: deliveryMethod,
       deliveryMethodId: formData.deliveryMethodId,
-      paymentMethod: selectedPaymentMethod?.label
+      paymentMethod: selectedPaymentMethod?.label,
+      // Add payment verification data if available
+      paymentVerificationData: paymentVerificationData
     };
     
     handleWhatsAppOrder(whatsappOrderData);
@@ -851,7 +864,7 @@ const handleSendWhatsApp = async () => {
 //-----------------------------------handleWhatsAppOrder------------------------------------------------  
   const handleWhatsAppOrder = (orderData) => {
     
-    const { orderNumber, customerInfo, items, totals, deliveryMethod } = orderData;
+    const { orderNumber, customerInfo, items, totals, deliveryMethod, paymentVerificationData: orderPaymentData } = orderData;
     
     // إنشاء رسالة باللغة المختارة فقط
     const isArabic = currentLang === 'ar';
@@ -1016,9 +1029,37 @@ const handleSendWhatsApp = async () => {
       ? ` *الإجمالي النهائي: ${currencySymbol}${orderData.pricing.total.toFixed(2)}*\n`
       : ` *Final Total: ${currencySymbol}${orderData.pricing.total.toFixed(2)}*\n`;
     
-
+    // إضافة معلومات الدفع إذا كانت متوفرة
+    if (orderPaymentData?.status === 'success' && orderPaymentData?.data?.data) {
+      const paymentData = orderPaymentData.data.data;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += isArabic 
+        ? ` *معلومات الدفع:*\n`
+        : ` *Payment Information:*\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += isArabic 
+        ? ` حالة الدفع: مكتمل ✅\n`
+        : ` Payment Status: Completed ✅\n`;
+      message += isArabic 
+        ? ` رقم المرجع: ${paymentData.reference}\n`
+        : ` Reference: ${paymentData.reference}\n`;
+      message += isArabic 
+        ? ` طريقة الدفع: ${paymentData.channel === 'card' ? 'بطاقة ائتمان' : paymentData.channel}\n`
+        : ` Payment Method: ${paymentData.channel === 'card' ? 'Credit Card' : paymentData.channel}\n`;
+      if (paymentData.gateway_response) {
+        message += isArabic 
+          ? ` استجابة البوابة: ${paymentData.gateway_response}\n`
+          : ` Gateway Response: ${paymentData.gateway_response}\n`;
+      }
+      if (paymentData.paidAt) {
+        const paidDate = new Date(paymentData.paidAt).toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
+        message += isArabic 
+          ? ` تاريخ الدفع: ${paidDate}\n`
+          : ` Payment Date: ${paidDate}\n`;
+      }
+    }
     
-         // Get WhatsApp number from store data - prioritize WhatsApp number
+    // Get WhatsApp number from store data - prioritize WhatsApp number
      let phoneNumber = store?.contact?.whatsapp;
      console.log('📞 WhatsApp numbers available:', {
        contactWhatsapp: store?.contact?.whatsapp,
@@ -2439,7 +2480,8 @@ const handleSendWhatsApp = async () => {
             <button 
               onClick={() => {
                 if (lahzaPaymentData.paymentUrl) {
-                  window.open(lahzaPaymentData.paymentUrl, '_blank');
+                  // Open payment in same window instead of new window
+                  window.location.href = lahzaPaymentData.paymentUrl;
                 }
               }}
               style={{

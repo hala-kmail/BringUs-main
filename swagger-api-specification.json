@@ -1,0 +1,1050 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Connect Integration API",
+    "description": "API for Connect Plus integration services including orders, products, variants, delivery companies, and area management",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Connect Plus Support",
+      "url": "https://api.connect-plus.app"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.connect-plus.app",
+      "description": "Production server"
+    },
+    {
+      "url": "https://staging-api.connect-plus.app",
+      "description": "Staging server"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/integration/add_orders": {
+      "post": {
+        "tags": ["Orders"],
+        "summary": "Add Orders",
+        "description": "Create new orders with customer information and order lines",
+        "operationId": "addOrders",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddOrdersRequest"
+              },
+              "example": {
+                "orders_list": [
+                  {
+                    "address": "test address",
+                    "customer_mobile": "0595215291",
+                    "customer_name": "Customer Name",
+                    "area": "الخليل",
+                    "connection": 245,
+                    "sub_area": "الظاهرية",
+                    "country": "PS",
+                    "country_code": "+972",
+                    "note": "note",
+                    "order_reference": "abcd1241",
+                    "product_info": "product_info",
+                    "package_cost": 598,
+                    "total_cod": "638",
+                    "payment_method": "",
+                    "order_lines": [
+                      {
+                        "id": "",
+                        "product_variant": 458,
+                        "quantity": 1,
+                        "price": "15.00",
+                        "total_price": "15.00"
+                      },
+                      {
+                        "id": "",
+                        "product_variant": 456,
+                        "quantity": 1,
+                        "price": "12.00",
+                        "total_price": "12.00"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Orders created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddOrdersResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/get_products": {
+      "post": {
+        "tags": ["Products"],
+        "summary": "Get Products",
+        "description": "Retrieve products with optional filtering and pagination",
+        "operationId": "getProducts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetProductsRequest"
+              },
+              "example": {
+                "size": 30,
+                "filters": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetProductsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/get_product_variants": {
+      "post": {
+        "tags": ["Products"],
+        "summary": "Get Product Variants",
+        "description": "Retrieve product variants with optional filtering and pagination",
+        "operationId": "getProductVariants",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetVariantsRequest"
+              },
+              "example": {
+                "size": 30,
+                "filters": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product variants retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetVariantsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/get_connected_companies": {
+      "post": {
+        "tags": ["Delivery"],
+        "summary": "Get Delivery Companies",
+        "description": "Retrieve connected delivery companies with optional filtering and pagination",
+        "operationId": "getDeliveryCompanies",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCompaniesRequest"
+              },
+              "example": {
+                "size": 30,
+                "filters": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delivery companies retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCompaniesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/get_delivery_fee": {
+      "post": {
+        "tags": ["Delivery"],
+        "summary": "Get Delivery Fee",
+        "description": "Calculate delivery fee based on connection and area",
+        "operationId": "getDeliveryFee",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetDeliveryFeeRequest"
+              },
+              "example": {
+                "connection": 245,
+                "area": 10
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delivery fee calculated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDeliveryFeeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/get_area_sub_area": {
+      "get": {
+        "tags": ["Location"],
+        "summary": "Get Area Sub Area",
+        "description": "Retrieve area and sub-area information for a specific country code",
+        "operationId": "getAreaSubArea",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "description": "Country code (e.g., PS for Palestine)",
+            "schema": {
+              "type": "string"
+            },
+            "example": "PS"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Area and sub-area information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAreaSubAreaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid country code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found - Country code not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Token",
+        "description": "JWT token for authentication"
+      }
+    },
+    "schemas": {
+      "AddOrdersRequest": {
+        "type": "object",
+        "required": ["orders_list"],
+        "properties": {
+          "orders_list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            },
+            "description": "List of orders to be created"
+          }
+        }
+      },
+      "GetProductsRequest": {
+        "type": "object",
+        "required": ["size"],
+        "properties": {
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Number of products to retrieve",
+            "example": 30
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Optional filters to apply",
+            "example": []
+          }
+        }
+      },
+      "GetVariantsRequest": {
+        "type": "object",
+        "required": ["size"],
+        "properties": {
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Number of variants to retrieve",
+            "example": 30
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Optional filters to apply",
+            "example": []
+          }
+        }
+      },
+      "GetCompaniesRequest": {
+        "type": "object",
+        "required": ["size"],
+        "properties": {
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Number of companies to retrieve",
+            "example": 30
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Optional filters to apply",
+            "example": []
+          }
+        }
+      },
+      "GetDeliveryFeeRequest": {
+        "type": "object",
+        "required": ["connection", "area"],
+        "properties": {
+          "connection": {
+            "type": "integer",
+            "description": "Connection ID",
+            "example": 245
+          },
+          "area": {
+            "type": "integer",
+            "description": "Area ID",
+            "example": 10
+          }
+        }
+      },
+      "AddOrdersResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "order_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "description": "List of created order IDs"
+              }
+            }
+          }
+        }
+      },
+      "GetProductsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "products": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "total_count": {
+                "type": "integer",
+                "description": "Total number of products"
+              },
+              "page": {
+                "type": "integer",
+                "description": "Current page number"
+              }
+            }
+          }
+        }
+      },
+      "GetVariantsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "variants": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProductVariant"
+                }
+              },
+              "total_count": {
+                "type": "integer",
+                "description": "Total number of variants"
+              },
+              "page": {
+                "type": "integer",
+                "description": "Current page number"
+              }
+            }
+          }
+        }
+      },
+      "GetCompaniesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "companies": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DeliveryCompany"
+                }
+              },
+              "total_count": {
+                "type": "integer",
+                "description": "Total number of companies"
+              },
+              "page": {
+                "type": "integer",
+                "description": "Current page number"
+              }
+            }
+          }
+        }
+      },
+      "GetDeliveryFeeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "delivery_fee": {
+                "type": "number",
+                "format": "float",
+                "description": "Calculated delivery fee"
+              },
+              "currency": {
+                "type": "string",
+                "description": "Currency code",
+                "example": "USD"
+              }
+            }
+          }
+        }
+      },
+      "GetAreaSubAreaResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "areas": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Area"
+                }
+              },
+              "sub_areas": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SubArea"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "error_code": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional error details"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "required": [
+          "address",
+          "customer_mobile",
+          "customer_name",
+          "area",
+          "connection",
+          "sub_area",
+          "country",
+          "country_code",
+          "order_reference",
+          "package_cost",
+          "total_cod",
+          "order_lines"
+        ],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Customer delivery address",
+            "example": "test address"
+          },
+          "customer_mobile": {
+            "type": "string",
+            "description": "Customer mobile number",
+            "example": "0595215291"
+          },
+          "customer_name": {
+            "type": "string",
+            "description": "Customer full name",
+            "example": "Customer Name"
+          },
+          "area": {
+            "type": "string",
+            "description": "Delivery area",
+            "example": "الخليل"
+          },
+          "connection": {
+            "type": "integer",
+            "description": "Connection ID",
+            "example": 245
+          },
+          "sub_area": {
+            "type": "string",
+            "description": "Delivery sub-area",
+            "example": "الظاهرية"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country code",
+            "example": "PS"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "Country calling code",
+            "example": "+972"
+          },
+          "note": {
+            "type": "string",
+            "description": "Order notes",
+            "example": "note"
+          },
+          "order_reference": {
+            "type": "string",
+            "description": "External order reference",
+            "example": "abcd1241"
+          },
+          "product_info": {
+            "type": "string",
+            "description": "Additional product information",
+            "example": "product_info"
+          },
+          "package_cost": {
+            "type": "number",
+            "format": "float",
+            "description": "Package cost",
+            "example": 598
+          },
+          "total_cod": {
+            "type": "string",
+            "description": "Total cash on delivery amount",
+            "example": "638"
+          },
+          "payment_method": {
+            "type": "string",
+            "description": "Payment method",
+            "example": ""
+          },
+          "order_lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderLine"
+            },
+            "description": "List of order line items"
+          }
+        }
+      },
+      "OrderLine": {
+        "type": "object",
+        "required": ["product_variant", "quantity", "price", "total_price"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Order line ID (empty for new orders)",
+            "example": ""
+          },
+          "product_variant": {
+            "type": "integer",
+            "description": "Product variant ID",
+            "example": 458
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Quantity ordered",
+            "example": 1
+          },
+          "price": {
+            "type": "string",
+            "description": "Unit price",
+            "example": "15.00"
+          },
+          "total_price": {
+            "type": "string",
+            "description": "Total price for this line",
+            "example": "15.00"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Product ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Product description"
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "description": "Product price"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code"
+          },
+          "category": {
+            "type": "string",
+            "description": "Product category"
+          },
+          "image_url": {
+            "type": "string",
+            "description": "Product image URL"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the product is active"
+          }
+        }
+      },
+      "ProductVariant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Variant ID"
+          },
+          "product_id": {
+            "type": "integer",
+            "description": "Parent product ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Variant name"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit"
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "description": "Variant price"
+          },
+          "stock_quantity": {
+            "type": "integer",
+            "description": "Available stock quantity"
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Variant attributes (color, size, etc.)"
+          }
+        }
+      },
+      "DeliveryCompany": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Company ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Company name"
+          },
+          "code": {
+            "type": "string",
+            "description": "Company code"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the company is active"
+          },
+          "delivery_time": {
+            "type": "string",
+            "description": "Estimated delivery time"
+          },
+          "coverage_areas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of covered areas"
+          }
+        }
+      },
+      "Area": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Area ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Area name"
+          },
+          "code": {
+            "type": "string",
+            "description": "Area code"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "Country code"
+          }
+        }
+      },
+      "SubArea": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Sub-area ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Sub-area name"
+          },
+          "area_id": {
+            "type": "integer",
+            "description": "Parent area ID"
+          },
+          "code": {
+            "type": "string",
+            "description": "Sub-area code"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Orders",
+      "description": "Order management operations"
+    },
+    {
+      "name": "Products",
+      "description": "Product and variant management operations"
+    },
+    {
+      "name": "Delivery",
+      "description": "Delivery company and fee operations"
+    },
+    {
+      "name": "Location",
+      "description": "Area and sub-area management operations"
+    }
+  ]
+}
