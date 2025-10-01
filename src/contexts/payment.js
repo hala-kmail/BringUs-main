@@ -13,6 +13,12 @@ const getCurrentDomain = () => {
   return 'http://localhost:5175';
 };
 
+// Get callback URL for payment processing
+export const getCallbackUrl = () => {
+  const storeSlug = localStorage.getItem('storeSlug');
+  return `${getCurrentDomain()}/${storeSlug}/checkout`;
+};
+
 export const PAYMENT_API_CONFIG = {
   
     BASE_URL: 'https://api.lahza.io/transaction',
