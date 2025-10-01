@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, Suspense, createContext, useContext } from 'react';
+import React, { useEffect, useMemo, useState, Suspense, createContext, useContext, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAffiliateInfo } from './hooks/useAffiliateInfo';
 import useStoreSlug from './hooks/useStoreSlug';
@@ -8,27 +8,27 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import DynamicColors from './components/DynamicColors/DynamicColors';
 import MobileSearch from './components/MobileSearch/MobileSearch';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import OTPVerification from './components/Auth/OTPVerification';
-import ForgotPassword from './components/Auth/ForgotPassword';
-import ResetPassword from './components/Auth/ResetPassword';
-import Home from './pages/Home/Home';
-import Shop from './pages/Shop/Shop';
-import Category from './pages/Category/Category';
-import MobileCategories from './pages/MobileCategories/MobileCategories';
-import ProductDetail from './pages/ProductDetail/ProductDetail';
-import Cart from './pages/Cart/Cart';
-import Checkout from './pages/Checkout/Checkout';
-import Wishlist from './pages/Wishlist/Wishlist';
-import Profile from './pages/Profile/Profile';
-import Orders from './pages/Orders/Orders';
-
-
-import AlmostFinishedSale from './pages/AlmostFinishedSale/AlmostFinishedSale';
 import BottomNavigation from './components/BottomNavigation/BottomNavigation';
 import Footer from './components/Footer';
 import AdvertisementPopup from './components/AdvertisementPopup/AdvertisementPopup';
+
+// Lazy load page components
+const Login = lazy(() => import('./components/Auth/Login'));
+const Register = lazy(() => import('./components/Auth/Register'));
+const OTPVerification = lazy(() => import('./components/Auth/OTPVerification'));
+const ForgotPassword = lazy(() => import('./components/Auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./components/Auth/ResetPassword'));
+const Home = lazy(() => import('./pages/Home/Home'));
+const Shop = lazy(() => import('./pages/Shop/Shop'));
+const Category = lazy(() => import('./pages/Category/Category'));
+const MobileCategories = lazy(() => import('./pages/MobileCategories/MobileCategories'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail/ProductDetail'));
+const Cart = lazy(() => import('./pages/Cart/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout/Checkout'));
+const Wishlist = lazy(() => import('./pages/Wishlist/Wishlist'));
+const Profile = lazy(() => import('./pages/Profile/Profile'));
+const Orders = lazy(() => import('./pages/Orders/Orders'));
+const AlmostFinishedSale = lazy(() => import('./pages/AlmostFinishedSale/AlmostFinishedSale'));
 
 import { 
   performStorageCleanup, 
@@ -37,6 +37,20 @@ import {
 } from './utils/storageManager';
 
 import './App.css';
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    fontSize: '1.2rem',
+    color: '#666'
+  }}>
+    جاري التحميل...
+  </div>
+);
 
 // Create context for mobile search
 const MobileSearchContext = createContext();
@@ -396,113 +410,261 @@ function App() {
               <AffiliateRedirect />
             } />
             <Route path="/affiliate/:affiliateCode/home" element={
-              <AffiliateWrapper>
-                <Home />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Home />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/shop" element={
-              <AffiliateWrapper>
-                <Shop />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Shop />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/category/:categorySlug" element={
-              <AffiliateWrapper>
-                <Category />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Category />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/mobile-categories" element={
-              <AffiliateWrapper>
-                <MobileCategories />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <MobileCategories />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/product/:id" element={
-              <AffiliateWrapper>
-                <ProductDetail />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <ProductDetail />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/cart" element={
-              <AffiliateWrapper>
-                <Cart />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Cart />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/checkout" element={
-              <AffiliateWrapper>
-                <Checkout />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Checkout />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/wishlist" element={
-              <AffiliateWrapper>
-                <Wishlist />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Wishlist />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/profile" element={
-              <AffiliateWrapper>
-                <Profile />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Profile />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/orders" element={
-              <AffiliateWrapper>
-                <Orders />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <Orders />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/almost-finished-sale" element={
-              <AffiliateWrapper>
-                <AlmostFinishedSale />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <AlmostFinishedSale />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/otp-verification" element={
-              <AffiliateWrapper>
-                <OTPVerification />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <OTPVerification />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/forgot-password" element={
-              <AffiliateWrapper>
-                <ForgotPassword />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <ForgotPassword />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             <Route path="/affiliate/:affiliateCode/reset-password" element={
-              <AffiliateWrapper>
-                <ResetPassword />
-              </AffiliateWrapper>
+              <Suspense fallback={<LoadingFallback />}>
+                <AffiliateWrapper>
+                  <ResetPassword />
+                </AffiliateWrapper>
+              </Suspense>
             } />
             
             {/* Store-specific routes with slug */}
             <Route path="/:storeSlug" element={<Navigate to="/:storeSlug/home" replace />} />
-            <Route path="/:storeSlug/home" element={<Home />} />
-            <Route path="/:storeSlug/shop" element={<Shop />} />
-            <Route path="/:storeSlug/category/:categorySlug" element={<Category />} />
-            <Route path="/:storeSlug/mobile-categories" element={<MobileCategories />} />
-            <Route path="/:storeSlug/product/:id" element={<ProductDetail />} />
-            <Route path="/:storeSlug/cart" element={<Cart />} />
-            <Route path="/:storeSlug/checkout" element={<Checkout />} />
-            <Route path="/:storeSlug/wishlist" element={<Wishlist />} />
-            <Route path="/:storeSlug/profile" element={<Profile />} />
-            <Route path="/:storeSlug/orders" element={<Orders />} />
-            <Route path="/:storeSlug/almost-finished-sale" element={<AlmostFinishedSale />} />
-            <Route path="/:storeSlug/otp-verification" element={<OTPVerification />} />
-            <Route path="/:storeSlug/forgot-password" element={<ForgotPassword />} />
-            <Route path="/:storeSlug/reset-password" element={<ResetPassword />} />
+            <Route path="/:storeSlug/home" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Home />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/shop" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Shop />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/category/:categorySlug" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Category />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/mobile-categories" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <MobileCategories />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/product/:id" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ProductDetail />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/cart" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Cart />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/checkout" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Checkout />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/wishlist" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Wishlist />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/profile" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Profile />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/orders" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Orders />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/almost-finished-sale" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AlmostFinishedSale />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/otp-verification" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <OTPVerification />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/forgot-password" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ForgotPassword />
+              </Suspense>
+            } />
+            <Route path="/:storeSlug/reset-password" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ResetPassword />
+              </Suspense>
+            } />
             
             {/* Regular routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/otp-verification" element={<OTPVerification />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/login" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Login />
+              </Suspense>
+            } />
+            <Route path="/register" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Register />
+              </Suspense>
+            } />
+            <Route path="/otp-verification" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <OTPVerification />
+              </Suspense>
+            } />
+            <Route path="/forgot-password" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ForgotPassword />
+              </Suspense>
+            } />
+            <Route path="/reset-password" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ResetPassword />
+              </Suspense>
+            } />
             <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/category/:categorySlug" element={<Category />} />
+            <Route path="/home" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Home />
+              </Suspense>
+            } />
+            <Route path="/shop" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Shop />
+              </Suspense>
+            } />
+            <Route path="/category/:categorySlug" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Category />
+              </Suspense>
+            } />
         
-            <Route path="/mobile-categories" element={<MobileCategories />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/orders" element={<Orders />} />
+            <Route path="/mobile-categories" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <MobileCategories />
+              </Suspense>
+            } />
+            <Route path="/product/:id" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ProductDetail />
+              </Suspense>
+            } />
+            <Route path="/cart" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Cart />
+              </Suspense>
+            } />
+            <Route path="/checkout" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Checkout />
+              </Suspense>
+            } />
+            <Route path="/wishlist" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Wishlist />
+              </Suspense>
+            } />
+            <Route path="/profile" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Profile />
+              </Suspense>
+            } />
+            <Route path="/orders" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Orders />
+              </Suspense>
+            } />
            
-            <Route path="/almost-finished-sale" element={<AlmostFinishedSale />} />
+            <Route path="/almost-finished-sale" element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AlmostFinishedSale />
+              </Suspense>
+            } />
           </Routes>
         </div>
         {!isAuthPage && <BottomNavigation />}
@@ -567,20 +729,7 @@ function App() {
                   v7_relativeSplatPath: true
                 }}
               >
-                <Suspense fallback={
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    height: '100vh',
-                    fontSize: '1.2rem',
-                    color: '#666'
-                  }}>
-                    جاري التحميل...
-                  </div>
-                }>
-                  <AppContent />
-                </Suspense>
+                <AppContent />
               </Router>
             </MobileSearchContext.Provider>
           </WishlistProvider>
