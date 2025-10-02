@@ -857,8 +857,9 @@ right: auto;
 /* Responsive Design */
 @media (max-width: 768px) {
   .product-detail-content {
+    padding-bottom: 8px;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0rem;
   }
 .product-image-gallery{
 width: 100%;}
