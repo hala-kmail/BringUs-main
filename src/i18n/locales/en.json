@@ -403,6 +403,12 @@
     "showing_products": "Showing {{count}} products",
     "search_results": "Found {{count}} results for \"{{query}}\"",
     
+    "noProducts": {
+      "title": "No Products Found",
+      "description": "We couldn't find any products matching your search criteria",
+      "clearFilters": "Clear All Filters"
+    },
+    
     "sort": {
       "default": "Default Sorting",
       "latest": "Latest",

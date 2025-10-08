@@ -838,6 +838,9 @@ const Shop = () => {
   
       return apiProducts;
     }
+    if (apiProducts.length === 0) {
+      return [];
+    }
     
     // If we're loading API products, show empty array to prevent showing old data
     if (apiLoading) {
@@ -851,7 +854,7 @@ const Shop = () => {
       return products;
     }
     
-    // Default to empty array
+    
     
     return [];
   }, [apiProducts, products, apiLoading, productsLoading]);
