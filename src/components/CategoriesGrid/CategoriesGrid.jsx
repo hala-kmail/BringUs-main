@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useCategories from '../../hooks/useCategories';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './CategoriesGrid.css';
+import placeholder from '../../assets/placeholder.jpg';
 
 const CategoriesGrid = () => {
   const { t, i18n } = useTranslation();
@@ -43,7 +44,24 @@ const CategoriesGrid = () => {
           <div className="categories-scroll-wrapper">
             <div className="categories-grid">
               {mainCategories.length > 0 ? (
-                mainCategories.map((category) => (
+                <>
+                  {/* All Categories Option */}
+                  <div
+                    className="category-grid-item"
+                    onClick={() => navigate('/shop')}
+                  >
+                    <div className="category-image-wrapper">
+                      <img
+                        src={placeholder}
+                        alt={currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}
+                        className="category-image"
+                      />
+                    </div>
+                    <div className="category-name">
+                      {currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}
+                    </div>
+                  </div>
+                  {mainCategories.map((category) => (
                   <div
                     key={category._id}
                     className="category-grid-item"
@@ -51,20 +69,17 @@ const CategoriesGrid = () => {
                   >
                     <div className="category-image-wrapper">
                       <img
-                        src={category.image}
+                        src={category.image && category.image.trim() !== '' ? category.image : placeholder}
                         alt={currentLang === 'ar' ? category.nameAr : category.nameEn}
                         className="category-image"
-                        onError={(e) => {
-                          console.log('Category grid image failed to load:', category.image);
-                          e.target.style.display = 'none';
-                        }}
                       />
                     </div>
                     <div className="category-name">
                       {currentLang === 'ar' ? category.nameAr : category.nameEn}
                     </div>
                   </div>
-                ))
+                  ))}
+                </>
               ) : (
                 <div className="no-categories-grid">
                   <p>{currentLang === 'ar' ? 'لا توجد فئات متاحة' : 'No categories available'}</p>

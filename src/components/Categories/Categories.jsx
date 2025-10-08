@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useCategories from '../../hooks/useCategories';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './Categories.css';
+import placeholder from '../../assets/placeholder.jpg';
 
 const Categories = () => {
   const { t, i18n } = useTranslation();
@@ -82,7 +83,38 @@ const Categories = () => {
             {/*-----------------------------------Main Categories List------------------------------------------------   */}
             <div className="main-categories-list">
               {mainCategories.length > 0 ? (
-                mainCategories.map((category) => (
+                <>
+                  {/* All Categories Option */}
+                  <button
+                    className="main-category-btn"
+                    onClick={() => {
+                      navigate('/shop');
+                      setIsPanelOpen(false);
+                      setActiveMainCategory(null);
+                    }}
+                    onMouseEnter={() => setActiveMainCategory(null)}
+                  >
+                    {currentLang === 'ar' ? (
+                      <>
+                        <span style={{marginLeft: 8}}>كل الفئات</span>
+                        <span className="main-category-arrow" style={{marginRight: 2, display: 'inline-flex', alignItems: 'center'}}>
+                          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{display: 'inline'}}>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{marginRight: 8}}>All Categories</span>
+                        <span className="main-category-arrow" style={{marginLeft: 2, display: 'inline-flex', alignItems: 'center'}}>
+                          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{display: 'inline'}}>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </>
+                    )}
+                  </button>
+                  {mainCategories.map((category) => (
                   <button
                     key={category._id}
                     className={`main-category-btn${activeMainCategory && activeMainCategory._id === category._id ? ' active' : ''}`}
@@ -109,7 +141,8 @@ const Categories = () => {
                       </>
                     )}
                   </button>
-                ))
+                  ))}
+                </>
               ) : (
                 <div className="no-categories">
                   {currentLang === 'ar' ? 'لا توجد فئات متاحة' : 'No categories available'}
@@ -124,12 +157,8 @@ const Categories = () => {
                     <button className="subcategory-circle" onClick={() => handleSubcategoryClick(subcategory)}>
                       <img 
                         className="subcategory-circle-image" 
-                        src={subcategory.image} 
+                        src={subcategory.image && subcategory.image.trim() !== '' ? subcategory.image : placeholder} 
                         alt={currentLang === 'ar' ? subcategory.nameAr : subcategory.nameEn}
-                        onError={(e) => {
-                          console.log('Category image failed to load:', subcategory.image);
-                          e.target.style.display = 'none';
-                        }}
                       />
                     </button>
                     <div className="subcategory-name">{currentLang === 'ar' ? subcategory.nameAr : subcategory.nameEn}</div>
