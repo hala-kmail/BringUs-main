@@ -1689,6 +1689,7 @@
 
   [dir="rtl"] .shop-toolbar {
     flex-direction: column;
+    display: none !important;
   }
 
   .toolbar-left,

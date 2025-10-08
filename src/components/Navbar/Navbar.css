@@ -769,36 +769,44 @@
   box-shadow: 0 4px 12px rgba(99, 76, 159, 0.2);
 }
 
-.login-button svg {
-  width: 16px;
-  height: 16px;
+.login-button .login-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
+.login-button .login-text {
+  white-space: nowrap;
+}
+
+/* Tablet screens - show both icon and text */
 @media (max-width: 768px) {
   .login-button {
-    padding: 0.375rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
   }
   
-  .login-button svg {
-    width: 14px;
-    height: 14px;
+  .login-button .login-icon {
+    width: 18px;
+    height: 18px;
   }
 }
 
+/* Mobile screens - show only icon */
 @media (max-width: 480px) {
   .login-button {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.5rem;
+    min-width: 40px;
+    justify-content: center;
   }
   
-  .login-button span {
+  .login-button .login-text {
     display: none;
   }
   
-  .login-button svg {
-    width: 16px;
-    height: 16px;
+  .login-button .login-icon {
+    width: 20px;
+    height: 20px;
   }
 }
 

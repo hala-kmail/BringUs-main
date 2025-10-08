@@ -1323,7 +1323,7 @@ max-width: 300px;
 .product-card-new.list-view .product-card-footer {
   flex-direction: column;
   align-items: flex-end;
-
+  justify-content: center !important;
   width: auto;
 }
 
@@ -1331,6 +1331,12 @@ max-width: 300px;
   align-items: flex-start;
 }
 
+.product-card-new.list-view .product-title-new,.product-card-new.list-view .product-subtitle-new{
+  text-align: left ;
+}
+[dir="rtl"] .product-card-new.list-view .product-title-new,[dir="rtl"] .product-card-new.list-view .product-subtitle-new{
+  text-align: right;
+}
 .product-card-new.list-view .product-pricing-new {
   align-items: flex-end;
 }
