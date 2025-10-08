@@ -1331,9 +1331,7 @@ max-width: 300px;
   margin-top: 0;
 }
 
-[dir="rtl"] .product-card-new.list-view .product-card-footer {
-  /* align-items: center; */
-}
+
 
 .product-card-new.list-view .product-title-new,.product-card-new.list-view .product-subtitle-new{
   text-align: left ;
@@ -1396,9 +1394,7 @@ max-width: 300px;
 
 /* List view responsive */
 @media (max-width: 580px) {
-  .product-card-new.list-view {
-    /* flex-direction: column; */
-  }
+  
   
   .product-card-new.list-view .product-image-new {
    

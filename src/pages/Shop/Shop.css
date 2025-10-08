@@ -359,9 +359,7 @@
   /* transform: scale(1.1); */
 }
 
-.shop-sidebar .search-filter-input:focus ~ .search-filter-icon {
-  /* animation: searchPulse 2s infinite; */
-}
+
 
 @keyframes searchPulse {
   0%, 100% { transform: scale(1); }
