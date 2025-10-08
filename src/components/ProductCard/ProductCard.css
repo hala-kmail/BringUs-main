@@ -1303,8 +1303,8 @@ max-width: 300px;
 }
 
 .product-card-new.list-view .product-image-new {
-  width: 150px;
-  height: 150px;
+  width: 120px;
+  height: 120px;
   aspect-ratio: 1 / 1;
   margin-bottom: 0;
   flex-shrink: 0;
@@ -1314,6 +1314,9 @@ max-width: 300px;
   text-align: left;
   margin-bottom: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 [dir="rtl"] .product-card-new.list-view .product-description-new {
@@ -1321,14 +1324,15 @@ max-width: 300px;
 }
 
 .product-card-new.list-view .product-card-footer {
-  flex-direction: column;
+  display: flex;
   align-items: flex-end;
-  justify-content: center !important;
+  justify-content: center;
   width: auto;
+  margin-top: 0;
 }
 
 [dir="rtl"] .product-card-new.list-view .product-card-footer {
-  align-items: flex-start;
+  /* align-items: center; */
 }
 
 .product-card-new.list-view .product-title-new,.product-card-new.list-view .product-subtitle-new{
@@ -1337,12 +1341,20 @@ max-width: 300px;
 [dir="rtl"] .product-card-new.list-view .product-title-new,[dir="rtl"] .product-card-new.list-view .product-subtitle-new{
   text-align: right;
 }
-.product-card-new.list-view .product-pricing-new {
-  align-items: flex-end;
+
+/* في list-view، السعر يظهر تحت الليبلز داخل product-description */
+.product-card-new.list-view .product-description-new .product-pricing-new {
+  align-items: flex-start;
+  margin-top: 4px;
 }
 
-[dir="rtl"] .product-card-new.list-view .product-pricing-new {
+[dir="rtl"] .product-card-new.list-view .product-description-new .product-pricing-new {
   align-items: flex-start;
+}
+
+/* زر الكارت في list-view */
+.product-card-new.list-view .add-to-cart-btn-new {
+  margin-top: 0;
 }
 
 @media (max-width: 768px) {
@@ -1354,7 +1366,7 @@ max-width: 300px;
   [dir="rtl"] .product-card-new.list-view .product-description-new,
   [dir="rtl"] .product-card-new.list-view .product-pricing-new {
     text-align: center;
-    align-items: center;
+    
   }
 }
 
@@ -1385,11 +1397,11 @@ max-width: 300px;
 /* List view responsive */
 @media (max-width: 580px) {
   .product-card-new.list-view {
-    flex-direction: column;
+    /* flex-direction: column; */
   }
   
   .product-card-new.list-view .product-image-new {
-    width: 100%;
+   
     height: auto;
     aspect-ratio: 1 / 1;
   }
@@ -1400,9 +1412,9 @@ max-width: 300px;
   
   .product-card-new.list-view .product-card-footer {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
-    width: 100%;
+    /* width: 100%; */
   }
   
   .product-card-new.list-view .product-pricing-new {

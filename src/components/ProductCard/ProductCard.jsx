@@ -373,31 +373,53 @@ const ProductCard = ({
             )}
           </div>
         )}
+
+        {/* Pricing in list-view - appears after labels */}
+        {isListView && (
+          <div className="product-pricing-new">
+            {isWholesaler() ? (
+              <div className="current-price-new">
+                {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+              </div>
+            ) : (
+              <>
+                <div className="current-price-new">
+                  {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+                </div>
+                {product.salePercentage > 0 && product.isOnSale && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && !isWholesaler() && (
+                  <div className="original-price-new">
+                    {formatPrice(getOriginalPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Bottom Section - Pricing and Cart button */}
       <div className="product-card-footer">
-        {/* Pricing Information - Bottom Left */}
-        <div className="product-pricing-new">
-          {isWholesaler() ? (
-            // تاجر الجملة يرى سعر الجملة فقط بدون خصومات
-            <div className="current-price-new">
-              {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
-            </div>
-          ) : (
-            // المستخدم العادي يرى السعر مع الخصومات والسعر السابق
-            <>
+        {/* Pricing Information - Bottom Left (hidden in list-view) */}
+        {!isListView && (
+          <div className="product-pricing-new">
+            {isWholesaler() ? (
               <div className="current-price-new">
                 {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
               </div>
-              {product.salePercentage > 0 && product.isOnSale && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && !isWholesaler() && (
-                <div className="original-price-new">
-                  {formatPrice(getOriginalPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+            ) : (
+              <>
+                <div className="current-price-new">
+                  {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
                 </div>
-              )}
-            </>
-          )}
-        </div>
+                {product.salePercentage > 0 && product.isOnSale && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && !isWholesaler() && (
+                  <div className="original-price-new">
+                    {formatPrice(getOriginalPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {/* Cart button - Bottom Right */}
         <button
