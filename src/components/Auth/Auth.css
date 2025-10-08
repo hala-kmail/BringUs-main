@@ -401,7 +401,11 @@ body::before {
   transform: translateY(0);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
 }
-
+.error-message {
+  font-size: 0.75rem !important;
+  color: #ef4444 !important;
+  
+}
 .submit-button.disabled {
   background: linear-gradient(135deg, #cecece 0%, #c5c3c3bc 100%);
   cursor: not-allowed;

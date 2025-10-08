@@ -9,6 +9,7 @@ import MobileSearch from '../MobileSearch/MobileSearch';
 import { getPriceByUserRole, getPriceWithUserDiscount, getUserDiscountPercentage, getCartTotalDiscount } from '../../utils/productUtils';
 import { formatPrice } from '../../utils/currencyUtils';
 import logo from '../../assets/logo_arabic-1.png';
+import defaultStoreLogo from '../../assets/store-logo.png';
 import LoginModal from '../Auth/LoginModal';
 import useProducts from '../../hooks/useProducts';
 import './Navbar.css';
@@ -430,17 +431,18 @@ const Navbar = () => {
       <div className="navbar-container">
         {/*-----------------------------------Logo------------------------------------------------   */}
         <button onClick={() => navigate('/home')} className="navbar-logo">
-          {storeDataFinal && storeDataFinal.logo ? (
+          
+          {storeDataFinal && storeDataFinal.logo.url ? (
             <img 
               src={storeDataFinal.logo.url} 
               alt={storeDataFinal.nameEn || storeDataFinal.nameAr || 'Store Logo'}
               onError={(e) => {
                 console.log('Logo failed to load:', storeDataFinal.logo.url);
-                e.target.style.display = 'none';
+                e.target.src = defaultStoreLogo;
               }}
             />
           ) : (
-            <img src={logo} alt="Hala Store" />
+            <img src={defaultStoreLogo} alt="Store Logo" />
           )}
           <span className="logo-text">
             {storeDataFinal ? currentLang==='ar'? (storeDataFinal.nameAr) : (storeDataFinal.nameEn) : 'Hala Store'}

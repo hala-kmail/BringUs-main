@@ -121,7 +121,7 @@
   },
   "features": {
     "payment_online": {
-      "title": "Payment only online",
+      "title": "Multiple safe payment options",
       "description": "Secure and diverse online payment methods"
     },
     "new_stocks": {
@@ -133,7 +133,7 @@
       "description": "High-quality products with satisfaction guarantee"
     },
     "fast_delivery": {
-      "title": "Delivery from 1 hour",
+      "title": "A smooth and fast delivery experience",
       "description": "Fast and reliable delivery to your doorstep"
     }
   },

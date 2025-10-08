@@ -130,8 +130,8 @@
 }
 
 .error-message {
-  font-size: 0.75rem;
-  color: #ef4444;
+  font-size: 0.75rem !important;
+  color: #ef4444 !important;
   
 }
 

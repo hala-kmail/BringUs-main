@@ -44,24 +44,7 @@ const CategoriesGrid = () => {
           <div className="categories-scroll-wrapper">
             <div className="categories-grid">
               {mainCategories.length > 0 ? (
-                <>
-                  {/* All Categories Option */}
-                  <div
-                    className="category-grid-item"
-                    onClick={() => navigate('/shop')}
-                  >
-                    <div className="category-image-wrapper">
-                      <img
-                        src={placeholder}
-                        alt={currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}
-                        className="category-image"
-                      />
-                    </div>
-                    <div className="category-name">
-                      {currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}
-                    </div>
-                  </div>
-                  {mainCategories.map((category) => (
+                mainCategories.map((category) => (
                   <div
                     key={category._id}
                     className="category-grid-item"
@@ -78,8 +61,7 @@ const CategoriesGrid = () => {
                       {currentLang === 'ar' ? category.nameAr : category.nameEn}
                     </div>
                   </div>
-                  ))}
-                </>
+                ))
               ) : (
                 <div className="no-categories-grid">
                   <p>{currentLang === 'ar' ? 'لا توجد فئات متاحة' : 'No categories available'}</p>

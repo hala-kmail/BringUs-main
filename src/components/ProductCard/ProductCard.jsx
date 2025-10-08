@@ -234,8 +234,13 @@ const ProductCard = ({
   const hasFeaturedLabel = product.featured || product.isFeatured || product.featuredLabel;
   
   // تحديد إذا كان المنتج في التخفيض
-  const hasSaleLabel = product.saleLabel || product.isOnSale || product.salePercentage > 0;
+  const hasSaleLabel = product.saleLabel || (product.isOnSale && product.salePercentage > 0);
   
+  // Process product labels - show first 2, collapse rest into +N
+  const displayLabels = product.productLabels && Array.isArray(product.productLabels) ? product.productLabels : [];
+  const visibleLabels = displayLabels.slice(0, 2);
+  const hiddenLabelsCount = displayLabels.length - 2;
+
   return (
     <div className={`product-card-new${isListView ? ' list-view' : ''}`} dir={currentLang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Product Labels - Top Right */}
@@ -246,11 +251,6 @@ const ProductCard = ({
           </span>
         )}
         
-        {hasSaleLabel && !isWholesaler() && (
-          <span className="product-label-new product-sale-label">
-            {currentLang === 'ar' ? 'تخفيض' : 'Sale'}
-          </span>
-        )}
         {product.stock === 0 && (
           <span className="product-label-new product-out-of-stock-label">
             {currentLang === 'ar' ? 'نفدت الكمية' : 'Out of Stock'}
@@ -281,14 +281,14 @@ const ProductCard = ({
         )}
       </div>
 
-      {/* Discount Badge - Top Left */}
-      {!isWholesalerUser() && product.salePercentage > 0 && !isWholesaler() && (
+      {/* Discount Badge - Top Right Corner (percentage only) */}
+      {!isWholesalerUser() && product.salePercentage > 0 && product.isOnSale && !isWholesaler() && (
         <div className="discount-badge-new">
           -{product.salePercentage}%
         </div>
       )}
 
-      {/* Product Image - Centered */}
+      {/* Product Image - Centered with wishlist overlay */}
       <div className="product-image-new">
         <button 
           onClick={() => navigateWithAffiliate(`/product/${product._id}`)}
@@ -304,21 +304,51 @@ const ProductCard = ({
             }}
           />
         </button>
+
+        {/* Wishlist button overlaid on image - bottom-left corner */}
+        <button
+          className={`wishlist-btn-image-overlay ${inWishlist ? 'active' : ''} ${isWishlistLoading ? 'loading' : ''}`}
+          onClick={handleWishlistClick}
+          title={inWishlist ? (currentLang === 'ar' ? 'إزالة من المفضلة' : 'Remove from wishlist') : (currentLang === 'ar' ? 'أضف إلى المفضلة' : 'Add to wishlist')}
+        >
+          {isWishlistLoading ? (
+            <div className="wishlist-loading-spinner"></div>
+          ) : (
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill={inWishlist ? '#ef4444' : 'none'}
+              stroke={inWishlist ? '#ef4444' : '#111827'}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          )}
+        </button>
       </div>
-
-
 
       {/* Product Description - Below Image */}
       <div className="product-description-new">
-        <h3 className="product-title-new">{productName}</h3>
+        <button 
+          onClick={() => navigateWithAffiliate(`/product/${product._id}`)}
+          className="product-title-button"
+        >
+          <h3 title={productName} className={`product-title-new ${!productDescription ? 'no-description' : ''}`}>
+            {productName}
+          </h3>
+        </button>
+        
         {productDescription && (
-          <p className="product-subtitle-new">{productDescription}</p>
+          <p className="product-subtitle-new" title={productDescription}>{productDescription}</p>
         )}
         
-        {/* Product Labels - Below Description */}
-        {product.productLabels && Array.isArray(product.productLabels) && product.productLabels.length > 0 && (
+        {/* Product Labels - Below Description - Show max 2 + count */}
+        {displayLabels.length > 0 && (
           <div className="product-labels-section">
-            {product.productLabels.map((label, index) => (
+            {visibleLabels.map((label, index) => (
               <span 
                 key={label._id || index} 
                 className="product-label-item"
@@ -330,72 +360,59 @@ const ProductCard = ({
                 {currentLang === 'ar' ? (label.nameAr || label.name) : (label.nameEn || label.name)}
               </span>
             ))}
+            {hiddenLabelsCount > 0 && (
+              <span 
+                className="product-label-item product-label-more"
+                style={{ 
+                  backgroundColor: '#d1d5db',
+                  color: '#374151'
+                }}
+              >
+                +{hiddenLabelsCount}
+              </span>
+            )}
           </div>
         )}
       </div>
 
-      {/* Pricing Information */}
-      <div className="product-pricing-new">
-        {isWholesaler() ? (
-          // تاجر الجملة يرى سعر الجملة فقط بدون خصومات
-          <div className="current-price-new">
-            {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
-          </div>
-        ) : (
-          // المستخدم العادي يرى السعر مع الخصومات والسعر السابق
-          <>
+      {/* Bottom Section - Pricing and Cart button */}
+      <div className="product-card-footer">
+        {/* Pricing Information - Bottom Left */}
+        <div className="product-pricing-new">
+          {isWholesaler() ? (
+            // تاجر الجملة يرى سعر الجملة فقط بدون خصومات
             <div className="current-price-new">
               {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
             </div>
-            {product.salePercentage > 0 && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && !isWholesaler() && (
-              <div className="original-price-new">
-                {formatPrice(getOriginalPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+          ) : (
+            // المستخدم العادي يرى السعر مع الخصومات والسعر السابق
+            <>
+              <div className="current-price-new">
+                {formatPrice(getPriceByUserRole(product), store?.settings?.currency || 'ILS')}
               </div>
-            )}
-          </>
-        )}
-      </div>
-      
+              {product.salePercentage > 0 && product.isOnSale && (product.compareAtPrice > 0 || product.price > getEffectivePrice(product)) && !isWholesaler() && (
+                <div className="original-price-new">
+                  {formatPrice(getOriginalPriceByUserRole(product), store?.settings?.currency || 'ILS')}
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
-      {/* Action Buttons - Bottom */}
-      <div className="action-buttons-new">
+        {/* Cart button - Bottom Right */}
         <button
           className="add-to-cart-btn-new"
           onClick={() => navigateWithAffiliate(`/product/${product._id}`)}
           disabled={
             isAddToCartLoading || product.stock === 0
-            // !Array.isArray(product.specificationValues) ||
-            // product.specificationValues.reduce((sum, spec) => sum + (spec.quantity || 0), 0) === 0
           }
+          title={currentLang === 'ar' ? 'أضف إلى السلة' : 'Add to cart'}
         >
           {isAddToCartLoading ? (
             <div className="add-to-cart-loading-spinner"></div>
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          )}
-        </button>
-        
-        <button
-          className={`wishlist-btn-new ${inWishlist ? 'active' : ''} ${isWishlistLoading ? 'loading' : ''}`}
-          onClick={handleWishlistClick}
-          title={inWishlist ? (currentLang === 'ar' ? 'إزالة من المفضلة' : 'Remove from wishlist') : (currentLang === 'ar' ? 'أضف إلى المفضلة' : 'Add to wishlist')}
-        >
-          {isWishlistLoading ? (
-            <div className="wishlist-loading-spinner"></div>
-          ) : (
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill={inWishlist ? '#ffffff' : 'none'}
-              stroke={inWishlist ? '#ffffff' : '#64748b'}
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           )}
         </button>
