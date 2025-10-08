@@ -22,7 +22,7 @@ import { getUserRole } from '../../utils/productUtils';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb';
 import CheckoutForm from '../../components/Checkout/CheckoutForm';
 import OrderSummary from '../../components/Checkout/OrderSummary';
-import { validateRequired, validateAndSanitizePhone } from '../../utils/validation';
+import { validateRequired, validateAndSanitizePhone, validateWhatsApp } from '../../utils/validation';
 import { getCurrencySymbol, formatPrice } from '../../utils/currencyUtils';
 //-----------------------------------Checkout------------------------------------------------  
 const Checkout = () => {
@@ -386,8 +386,16 @@ const Checkout = () => {
     const errors = {};
     errors.firstName = validateRequired(formData.firstName, t('checkout.validation.name_required'));
     errors.lastName = validateRequired(formData.lastName, t('checkout.validation.name_required'));
-    const phoneResult = validateAndSanitizePhone(formData.phone, t('checkout.validation.phone_invalid'));
-    errors.phone = phoneResult.error || validateRequired(formData.phone, t('checkout.validation.phone_required'));
+    
+    // التحقق من رقم الهاتف باستخدام validateWhatsApp المتطور
+    if (!formData.phone || !formData.phone.trim()) {
+      errors.phone = t('checkout.validation.phone_required');
+    } else {
+      const phoneError = validateWhatsApp(formData.phone, t);
+      if (phoneError) {
+        errors.phone = phoneError;
+      }
+    }
     
     if (deliveryMethod === 'delivery') {
       // التحقق من اختيار طريقة التوصيل فقط إذا كان التوصيل للمنزل

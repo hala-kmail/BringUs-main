@@ -152,9 +152,7 @@
 /* RTL Support */
 
 
-[dir="rtl"] .view-all-link {
-  flex-direction: row-reverse;
-}
+
 
 [dir="rtl"] .view-all-link svg {
   transform: scaleX(-1);

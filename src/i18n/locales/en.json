@@ -803,5 +803,11 @@
     "not_specified": "Not specified",
     "fill_required_fields": "Please fill in all required fields"
   },
-  "error_loading_products": "Error loading products"
+  "error_loading_products": "Error loading products",
+  "store": {
+    "whatsappNoLeadingZero": "Number should not start with 0 after country code",
+    "whatsappLengthError": "Invalid phone number length",
+    "whatsappInvalidDigits": "Phone number should contain digits only",
+    "whatsappInvalidFormat": "Invalid phone number format"
+  }
 }

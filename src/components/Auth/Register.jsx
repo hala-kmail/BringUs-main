@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';
-import { validateRequired, validatePhone, validateEmail, validateMinLength, validateMatch } from '../../utils/validation';
+import { validateRequired, validatePhone, validateEmail, validateMinLength, validateMatch, validateWhatsApp, sanitizePhoneNumber } from '../../utils/validation';
 import { useCreateUser } from '../../hooks/useCreateUser';
 import { useCheckEmail } from '../../hooks/useCheckEmail';
 import { useAppData } from '../../contexts/AppDataContext';
 import OTPVerification from './OTPVerification';
+import CustomPhoneInput from '../common/CustomPhoneInput';
 
 const Register = () => {
   const { t, i18n } = useTranslation();
@@ -68,11 +69,14 @@ const Register = () => {
     // التحقق من تأكيد كلمة المرور
     errors.confirmPassword = validateMatch(confirmPassword, password, t('auth.register.validation.passwords_not_match')) || validateRequired(confirmPassword, t('auth.register.validation.confirm_password_required'));
     
-    // التحقق من رقم الهاتف (تنسيق دولي)
+    // التحقق من رقم الهاتف (تنسيق دولي مع دعم WhatsApp)
     if (!phone.trim()) {
       errors.phone = t('auth.register.validation.phone_required');
-    } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(phone.trim())) {
-      errors.phone = t('auth.register.validation.phone_invalid');
+    } else {
+      const phoneError = validateWhatsApp(phone, t);
+      if (phoneError) {
+        errors.phone = phoneError;
+      }
     }
     
     // التحقق من المدينة
@@ -255,18 +259,15 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">
-                
-                {t('auth.register.phone')} <span className='required'>*</span>
-              </label>
-              <input
-                type="tel"
-                className="form-input"
-                placeholder={t('auth.register.phone_placeholder')}
+              <CustomPhoneInput
+                label={t('auth.register.phone')}
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(value) => setPhone('+' + value)}
+                error={formErrors.phone}
+                required={true}
+                placeholder={t('auth.register.phone_placeholder')}
+                dir={currentLang === 'ar' ? 'rtl' : 'ltr'}
               />
-              {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
             </div>
           </div>
 

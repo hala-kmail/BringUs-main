@@ -808,5 +808,11 @@
     "not_specified": "غير محدد",
     "fill_required_fields": "يرجى ملء جميع الحقول المطلوبة"
   },
-  "error_loading_products": "خطأ في تحميل المنتجات"
+  "error_loading_products": "خطأ في تحميل المنتجات",
+  "store": {
+    "whatsappNoLeadingZero": "لا يجب أن يبدأ الرقم بـ 0 بعد مقدمة الدولة",
+    "whatsappLengthError": "طول الرقم غير صحيح",
+    "whatsappInvalidDigits": "يجب أن يحتوي الرقم على أرقام فقط",
+    "whatsappInvalidFormat": "تنسيق رقم الهاتف غير صحيح"
+  }
 } 
