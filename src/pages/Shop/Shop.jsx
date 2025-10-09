@@ -31,6 +31,7 @@ const Shop = () => {
   const { navigate } = useAffiliateNavigation();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isTabletOrMobile, setIsTabletOrMobile] = useState(window.innerWidth <= 1200);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -90,18 +91,30 @@ const Shop = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); 
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1200);
 
   const currentLang = i18n.language;
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsTabletOrMobile(width <= 1200);
+      
+      // Auto-close sidebar on smaller screens
+      if (width <= 1200 && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+      // Auto-open sidebar on larger screens
+      if (width > 1200 && !isSidebarOpen) {
+        setIsSidebarOpen(true);
+      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isSidebarOpen]);
 
   // Update filters when max price changes
   useEffect(() => {
@@ -629,6 +642,11 @@ const Shop = () => {
     setIsMobileFiltersOpen(false);
   };
 
+  // Handle sidebar toggle
+  const handleSidebarToggle = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
  
 
   // Handle page change - IMPROVED VERSION
@@ -896,8 +914,16 @@ const Shop = () => {
         {/* Hero Section */}
        
         <div className="shop-main">
+          {/* Sidebar Overlay - only for tablet/mobile */}
+          {isSidebarOpen && isTabletOrMobile && (
+            <div 
+              className="sidebar-overlay"
+              onClick={handleSidebarToggle}
+            />
+          )}
+
           {/* Sidebar Filters */}
-          <div className="shop-sidebar">
+          <div className={`shop-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
             <SidebarFilters
               filters={filters}
               onFilterChange={handleFilterChange}
@@ -1005,6 +1031,8 @@ const Shop = () => {
               onSortChange={handleSortChange}
               onItemsPerPageChange={handleItemsPerPageChange}
               onMobileFiltersToggle={handleMobileFiltersToggle}
+              isSidebarOpen={isSidebarOpen}
+              onSidebarToggle={handleSidebarToggle}
               sortBy={filters.sortBy}
               loading={isLoading}
             />

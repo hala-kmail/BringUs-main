@@ -162,21 +162,166 @@
 /* Main Layout */
 .shop-main {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: auto 1fr;
   gap: 24px;
   padding: 24px 0;
   align-items: start;
+  position: relative;
+  transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              gap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When sidebar is open */
+/* .shop-main:has(.shop-sidebar.open) {
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+} */
+
+/* When sidebar is closed */
+.shop-main:has(.shop-sidebar.closed) {
+  grid-template-columns: 0 1fr;
+  gap: 0;
+}
+
+/* Sidebar Overlay - Hidden by default, only for mobile */
+.sidebar-overlay {
+  display: none;
 }
 
 /* Sidebar Filters */
 .shop-sidebar {
   background: white;
+  height: 100%;
   border-radius: 5px;
   padding: 16px;
   height: fit-content;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  position: sticky;
-  top: 16px;
+  position: relative;
+  /* top: 16px; */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s ease,
+              padding 0.3s ease,
+              box-shadow 0.3s ease;
+  overflow: visible;
+  width: 320px;
+  min-width: 0;
+}
+
+/* Custom Scrollbar for Sidebar */
+.shop-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shop-sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.shop-sidebar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.shop-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Sidebar Open State */
+.shop-sidebar.open {
+  width: 320px;
+  padding: 16px;
+  height: 100%;
+  opacity: 1;
+  /* max-height: calc(100vh - 32px); */
+}
+
+/* Wrapper for sidebar content with scroll */
+.shop-sidebar.open > div:not(.sidebar-toggle-btn) {
+  /* max-height: calc(100vh - 100px); */
+  overflow-y: auto;
+  /* height: 100%; */
+}
+
+/* Sidebar Closed State */
+.shop-sidebar.closed {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+}
+
+/* Hide sidebar content when closed to prevent overflow */
+.shop-sidebar.closed > * {
+  display: none;
+}
+
+/* Desktop view - sidebar in layout flow */
+@media (min-width: 1201px) {
+  /* No special styling needed - button is on sidebar edge */
+}
+
+/* Tablet - sidebar as overlay with background */
+@media (min-width: 769px) and (max-width: 1200px) {
+  /* .shop-main {
+    grid-template-columns: 1fr !important;
+  } */
+  
+  /* .shop-main:has(.shop-sidebar.open) {
+    grid-template-columns: 1fr !important;
+  } */
+  
+  .shop-main:has(.shop-sidebar.closed) {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 998;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  } */
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .shop-sidebar {
+    position: fixed;
+    left: 0;
+    top: 80px;
+   
+  }
+  
+  .shop-sidebar.open {
+    width: 265px;
+    transform: translateX(0);
+  }
+  
+  .shop-sidebar.closed {
+    transform: translateX(-100%);
+    width: 320px;
+    padding: 16px;
+  }
+  
+  [dir="rtl"] .shop-sidebar {
+    left: auto;
+    right: 0;
+  }
+  
+  [dir="rtl"] .shop-sidebar.closed {
+    transform: translateX(100%);
+  }
 }
 
 .shop-sidebar-header {
@@ -1632,9 +1777,9 @@
 
 /* Mobile Responsive */
 @media (max-width: 1024px) {
-  .shop-main {
+  /* .shop-main {
     display: block;
-  }
+  } */
   .shop-sidebar {
     width: 100%;
     position: static;
@@ -1656,9 +1801,34 @@
     padding: 1rem;
     max-width: 100%;
   }
-  .shop-sidebar {
-    
-    display: none;
+  
+  /* Force single column layout on mobile */
+  .shop-main {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Hide sidebar toggle on mobile - mobile uses its own filter button */
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+  
+  /* Hide sidebar completely on mobile */
+  .shop-sidebar,
+  .shop-sidebar.open,
+  .shop-sidebar.closed {
+    display: none !important;
+  }
+  
+  /* Hide overlay on mobile */
+  .sidebar-overlay {
+    display: none !important;
+  }
+  
+  /* Ensure content takes full width */
+  .shop-content {
+    width: 100%;
+    max-width: 100%;
   }
   
   .mobile-shop-toolbar {
@@ -1682,7 +1852,7 @@
   }
 
   .shop-toolbar {
-    display: none;
+    display: none !important;
   }
 
   [dir="rtl"] .shop-toolbar {
@@ -2238,6 +2408,7 @@
 }
 
 .mobile-results-count {
+  display: none;
   font-size: 0.875rem;
   color: #64748b;
   font-weight: 500;
@@ -2288,8 +2459,10 @@
 .shop-toolbar.desktop-only {
   background: #ffffff;
   padding: 16px 20px;
+  overflow-x: auto;
   border-radius: 15px;
   margin-bottom: 20px;
+  flex-wrap: nowrap;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2522,8 +2695,22 @@
   order: 3;
 }
 
+@media (min-width: 768px) and (max-width: 1024px){
+  .desktop-only .results-count{
+    display: none;
+  }
+  /* .shop-main {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 24px;
+    padding: 24px 0;
+    align-items: start;
+} */
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  
   .desktop-shop-toolbar,
   .desktop-only {
     display: none;
