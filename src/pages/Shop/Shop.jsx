@@ -58,6 +58,7 @@ const Shop = () => {
   const [apiLoading, setApiLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [apiPagination, setApiPagination] = useState(null);
+  const [isFilterChanging, setIsFilterChanging] = useState(false);
   
   // Calculate dynamic max price from all products - IMPROVED VERSION
   const getMaxProductPrice = useCallback(() => {
@@ -285,6 +286,9 @@ const Shop = () => {
   // Apply filters when dependencies change - IMPROVED VERSION
   useEffect(() => {
  
+    // Set filter changing state to prevent "no products" flash
+    setIsFilterChanging(true);
+    
     // Clear previous results immediately when filters change
     setApiProducts([]);
     setApiPagination(null);
@@ -292,9 +296,13 @@ const Shop = () => {
     // Apply filters with a small delay to prevent rapid successive calls
     const timeoutId = setTimeout(() => {
     applyAPIFilters();
+    setIsFilterChanging(false);
     }, 100);
     
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      setIsFilterChanging(false);
+    };
   }, [applyAPIFilters]);
 
   // Debounced search effect
@@ -400,6 +408,7 @@ const Shop = () => {
   // Handle filter changes with comprehensive support - IMPROVED VERSION
   const handleFilterChange = async (filterType, value, checked = null) => {
     setCurrentPage(1); // Reset to first page when filters change
+    setIsFilterChanging(true);
 
    
 
@@ -547,15 +556,11 @@ const Shop = () => {
         setApiPagination(null);
       }
     }
-
-    // Force immediate refresh of products
-  
-    setApiProducts([]); // Clear current products immediately
-    setApiPagination(null);
   };
 
   // Clear all filters - IMPROVED VERSION
   const clearFilters = () => {
+    setIsFilterChanging(true);
   
     setFilters({
       priceRange: { min: 0, max: initialMaxPrice },
@@ -570,14 +575,11 @@ const Shop = () => {
     });
     setSearchQuery('');
     setCurrentPage(1);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Remove specific filter - IMPROVED VERSION
   const removeFilter = (filterType, value) => {
+    setIsFilterChanging(true);
      
     if (filterType === 'category') {
       setFilters(prev => ({
@@ -616,10 +618,6 @@ const Shop = () => {
         priceRange: { min: 0, max: initialMaxPrice }
       }));
     }
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
 
@@ -651,23 +649,17 @@ const Shop = () => {
 
   // Handle page change - IMPROVED VERSION
   const handlePageChange = (page) => {
+    setIsFilterChanging(true);
    
     setCurrentPage(page);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Handle items per page change - IMPROVED VERSION
   const handleItemsPerPageChange = (newItemsPerPage) => {
+    setIsFilterChanging(true);
    
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Get visible pages for pagination
@@ -709,13 +701,10 @@ const Shop = () => {
 
   // Handle sort change - IMPROVED VERSION
   const handleSortChange = (sortBy) => {
+    setIsFilterChanging(true);
    
     setFilters(prev => ({ ...prev, sortBy }));
     setCurrentPage(1);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Use scroll to top on change
@@ -843,7 +832,7 @@ const Shop = () => {
   };
 
   // Loading state - IMPROVED VERSION
-  const isLoading = productsLoading || categoriesLoading || apiLoading;
+  const isLoading = productsLoading || categoriesLoading || apiLoading || isFilterChanging;
 
   // Error state - IMPROVED VERSION
   const hasError = productsError || apiError;
@@ -856,15 +845,15 @@ const Shop = () => {
   
       return apiProducts;
     }
-    if (apiProducts.length === 0) {
+    if (apiProducts.length === 0 && !apiLoading) {
       return [];
     }
     
     // If we're loading API products, show empty array to prevent showing old data
-    if (apiLoading) {
+    // if (apiLoading) {
      
-      return [];
-    }
+    //   return [];
+    // }
     
     // If we have context products and no API loading, use them as fallback
     if (products && products.length > 0 && !apiLoading) {

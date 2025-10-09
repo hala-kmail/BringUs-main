@@ -502,7 +502,7 @@ const ProductDetail = () => {
 
             {/* Variant main-image thumbnails + base product thumbnail */}
             {(variants && variants.length > 0) || baseProduct ? (
-              <div className="variant-thumbnails">
+              <div className="variant-thumbnails desktop-variant-thumbnails">
                 {/* Base product thumbnail first (only if not currently displayed) */}
                 {baseProduct && product?._id !== baseProduct._id && (
                                       <button
@@ -581,7 +581,56 @@ const ProductDetail = () => {
               onAvailabilityChange={setEffectiveAvailable}
               key={`options-${product._id}`} // Force re-render when product changes
             />
-
+  {/* Variant main-image thumbnails + base product thumbnail */}
+  {(variants && variants.length > 0) || baseProduct ? (
+              <div className="variant-thumbnails mobile-variant-thumbnails">
+                {/* Base product thumbnail first (only if not currently displayed) */}
+                {baseProduct && product?._id !== baseProduct._id && (
+                                      <button
+                      key={`base-${baseProduct._id}`}
+                      type="button"
+                      className="variant-thumb"
+                      title={getProductName(baseProduct, currentLang) || (currentLang === 'ar' ? 'المنتج الأساسي' : 'Base Product')}
+                      onClick={handleParentClick}
+                    >
+                                            <img
+                          src={baseProduct.mainImage || (baseProduct.images && baseProduct.images[0])}
+                          alt={getProductName(baseProduct, currentLang) || (currentLang === 'ar' ? 'المنتج الأساسي' : 'Base Product')}
+                          onError={(e) => {
+                            console.warn('Failed to load base product image:', baseProduct.mainImage);
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                  </button>
+                )}
+                {/* Other variants except the currently displayed one */}
+                {variants && variants.length > 0 && variants
+                  .filter((v) => v._id !== product?._id)
+                  .map((v) => {
+                    const variantImage = v.mainImage || (v.images && v.images[0]);
+                    const variantName = getProductName(v, currentLang);
+                    
+                    return (
+                                           <button
+                       key={v._id || v.id}
+                       type="button"
+                       className="variant-thumb"
+                                               title={variantName || (currentLang === 'ar' ? 'متغير' : 'Variant')}
+                       onClick={() => handleVariantClick(v)}
+                     >
+                                                 <img
+                           src={variantImage}
+                           alt={variantName || (currentLang === 'ar' ? 'متغير' : 'Variant')}
+                           onError={(e) => {
+                             console.warn('Failed to load variant image:', variantImage);
+                             e.target.style.display = 'none';
+                           }}
+                         />
+                      </button>
+                    );
+                  })}
+              </div>
+            ) : null}
             <ProductActions
               product={product}
               quantity={quantity}

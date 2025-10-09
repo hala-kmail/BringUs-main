@@ -354,7 +354,7 @@
 }
 
 /* Add to Cart Button */
-.add-to-cart-btn {
+/* .add-to-cart-btn {
   width: 100%;
   background: #f0fdf4;
   color: #16a34a;
@@ -372,7 +372,7 @@
   margin-top: auto;
   font-family: 'Tajawal', sans-serif;
   position: relative;
-}
+} */
 
 .add-to-cart-btn::before {
   display: none !important;

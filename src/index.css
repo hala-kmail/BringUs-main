@@ -140,9 +140,16 @@ button:focus-visible {
   .related-add-to-cart-btn span:not(.loading-spinner) {
     display: none !important;
   }
-.add-to-cart-btn.product-dtls-btn{
+/* .add-to-cart-btn.product-dtls-btn{
+  background: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   width: 100% !important;
-}
+} */
   /* التأكد من أن الأيقونة ظاهرة */
   .add-to-cart-btn svg,
   .product-add-to-cart-btn svg,
@@ -158,7 +165,7 @@ button:focus-visible {
     width: 35px ;
     height: 35px ;
     
-    padding: 0 !important;
+    /* padding: 0 !important; */
     justify-content: center !important;
   }
 
