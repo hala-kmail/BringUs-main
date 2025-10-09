@@ -439,13 +439,17 @@
   
   .order-summary-section {
     position: static;
-    order: -1;
+    /* order: -1; */
   }
 }
 
 @media (max-width: 768px) {
   .checkout-content {
+    max-width: 100%;
     padding: 1rem ;
+  }
+  .checkout-header{
+    margin-bottom: 1rem;
   }
   
   .page-title {
@@ -505,6 +509,8 @@
   .checkout-form-section,
   .order-summary-section {
     padding: 1rem;
+    margin: 0 auto;
+    max-width: 90%;
   }
   
   .checkout-header {
