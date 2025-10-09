@@ -26,6 +26,8 @@ const ShopToolbar = ({
   onItemsPerPageChange,
   onMobileSearchToggle,
   onMobileFiltersToggle,
+  isSidebarOpen,
+  onSidebarToggle,
   sortBy = 'newest',
   loading = false,
   sortOptions
@@ -52,6 +54,18 @@ const ShopToolbar = ({
         </span>
         
         <div className="view-controls">
+          {/* Sidebar Toggle Button */}
+          <button 
+            className={`view-btn sidebar-toggle-toolbar-btn ${isSidebarOpen ? 'active' : ''}`}
+            onClick={onSidebarToggle}
+            title={isSidebarOpen ? (currentLang === 'ar' ? 'إخفاء الفلاتر' : 'Hide Filters') : (currentLang === 'ar' ? 'إظهار الفلاتر' : 'Show Filters')}
+            disabled={loading}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"/>
+            </svg>
+          </button>
+
           <button 
             className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
             onClick={() => onViewModeChange('grid')}
@@ -65,6 +79,7 @@ const ShopToolbar = ({
               <rect x="3" y="14" width="7" height="7"/>
             </svg>
           </button>
+          
           <button 
             className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => onViewModeChange('list')}

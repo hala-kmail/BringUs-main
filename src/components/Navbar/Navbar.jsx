@@ -9,6 +9,7 @@ import MobileSearch from '../MobileSearch/MobileSearch';
 import { getPriceByUserRole, getPriceWithUserDiscount, getUserDiscountPercentage, getCartTotalDiscount } from '../../utils/productUtils';
 import { formatPrice } from '../../utils/currencyUtils';
 import logo from '../../assets/logo_arabic-1.png';
+import defaultStoreLogo from '../../assets/store-logo.png';
 import LoginModal from '../Auth/LoginModal';
 import useProducts from '../../hooks/useProducts';
 import './Navbar.css';
@@ -430,17 +431,18 @@ const Navbar = () => {
       <div className="navbar-container">
         {/*-----------------------------------Logo------------------------------------------------   */}
         <button onClick={() => navigate('/home')} className="navbar-logo">
-          {storeDataFinal && storeDataFinal.logo ? (
+          
+          {storeDataFinal && storeDataFinal.logo.url ? (
             <img 
               src={storeDataFinal.logo.url} 
               alt={storeDataFinal.nameEn || storeDataFinal.nameAr || 'Store Logo'}
               onError={(e) => {
                 console.log('Logo failed to load:', storeDataFinal.logo.url);
-                e.target.style.display = 'none';
+                e.target.src = defaultStoreLogo;
               }}
             />
           ) : (
-            <img src={logo} alt="Hala Store" />
+            <img src={defaultStoreLogo} alt="Store Logo" />
           )}
           <span className="logo-text">
             {storeDataFinal ? currentLang==='ar'? (storeDataFinal.nameAr) : (storeDataFinal.nameEn) : 'Hala Store'}
@@ -614,8 +616,10 @@ const Navbar = () => {
             </div>
           ) : (
             <button className="login-button" onClick={handleLoginClick}>
-              
-              {currentLang === 'ar' ? 'تسجيل الدخول' : 'Login'}
+              <svg className="login-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+              </svg>
+              <span className="login-text">{currentLang === 'ar' ? 'تسجيل الدخول' : 'Login'}</span>
             </button>
           )}
 

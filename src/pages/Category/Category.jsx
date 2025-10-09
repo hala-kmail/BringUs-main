@@ -14,7 +14,7 @@ import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import { useAppData } from '../../contexts/AppDataContext';
 import './Category.css';
-
+import placeholder from '../../assets/placeholder.jpg';
 const Category = () => {
   const { categorySlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -251,23 +251,25 @@ const Category = () => {
         onClose={handleMobileSearchClose}
       />
       
-      <div className="category-container">
-        <div className="category-main">
-        {/* Breadcrumb */}
-        <Breadcrumb
+      <div className="category-container"> <Breadcrumb
             category={selectedCategory || currentCategory}
           currentLang={currentLang}
           t={t}
             allCategories={categories}
         />
+        <div className="category-main">
+        {/* Breadcrumb */}
+       
         
         {/* Category Header */}
         <div className="category-header-main">
-            {(selectedCategory || currentCategory).image && (
-              <div className="category-icon">
+            <div className="category-icon">
+              {(selectedCategory || currentCategory).image && (selectedCategory || currentCategory).image.trim() !== '' ? (
                 <img src={(selectedCategory || currentCategory).image} alt={getCategoryName(selectedCategory || currentCategory)} />
-              </div>
-            )}
+              ) : (
+                <img src={placeholder} alt={getCategoryName(selectedCategory || currentCategory)} />
+              )}
+            </div>
             <h1 className="category-title">{getCategoryName(selectedCategory || currentCategory)}</h1>
             {(selectedCategory || currentCategory).descriptionAr && (
               <p className="category-description">
@@ -283,6 +285,30 @@ const Category = () => {
                 {currentLang === 'ar' ? 'الفروع الفرعية' : 'Subcategories'}
               </h2>
             <div className="subcategories-grid-desktop">
+                {/* All Categories Option */}
+                <div 
+                  className={`subcategory-item ${selectedCategoryId === currentCategory._id ? 'active' : ''}`}
+                  onClick={() => handleCategoryClick(currentCategory)}
+                >
+                  <div className="subcategory-content" title={currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}>
+                    {currentCategory.image && currentCategory.image.trim() !== '' ? (
+                      <img 
+                        src={currentCategory.image} 
+                        alt={currentLang === 'ar' ? 'كل الفئات' : 'All Categories'} 
+                        className="subcategory-logo" 
+                      />
+                    ) : (
+                      <img 
+                        src={placeholder} 
+                        alt={currentLang === 'ar' ? 'كل الفئات' : 'All Categories'} 
+                        className="subcategory-logo" 
+                      />
+                    )}
+                    <h3 title={currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}>
+                      {currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}
+                    </h3>
+                  </div>
+                </div>
                 {subCategories.map((subCat) => (
                   <div 
                     key={subCat._id}
@@ -290,11 +316,21 @@ const Category = () => {
                     onClick={() => handleCategoryClick(subCat)}
                 >
                     <div className="subcategory-content" title={getCategoryName(subCat)}>
-                      {subCat.image && (
-                        <img src={subCat.image} alt={getCategoryName(subCat)} className="subcategory-logo" />
+                      {subCat.image && subCat.image.trim() !== '' ? (
+                        <img 
+                          src={subCat.image} 
+                          alt={getCategoryName(subCat)} 
+                          className="subcategory-logo" 
+                        />
+                      ) : (
+                        <img 
+                          src={placeholder} 
+                          alt={getCategoryName(subCat)} 
+                          className="subcategory-logo" 
+                        />
                       )}
                       <h3 title={getCategoryName(subCat)}>{getCategoryName(subCat)}</h3>
-                  </div>
+                    </div>
                   </div>
               ))}
             </div>

@@ -22,7 +22,7 @@
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-top: 2rem;
   padding-bottom: 15px;
   border-bottom: 2px solid #f0f0f0;
 }
@@ -78,7 +78,7 @@
  
 .category-products {
     flex: 0 0 100%;
-    padding: 1rem;
+    padding: 1rem 0.5rem;
     display:flex;
     
     flex-wrap: wrap;
@@ -152,9 +152,7 @@
 /* RTL Support */
 
 
-[dir="rtl"] .view-all-link {
-  flex-direction: row-reverse;
-}
+
 
 [dir="rtl"] .view-all-link svg {
   transform: scaleX(-1);

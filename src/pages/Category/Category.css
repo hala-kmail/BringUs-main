@@ -31,7 +31,15 @@
   object-fit: cover;
   border-radius: 50%;
 }
-
+.product-breadcrumb {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  margin: 2rem 0 !important;
+  font-size: 0.875rem !important;
+  color: #6b7280 !important;
+  font-family: 'Tajawal', sans-serif;
+}
 /* Category Header */
 .category-header-main {
   background: transparent;

@@ -121,7 +121,7 @@
   },
   "features": {
     "payment_online": {
-      "title": "Payment only online",
+      "title": "Multiple safe payment options",
       "description": "Secure and diverse online payment methods"
     },
     "new_stocks": {
@@ -133,7 +133,7 @@
       "description": "High-quality products with satisfaction guarantee"
     },
     "fast_delivery": {
-      "title": "Delivery from 1 hour",
+      "title": "A smooth and fast delivery experience",
       "description": "Fast and reliable delivery to your doorstep"
     }
   },
@@ -402,6 +402,12 @@
     "showing_results": "Showing {{start}}–{{end}} of {{total}} results",
     "showing_products": "Showing {{count}} products",
     "search_results": "Found {{count}} results for \"{{query}}\"",
+    
+    "noProducts": {
+      "title": "No Products Found",
+      "description": "We couldn't find any products matching your search criteria",
+      "clearFilters": "Clear All Filters"
+    },
     
     "sort": {
       "default": "Default Sorting",
@@ -803,5 +809,11 @@
     "not_specified": "Not specified",
     "fill_required_fields": "Please fill in all required fields"
   },
-  "error_loading_products": "Error loading products"
+  "error_loading_products": "Error loading products",
+  "store": {
+    "whatsappNoLeadingZero": "Number should not start with 0 after country code",
+    "whatsappLengthError": "Invalid phone number length",
+    "whatsappInvalidDigits": "Phone number should contain digits only",
+    "whatsappInvalidFormat": "Invalid phone number format"
+  }
 }

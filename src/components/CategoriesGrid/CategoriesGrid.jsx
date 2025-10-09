@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useCategories from '../../hooks/useCategories';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './CategoriesGrid.css';
+import placeholder from '../../assets/placeholder.jpg';
 
 const CategoriesGrid = () => {
   const { t, i18n } = useTranslation();
@@ -51,13 +52,9 @@ const CategoriesGrid = () => {
                   >
                     <div className="category-image-wrapper">
                       <img
-                        src={category.image}
+                        src={category.image && category.image.trim() !== '' ? category.image : placeholder}
                         alt={currentLang === 'ar' ? category.nameAr : category.nameEn}
                         className="category-image"
-                        onError={(e) => {
-                          console.log('Category grid image failed to load:', category.image);
-                          e.target.style.display = 'none';
-                        }}
                       />
                     </div>
                     <div className="category-name">

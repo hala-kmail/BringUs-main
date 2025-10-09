@@ -306,7 +306,7 @@ const Footer = () => {
               </a>
             )}
           </div>
-          <div className="footer-soon-text">{t('footer.soon', 'تطبيقاتنا قريبًا')}</div>
+          {/* <div className="footer-soon-text">{t('footer.soon', 'تطبيقاتنا قريبًا')}</div> */}
         </div>
       </div>
       <hr className="footer-divider" />

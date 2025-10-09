@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -32,6 +32,26 @@ const NewArrivals = () => {
   } = useProducts();
 
   const currentLang = i18n.language;
+
+  // Helper: chunk into pages of 8
+  const chunkIntoPages = (items, size) => {
+    const pages = [];
+    for (let i = 0; i < items.length; i += size) {
+      pages.push(items.slice(i, i + size));
+    }
+    return pages;
+  };
+
+  // Horizontal scroll controls
+  const scrollerRef = useRef(null);
+  const scrollByPage = (direction /* -1 prev, 1 next */) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const pageWidth = el.clientWidth;
+    el.scrollBy({ left: direction * pageWidth, behavior: 'smooth' });
+  };
+  const handlePrev = () => scrollByPage(-1);
+  const handleNext = () => scrollByPage(1);
 
   useEffect(() => {
     if (products && products.length > 0) {
@@ -112,18 +132,41 @@ const NewArrivals = () => {
              
             </div>
 
-            {/* Products Grid */}
-            <div className="products-grid">
-              {newArrivalProducts.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  isInWishlist={isInWishlist}
-                  handleWishlistToggle={toggleWishlist}
-                  handleAddToCart={handleAddToCart}
-                  categories={categories}
-                />
-              ))}
+            {/* One-row horizontal scroller, 8 items per page */}
+            <div className="newarrivals-outer">
+              <div className="newarrivals-carousel" ref={scrollerRef}>
+                <div className="newarrivals-track">
+                  {chunkIntoPages(newArrivalProducts, 8).map((page, pageIndex) => (
+                    <div className="newarrivals-page" key={pageIndex}>
+                      {page.map((product) => (
+                        <ProductCard
+                          key={product._id}
+                          product={product}
+                          isInWishlist={isInWishlist}
+                          handleWishlistToggle={toggleWishlist}
+                          handleAddToCart={handleAddToCart}
+                          categories={categories}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Arrows */}
+              {/* {newArrivalProducts.length > 4 && ( */}
+                {/* <>
+                  <button type="button" className="carousel-arrow left" onClick={handlePrev} aria-label={currentLang === 'ar' ? 'السابق' : 'Previous'}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <button type="button" className="carousel-arrow right" onClick={handleNext} aria-label={currentLang === 'ar' ? 'التالي' : 'Next'}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </> */}
+              {/* )} */}
             </div>
           </div>
         </section>

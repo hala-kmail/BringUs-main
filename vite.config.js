@@ -11,7 +11,8 @@ export default defineConfig({
       'localhost',
       '.ngrok.io',
       '.ngrok-free.app',
-      '232c-46-60-54-4.ngrok-free.app'
+      '232c-46-60-54-4.ngrok-free.app',
+      'bringus-main.onrender.com'
     ],
   },
   build: {

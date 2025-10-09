@@ -79,6 +79,7 @@ const Breadcrumb = ({ category, currentLang, t, allCategories = [] }) => {
             onClick={() => navigateToCategory(cat)}
             className={idx === categoryPath.length - 1 ? 'breadcrumb-current' : ''}
             style={{ cursor: idx === categoryPath.length - 1 ? 'default' : 'pointer' }}
+            title={currentLang === 'ar' ? cat.nameAr : cat.nameEn}
           >
             {currentLang === 'ar' ? cat.nameAr : cat.nameEn}
           </span>

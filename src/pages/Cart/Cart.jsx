@@ -483,7 +483,7 @@ const Cart = () => {
                     )}
                     {/* Price */}
                     <div className="cart-item-price">
-                      {item.product.salePercentage > 0 && !isWholesaler() && (
+                      {item.product.salePercentage > 0 && item.product.isOnSale && !isWholesaler() && (
                         <span className="original-price">
                           {formatPrice(getOriginalPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}
                         </span>
@@ -644,7 +644,7 @@ const Cart = () => {
                         )}
                         {/* Price */}
                         <div className="cart-item-price">
-                        {item.product.salePercentage > 0 && !isWholesaler() && (
+                        {item.product.salePercentage > 0 && item.product.isOnSale && !isWholesaler() && (
                           <span className="original-price">
                             {formatPrice(getOriginalPriceByUserRole(item.product), store?.settings?.currency || 'ILS')}
                           </span>

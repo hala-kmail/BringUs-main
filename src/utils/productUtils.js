@@ -110,8 +110,13 @@ export const isDiscountActive = (product) => {
   if ( 
     product.salePercentage === null ||
     product.salePercentage === undefined ||
-    Number(product.salePercentage) <= 0
-  ) return false;
+    (Number(product.salePercentage) <= 0 && product.isOnSale)
+  )
+  return false;
+  if (product.isOnSale && product.salePercentage > 0) {
+    return true;
+  }
+  return false;
   return true;
 };
 

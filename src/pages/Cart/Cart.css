@@ -220,6 +220,24 @@
 .breadcrumb-current {
   color: #1f2937;
   font-weight: 500;
+  max-width: 200px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .breadcrumb-current {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb-current {
+    max-width: 80px;
+  }
 }
 
 /* Header */

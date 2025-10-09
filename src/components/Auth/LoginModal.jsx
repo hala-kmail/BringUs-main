@@ -6,6 +6,7 @@ import useLogin from '../../hooks/useLogin';
 import useStoreSlug from '../../hooks/useStoreSlug';
 import OTPModal from './OTPModal';
 import './Auth.css';
+import defaultStoreLogo from '../../assets/store-logo.png';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const { t } = useTranslation();
@@ -199,16 +200,18 @@ if (showOTP) {
 
         <div className="auth-card">
           <div className="auth-header">
-            {/* Display store logo if available */}
-            {store && store.logo && (
-              <div className="store-logo">
-                <img 
-                  src={store.logo.url} 
-                  alt={store.nameEn || store.nameAr || 'Store Logo'} 
-                  className="store-logo-img"
-                />
-              </div>
-            )}
+            {/* Display store logo */}
+            {console.log('store',store)}
+            <div className="store-logo">
+              <img 
+                src={store && store.logo.url ? store.logo.url : defaultStoreLogo} 
+                alt={store ? (store.nameEn || store.nameAr) : 'Store Logo'} 
+                className="store-logo-img"
+                onError={(e) => {
+                  e.target.src = defaultStoreLogo;
+                }}
+              />
+            </div>
             
             <h1 className="auth-title">
               {store ? (store.nameEn || store.nameAr) : t('auth.login.title')}

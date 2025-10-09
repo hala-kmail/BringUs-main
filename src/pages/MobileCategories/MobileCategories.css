@@ -157,16 +157,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+ 
 }
 
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
-  font-family: 'Tajawal', sans-serif;
-}
+
 
 .view-all-btn {
   display: flex;

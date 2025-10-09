@@ -120,7 +120,7 @@
   },
   "features": {
     "payment_online": {
-      "title": "الدفع عبر الإنترنت فقط",
+      "title": "خيارات دفع متنوعة وآمنة",
       "description": "طرق دفع آمنة ومتنوعة عبر الإنترنت"
     },
     "new_stocks": {
@@ -132,7 +132,7 @@
       "description": "منتجات عالية الجودة مع ضمان الرضا"
     },
     "fast_delivery": {
-      "title": "التوصيل خلال ساعة واحدة",
+      "title": "تجربة توصيل مريحة وسريعة",
       "description": "توصيل سريع وموثوق إلى باب منزلك"
     }
   },
@@ -404,6 +404,12 @@
     "quick_view": "عرض سريع",
     "compare": "مقارنة",
     "add_to_cart": "أضف للسلة",
+    
+    "noProducts": {
+      "title": "لم يتم العثور على منتجات",
+      "description": "لم نتمكن من العثور على أي منتجات تطابق معايير البحث الخاصة بك",
+      "clearFilters": "مسح جميع الفلاتر"
+    },
     
     "sort": {
       "default": "الترتيب الافتراضي",
@@ -808,5 +814,11 @@
     "not_specified": "غير محدد",
     "fill_required_fields": "يرجى ملء جميع الحقول المطلوبة"
   },
-  "error_loading_products": "خطأ في تحميل المنتجات"
+  "error_loading_products": "خطأ في تحميل المنتجات",
+  "store": {
+    "whatsappNoLeadingZero": "لا يجب أن يبدأ الرقم بـ 0 بعد مقدمة الدولة",
+    "whatsappLengthError": "طول الرقم غير صحيح",
+    "whatsappInvalidDigits": "يجب أن يحتوي الرقم على أرقام فقط",
+    "whatsappInvalidFormat": "تنسيق رقم الهاتف غير صحيح"
+  }
 } 

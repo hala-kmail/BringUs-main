@@ -37,6 +37,24 @@
 .breadcrumb-current {
   color: #1f2937;
   font-weight: 500;
+  max-width: 200px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .breadcrumb-current {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb-current {
+    max-width: 80px;
+  }
 }
 
 /* Header */
@@ -130,8 +148,8 @@
 }
 
 .error-message {
-  font-size: 0.75rem;
-  color: #ef4444;
+  font-size: 0.75rem !important;
+  color: #ef4444 !important;
   
 }
 
@@ -558,11 +576,6 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Form Focus Animations */
-.form-group input:focus,
-.form-group textarea:focus ,.form-group select:focus{
-  transform: scale(1.02);
-}
 
 .form-group {
   animation: slideIn 0.3s ease-out;

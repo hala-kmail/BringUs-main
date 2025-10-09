@@ -1,5 +1,6 @@
 import React from 'react';
 import TermsModal from '../Footer/TermsModal';
+import CustomPhoneInput from '../common/CustomPhoneInput';
 
 const CheckoutForm = ({
   t,
@@ -29,6 +30,11 @@ const CheckoutForm = ({
     if (areaId) {
       updateShippingArea(areaId);
     }
+  };
+
+  // معالج تغيير رقم الهاتف
+  const handlePhoneChange = (value) => {
+    setFormData(prev => ({ ...prev, phone: '+' + value }));
   };
 
   return (
@@ -87,9 +93,15 @@ const CheckoutForm = ({
         {formErrors.lastName && <span className="error-message">{formErrors.lastName}</span>}
       </div>
       <div className="form-group">
-        <label htmlFor="phone">{t('profile.phone')}  *</label>
-        <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder={t('profile.phone_placeholder')} className={formErrors.phone ? 'error' : ''} />
-        {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
+        <CustomPhoneInput
+          label={t('profile.phone')}
+          value={formData.phone}
+          onChange={handlePhoneChange}
+          error={formErrors.phone}
+          required={true}
+          placeholder={t('profile.phone_placeholder')}
+          dir={currentLang === 'ar' ? 'rtl' : 'ltr'}
+        />
       </div>
       <div className="form-group">
         <label htmlFor="email">{t('profile.email')} *</label>

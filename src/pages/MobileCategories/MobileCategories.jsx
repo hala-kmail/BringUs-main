@@ -4,6 +4,7 @@ import useCategories from '../../hooks/useCategories';
 import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import './MobileCategories.css';
 import Navbar from '../../components/Navbar/Navbar';
+import placeholder from '../../assets/placeholder.jpg';
 
 const MobileCategories = () => {
   const { t, i18n } = useTranslation();
@@ -111,6 +112,17 @@ const MobileCategories = () => {
       <div className="mobile-categories-content">
         {/* Categories Sidebar */}
         <div className="categories-sidebar">
+          {/* All Categories Option */}
+          <button
+            className={`category-item ${!selectedCategory ? 'active' : ''}`}
+            onClick={() => {
+              navigate('/shop');
+            }}
+          >
+            <span className="category-name">
+              {currentLang === 'ar' ? 'كل الفئات' : 'All Categories'}
+            </span>
+          </button>
           {mainCategories.map((category) => (
             <button
               key={category._id}
@@ -141,26 +153,11 @@ const MobileCategories = () => {
                   onClick={() => handleCategoryClick(subcategory)}
                 >
                   <div className="subcategory-image">
-                    {subcategory.image ? (
-                      <img
-                        src={subcategory.image}
-                        alt={currentLang === 'ar' ? subcategory.nameAr : subcategory.nameEn}
-                        className="subcategory-img"
-                      />
-                    ) : (
-                      <div style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        backgroundColor: '#f3f4f6',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#6b7280',
-                        fontSize: '1.5rem'
-                      }}>
-                        📱
-                      </div>
-                    )}
+                    <img
+                      src={subcategory.image && subcategory.image.trim() !== '' ? subcategory.image : placeholder}
+                      alt={currentLang === 'ar' ? subcategory.nameAr : subcategory.nameEn}
+                      className="subcategory-img"
+                    />
                   </div>
                   <div className="subcategory-info">
                     <span className="subcategory-name">

@@ -31,6 +31,7 @@ const Shop = () => {
   const { navigate } = useAffiliateNavigation();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isTabletOrMobile, setIsTabletOrMobile] = useState(window.innerWidth <= 1200);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -57,6 +58,7 @@ const Shop = () => {
   const [apiLoading, setApiLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [apiPagination, setApiPagination] = useState(null);
+  const [isFilterChanging, setIsFilterChanging] = useState(false);
   
   // Calculate dynamic max price from all products - IMPROVED VERSION
   const getMaxProductPrice = useCallback(() => {
@@ -90,18 +92,30 @@ const Shop = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); 
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1200);
 
   const currentLang = i18n.language;
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsTabletOrMobile(width <= 1200);
+      
+      // Auto-close sidebar on smaller screens
+      if (width <= 1200 && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+      // Auto-open sidebar on larger screens
+      if (width > 1200 && !isSidebarOpen) {
+        setIsSidebarOpen(true);
+      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isSidebarOpen]);
 
   // Update filters when max price changes
   useEffect(() => {
@@ -272,6 +286,9 @@ const Shop = () => {
   // Apply filters when dependencies change - IMPROVED VERSION
   useEffect(() => {
  
+    // Set filter changing state to prevent "no products" flash
+    setIsFilterChanging(true);
+    
     // Clear previous results immediately when filters change
     setApiProducts([]);
     setApiPagination(null);
@@ -279,9 +296,13 @@ const Shop = () => {
     // Apply filters with a small delay to prevent rapid successive calls
     const timeoutId = setTimeout(() => {
     applyAPIFilters();
+    setIsFilterChanging(false);
     }, 100);
     
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      setIsFilterChanging(false);
+    };
   }, [applyAPIFilters]);
 
   // Debounced search effect
@@ -387,6 +408,7 @@ const Shop = () => {
   // Handle filter changes with comprehensive support - IMPROVED VERSION
   const handleFilterChange = async (filterType, value, checked = null) => {
     setCurrentPage(1); // Reset to first page when filters change
+    setIsFilterChanging(true);
 
    
 
@@ -534,15 +556,11 @@ const Shop = () => {
         setApiPagination(null);
       }
     }
-
-    // Force immediate refresh of products
-  
-    setApiProducts([]); // Clear current products immediately
-    setApiPagination(null);
   };
 
   // Clear all filters - IMPROVED VERSION
   const clearFilters = () => {
+    setIsFilterChanging(true);
   
     setFilters({
       priceRange: { min: 0, max: initialMaxPrice },
@@ -557,14 +575,11 @@ const Shop = () => {
     });
     setSearchQuery('');
     setCurrentPage(1);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Remove specific filter - IMPROVED VERSION
   const removeFilter = (filterType, value) => {
+    setIsFilterChanging(true);
      
     if (filterType === 'category') {
       setFilters(prev => ({
@@ -603,10 +618,6 @@ const Shop = () => {
         priceRange: { min: 0, max: initialMaxPrice }
       }));
     }
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
 
@@ -629,27 +640,26 @@ const Shop = () => {
     setIsMobileFiltersOpen(false);
   };
 
+  // Handle sidebar toggle
+  const handleSidebarToggle = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
  
 
   // Handle page change - IMPROVED VERSION
   const handlePageChange = (page) => {
+    setIsFilterChanging(true);
    
     setCurrentPage(page);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Handle items per page change - IMPROVED VERSION
   const handleItemsPerPageChange = (newItemsPerPage) => {
+    setIsFilterChanging(true);
    
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Get visible pages for pagination
@@ -691,13 +701,10 @@ const Shop = () => {
 
   // Handle sort change - IMPROVED VERSION
   const handleSortChange = (sortBy) => {
+    setIsFilterChanging(true);
    
     setFilters(prev => ({ ...prev, sortBy }));
     setCurrentPage(1);
-    
-    // Force immediate refresh
-    setApiProducts([]);
-    setApiPagination(null);
   };
 
   // Use scroll to top on change
@@ -825,7 +832,7 @@ const Shop = () => {
   };
 
   // Loading state - IMPROVED VERSION
-  const isLoading = productsLoading || categoriesLoading || apiLoading;
+  const isLoading = productsLoading || categoriesLoading || apiLoading || isFilterChanging;
 
   // Error state - IMPROVED VERSION
   const hasError = productsError || apiError;
@@ -838,12 +845,15 @@ const Shop = () => {
   
       return apiProducts;
     }
-    
-    // If we're loading API products, show empty array to prevent showing old data
-    if (apiLoading) {
-     
+    if (apiProducts.length === 0 && !apiLoading) {
       return [];
     }
+    
+    // If we're loading API products, show empty array to prevent showing old data
+    // if (apiLoading) {
+     
+    //   return [];
+    // }
     
     // If we have context products and no API loading, use them as fallback
     if (products && products.length > 0 && !apiLoading) {
@@ -851,7 +861,7 @@ const Shop = () => {
       return products;
     }
     
-    // Default to empty array
+    
     
     return [];
   }, [apiProducts, products, apiLoading, productsLoading]);
@@ -893,8 +903,16 @@ const Shop = () => {
         {/* Hero Section */}
        
         <div className="shop-main">
+          {/* Sidebar Overlay - only for tablet/mobile */}
+          {isSidebarOpen && isTabletOrMobile && (
+            <div 
+              className="sidebar-overlay"
+              onClick={handleSidebarToggle}
+            />
+          )}
+
           {/* Sidebar Filters */}
-          <div className="shop-sidebar">
+          <div className={`shop-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
             <SidebarFilters
               filters={filters}
               onFilterChange={handleFilterChange}
@@ -1002,6 +1020,8 @@ const Shop = () => {
               onSortChange={handleSortChange}
               onItemsPerPageChange={handleItemsPerPageChange}
               onMobileFiltersToggle={handleMobileFiltersToggle}
+              isSidebarOpen={isSidebarOpen}
+              onSidebarToggle={handleSidebarToggle}
               sortBy={filters.sortBy}
               loading={isLoading}
             />
