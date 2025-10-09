@@ -7,7 +7,7 @@
 .checkout-content {
   max-width: 85%;
   margin: 0 auto;
-  padding: 5rem 1rem;
+  padding: 2rem 1rem;
 }
 
 /* Breadcrumb Navigation */
@@ -203,6 +203,7 @@
 }
 
 .order-item {
+  gap: 1rem;
   display: flex;
   align-items: flex-start;
   padding: 1rem;
