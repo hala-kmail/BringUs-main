@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { useAppData } from '../../contexts/AppDataContext';
 import useAlmostFinishedSale from '../../hooks/useAlmostFinishedSale';
 import useCategories from '../../hooks/useCategories';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -13,6 +14,7 @@ const AlmostFinishedSale = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { store } = useAppData();
   const { categories } = useCategories();
 
   const { 
@@ -23,6 +25,7 @@ const AlmostFinishedSale = () => {
   } = useAlmostFinishedSale();
 
   const currentLang = i18n.language;
+  const storeSlug = store?.slug || '';
   
   useEffect(() => {
     const storedStore = localStorage.getItem('storeData');
@@ -109,7 +112,7 @@ const AlmostFinishedSale = () => {
               {t('almost_finished_sale.no_products_message')}
             </p>
             <div className="no-products-actions">
-              <a href="/shop" className="browse-shop-btn">
+              <a href={`/${storeSlug}/shop`} className="browse-shop-btn">
                 {t('almost_finished_sale.browse_shop')}
               </a>
             </div>

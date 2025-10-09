@@ -43,7 +43,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #007bff;
+  color: var(--primary-color);
   text-decoration: none;
   font-weight: 600;
   font-size: 1rem;
@@ -54,7 +54,7 @@
 }
 
 .view-all-link:hover {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
   transform: translateX(-2px);
 }

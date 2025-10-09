@@ -273,9 +273,9 @@
     grid-template-columns: 1fr !important;
   } */
   
-  .shop-main:has(.shop-sidebar.closed) {
+  /* .shop-main:has(.shop-sidebar.closed) {
     grid-template-columns: 1fr !important;
-  }
+  } */
   
   /* .sidebar-overlay {
     display: block;
@@ -296,12 +296,12 @@
     }
   }
   
-  .shop-sidebar {
+  /* .shop-sidebar {
     position: fixed;
     left: 0;
     top: 80px;
    
-  }
+  } */
   
   .shop-sidebar.open {
     width: 265px;
