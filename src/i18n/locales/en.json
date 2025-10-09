@@ -622,7 +622,7 @@
     "view": "View",
     "payment_methods": "Payment Methods",
     "payment_confirmation": "Payment Confirmation",
-    "payment_successful": "Payment Successful!",
+    "payment_successful": "Payment Required",
     "pay_later": "Pay Later",
     "clear_cart": "Clear Cart",
     "i_have_paid": "I have paid",

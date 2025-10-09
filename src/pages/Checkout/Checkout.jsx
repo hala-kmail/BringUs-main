@@ -2786,7 +2786,7 @@ const handleSendWhatsApp = async () => {
                 fontWeight: '700', 
                 margin: '0 0 8px 0' 
               }}>
-                {currentLang === 'ar' ? 'تم الدفع بنجاح!' : 'Payment Successful!'}
+                {currentLang === 'ar' ? 'المبلغ المطلوب للدفع' : 'Payment Required'}
               </h3>
               <p style={{ 
                 color: '#666', 
