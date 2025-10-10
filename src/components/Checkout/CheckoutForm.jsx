@@ -127,7 +127,7 @@ const CheckoutForm = ({
             {deliveryMethods.map(method => (
               <option key={method._id} value={method._id}>
                 {currentLang === 'ar' ? method.locationAr : method.locationEn} - {method.price} ILS
-                {method.estimatedDays && ` (${method.estimatedDays} ${currentLang === 'ar' ? 'يوم' : 'day'}${method.estimatedDays > 1 ? (currentLang === 'ar' ? 's' : 's') : ''})`}
+                {/* {method.estimatedDays`} */}
               </option>
             ))}
           </select>
