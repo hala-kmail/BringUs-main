@@ -147,8 +147,13 @@ const Login = () => {
     navigate('/');
   };
 
-  // Handle OTP resend
-  const handleOTPResend = () => {
+  // Handle OTP resend or email change
+  const handleOTPResend = (newEmailAddress) => {
+    // If new email provided, update the email state
+    if (newEmailAddress && newEmailAddress !== formData.email) {
+      console.log('Email changed to:', newEmailAddress);
+      setFormData(prev => ({ ...prev, email: newEmailAddress }));
+    }
     console.log('OTP resent successfully');
   };
 
@@ -203,7 +208,8 @@ const Login = () => {
           </div>
           
           <h1 className="auth-title">
-            {store ? (store.nameEn || store.nameAr) : t('auth.login.title')}
+           
+            {store ?i18n.language === 'ar' ? store.nameAr : store.nameEn : t('auth.login.title')}
           </h1>
           <p className="auth-subtitle">
             {store ? store.descriptionEn || store.descriptionAr : t('auth.login.subtitle')}

@@ -162,8 +162,13 @@ const handleOTPSuccess = () => {
   navigate('/');
 };
 
-// Handle OTP resend
-const handleOTPResend = () => {
+// Handle OTP resend or email change
+const handleOTPResend = (newEmailAddress) => {
+  // If new email provided, update the email state
+  if (newEmailAddress && newEmailAddress !== formData.email) {
+    console.log('Email changed to:', newEmailAddress);
+    setFormData(prev => ({ ...prev, email: newEmailAddress }));
+  }
   console.log('OTP resent successfully');
 };
 

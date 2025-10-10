@@ -14,6 +14,10 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
   const [resendLoading, setResendLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
 
   // Update refs to 5 inputs
   const inputRefs = [
@@ -105,6 +109,66 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
       return () => clearTimeout(timer);
     }
   }, [countdown]);
+
+  const handleChangeEmail = () => {
+    setShowChangeEmailModal(true);
+    setNewEmail('');
+    setEmailError('');
+  };
+
+  const validateNewEmail = (newEmailValue) => {
+    if (!newEmailValue) {
+      return t('auth.validation.email_required');
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmailValue)) {
+      return t('auth.validation.email_invalid');
+    }
+    if (newEmailValue.toLowerCase() === email.toLowerCase()) {
+      return t('auth.otp.same_email_error');
+    }
+    return '';
+  };
+
+  const handleConfirmNewEmail = async () => {
+    const error = validateNewEmail(newEmail);
+    if (error) {
+      setEmailError(error);
+      return;
+    }
+
+    setIsUpdatingEmail(true);
+    try {
+      // Get storeSlug from URL or context
+      const storeSlug = window.location.pathname.split('/')[1] || 'default';
+      
+      // Send OTP to new email
+      const result = await resendOTP(newEmail, storeSlug);
+      
+      if (result.success) {
+        // Close modal and update email in parent component
+        setShowChangeEmailModal(false);
+        setCountdown(60);
+        
+        // Update the email - we need to call a callback to update parent component
+        // For now, we'll navigate back with the new email
+        onResendCode && onResendCode(newEmail);
+      } else {
+        setEmailError(result.error || t('auth.otp.email_update_failed'));
+      }
+    } catch (err) {
+      console.error('Error updating email:', err);
+      setEmailError(t('auth.otp.email_update_failed'));
+    } finally {
+      setIsUpdatingEmail(false);
+    }
+  };
+
+  const handleNewEmailChange = (e) => {
+    setNewEmail(e.target.value);
+    if (emailError) {
+      setEmailError('');
+    }
+  };
 
   return (
     <div className="auth-container">
@@ -212,11 +276,71 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
         
         <div className="auth-footer">
           <span>{t('auth.otp.wrong_email')}</span>
-          <button onClick={onBack} className="auth-link">
+          <button onClick={handleChangeEmail} className="auth-link">
             {t('auth.otp.change_email')}
           </button>
         </div>
       </div>
+
+      {/* Change Email Modal */}
+      {showChangeEmailModal && (
+        <div className="modal-overlay" onClick={() => setShowChangeEmailModal(false)}>
+          <div className="modal-content change-email-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="modal-close-btn" 
+              onClick={() => setShowChangeEmailModal(false)}
+              type="button"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="modal-header">
+              <h2 className="modal-title">{t('auth.otp.change_email_title')}</h2>
+              <p className="modal-subtitle">{t('auth.otp.change_email_subtitle')}</p>
+            </div>
+
+            {emailError && (
+              <div className="error-message" style={{ marginBottom: '1rem' }}>
+                {emailError}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">{t('auth.otp.new_email_label')}</label>
+              <input
+                type="email"
+                className={`form-input ${emailError ? 'error' : ''}`}
+                placeholder={t('auth.otp.new_email_placeholder')}
+                value={newEmail}
+                onChange={handleNewEmailChange}
+                disabled={isUpdatingEmail}
+                autoFocus
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="cancel-button"
+                onClick={() => setShowChangeEmailModal(false)}
+                disabled={isUpdatingEmail}
+              >
+                {t('auth.otp.cancel')}
+              </button>
+              <button
+                type="button"
+                className="submit-button"
+                onClick={handleConfirmNewEmail}
+                disabled={isUpdatingEmail || !newEmail}
+              >
+                {isUpdatingEmail ? t('auth.otp.updating') : t('auth.otp.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

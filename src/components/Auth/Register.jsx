@@ -184,9 +184,13 @@ const Register = () => {
     navigate('/login');
   };
 
-  // Handle OTP resend
-  const handleOTPResend = () => {
-    // يمكن إضافة منطق إضافي هنا إذا لزم الأمر
+  // Handle OTP resend or email change
+  const handleOTPResend = (newEmailAddress) => {
+    // If new email provided, update the email state
+    if (newEmailAddress && newEmailAddress !== email) {
+      console.log('Email changed to:', newEmailAddress);
+      setEmail(newEmailAddress);
+    }
     console.log('OTP resent successfully');
   };
 
