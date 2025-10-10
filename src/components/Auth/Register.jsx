@@ -432,7 +432,7 @@ const Register = () => {
         
         <div className="auth-footer">
           <span>{t('auth.register.have_account')}</span>
-          <button onClick={() => navigate('/home')} className="auth-link">
+          <button onClick={() => navigate('/login')} className="auth-link">
             {t('auth.register.signin')}
           </button>
         </div>

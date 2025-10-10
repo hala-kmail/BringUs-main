@@ -250,6 +250,7 @@
       "reset": "Reset Password",
       "resetting": "Resetting...",
       "success_message": "Password reset successfully",
+      "redirecting_message": "Redirecting to login in {{seconds}} seconds...",
       "back_to_login": "Back to Login",
       "remember_password": "Remember your password?",
       "validation": {
