@@ -304,6 +304,7 @@ function App() {
   // Component to manage conditional rendering - moved inside App function
   const AppContent = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const isAuthPage = ['/login', '/register'].includes(location.pathname);
     const [previousUrl, setPreviousUrl] = useState(null);
 
@@ -345,6 +346,9 @@ function App() {
           
           // Update session storage
           sessionStorage.setItem('wasAuthenticated', 'false');
+          
+          // Redirect to home page after logout
+          navigate('/home');
         }
         
         // User logged in - keep affiliate code for order tracking
@@ -385,7 +389,7 @@ function App() {
         window.removeEventListener('storage', handleStorageChange);
         clearInterval(interval);
       };
-    }, []);
+    }, [navigate]);
 
     // Initialize authentication state on mount
     useEffect(() => {

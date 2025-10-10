@@ -1256,7 +1256,7 @@ const handleSendWhatsApp = async () => {
      let finalPhoneNumber = cleanPhoneNumber;
      if (!finalPhoneNumber.startsWith('+')) {
        // If no country code, assume it's a local number and add +972 for Israel
-       finalPhoneNumber = '+972' + finalPhoneNumber.replace(/^0/, '');
+       finalPhoneNumber =  finalPhoneNumber;
      }
      
      console.log('Sending WhatsApp to:', finalPhoneNumber);
