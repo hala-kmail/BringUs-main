@@ -14,6 +14,7 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
   const [resendLoading, setResendLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -73,6 +74,7 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
     e.preventDefault();
     if (!validateForm()) return;
     
+    setIsVerifying(true);
     try {
       const otpString = otp.join('');
       const result = await verifyOTP(email, otpString);
@@ -81,6 +83,8 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
       }
     } catch (err) {
       console.error('OTP verification error:', err);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -221,20 +225,20 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
           <button
             type="submit"
             className={`submit-button ${!isFormValid ? 'disabled' : ''}`}
-            disabled={loading || !isFormValid}
+            disabled={isVerifying || !isFormValid}
           >
-            {loading ? (
+            {isVerifying ? (
               <>
-                <svg className="loading-spinner" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* <svg className="loading-spinner" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2ZM10 16C6.68629 16 4 13.3137 4 10C4 6.68629 6.68629 4 10 4C13.3137 4 16 6.68629 16 10C16 13.3137 13.3137 16 10 16Z" fill="currentColor"/>
-                </svg>
+                </svg> */}
                 {t('auth.otp.verifying')}
               </>
             ) : (
               <>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2ZM10 16C6.68629 16 4 13.3137 4 10C4 6.68629 6.68629 4 10 4C13.3137 4 16 6.68629 16 10C16 13.3137 13.3137 16 10 16Z" fill="currentColor"/>
-                </svg>
+                </svg> */}
                 {t('auth.otp.verify')}
               </>
             )}
@@ -251,9 +255,9 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
           >
             {resendLoading ? (
               <>
-                <svg className="loading-spinner" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* <svg className="loading-spinner" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2ZM10 16C6.68629 16 4 13.3137 4 10C4 6.68629 6.68629 4 10 4C13.3137 4 16 6.68629 16 10C16 13.3137 13.3137 16 10 16Z" fill="currentColor"/>
-                </svg>
+                </svg> */}
                 {t('auth.otp.sending')}
               </>
             ) : countdown > 0 ? (

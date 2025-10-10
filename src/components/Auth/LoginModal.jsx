@@ -156,10 +156,27 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 
   if (!isOpen) return null;
   
-const handleOTPSuccess = () => {
-  // Close modal and redirect to home page after successful verification
-  onClose();
-  navigate('/');
+const handleOTPSuccess = async () => {
+  // تسجيل الدخول تلقائياً بعد التحقق الناجح
+  console.log('OTP verified successfully, auto-logging in...');
+  
+  try {
+    const result = await login(formData.email, formData.password);
+    
+    if (result && result.success) {
+      console.log('Auto-login successful, closing modal and navigating to home');
+      onClose();
+      navigate('/');
+    } else {
+      console.log('Auto-login failed, but closing modal anyway');
+      onClose();
+      navigate('/');
+    }
+  } catch (err) {
+    console.error('Auto-login error:', err);
+    onClose();
+    navigate('/');
+  }
 };
 
 // Handle OTP resend or email change

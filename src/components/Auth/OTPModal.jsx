@@ -11,6 +11,7 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
   const [resendLoading, setResendLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -67,13 +68,20 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isFormValid || loading) return;
+    if (!isFormValid || isVerifying) return;
 
-    const otpString = otp.join('');
-    const result = await verifyOTP(email, otpString);
-    
-    if (result.success) {
-      onVerificationSuccess && onVerificationSuccess();
+    setIsVerifying(true);
+    try {
+      const otpString = otp.join('');
+      const result = await verifyOTP(email, otpString);
+      
+      if (result.success) {
+        onVerificationSuccess && onVerificationSuccess();
+      }
+    } catch (err) {
+      console.error('OTP verification error:', err);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -197,10 +205,10 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
 
         <button
           type="submit"
-          className={`submit-button ${!isFormValid || loading ? 'disabled' : ''}`}
-          disabled={!isFormValid || loading}
+          className={`submit-button ${!isFormValid || isVerifying ? 'disabled' : ''}`}
+          disabled={!isFormValid || isVerifying}
         >
-          {loading ? t('auth.otp.verifying') : t('auth.otp.verify')}
+          {isVerifying ? t('auth.otp.verifying') : t('auth.otp.verify')}
         </button>
       </form>
 

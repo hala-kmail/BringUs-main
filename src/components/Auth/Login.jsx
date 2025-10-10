@@ -142,9 +142,24 @@ const Login = () => {
   };
 
   // Handle OTP verification success
-  const handleOTPSuccess = () => {
-    // Redirect to home page after successful verification
-    navigate('/');
+  const handleOTPSuccess = async () => {
+    // تسجيل الدخول تلقائياً بعد التحقق الناجح
+    console.log('OTP verified successfully, auto-logging in...');
+    
+    try {
+      const result = await login(formData.email, formData.password);
+      
+      if (result && result.success) {
+        console.log('Auto-login successful, navigating to home');
+        navigate('/');
+      } else {
+        console.log('Auto-login failed, but navigating to home anyway');
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Auto-login error:', err);
+      navigate('/');
+    }
   };
 
   // Handle OTP resend or email change
