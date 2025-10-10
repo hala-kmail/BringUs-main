@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import namer from 'color-namer';
 import { getSimpleColorsFromColorsField, hexToColorName } from '../../utils/productUtils';
@@ -94,6 +94,49 @@ const SidebarFilters = ({
  
  
 
+  // Component for category checkbox with indeterminate support
+  const CategoryCheckbox = ({ category, subcategories, isSelected, hasSubcategories }) => {
+    const checkboxRef = useRef(null);
+    const categoryId = category.id || category._id;
+    
+    // Calculate if this category should be in indeterminate state
+    const isIndeterminate = useMemo(() => {
+      if (!hasSubcategories || isSelected) return false;
+      
+      // Check if any subcategories (at any level) are selected
+      const getAllDescendantIds = (catId) => {
+        const subs = getSubCategories(catId);
+        let ids = subs.map(s => s.id || s._id);
+        subs.forEach(sub => {
+          ids = [...ids, ...getAllDescendantIds(sub.id || sub._id)];
+        });
+        return ids;
+      };
+      
+      const allDescendantIds = getAllDescendantIds(categoryId);
+      const someSelected = allDescendantIds.some(id => filters.categories.includes(id));
+      
+      return someSelected;
+    }, [categoryId, hasSubcategories, isSelected, filters.categories]);
+    
+    // Set indeterminate property on the checkbox element
+    useEffect(() => {
+      if (checkboxRef.current) {
+        checkboxRef.current.indeterminate = isIndeterminate;
+      }
+    }, [isIndeterminate]);
+    
+    return (
+      <input
+        ref={checkboxRef}
+        type="checkbox"
+        checked={isSelected}
+        onChange={(e) => onFilterChange('category', categoryId, e.target.checked)}
+        disabled={loading}
+      />
+    );
+  };
+
   // Render category tree
   const renderCategoryTree = (parentId = null, level = 0) => {
     const mainCategories = categories.filter(cat => 
@@ -112,11 +155,11 @@ const SidebarFilters = ({
         <div key={categoryId} className="category-filter-item">
           <div className="category-main-filter">
             <label className="filter-checkbox">
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={(e) => onFilterChange('category', categoryId, e.target.checked)}
-                disabled={loading}
+              <CategoryCheckbox 
+                category={category}
+                subcategories={subcategories}
+                isSelected={isSelected}
+                hasSubcategories={hasSubcategories}
               />
               <span className="checkmark"></span>
               <span className="category-name">

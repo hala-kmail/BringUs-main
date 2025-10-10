@@ -949,6 +949,25 @@
   opacity: 1;
 }
 
+/* Indeterminate checkbox state (for parent categories with some children selected) */
+.shop-sidebar .filter-checkbox input:indeterminate + .checkmark {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.shop-sidebar .filter-checkbox input:indeterminate + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 2px;
+  background: white;
+  border: none;
+  opacity: 1;
+}
+
 /* Color Filters */
 .shop-sidebar .color-filters {
   display: flex;
@@ -3344,6 +3363,24 @@ font-size: 14px;
 }
 
 .shop-sidebar .filter-checkbox input:checked + .checkmark::after {
+  opacity: 1;
+}
+
+.shop-sidebar .filter-checkbox input:indeterminate + .checkmark {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.shop-sidebar .filter-checkbox input:indeterminate + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 2px;
+  background: white;
+  border: none;
   opacity: 1;
 }
 

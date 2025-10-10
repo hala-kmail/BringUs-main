@@ -454,8 +454,9 @@ const Shop = () => {
           let parentId = getParentId(value);
           while (parentId) {
             const siblings = getSubCategories(parentId).map(s => s._id || s.id);
-            const hasAnySelected = siblings.some(sid => newSelected.includes(sid));
-            if (!hasAnySelected) {
+            const allSelected = siblings.every(sid => newSelected.includes(sid));
+            // Remove parent if not all siblings are selected
+            if (!allSelected) {
               newSelected = newSelected.filter(id => id !== parentId);
             }
             parentId = getParentId(parentId);
