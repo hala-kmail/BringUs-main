@@ -560,7 +560,7 @@ const handlePlaceOrderClick = (e) => {
         currency: store?.settings.currency || 'ILS'
       });
       
-      setShowCashWhatsAppPopup(true);
+      // setShowCashWhatsAppPopup(true);
       setIsProcessing(false);
       
     } catch (error) {
