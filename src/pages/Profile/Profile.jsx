@@ -13,7 +13,7 @@ const Profile = () => {
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const currentLang = i18n.language;
-  const { user, store, updateUser, clearData } = useAppData();
+  const { user, store, updateUser } = useAppData();
   const { wishlistItems } = useWishlist();
   const { cartItems } = useCart();
   const { updateProfile, getProfile, loading, error } = useProfile();
@@ -213,10 +213,13 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-    // Clear all user data
-    clearData();
+    // Clear user data from localStorage
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     // Redirect to home
-    navigate('/home');
+    navigate('/');
+    // Reload page to reset app state
+    window.location.reload();
   };
 
   const getInitials = (firstName, lastName) => {
