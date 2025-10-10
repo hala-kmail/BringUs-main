@@ -4,6 +4,7 @@ import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
 import useStoreSlug from '../../hooks/useStoreSlug';
+import useOTP from '../../hooks/useOTP';
 import OTPModal from './OTPModal';
 import './Auth.css';
 import defaultStoreLogo from '../../assets/store-logo.png';
@@ -13,6 +14,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
   const { storeSlug } = useStoreSlug();
+  const { sendOTP } = useOTP();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -99,6 +101,12 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     if (result.isEmailVerified === false) {
       // Only show OTP if we have user data (coming from registration)
       console.log('Email not verified from registration, showing OTP');
+      
+      // Send OTP verification code automatically
+      const currentStoreSlug = storeSlug || window.location.pathname.split('/')[1] || 'default';
+      console.log('Sending OTP to:', formData.email, 'for store:', currentStoreSlug);
+      await sendOTP(formData.email, currentStoreSlug);
+      
       setLoginData(result.data);
       setShowOTP(true);
     } 

@@ -9,6 +9,7 @@ import { useCheckEmail } from '../../hooks/useCheckEmail';
 import { useAppData } from '../../contexts/AppDataContext';
 import OTPVerification from './OTPVerification';
 import CustomPhoneInput from '../common/CustomPhoneInput';
+import useOTP from '../../hooks/useOTP';
 
 const Register = () => {
   const { t, i18n } = useTranslation();
@@ -16,6 +17,7 @@ const Register = () => {
   const { createUser, loading, error, reset } = useCreateUser();
   const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();
   const { store } = useAppData();
+  const { sendOTP } = useOTP();
   
   // OTP state
   const [showOTP, setShowOTP] = useState(false);
@@ -157,7 +159,12 @@ const Register = () => {
         // Save user data to localStorage
         localStorage.setItem('user', JSON.stringify(result.data));
         
-        // Show OTP verification component directly since backend sends OTP automatically
+        // Send OTP verification code automatically
+        const storeSlug = window.location.pathname.split('/')[1] || 'default';
+        console.log('Sending OTP to:', email, 'for store:', storeSlug);
+        await sendOTP(email, storeSlug);
+        
+        // Show OTP verification component after sending OTP
         setRegistrationData(result.data);
         setShowOTP(true);
       } else {

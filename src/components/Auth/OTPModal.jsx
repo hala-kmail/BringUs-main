@@ -9,7 +9,7 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
 
   const [otp, setOtp] = useState(['', '', '', '', '']);
   const [resendLoading, setResendLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
+  const [countdown, setCountdown] = useState(60);
   const [isFormValid, setIsFormValid] = useState(false);
 
   const inputRefs = [

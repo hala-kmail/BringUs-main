@@ -262,8 +262,8 @@
       "error_generic": "An error occurred, please try again",
       "error_network": "Connection error, please check your internet connection",
       "error_no_token": "Invalid or expired reset link"
-    }
-  },
+    },
+  
   "otp": {
     "title": "Email Verification",
     "subtitle": "Verification code sent to",
@@ -280,7 +280,7 @@
     "verification_failed": "Verification failed",
     "network_error": "Network error, please try again",
     "resend_failed": "Failed to resend code"
-  },
+  }},
   "footer": {
   "newsletter_title": "Subscribe to our newsletter",
   "newsletter_desc": "Register your email to get the latest offers and discounts. No spam!",

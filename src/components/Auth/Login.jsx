@@ -13,7 +13,7 @@ const Login = () => {
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
-  const { verifyOTP, resendOTP, loading: otpLoading, error: otpError, reset: resetOTP } = useOTP();
+  const { verifyOTP, resendOTP, sendOTP, loading: otpLoading, error: otpError, reset: resetOTP } = useOTP();
   const { storeSlug } = useStoreSlug();
   
   const [formData, setFormData] = useState({
@@ -129,7 +129,11 @@ const Login = () => {
     
       navigate('/');
     } else if (result && result.isEmailVerified === false) {
-    
+      // Send OTP verification code automatically
+      const currentStoreSlug = storeSlug || window.location.pathname.split('/')[1] || 'default';
+      console.log('Email not verified, sending OTP to:', formData.email, 'for store:', currentStoreSlug);
+      await sendOTP(formData.email, currentStoreSlug);
+      
       setLoginData(result.data);
       setShowOTP(true);
     } else {
@@ -206,12 +210,7 @@ const Login = () => {
           </p>
         </div>
         
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-        
+       
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label className="form-label">{t('auth.login.email')}</label>
@@ -243,6 +242,12 @@ const Login = () => {
             )}
           </div>
           
+          {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+        
           <div className="forgot-password-link">
             <button 
               type="button"
