@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { getToken, getBearerToken } from '../utils/tokenManager';
 import { useAppData } from './AppDataContext';
 
-const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const WishlistContext = createContext();
 

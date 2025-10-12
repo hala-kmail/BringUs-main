@@ -5,7 +5,7 @@ import { useAppData } from './AppDataContext';
 import Toast from '../components/Toast/Toast';
 import { getEffectivePrice, getPriceByUserRole, getPriceWithUserDiscount, getUserDiscountPercentage, getCartTotalDiscount } from '../utils/productUtils';
 import { useDeliveryMethods } from '../hooks/useDeliveryMethods';
-const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const CartContext = createContext();
 

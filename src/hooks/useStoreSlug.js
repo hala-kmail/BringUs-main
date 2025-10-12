@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const useStoreSlug = () => {
   const [storeSlug, setStoreSlug] = useState('');

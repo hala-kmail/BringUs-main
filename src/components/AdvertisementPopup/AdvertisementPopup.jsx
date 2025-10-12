@@ -173,7 +173,7 @@ const AdvertisementPopup = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`https://bringus-backend.onrender.com/api/advertisements/stores/${storeId}/advertisements/active`, {
+      const response = await fetch(`http://localhost:5001/api/advertisements/stores/${storeId}/advertisements/active`, {
         method: 'GET',
         headers,
       });
