@@ -22,6 +22,7 @@ const ResetPassword = () => {
   const [error, setError] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  const [countdown, setCountdown] = useState(5);
 
   // Get storeSlug from URL params or store context
   const currentStoreSlug = params.storeSlug || storeSlug;
@@ -57,6 +58,19 @@ const ResetPassword = () => {
       localStorage.setItem('i18nextLng', newLang);
     });
   };
+
+  // Countdown timer and auto-redirect after successful password reset
+  useEffect(() => {
+    if (isSubmitted && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    } else if (isSubmitted && countdown === 0) {
+      handleBackToLogin();
+    }
+  }, [isSubmitted, countdown]);
 
   // Validation function
   const validateForm = () => {
@@ -190,6 +204,9 @@ const ResetPassword = () => {
           <div className="success-message">
             <div className="success-icon">✓</div>
             <p>{message}</p>
+            <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
+              {t('auth.reset_password.redirecting_message', { seconds: countdown })}
+            </p>
           </div>
           
           <div className="auth-footer">

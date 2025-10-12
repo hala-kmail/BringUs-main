@@ -7,7 +7,7 @@
 .checkout-content {
   max-width: 85%;
   margin: 0 auto;
-  padding: 5rem 1rem;
+  padding: 2rem 1rem;
 }
 
 /* Breadcrumb Navigation */
@@ -203,6 +203,7 @@
 }
 
 .order-item {
+  gap: 1rem;
   display: flex;
   align-items: flex-start;
   padding: 1rem;
@@ -438,13 +439,17 @@
   
   .order-summary-section {
     position: static;
-    order: -1;
+    /* order: -1; */
   }
 }
 
 @media (max-width: 768px) {
   .checkout-content {
+    max-width: 100%;
     padding: 1rem ;
+  }
+  .checkout-header{
+    margin-bottom: 1rem;
   }
   
   .page-title {
@@ -504,6 +509,8 @@
   .checkout-form-section,
   .order-summary-section {
     padding: 1rem;
+    margin: 0 auto;
+    max-width: 90%;
   }
   
   .checkout-header {

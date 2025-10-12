@@ -250,6 +250,7 @@
       "reset": "Reset Password",
       "resetting": "Resetting...",
       "success_message": "Password reset successfully",
+      "redirecting_message": "Redirecting to login in {{seconds}} seconds...",
       "back_to_login": "Back to Login",
       "remember_password": "Remember your password?",
       "validation": {
@@ -261,8 +262,8 @@
       "error_generic": "An error occurred, please try again",
       "error_network": "Connection error, please check your internet connection",
       "error_no_token": "Invalid or expired reset link"
-    }
-  },
+    },
+  
   "otp": {
     "title": "Email Verification",
     "subtitle": "Verification code sent to",
@@ -276,10 +277,19 @@
     "resend_in": "Resend in {{seconds}} seconds",
     "wrong_email": "Wrong email?",
     "change_email": "Change Email",
+    "change_email_title": "Change Email Address",
+    "change_email_subtitle": "Enter your new email address to receive a verification code",
+    "new_email_label": "New Email Address",
+    "new_email_placeholder": "Enter new email address",
+    "same_email_error": "This is the same email address",
+    "email_update_failed": "Failed to update email. Please try again.",
+    "updating": "Updating...",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
     "verification_failed": "Verification failed",
     "network_error": "Network error, please try again",
     "resend_failed": "Failed to resend code"
-  },
+  }},
   "footer": {
   "newsletter_title": "Subscribe to our newsletter",
   "newsletter_desc": "Register your email to get the latest offers and discounts. No spam!",
@@ -622,7 +632,7 @@
     "view": "View",
     "payment_methods": "Payment Methods",
     "payment_confirmation": "Payment Confirmation",
-    "payment_successful": "Payment Successful!",
+    "payment_successful": "Payment Required",
     "pay_later": "Pay Later",
     "clear_cart": "Clear Cart",
     "i_have_paid": "I have paid",

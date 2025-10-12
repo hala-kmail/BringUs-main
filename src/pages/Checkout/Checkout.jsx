@@ -105,6 +105,8 @@ const Checkout = () => {
   const [showPaymentVerificationModal, setShowPaymentVerificationModal] = useState(false);
   const [paymentVerificationData, setPaymentVerificationData] = useState(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [showCashWhatsAppPopup, setShowCashWhatsAppPopup] = useState(false);
+  const [cashOrderData, setCashOrderData] = useState(null);
 
   // إغلاق البوب أب عند تغيير المسار
   useEffect(() => {
@@ -260,7 +262,7 @@ const Checkout = () => {
     
     switch (methodType) {
       case 'cash':
-        return 'cash_on_delivery';
+        return 'cash';
       case 'qr_code':
         return 'credit_card'; // أو أي قيمة مقبولة من API
       case 'palpay':
@@ -272,8 +274,8 @@ const Checkout = () => {
       case 'lahza':
         return 'lahza';
       default:
-        console.log('Unknown payment method type:', methodType, 'using default: cash_on_delivery');
-        return 'cash_on_delivery';
+        console.log('Unknown payment method type:', methodType, 'using default: cash');
+        return 'cash';
     }
   };
   
@@ -432,8 +434,146 @@ const handlePlaceOrderClick = (e) => {
  const handleSelectPayment = async (method) => {
   console.log('Selected payment method:', method);
   
+  // Check if it's Cash payment method
+  if (method.methodType === 'cash') {
+    try {
+      console.log('Processing cash payment - Creating order directly...');
+      setIsProcessing(true);
+      setShowPaymentPopup(false);
+      
+      // Create order data
+      const orderData = {
+        store: {
+          _id: store?._id,
+          nameAr: store?.nameAr,
+          nameEn: store?.nameEn,
+          logo: store?.logo,
+          contact: store?.contact
+        },
+        user: user?._id || null,
+        items: cartItems.map(item => {
+          let productId = null;
+          
+          if (item.productId) {
+            productId = item.productId;
+          } else if (item.product && typeof item.product === 'string') {
+            productId = item.product;
+          } else if (item.product && typeof item.product === 'object') {
+            productId = item.product._id || item.product.id;
+          } else if (item._id) {
+            productId = item._id;
+          }
+          
+          return {
+            product: productId,
+            quantity: item.quantity
+          };
+        }),
+        cartItems: cartItems.map(item => ({
+          product: item.productId || (item.product && typeof item.product === 'string' ? item.product : item.product?._id || item.product?.id || item._id),
+          quantity: item.quantity,
+          selectedSpecifications: item.selectedSpecifications || [],
+          selectedColors: item.selectedColors || []
+        })),
+        shippingAddress: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email || '',
+          phone: formData.phone,
+          street: formData.address,
+          city: formData.city,
+          district: formData.district,
+          country: '',
+          zipCode: ''
+        },
+        billingAddress: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email || '',
+          phone: formData.phone,
+          street: formData.address,
+          city: formData.city,
+          district: formData.district,
+          country: '',
+          zipCode: ''
+        },
+        paymentInfo: {
+          method: 'cash',
+          paymentMethodId: method.key,
+          status: 'pending'
+        },
+        shippingInfo: {
+          method: deliveryMethod === 'delivery' ? 'delivery' : 'pickup',
+          cost: getShippingPrice(),
+          deliveryMethodId: formData.deliveryMethodId || null
+        },
+        notes: {
+          customer: formData.notes || ''
+        },
+        isGift: false,
+        giftMessage: '',
+        deliveryArea: formData.deliveryMethodId || undefined,
+        currency: store?.settings.currency || 'ILS'
+      };
+
+      // Create order in database
+      const createdOrder = await createOrder(orderData);
+      console.log('Cash order created successfully:', createdOrder);
+
+      // Prepare WhatsApp message
+      const whatsappMessage = handleWhatsAppOrder({
+        orderNumber: createdOrder.orderNumber,
+        customerInfo: formData,
+        items: cartItems,
+        pricing: createdOrder.pricing,
+        totals: { ...cartTotalsState, shipping: getShippingPrice(), total: cartTotalsState.subtotal + getShippingPrice() },
+        orderDate: new Date().toISOString(),
+        deliveryMethod: deliveryMethod,
+        deliveryMethodId: formData.deliveryMethodId,
+        paymentMethod: method.label,
+        paymentVerificationData: null
+      });
+
+      // Get WhatsApp number from store
+      let phoneNumber = store?.contact?.whatsapp;
+      if (!phoneNumber) {
+        phoneNumber = store?.whatsappNumber;
+      }
+      if (!phoneNumber) {
+        phoneNumber = store?.contact?.phone;
+      }
+      
+      // Clean phone number
+      const cleanPhoneNumber = phoneNumber ? phoneNumber.replace(/[^\d+]/g, '') : '';
+      let finalPhoneNumber = cleanPhoneNumber;
+      if (finalPhoneNumber && !finalPhoneNumber.startsWith('+')) {
+        finalPhoneNumber = '+972' + finalPhoneNumber.replace(/^0/, '');
+      }
+
+      // Set cash order data and show WhatsApp popup
+      setCashOrderData({
+        orderNumber: createdOrder.orderNumber,
+        total: createdOrder.pricing.total,
+        itemsCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+        whatsappMessage: whatsappMessage,
+        phoneNumber: finalPhoneNumber,
+        currency: store?.settings.currency || 'ILS'
+      });
+      
+      // setShowCashWhatsAppPopup(true);
+      setIsProcessing(false);
+      
+    } catch (error) {
+      console.error('Error creating cash order:', error);
+      const errorMessage = currentLang === 'ar' 
+        ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
+        : 'Error creating order. Please try again.';
+      showErrorNotification(errorMessage);
+      setIsProcessing(false);
+    }
+  }
   // Check if it's Lahza payment method
-  if (method.methodType === 'lahza') {
+  else if (method.methodType === 'lahza') {
     try {
       console.log('Initializing Lahza payment...');
       
@@ -556,7 +696,7 @@ const handleDirectStoreOrder = async () => {
         zipCode: store?.contact?.address?.zipCode || ''
       },
       paymentInfo: {
-        method: 'cash_on_delivery',
+        method: 'cash',
         paymentMethodId: null,
         status: 'pending'
       },
@@ -1116,7 +1256,7 @@ const handleSendWhatsApp = async () => {
      let finalPhoneNumber = cleanPhoneNumber;
      if (!finalPhoneNumber.startsWith('+')) {
        // If no country code, assume it's a local number and add +972 for Israel
-       finalPhoneNumber = '+972' + finalPhoneNumber.replace(/^0/, '');
+       finalPhoneNumber =  finalPhoneNumber;
      }
      
      console.log('Sending WhatsApp to:', finalPhoneNumber);
@@ -2646,7 +2786,7 @@ const handleSendWhatsApp = async () => {
                 fontWeight: '700', 
                 margin: '0 0 8px 0' 
               }}>
-                {currentLang === 'ar' ? 'تم الدفع بنجاح!' : 'Payment Successful!'}
+                {currentLang === 'ar' ? 'المبلغ المطلوب للدفع' : 'Payment Required'}
               </h3>
               <p style={{ 
                 color: '#666', 
@@ -2816,6 +2956,337 @@ const handleSendWhatsApp = async () => {
                 onMouseOut={(e) => {
                   e.target.style.background = 'none';
                   e.target.style.color = '#10b981';
+                }}
+              >
+                {currentLang === 'ar' ? 'إغلاق' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Payment WhatsApp Contact Popup */}
+      {showCashWhatsAppPopup && cashOrderData && (
+        <div className="privacy-popup-overlay" style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0,0,0,0.6)', 
+          zIndex: 3000, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center' 
+        }}>
+          <div className="privacy-popup" style={{ 
+            background: '#fff', 
+            borderRadius: 16, 
+            maxWidth: 500, 
+            width: '95%', 
+            padding: 40, 
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)', 
+            position: 'relative',
+            textAlign: 'center',
+            animation: 'modalSlideIn 0.3s ease-out'
+          }}>
+            {/* Close Button */}
+            <button 
+              type="button" 
+              onClick={() => { 
+                setShowCashWhatsAppPopup(false);
+                setCashOrderData(null);
+                clearCart();
+                
+                // Redirect to home
+                setTimeout(() => {
+                  const affiliateCode = getCurrentAffiliateCode();
+                  const storeSlug = store?.slug || localStorage.getItem('storeSlug');
+                  
+                  if (affiliateCode) {
+                    navigate('/home');
+                  } else if (storeSlug) {
+                    navigate(`/${storeSlug}/home`);
+                  } else {
+                    navigate('/home');
+                  }
+                }, 300);
+              }} 
+              style={{ 
+                position: 'absolute', 
+                top: 16, 
+                right: 16, 
+                background: 'none', 
+                border: 'none', 
+                fontSize: 24, 
+                cursor: 'pointer', 
+                color: '#888',
+                zIndex: 10
+              }} 
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            {/* Success Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4CAF50, #45a049)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px auto',
+              boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)'
+            }}>
+              <svg width="40" height="40" fill="none" stroke="#fff" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            {/* Success Title */}
+            <h2 style={{
+              color: '#2E7D32',
+              fontSize: '24px',
+              fontWeight: '700',
+              margin: '0 0 16px 0',
+              fontFamily: 'Arial, sans-serif'
+            }}>
+              {currentLang === 'ar' ? 'تم إنشاء الطلب بنجاح! 🎉' : 'Order Created Successfully! 🎉'}
+            </h2>
+
+            {/* Order Info */}
+            <div style={{
+              background: '#f8f9fa',
+              borderRadius: 12,
+              padding: '20px',
+              margin: '0 0 24px 0',
+              border: '1px solid #e9ecef'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 12,
+                paddingBottom: 12,
+                borderBottom: '1px solid #e9ecef'
+              }}>
+                <span style={{ fontWeight: '600', color: '#666', fontSize: '14px' }}>
+                  {currentLang === 'ar' ? 'رقم الطلب:' : 'Order Number:'}
+                </span>
+                <span style={{ fontWeight: '700', fontSize: '16px', color: '#333' }}>
+                  {cashOrderData.orderNumber}
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 12,
+                paddingBottom: 12,
+                borderBottom: '1px solid #e9ecef'
+              }}>
+                <span style={{ fontWeight: '600', color: '#666', fontSize: '14px' }}>
+                  {currentLang === 'ar' ? 'عدد المنتجات:' : 'Items Count:'}
+                </span>
+                <span style={{ fontWeight: '700', fontSize: '16px', color: '#333' }}>
+                  {cashOrderData.itemsCount}
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span style={{ fontWeight: '600', color: '#666', fontSize: '14px' }}>
+                  {currentLang === 'ar' ? 'المبلغ الإجمالي:' : 'Total Amount:'}
+                </span>
+                <span style={{ fontWeight: '700', fontSize: '20px', color: '#2E7D32' }}>
+                  {getCurrencySymbol(cashOrderData.currency)}{cashOrderData.total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            {/* Store WhatsApp Info */}
+            <div style={{
+              background: '#e8f5e9',
+              borderRadius: 12,
+              padding: 16,
+              margin: '20px 0',
+              border: '1px solid #c8e6c9'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                marginBottom: 8,
+                justifyContent: 'center'
+              }}>
+                <div style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: '#25D366',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '14px'
+                }}>
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52z"/>
+                  </svg>
+                </div>
+                <span style={{
+                  fontWeight: '600',
+                  color: '#2e7d32',
+                  fontSize: '14px'
+                }}>
+                  {currentLang === 'ar' ? 'تواصل معنا عبر واتساب' : 'Contact us via WhatsApp'}
+                </span>
+              </div>
+              <p style={{
+                color: '#558b2f',
+                fontSize: '13px',
+                lineHeight: '1.5',
+                margin: 0
+              }}>
+                {currentLang === 'ar' 
+                  ? 'أرسل تفاصيل طلبك إلى المتجر مباشرة عبر واتساب' 
+                  : 'Send your order details to the store directly via WhatsApp'
+                }
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Open WhatsApp Button */}
+              <button 
+                onClick={() => {
+                  const whatsappUrl = `https://wa.me/${cashOrderData.phoneNumber}?text=${encodeURIComponent(cashOrderData.whatsappMessage)}`;
+                  window.open(whatsappUrl, '_blank');
+                }}
+                style={{
+                  width: '100%',
+                  background: '#25D366',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '16px 0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = '#128C7E';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = '#25D366';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.52 3.48A12 12 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.85L0 24l6.31-1.65A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22c-1.85 0-3.63-.5-5.18-1.44l-.37-.22-3.75.98.99-3.65-.24-.38A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.14-.61.14-.18.28-.28-.7.9-.86 1.08-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.18.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.62-.47-.16-.01-.36-.01-.56-.01-.2 0-.52.07-.8.34-.28.28-1.08 1.06-1.08 2.58 0 1.52 1.1 2.99 1.25 3.2.15.21 2.17 3.32 5.27 4.52.74.32 1.32.51 1.77.65.74.24 1.41.21 1.94.13.59-.09 1.65-.67 1.88-1.32.23-.65.23-1.2.16-1.32-.07-.12-.25-.18-.53-.32z"/>
+                </svg>
+                {currentLang === 'ar' ? 'فتح واتساب' : 'Open WhatsApp'}
+              </button>
+
+              {/* Copy Message Button */}
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(cashOrderData.whatsappMessage)
+                    .then(() => {
+                      const successMessage = currentLang === 'ar' 
+                        ? 'تم نسخ الرسالة إلى الحافظة!' 
+                        : 'Message copied to clipboard!';
+                      alert(successMessage);
+                    })
+                    .catch(err => {
+                      console.error('Failed to copy message:', err);
+                      const errorMessage = currentLang === 'ar' 
+                        ? 'فشل نسخ الرسالة' 
+                        : 'Failed to copy message';
+                      alert(errorMessage);
+                    });
+                }}
+                style={{
+                  width: '100%',
+                  background: '#fff',
+                  color: '#25D366',
+                  border: '2px solid #25D366',
+                  borderRadius: 12,
+                  padding: '14px 0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = '#25D366';
+                  e.target.style.color = '#fff';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = '#fff';
+                  e.target.style.color = '#25D366';
+                }}
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                {currentLang === 'ar' ? 'نسخ الرسالة' : 'Copy Message'}
+              </button>
+
+              {/* Close Button */}
+              <button 
+                onClick={() => { 
+                  setShowCashWhatsAppPopup(false);
+                  setCashOrderData(null);
+                  clearCart();
+                  
+                  // Redirect to home
+                  setTimeout(() => {
+                    const affiliateCode = getCurrentAffiliateCode();
+                    const storeSlug = store?.slug || localStorage.getItem('storeSlug');
+                    
+                    if (affiliateCode) {
+                      navigate('/home');
+                    } else if (storeSlug) {
+                      navigate(`/${storeSlug}/home`);
+                    } else {
+                      navigate('/home');
+                    }
+                  }, 300);
+                }}
+                style={{
+                  width: '100%',
+                  background: 'none',
+                  color: '#666',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '12px 0',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.color = '#333';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.color = '#666';
                 }}
               >
                 {currentLang === 'ar' ? 'إغلاق' : 'Close'}

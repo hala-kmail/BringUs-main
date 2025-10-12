@@ -73,7 +73,7 @@ const ProductInfoSection = ({
             key={label._id || index} 
             className="product-detail-badge"
             style={{ 
-              backgroundColor: label.color || '#6B7280',
+              backgroundColor: label.color || '#b1b1b1',
               color: 'white'
             }}
           >

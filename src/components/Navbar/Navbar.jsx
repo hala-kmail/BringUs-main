@@ -228,7 +228,9 @@ const Navbar = () => {
   const handleLogout = () => {
     clearData();
     setIsUserDropdownOpen(false);
-    // Don't navigate to login page, just close dropdown
+    
+    // Redirect to home page after logout
+    navigate('/home');
   };
 
   // Handle login button click

@@ -9,6 +9,8 @@ import { useCheckEmail } from '../../hooks/useCheckEmail';
 import { useAppData } from '../../contexts/AppDataContext';
 import OTPVerification from './OTPVerification';
 import CustomPhoneInput from '../common/CustomPhoneInput';
+import useOTP from '../../hooks/useOTP';
+import useLogin from '../../hooks/useLogin';
 
 const Register = () => {
   const { t, i18n } = useTranslation();
@@ -16,6 +18,8 @@ const Register = () => {
   const { createUser, loading, error, reset } = useCreateUser();
   const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();
   const { store } = useAppData();
+  const { sendOTP } = useOTP();
+  const { login } = useLogin();
   
   // OTP state
   const [showOTP, setShowOTP] = useState(false);
@@ -157,7 +161,12 @@ const Register = () => {
         // Save user data to localStorage
         localStorage.setItem('user', JSON.stringify(result.data));
         
-        // Show OTP verification component directly since backend sends OTP automatically
+        // Send OTP verification code automatically
+        const storeSlug = window.location.pathname.split('/')[1] || 'default';
+        console.log('Sending OTP to:', email, 'for store:', storeSlug);
+        await sendOTP(email, storeSlug);
+        
+        // Show OTP verification component after sending OTP
         setRegistrationData(result.data);
         setShowOTP(true);
       } else {
@@ -172,14 +181,34 @@ const Register = () => {
   };
 
   // Handle OTP verification success
-  const handleOTPSuccess = () => {
-    // التوجيه إلى صفحة تسجيل الدخول بعد التحقق الناجح
-    navigate('/login');
+  const handleOTPSuccess = async () => {
+    // تسجيل الدخول تلقائياً بعد التحقق الناجح
+    console.log('OTP verified successfully, auto-logging in...');
+    
+    try {
+      const result = await login(email, password);
+      
+      if (result && result.success) {
+        console.log('Auto-login successful, navigating to home');
+        navigate('/');
+      } else {
+        console.log('Auto-login failed, redirecting to login page');
+        navigate('/login');
+      }
+    } catch (err) {
+      console.error('Auto-login error:', err);
+      // في حالة فشل تسجيل الدخول التلقائي، نوجه للصفحة الرئيسية أو Login
+      navigate('/login');
+    }
   };
 
-  // Handle OTP resend
-  const handleOTPResend = () => {
-    // يمكن إضافة منطق إضافي هنا إذا لزم الأمر
+  // Handle OTP resend or email change
+  const handleOTPResend = (newEmailAddress) => {
+    // If new email provided, update the email state
+    if (newEmailAddress && newEmailAddress !== email) {
+      console.log('Email changed to:', newEmailAddress);
+      setEmail(newEmailAddress);
+    }
     console.log('OTP resent successfully');
   };
 
@@ -432,7 +461,7 @@ const Register = () => {
         
         <div className="auth-footer">
           <span>{t('auth.register.have_account')}</span>
-          <button onClick={() => navigate('/home')} className="auth-link">
+          <button onClick={() => navigate('/login')} className="auth-link">
             {t('auth.register.signin')}
           </button>
         </div>

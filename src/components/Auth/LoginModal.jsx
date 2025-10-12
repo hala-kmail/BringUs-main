@@ -4,6 +4,7 @@ import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
 import useStoreSlug from '../../hooks/useStoreSlug';
+import useOTP from '../../hooks/useOTP';
 import OTPModal from './OTPModal';
 import './Auth.css';
 import defaultStoreLogo from '../../assets/store-logo.png';
@@ -13,6 +14,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
   const { storeSlug } = useStoreSlug();
+  const { sendOTP } = useOTP();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -99,6 +101,12 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     if (result.isEmailVerified === false) {
       // Only show OTP if we have user data (coming from registration)
       console.log('Email not verified from registration, showing OTP');
+      
+      // Send OTP verification code automatically
+      const currentStoreSlug = storeSlug || window.location.pathname.split('/')[1] || 'default';
+      console.log('Sending OTP to:', formData.email, 'for store:', currentStoreSlug);
+      await sendOTP(formData.email, currentStoreSlug);
+      
       setLoginData(result.data);
       setShowOTP(true);
     } 
@@ -148,14 +156,36 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 
   if (!isOpen) return null;
   
-const handleOTPSuccess = () => {
-  // Close modal and redirect to home page after successful verification
-  onClose();
-  navigate('/');
+const handleOTPSuccess = async () => {
+  // تسجيل الدخول تلقائياً بعد التحقق الناجح
+  console.log('OTP verified successfully, auto-logging in...');
+  
+  try {
+    const result = await login(formData.email, formData.password);
+    
+    if (result && result.success) {
+      console.log('Auto-login successful, closing modal and navigating to home');
+      onClose();
+      navigate('/');
+    } else {
+      console.log('Auto-login failed, but closing modal anyway');
+      onClose();
+      navigate('/');
+    }
+  } catch (err) {
+    console.error('Auto-login error:', err);
+    onClose();
+    navigate('/');
+  }
 };
 
-// Handle OTP resend
-const handleOTPResend = () => {
+// Handle OTP resend or email change
+const handleOTPResend = (newEmailAddress) => {
+  // If new email provided, update the email state
+  if (newEmailAddress && newEmailAddress !== formData.email) {
+    console.log('Email changed to:', newEmailAddress);
+    setFormData(prev => ({ ...prev, email: newEmailAddress }));
+  }
   console.log('OTP resent successfully');
 };
 

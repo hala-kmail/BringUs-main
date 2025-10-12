@@ -13,7 +13,7 @@ const Login = () => {
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
-  const { verifyOTP, resendOTP, loading: otpLoading, error: otpError, reset: resetOTP } = useOTP();
+  const { verifyOTP, resendOTP, sendOTP, loading: otpLoading, error: otpError, reset: resetOTP } = useOTP();
   const { storeSlug } = useStoreSlug();
   
   const [formData, setFormData] = useState({
@@ -129,7 +129,11 @@ const Login = () => {
     
       navigate('/');
     } else if (result && result.isEmailVerified === false) {
-    
+      // Send OTP verification code automatically
+      const currentStoreSlug = storeSlug || window.location.pathname.split('/')[1] || 'default';
+      console.log('Email not verified, sending OTP to:', formData.email, 'for store:', currentStoreSlug);
+      await sendOTP(formData.email, currentStoreSlug);
+      
       setLoginData(result.data);
       setShowOTP(true);
     } else {
@@ -138,13 +142,33 @@ const Login = () => {
   };
 
   // Handle OTP verification success
-  const handleOTPSuccess = () => {
-    // Redirect to home page after successful verification
-    navigate('/');
+  const handleOTPSuccess = async () => {
+    // تسجيل الدخول تلقائياً بعد التحقق الناجح
+    console.log('OTP verified successfully, auto-logging in...');
+    
+    try {
+      const result = await login(formData.email, formData.password);
+      
+      if (result && result.success) {
+        console.log('Auto-login successful, navigating to home');
+        navigate('/');
+      } else {
+        console.log('Auto-login failed, but navigating to home anyway');
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Auto-login error:', err);
+      navigate('/');
+    }
   };
 
-  // Handle OTP resend
-  const handleOTPResend = () => {
+  // Handle OTP resend or email change
+  const handleOTPResend = (newEmailAddress) => {
+    // If new email provided, update the email state
+    if (newEmailAddress && newEmailAddress !== formData.email) {
+      console.log('Email changed to:', newEmailAddress);
+      setFormData(prev => ({ ...prev, email: newEmailAddress }));
+    }
     console.log('OTP resent successfully');
   };
 
@@ -199,19 +223,15 @@ const Login = () => {
           </div>
           
           <h1 className="auth-title">
-            {store ? (store.nameEn || store.nameAr) : t('auth.login.title')}
+           
+            {store ?i18n.language === 'ar' ? store.nameAr : store.nameEn : t('auth.login.title')}
           </h1>
           <p className="auth-subtitle">
             {store ? store.descriptionEn || store.descriptionAr : t('auth.login.subtitle')}
           </p>
         </div>
         
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-        
+       
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label className="form-label">{t('auth.login.email')}</label>
@@ -243,6 +263,12 @@ const Login = () => {
             )}
           </div>
           
+          {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+        
           <div className="forgot-password-link">
             <button 
               type="button"
