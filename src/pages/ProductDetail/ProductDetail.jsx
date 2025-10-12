@@ -21,7 +21,7 @@ import { getSimpleColorsFromColorsField } from '../../utils/productUtils';
 import './ProductDetail.css';
 import namer from 'color-namer';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
 const ProductDetail = () => {
   const { t, i18n } = useTranslation();
   const { isInWishlist, toggleWishlist } = useWishlist();

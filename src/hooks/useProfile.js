@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { getBearerToken } from '../utils/tokenManager';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
 
 const useProfile = () => {
   const [loading, setLoading] = useState(false);
