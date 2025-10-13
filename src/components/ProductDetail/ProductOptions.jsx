@@ -347,7 +347,27 @@ const ProductOptions = ({
           >
             -
           </button>
-          <span className="quantity-display">{quantity}</span>
+          <input
+            type="number"
+            className="quantity-display quantity-input"
+            value={quantity}
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 1;
+              const newQuantity = Math.max(1, Math.min(effectiveAvailable, value));
+              setQuantity(newQuantity);
+            }}
+            onBlur={(e) => {
+              // Ensure valid value on blur
+              if (!e.target.value || parseInt(e.target.value) < 1) {
+                setQuantity(1);
+              } else if (parseInt(e.target.value) > effectiveAvailable) {
+                setQuantity(effectiveAvailable);
+              }
+            }}
+            min="1"
+            max={effectiveAvailable}
+            disabled={effectiveAvailable === 0}
+          />
           <button
             className="quantity-btn increase"
             onClick={() => {

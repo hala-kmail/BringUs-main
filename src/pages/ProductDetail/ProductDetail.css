@@ -2721,6 +2721,27 @@ padding-bottom: 1rem;
   font-family: 'Tajawal', sans-serif;
 }
 
+.quantity-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  width: 50px;
+  -moz-appearance: textfield;
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-input:focus {
+  outline: 2px solid var(--primary-color, #666666);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
 .stock-info {
   margin-top: 0.5rem;
   font-size: 0.875rem;

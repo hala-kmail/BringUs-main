@@ -35,6 +35,8 @@ const Cart = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteItemId, setPendingDeleteItemId] = useState(null);
   const [cartTotals, setCartTotals] = useState({});
+  const [editingQuantities, setEditingQuantities] = useState({});
+  const [updatingItems, setUpdatingItems] = useState({});
 
   // تحديث منطقة التوصيل وإعادة حساب التوتال
   const handleShippingAreaChange = (areaId) => {
@@ -50,7 +52,7 @@ const Cart = () => {
     setCartTotals(totals);
   }, [cartItems, getCartTotals]);
 
-  const handleQuantityChange = async (product, newQuantity, selectedColor = '', selectedSpecs = {}) => {
+  const handleQuantityChange = async (product, newQuantity, selectedColor = '', selectedSpecs = {}, itemIndex = null) => {
     if (newQuantity < 1) {
       await handleRemoveItem(product);
     } else {
@@ -78,10 +80,78 @@ const Cart = () => {
         return;
       }
       
-      await updateQuantity(product._id || product.id, newQuantity, {
-        selectedColor,
-        ...specsForUpdate
-      });
+      // تعيين loading state
+      if (itemIndex !== null) {
+        setUpdatingItems(prev => ({ ...prev, [itemIndex]: true }));
+      }
+      
+      try {
+        await updateQuantity(product._id || product.id, newQuantity, {
+          selectedColor,
+          ...specsForUpdate
+        });
+      } finally {
+        // إزالة loading state
+        if (itemIndex !== null) {
+          setUpdatingItems(prev => {
+            const newState = { ...prev };
+            delete newState[itemIndex];
+            return newState;
+          });
+        }
+      }
+    }
+  };
+
+  // دالة للحصول على الكمية المعروضة (من state المحلي أو من الكارت)
+  const getDisplayedQuantity = (itemIndex, actualQuantity) => {
+    return editingQuantities[itemIndex] !== undefined ? editingQuantities[itemIndex] : actualQuantity;
+  };
+
+  // دالة لتحديث الكمية المحلية أثناء الكتابة
+  const handleQuantityInputChange = (itemIndex, value) => {
+    setEditingQuantities(prev => ({
+      ...prev,
+      [itemIndex]: value
+    }));
+  };
+
+  // دالة لتطبيق التغيير عند الانتهاء من الكتابة
+  const handleQuantityInputBlur = async (item, itemIndex) => {
+    const inputValue = editingQuantities[itemIndex];
+    
+    // إزالة القيمة من state المحلي
+    setEditingQuantities(prev => {
+      const newState = { ...prev };
+      delete newState[itemIndex];
+      return newState;
+    });
+
+    if (inputValue === undefined || inputValue === '') {
+      return;
+    }
+
+    const value = parseInt(inputValue);
+    if (isNaN(value) || value < 1) {
+      return;
+    }
+
+    const availableQty = getAvailableQuantityForCartItem(
+      item.product._id || item.product.id,
+      getSelectedColorFromCartItem(item),
+      getSelectedSpecsFromCartItem(item)
+    );
+
+    const newQuantity = Math.max(1, Math.min(availableQty, value));
+    
+    if (newQuantity !== item.quantity) {
+      await handleQuantityChange(
+        item.product,
+        newQuantity,
+        getSelectedColorFromCartItem(item),
+        getSelectedSpecsFromCartItem(item),
+        itemIndex
+      );
     }
   };
 
@@ -519,35 +589,50 @@ const Cart = () => {
                         item.product, 
                         item.quantity - 1,
                         getSelectedColorFromCartItem(item),
-                        getSelectedSpecsFromCartItem(item)
+                        getSelectedSpecsFromCartItem(item),
+                        index
                       )}
                       title={currentLang === 'ar' ? 'تقليل الكمية' : 'Decrease quantity'}
-                      disabled={!canDecreaseItemQuantity(item)}
+                      disabled={!canDecreaseItemQuantity(item) || updatingItems[index]}
                     >
-                      -
+                      {updatingItems[index] ? (
+                        <span className="quantity-loading-spinner"></span>
+                      ) : '-'}
                     </button>
-                    <div className="quantity-display">
-                      <span className="current-quantity">{item.quantity}</span>
-                      {/* <span className="quantity-available">
-                        / {getAvailableQuantityForCartItem(
-                          item.product._id || item.product.id,
-                          getSelectedColorFromCartItem(item),
-                          getSelectedSpecsFromCartItem(item)
-                        )}
-                      </span> */}
-                    </div>
+                    <input
+                      type="number"
+                      className="quantity-display quantity-input"
+                      value={getDisplayedQuantity(index, item.quantity)}
+                      onChange={(e) => handleQuantityInputChange(index, e.target.value)}
+                      onBlur={() => handleQuantityInputBlur(item, index)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.target.blur();
+                        }
+                      }}
+                      min="1"
+                      max={getAvailableQuantityForCartItem(
+                        item.product._id || item.product.id,
+                        getSelectedColorFromCartItem(item),
+                        getSelectedSpecsFromCartItem(item)
+                      )}
+                      disabled={updatingItems[index]}
+                    />
                     <button 
                       className="quantity-btn"
                       onClick={() => handleQuantityChange(
                         item.product, 
                         item.quantity + 1,
                         getSelectedColorFromCartItem(item),
-                        getSelectedSpecsFromCartItem(item)
+                        getSelectedSpecsFromCartItem(item),
+                        index
                       )}
                       title={currentLang === 'ar' ? 'زيادة الكمية' : 'Increase quantity'}
-                      disabled={!canIncreaseItemQuantity(item)}
+                      disabled={!canIncreaseItemQuantity(item) || updatingItems[index]}
                     >
-                      +
+                      {updatingItems[index] ? (
+                        <span className="quantity-loading-spinner"></span>
+                      ) : '+'}
                     </button>
                   </div>
                   {/* Total Price */}
@@ -663,35 +748,50 @@ const Cart = () => {
                             item.product, 
                             item.quantity - 1,
                             getSelectedColorFromCartItem(item),
-                            getSelectedSpecsFromCartItem(item)
+                            getSelectedSpecsFromCartItem(item),
+                            index
                           )}
                           title={currentLang === 'ar' ? 'تقليل الكمية' : 'Decrease quantity'}
-                          disabled={!canDecreaseItemQuantity(item)}
+                          disabled={!canDecreaseItemQuantity(item) || updatingItems[index]}
                         >
-                          -
+                          {updatingItems[index] ? (
+                            <span className="quantity-loading-spinner"></span>
+                          ) : '-'}
                         </button>
-                        <div className="quantity-display">
-                          <span className="current-quantity">{item.quantity}</span>
-                          {/* <span className="quantity-available">
-                            / {getAvailableQuantityForCartItem(
-                              item.product._id || item.product.id,
-                              getSelectedColorFromCartItem(item),
-                              getSelectedSpecsFromCartItem(item)
-                            )}
-                          </span> */}
-                        </div>
+                        <input
+                          type="number"
+                          className="quantity-display quantity-input"
+                          value={getDisplayedQuantity(index, item.quantity)}
+                          onChange={(e) => handleQuantityInputChange(index, e.target.value)}
+                          onBlur={() => handleQuantityInputBlur(item, index)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.target.blur();
+                            }
+                          }}
+                          min="1"
+                          max={getAvailableQuantityForCartItem(
+                            item.product._id || item.product.id,
+                            getSelectedColorFromCartItem(item),
+                            getSelectedSpecsFromCartItem(item)
+                          )}
+                          disabled={updatingItems[index]}
+                        />
                         <button 
                           className="quantity-btn"
                           onClick={() => handleQuantityChange(
                             item.product, 
                             item.quantity + 1,
                             getSelectedColorFromCartItem(item),
-                            getSelectedSpecsFromCartItem(item)
+                            getSelectedSpecsFromCartItem(item),
+                            index
                           )}
                           title={currentLang === 'ar' ? 'زيادة الكمية' : 'Increase quantity'}
-                          disabled={!canIncreaseItemQuantity(item)}
+                          disabled={!canIncreaseItemQuantity(item) || updatingItems[index]}
                         >
-                          +
+                          {updatingItems[index] ? (
+                            <span className="quantity-loading-spinner"></span>
+                          ) : '+'}
                         </button>
                       </div>
                       {/* Total Price */}
