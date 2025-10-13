@@ -164,7 +164,7 @@ const useProducts = () => {
        
       }
       
-      const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?${params}`;
+      const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?variant=true`;
      
       const response = await fetch(url, {
         headers: {
@@ -462,58 +462,7 @@ const useProducts = () => {
   }, []);
 
   // Fetch single product with its variants
-  const fetchProductWithVariants = useCallback(async (productId) => {
-    if (!productId) {
-      // console.log('No product ID provided');
-      return null;
-    }
-
-    const currentStoreId = getStoreId();
-    if (!currentStoreId) {
-      // console.log('No store ID available for fetching product with variants');
-      return null;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const url = `${API_BASE_URL}/products/${currentStoreId}/${productId}/with-variants`;
-
-      const headers = {
-        accept: 'application/json',
-      };
-      if (token) {
-        headers.Authorization = token;
-      }
-
-      const response = await fetch(url, { headers });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        // Expecting shape: { product, variants, variantsCount }
-        return {
-          
-          product: result.data.product || result.data,
-          variants: result.data.variants || [],
-          variantsCount: result.data.variantsCount ?? (result.data.variants ? result.data.variants.length : 0),
-        };
-      } else {
-        throw new Error('Product not found');
-      }
-    } catch (err) {
-      console.error('Error fetching product with variants:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [getStoreId, token]);
+   
 
   // Fetch specific variant details
   const fetchSpecificVariant = useCallback(async (productId, variantId) => {
