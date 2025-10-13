@@ -12,8 +12,9 @@ import defaultStoreLogo from '../../assets/store-logo.png';
 const Login = () => {
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
-  const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
+  const { login, loading, error, errorAr, store, loadUserAndStoreInfo } = useLogin();
   const { verifyOTP, resendOTP, sendOTP, loading: otpLoading, error: otpError, reset: resetOTP } = useOTP();
+  const currentLang = i18n.language;
   const { storeSlug } = useStoreSlug();
   
   const [formData, setFormData] = useState({
@@ -263,9 +264,9 @@ const Login = () => {
             )}
           </div>
           
-          {error && (
+          {(error || errorAr) && (
           <div className="error-message">
-            {error}
+            {currentLang === 'ar' ? (errorAr || error) : (error || errorAr)}
           </div>
         )}
         

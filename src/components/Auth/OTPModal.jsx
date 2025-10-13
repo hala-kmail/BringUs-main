@@ -4,8 +4,9 @@ import useOTP from '../../hooks/useOTP';
 import './Auth.css';
 
 const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose }) => {
-  const { t } = useTranslation();
-  const { verifyOTP, resendOTP, loading, error: otpError, reset } = useOTP();
+  const { t, i18n } = useTranslation();
+  const { verifyOTP, resendOTP, loading, error: otpError, errorAr: otpErrorAr, successMessage, successMessageAr, reset } = useOTP();
+  const currentLang = i18n.language;
 
   const [otp, setOtp] = useState(['', '', '', '', '']);
   const [resendLoading, setResendLoading] = useState(false);
@@ -73,7 +74,9 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
     setIsVerifying(true);
     try {
       const otpString = otp.join('');
-      const result = await verifyOTP(email, otpString);
+      // Get storeSlug from URL or context to ensure verification is for correct store
+      const storeSlug = window.location.pathname.split('/')[1] || 'default';
+      const result = await verifyOTP(email, otpString, storeSlug);
       
       if (result.success) {
         onVerificationSuccess && onVerificationSuccess();
@@ -173,9 +176,9 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
         </p>
       </div>
 
-      {otpError && (
+      {(otpError || otpErrorAr) && (
         <div className="error-message">
-          {otpError}
+          {currentLang === 'ar' ? (otpErrorAr || otpError) : (otpError || otpErrorAr)}
         </div>
       )}
 

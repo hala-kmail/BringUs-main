@@ -2,14 +2,16 @@ import React, { useState, useCallback } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 import { saveToken, getToken, removeToken } from '../utils/tokenManager';
 import { useTranslation } from 'react-i18next';
+import { extractBilingualError, ERROR_MESSAGES } from '../utils/errorUtils';
 
 const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
 
 
 const useLogin = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [errorAr, setErrorAr] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [lastLoadTime, setLastLoadTime] = useState(0);
   const { user, store, updateUser, updateStore, clearData, isAuthenticated } = useAppData();
@@ -281,6 +283,7 @@ const useLogin = () => {
   const  login = useCallback(async (email, password) => {
     setLoading(true);
     setError(null);
+    setErrorAr(null);
     
 
     try {
@@ -300,21 +303,57 @@ const useLogin = () => {
 
 
       if (!response.ok) {
-        // Handle different error cases
+        // Handle different error cases with bilingual support
         if (response.status === 401) {
-          if(data.message==='Email is not verified'){
-            return { success: false, error: 'Email is not verified', isEmailVerified: false };
+          if(data.message==='Email is not verified' || data.messageAr==='البريد الإلكتروني غير مُحقق'){
+            const emailError = extractBilingualError(
+              data,
+              ERROR_MESSAGES.EMAIL_NOT_VERIFIED.en,
+              ERROR_MESSAGES.EMAIL_NOT_VERIFIED.ar
+            );
+            return { 
+              success: false, 
+              error: emailError.error,
+              errorAr: emailError.errorAr,
+              isEmailVerified: false 
+            };
           }
-          setError('Invalid email or password');
+          // Set bilingual error messages for invalid credentials
+          const credentialError = extractBilingualError(
+            data,
+            ERROR_MESSAGES.INVALID_CREDENTIALS.en,
+            ERROR_MESSAGES.INVALID_CREDENTIALS.ar
+          );
+          setError(credentialError.error);
+          setErrorAr(credentialError.errorAr);
         } else if (response.status === 422) {
           // Validation errors
           const validationErrors = data.errors || {};
           const errorMessages = Object.values(validationErrors).flat();
           setError(errorMessages.join(', '));
+          setErrorAr(errorMessages.join(', ')); // Keep English for validation errors
         } else {
-          setError(data.message || 'Login failed. Please try again.');
+          // Generic error with bilingual support
+          const genericError = extractBilingualError(
+            data,
+            ERROR_MESSAGES.LOGIN_FAILED.en,
+            ERROR_MESSAGES.LOGIN_FAILED.ar
+          );
+          setError(genericError.error);
+          setErrorAr(genericError.errorAr);
         }
-        return { success: false, error: data.message || 'Login failed' };
+        
+        // Always return bilingual errors
+        const returnError = extractBilingualError(
+          data,
+          ERROR_MESSAGES.LOGIN_FAILED.en,
+          ERROR_MESSAGES.LOGIN_FAILED.ar
+        );
+        return { 
+          success: false, 
+          error: returnError.error,
+          errorAr: returnError.errorAr
+        };
       }
 
       // Check if email is verified from the user data
@@ -543,6 +582,7 @@ const useLogin = () => {
     logout,
     loading,
     error,
+    errorAr,
     user,
     store,
     isAuthenticated,
