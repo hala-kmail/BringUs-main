@@ -5,9 +5,10 @@ import useOTP from '../../hooks/useOTP';
 import './Auth.css';
 
 const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
-  const { verifyOTP, resendOTP, loading, error: otpError, reset } = useOTP();
+  const { verifyOTP, resendOTP, loading, error: otpError, errorAr: otpErrorAr, successMessage, successMessageAr, reset } = useOTP();
+  const currentLang = i18n.language;
 
   // Change from 6 to 5 digits
   const [otp, setOtp] = useState(['', '', '', '', '']);
@@ -77,7 +78,9 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
     setIsVerifying(true);
     try {
       const otpString = otp.join('');
-      const result = await verifyOTP(email, otpString);
+      // Get storeSlug from URL or context to ensure verification is for correct store
+      const storeSlug = window.location.pathname.split('/')[1] || 'default';
+      const result = await verifyOTP(email, otpString, storeSlug);
       if (result.success) {
         onVerificationSuccess && onVerificationSuccess();
       }
@@ -186,8 +189,10 @@ const OTPVerification = ({ email, onVerificationSuccess, onResendCode, onBack })
         </div>
         
         <form onSubmit={handleSubmit} className="auth-form">
-          {otpError && (
-            <div className="error-message">{otpError}</div>
+          {(otpError || otpErrorAr) && (
+            <div className="error-message">
+              {currentLang === 'ar' ? (otpErrorAr || otpError) : (otpError || otpErrorAr)}
+            </div>
           )}
           
           <div className="form-section">

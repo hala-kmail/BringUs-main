@@ -102,16 +102,20 @@ const UserOrders = () => {
   };
 
   // دالة للحصول على حالة الطلب المترجمة
-  const getStatusText = (status) => {
+  const getStatusText = (order) => {
+    // استخدام الحالة المترجمة من الـ API مباشرة
+    if (order.statusAr && order.statusEn) {
+      return currentLang === 'ar' ? order.statusAr : order.statusEn;
+    }
+    
+    // Fallback للحالات القديمة
     const statusMap = {
       pending: currentLang === 'ar' ? 'قيد المراجعة' : 'Pending',
-      
       shipped: currentLang === 'ar' ? 'تم الشحن' : 'Shipped',
       delivered: currentLang === 'ar' ? 'تم التوصيل' : 'Delivered',
       cancelled: currentLang === 'ar' ? 'ملغي' : 'Cancelled',
-     
     };
-    return statusMap[status] || status;
+    return statusMap[order.status] || order.status;
   };
 
   // دالة للحصول على لون حالة الطلب
@@ -239,7 +243,7 @@ const UserOrders = () => {
                       className="status-badge"
                       style={{ backgroundColor: getStatusColor(order.status) }}
                     >
-                      {getStatusText(order.status)}
+                      {getStatusText(order)}
                     </span>
                   </div>
                 </div>
@@ -273,8 +277,8 @@ const UserOrders = () => {
                   {order.items.slice(0, 3).map((item, index) => (
                                           <img 
                         key={index}
-                        src={item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg=='} 
-                        alt={item.name}
+                        src={item.mainImage || item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg=='} 
+                        alt={currentLang === 'ar' ? (item.nameAr || item.name) : (item.nameEn || item.name)}
                         className="item-image"
                         onError={(e) => {
                           e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg==';
@@ -359,7 +363,7 @@ const UserOrders = () => {
                     className="detail-value status-badge"
                     style={{ backgroundColor: getStatusColor(selectedOrder.status) }}
                   >
-                    {getStatusText(selectedOrder.status)}
+                    {getStatusText(selectedOrder)}
                   </span>
                 </div>
                 
@@ -373,9 +377,12 @@ const UserOrders = () => {
                       fontWeight: 'bold'
                     }}
                   >
-                    {selectedOrder.paid ? 
-                      (currentLang === 'ar' ? 'مدفوع' : 'Paid') : 
-                      (currentLang === 'ar' ? 'غير مدفوع' : 'Unpaid')
+                    {selectedOrder.paymentStatusAr && selectedOrder.paymentStatusEn ? 
+                      (currentLang === 'ar' ? selectedOrder.paymentStatusAr : selectedOrder.paymentStatusEn) :
+                      (selectedOrder.paid ? 
+                        (currentLang === 'ar' ? 'مدفوع' : 'Paid') : 
+                        (currentLang === 'ar' ? 'غير مدفوع' : 'Unpaid')
+                      )
                     }
                   </span>
                 </div>
@@ -469,15 +476,15 @@ const UserOrders = () => {
                 {selectedOrder.items.map((item, index) => (
                   <div key={index} className="order-item-detail">
                     <img 
-                      src={item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg=='} 
-                      alt={item.name}
+                      src={item.mainImage || item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg=='} 
+                      alt={currentLang === 'ar' ? (item.nameAr || item.name) : (item.nameEn || item.name)}
                       className="item-image"
                       onError={(e) => {
                         e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMCAxNy4yMzkgMjIuMjM5IDE1IDI1IDE1SDU1QzU3Ljc2MSAxNSA2MCAxNy4yMzkgNjAgMjBWNjBDNjAgNjIuNzYxIDU3Ljc2MSA2NSA1NSA2NUgyNUMyMi4yMzkgNjUgMjAgNjIuNzYxIDIwIDYwVjIwWiIgZmlsbD0iIzlDQTBBNiIvPgo8cGF0aCBkPSJNMzAgMzBDMzAgMjguMzQzIDMxLjM0MyAyNyAzMyAyN0g0N0M0OC42NTcgMjcgNTAgMjguMzQzIDUwIDMwVjUwQzUwIDUxLjY1NyA0OC42NTcgNTMgNDcgNTNIMzNDMzEuMzQzIDUzIDMwIDUxLjY1NyAzMCA1MFYzMFoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+Cg==';
                       }}
                     />
                     <div className="item-info">
-                      <h5>{item.name}</h5>
+                      <h5>{currentLang === 'ar' ? (item.nameAr || item.name) : (item.nameEn || item.name)}</h5>
                       <p className="quantity">{currentLang === 'ar' ? `الكمية: ${item.quantity}` : `Quantity: ${item.quantity}`}</p>
                       
                       {/* عرض الألوان المحددة */}

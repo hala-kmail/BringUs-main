@@ -158,10 +158,18 @@ const ResetPassword = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(t('auth.reset_password.success_message'));
+        // Display success message based on current language
+        const successMsg = i18n.language === 'ar' 
+          ? (data.messageAr || data.message || t('auth.reset_password.success_message'))
+          : (data.message || data.messageAr || t('auth.reset_password.success_message'));
+        setMessage(successMsg);
         setIsSubmitted(true);
       } else {
-        setError(data.message || t('auth.reset_password.error_generic'));
+        // Display error message based on current language with fallback
+        const errorMsg = i18n.language === 'ar'
+          ? (data.messageAr || data.message || t('auth.reset_password.error_generic'))
+          : (data.message || data.messageAr || t('auth.reset_password.error_generic'));
+        setError(errorMsg);
       }
     } catch (err) {
       console.error('Reset password error:', err);

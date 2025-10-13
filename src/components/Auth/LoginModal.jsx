@@ -10,9 +10,10 @@ import './Auth.css';
 import defaultStoreLogo from '../../assets/store-logo.png';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
-  const { login, loading, error, store, loadUserAndStoreInfo } = useLogin();
+  const { login, loading, error, errorAr, store, loadUserAndStoreInfo } = useLogin();
+  const currentLang = i18n.language;
   const { storeSlug } = useStoreSlug();
   const { sendOTP } = useOTP();
   const [formData, setFormData] = useState({
@@ -251,9 +252,9 @@ if (showOTP) {
             </p>
           </div>
           
-          {error && (
+          {(error || errorAr) && (
             <div className="error-message">
-              {error}
+              {currentLang === 'ar' ? (errorAr || error) : (error || errorAr)}
             </div>
           )}
           
