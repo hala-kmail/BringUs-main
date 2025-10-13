@@ -2727,7 +2727,6 @@ padding-bottom: 1rem;
   background: transparent;
   padding: 0;
   width: 50px;
-  -moz-appearance: textfield;
 }
 
 .quantity-input::-webkit-outer-spin-button,
