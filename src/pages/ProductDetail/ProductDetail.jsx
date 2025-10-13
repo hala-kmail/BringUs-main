@@ -48,6 +48,7 @@ const ProductDetail = () => {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistAction, setWishlistAction] = useState(null); // 'add' or 'remove'
 
+  
   const { 
     fetchProductById, 
     fetchProductWithVariants,
