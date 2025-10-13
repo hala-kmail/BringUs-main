@@ -397,14 +397,14 @@ const UserOrders = () => {
                   </div>
                 )}
                 
-                {selectedOrder.deliveryArea.estimatedDays > 0 && (
+                {/* {selectedOrder.deliveryArea.estimatedDays > 0 && (
                   <div className="detail-row">
                     <span className="detail-label">{currentLang === 'ar' ? 'مدة التوصيل المتوقعة:' : 'Estimated Delivery:'}</span>
                     <span className="detail-value">
                       {selectedOrder.deliveryArea.estimatedDays} {currentLang === 'ar' ? 'يوم' : 'days'}
                     </span>
                   </div>
-                )}
+                )} */}
                 
                 {/* تفاصيل الأسعار */}
                 <div className="detail-row">
