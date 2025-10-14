@@ -207,9 +207,12 @@ const Wishlist = () => {
             </div>
             <h3>{t('wishlist.empty_title')}</h3>
             <p>{t('wishlist.empty_description')}</p>
-            <Link to="/shop" className="continue-shopping-btn">
+            <button 
+              className="continue-shopping-btn"
+              onClick={() => navigate('/shop')}
+            >
               {t('wishlist.continue_shopping')}
-            </Link>
+            </button>
           </div>
         ) : null}
       </div>
