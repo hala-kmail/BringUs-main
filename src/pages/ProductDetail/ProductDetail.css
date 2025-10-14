@@ -12,6 +12,11 @@
  left: auto;
  right: 5px ;
 }
+.variant-thumbnails-title{
+  margin: 12px 0;
+  font-size: 1rem;
+  font-family: 'Tajawal', sans-serif;
+}
 [dir="rtl"] .zoom-modal-nav-btn-next{
   transform: rotate(180deg);
 left: 5px; 

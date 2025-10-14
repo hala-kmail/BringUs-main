@@ -585,6 +585,8 @@ const ProductDetail = () => {
   {/* Variant main-image thumbnails + base product thumbnail */}
   {(variants && variants.length > 0) || baseProduct ? (
               <div className="variant-thumbnails mobile-variant-thumbnails">
+                <div className='flex flex-col gap-2 items-center justify-center'>
+                <h4 className="variant-thumbnails-title">{currentLang === 'ar' ? 'أصناف اخرى' : 'Variants'}</h4>
                 {/* Base product thumbnail first (only if not currently displayed) */}
                 {baseProduct && product?._id !== baseProduct._id && (
                                       <button
@@ -630,6 +632,7 @@ const ProductDetail = () => {
                       </button>
                     );
                   })}
+                  </div>
               </div>
             ) : null}
             <ProductActions
