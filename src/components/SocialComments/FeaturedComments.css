@@ -381,7 +381,12 @@
   .featured-header h3 {
     font-size: 1.5rem;
   }
-  
+  .featured-header{
+    margin-bottom: 1rem;
+  }
+  .carousel-indicators{
+    margin-top: 1rem;
+  }
   .featured-header p {
     font-size: 0.875rem;
   }
