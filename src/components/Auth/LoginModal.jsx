@@ -127,6 +127,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 
   const handleClose = () => {
     // Reset form when closing
+    handleOTPBack();
     setFormData({ email: '', password: '' });
     setErrors({});
     onClose();
@@ -247,9 +248,7 @@ if (showOTP) {
             <h1 className="auth-title">
               {store ? (store.nameEn || store.nameAr) : t('auth.login.title')}
             </h1>
-            <p className="auth-subtitle">
-              {store ? store.descriptionEn || store.descriptionAr : t('auth.login.subtitle')}
-            </p>
+           
           </div>
           
           {(error || errorAr) && (

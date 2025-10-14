@@ -1,7 +1,6 @@
 #root {
   width: 100%;
   padding: 0;
-  text-align: center;
 }
 
 body *{
@@ -70,9 +69,9 @@ body *{
 }
 
 /* RTL Support */
-[dir="rtl"] .App {
+/* [dir="rtl"] .App {
   text-align: right;
-}
+} */
 
 [dir="ltr"] .App {
   text-align: left;

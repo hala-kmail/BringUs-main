@@ -227,9 +227,9 @@ const Login = () => {
            
             {store ?i18n.language === 'ar' ? store.nameAr : store.nameEn : t('auth.login.title')}
           </h1>
-          <p className="auth-subtitle">
+          {/* <p className="auth-subtitle">
             {store ? store.descriptionEn || store.descriptionAr : t('auth.login.subtitle')}
-          </p>
+          </p> */}
         </div>
         
        
