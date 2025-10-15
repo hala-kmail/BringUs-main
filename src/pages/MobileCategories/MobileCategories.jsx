@@ -170,7 +170,7 @@ const MobileCategories = () => {
             </div>
           ) : (
             <div className="no-subcategories">
-              <div className="no-subcategories-icon">📱</div>
+              {/* <div className="no-subcategories-icon">📱</div> */}
               <h3>
                 {currentLang === 'ar' ? 'لا توجد فئات فرعية' : 'No Subcategories'}
               </h3>

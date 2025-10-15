@@ -228,6 +228,9 @@ body::before {
 .store-logo {
   margin-bottom: 1.5rem;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .store-logo-img {
@@ -235,7 +238,18 @@ body::before {
   max-height: 80px;
   object-fit: contain;
   border-radius: 8px;
+}
 
+.default-store-icon-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 65px;
+  height: 65px;
+}
+
+.default-store-icon-auth svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .auth-form {

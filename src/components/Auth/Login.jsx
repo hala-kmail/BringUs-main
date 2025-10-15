@@ -5,14 +5,16 @@ import { useTranslation } from 'react-i18next';
 import useLogin from '../../hooks/useLogin';
 import useOTP from '../../hooks/useOTP';
 import useStoreSlug from '../../hooks/useStoreSlug';
+import useDynamicColors from '../../hooks/useDynamicColors';
 import OTPVerification from './OTPVerification';
+import { FaStore } from 'react-icons/fa';
 import './Auth.css';
-import defaultStoreLogo from '../../assets/store-logo.png';
 
 const Login = () => {
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { login, loading, error, errorAr, store, loadUserAndStoreInfo } = useLogin();
+  const { primaryColor } = useDynamicColors();
   const { verifyOTP, resendOTP, sendOTP, loading: otpLoading, error: otpError, reset: resetOTP } = useOTP();
   const currentLang = i18n.language;
   const { storeSlug } = useStoreSlug();
@@ -213,14 +215,24 @@ const Login = () => {
           {/* Display store logo */}
           {console.log('store',store)}
           <div className="store-logo">
-            <img 
-              src={store && store.logo.url ? store.logo.url : defaultStoreLogo} 
-              alt={store ? (store.nameEn || store.nameAr) : 'Store Logo'} 
-              className="store-logo-img"
-              onError={(e) => {
-                e.target.src = defaultStoreLogo;
-              }}
-            />
+            {store && store.logo.url ? (
+              <img 
+                src={store.logo.url} 
+                alt={store ? (store.nameEn || store.nameAr) : 'Store Logo'} 
+                className="store-logo-img"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  const icon = document.createElement('div');
+                  icon.className = 'default-store-icon-auth';
+                  icon.innerHTML = `<svg width="65" height="65" viewBox="0 0 24 24" fill="${primaryColor}"><path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg>`;
+                  e.target.parentNode.replaceChild(icon, e.target);
+                }}
+              />
+            ) : (
+              <div className="default-store-icon-auth">
+                <FaStore style={{ color: primaryColor, fontSize: '80px' }} />
+              </div>
+            )}
           </div>
           
           <h1 className="auth-title">

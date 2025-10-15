@@ -711,7 +711,7 @@
   transition: box-shadow 0.2s;
 }
 .subcategory-circle:hover .subcategory-circle-image {
-  box-shadow: 0 4px 16px rgba(152, 120, 17, 0.18);
+  box-shadow: 0 4px 16px var(--primary-very-light);
   border: 2px solid var(--primary-color, #987811);
 }
 
@@ -720,7 +720,7 @@
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px var(--primary-very-light);
   border: 2px solid #f3f3f3;
   background: #fafafa;
   transition: box-shadow 0.2s, border 0.2s;

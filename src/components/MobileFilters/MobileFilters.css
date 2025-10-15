@@ -744,8 +744,8 @@
 
 .mobile-filter-btn {
   flex: 1;
-  padding: 0.875rem;
-  border-radius: 8px;
+  /* padding: 0.875rem; */
+  border-radius: 5px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -851,7 +851,7 @@
   }
   
   .mobile-filter-btn {
-    padding: 1rem;
+    padding: 8px;
     font-size: 0.9375rem;
   }
   
