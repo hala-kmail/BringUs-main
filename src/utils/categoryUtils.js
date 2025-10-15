@@ -118,3 +118,4 @@ export const getAllDescendantCategoryIds = (categoryId, allCategories) => {
   return descendantIds;
 };
 
+

@@ -332,3 +332,4 @@ The `ShowCategoryProduct` component now uses the centralized `fetchProductsByCat
 
 This change makes the component more robust, performant, and consistent with the rest of the application.
 
+

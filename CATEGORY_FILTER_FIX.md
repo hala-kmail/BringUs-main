@@ -316,3 +316,4 @@ console.log('API URL:', url);
 
 The category filter now **automatically includes all subcategories** when a parent category is selected, providing a complete and intuitive product browsing experience. The solution is efficient, backward-compatible, and handles all edge cases properly.
 
+

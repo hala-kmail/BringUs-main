@@ -332,3 +332,4 @@ console.log('Filtered Products:', categoryProducts.length);
 
 The Home page now displays products from parent categories AND all their subcategories, providing a more complete and engaging shopping experience. This fix ensures consistency across the application and helps users discover more products without additional navigation.
 
+

@@ -571,3 +571,4 @@ This fix ensures that:
 
 Your e-commerce platform now fully supports multi-category products! 🎊
 
+
