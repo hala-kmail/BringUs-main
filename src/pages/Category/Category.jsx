@@ -13,6 +13,7 @@ import useScrollToTopOnChange from '../../utils/useScrollToTopOnChange';
 import useProducts from '../../hooks/useProducts';
 import useCategories from '../../hooks/useCategories';
 import { useAppData } from '../../contexts/AppDataContext';
+import { productBelongsToCategories } from '../../utils/categoryUtils';
 import './Category.css';
 import placeholder from '../../assets/placeholder.jpg';
 const Category = () => {
@@ -100,11 +101,10 @@ const Category = () => {
     // Get all descendant category IDs (including subcategories)
     const descendantCategoryIds = getAllDescendantCategoryIds(selectedCategoryId);
  
-    // Filter products by category ID (including all descendants)
-    const categoryProducts = allProducts.filter(product => {
-      const productCategoryId = product.category?._id || product.category?.id;
-      return descendantCategoryIds.includes(productCategoryId);
-    });
+    // Filter products by category ID (including all descendants and multi-category products)
+    const categoryProducts = allProducts.filter(product => 
+      productBelongsToCategories(product, descendantCategoryIds)
+    );
    
     setFilteredProducts(categoryProducts);
   }, [selectedCategoryId, allProducts, getSubCategories]);
@@ -112,13 +112,12 @@ const Category = () => {
   // API-based search function
   const performAPISearch = async (query) => {
     if (!query.trim()) {
-      // Reset to current category products (including subcategories)
+      // Reset to current category products (including subcategories and multi-category products)
       if (selectedCategoryId && allProducts.length) {
         const descendantCategoryIds = getAllDescendantCategoryIds(selectedCategoryId);
-        const categoryProducts = allProducts.filter(product => {
-          const productCategoryId = product.category?._id || product.category?.id;
-          return descendantCategoryIds.includes(productCategoryId);
-        });
+        const categoryProducts = allProducts.filter(product => 
+          productBelongsToCategories(product, descendantCategoryIds)
+        );
         setFilteredProducts(categoryProducts);
       }
       return;

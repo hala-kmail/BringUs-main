@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 import { getBearerToken } from '../utils/tokenManager';
 import { getSimpleColorsFromColorsField, getOriginalColorsFromColorsField } from '../utils/productUtils';
+import useCategories from './useCategories';
 
 const API_BASE_URL = 'https://bringus-backend.onrender.com/api';
 
@@ -17,6 +18,7 @@ const useProducts = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [pagination, setPagination] = useState(null);
   const { store, products, updateProducts, updateAllProducts } = useAppData();
+  const { categories, getSubCategories } = useCategories();
   const hasInitialized = useRef(false);
   const storeId = useRef(null);
   const token = getBearerToken();
@@ -39,6 +41,29 @@ const useProducts = () => {
     
     return null;
   }, [store?._id]); // Only depend on store._id, not the entire store object
+
+  // Helper function to expand category IDs to include all subcategories
+  const expandCategoryIds = useCallback((categoryIds) => {
+    if (!categoryIds || !categories || categories.length === 0) {
+      return categoryIds;
+    }
+
+    const expandedIds = new Set();
+    const idsToProcess = Array.isArray(categoryIds) ? categoryIds : [categoryIds];
+
+    idsToProcess.forEach(categoryId => {
+      // Add the parent category
+      expandedIds.add(categoryId);
+      
+      // Get all subcategories for this category
+      const subcategories = getSubCategories(categoryId);
+      subcategories.forEach(subcat => {
+        expandedIds.add(subcat._id);
+      });
+    });
+
+    return Array.from(expandedIds);
+  }, [categories, getSubCategories]);
 
   // Extract all available colors from products
   const getAllAvailableColors = useCallback(() => {
@@ -114,19 +139,22 @@ const useProducts = () => {
       
       }
       
-      // 1. فلترة الفئات (دعم متعدد)
+      // 1. فلترة الفئات (دعم متعدد) - مع تضمين الفئات الفرعية
       if (options.category) {
+        // Expand category IDs to include all subcategories
+        const expandedCategories = expandCategoryIds(options.category);
+        
         // دعم فئة واحدة أو عدة فئات مفصولة بـ ||
-        if (Array.isArray(options.category)) {
+        if (Array.isArray(expandedCategories) && expandedCategories.length > 0) {
           // إذا كانت مصفوفة، ادمجها بـ ||
-          const categoryFilter = options.category.join('||');
+          const categoryFilter = expandedCategories.join('||');
           params.append('category', categoryFilter);
-        } else if (typeof options.category === 'string' && options.category.includes('||')) {
+        } else if (typeof expandedCategories === 'string' && expandedCategories.includes('||')) {
           // إذا كانت سلسلة نصية تحتوي على ||
-          params.append('category', options.category);
-        } else {
+          params.append('category', expandedCategories);
+        } else if (expandedCategories) {
           // فئة واحدة
-          params.append('category', options.category);
+          params.append('category', expandedCategories);
         }
       }
       
@@ -164,7 +192,7 @@ const useProducts = () => {
        
       }
       
-      const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?variant=true`;
+ const url = `${API_BASE_URL}/products/${targetStoreId}/without-variants?variant=true ${params.toString() ? `&${params.toString()}` : ''}`;
      
       const response = await fetch(url, {
         headers: {
@@ -207,7 +235,7 @@ const useProducts = () => {
       setLoading(false);
     }
     
-  }, [updateProducts, token]);
+  }, [updateProducts, token, expandCategoryIds]);
 
   // Auto-fetch products when store changes (only once per store) - IMPROVED VERSION
   useEffect(() => {

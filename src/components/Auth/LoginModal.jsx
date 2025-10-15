@@ -210,6 +210,7 @@ if (showOTP) {
 
         <OTPModal
           email={formData.email}
+          userId={loginData?.userId || loginData?.id || loginData?._id}
           onVerificationSuccess={handleOTPSuccess}
           onResendCode={handleOTPResend}
           onBack={handleOTPBack}

@@ -4,12 +4,13 @@ import { useAppData } from '../../contexts/AppDataContext';
 import useCategories from '../../hooks/useCategories';
 import ProductCard from '../ProductCard/ProductCard';
 import { useWishlist } from '../../contexts/WishlistContext';
+import { productBelongsToCategories } from '../../utils/categoryUtils';
 import './ShowCategoryProduct.css';
 
 const ShowCategoryProduct = () => {
   const { t, i18n } = useTranslation();
   const { allProducts, store } = useAppData();
-  const { getMainCategories } = useCategories();
+  const { getMainCategories, getSubCategories } = useCategories();
   const { 
     wishlistItems, 
     addToWishlist, 
@@ -24,14 +25,34 @@ const ShowCategoryProduct = () => {
   // الحصول على الكاتيجوريات الرئيسية
   const mainCategories = getMainCategories();
 
-  // دالة للحصول على منتجات الكاتيجوري
+  // دالة للحصول على جميع معرفات الفئة بما في ذلك الفئات الفرعية
+  const getAllCategoryIds = (categoryId) => {
+    const categoryIds = [categoryId];
+    
+    // الحصول على جميع الفئات الفرعية
+    const subcategories = getSubCategories(categoryId);
+    subcategories.forEach(subcat => {
+      categoryIds.push(subcat._id);
+      // معالجة الفئات الفرعية المتداخلة
+      const nestedSubcats = getSubCategories(subcat._id);
+      nestedSubcats.forEach(nested => {
+        categoryIds.push(nested._id);
+      });
+    });
+    
+    return categoryIds;
+  };
+
+  // دالة للحصول على منتجات الكاتيجوري (يدعم المنتجات متعددة الفئات)
   const getCategoryProducts = (categoryId) => {
     if (!allProducts || !Array.isArray(allProducts)) return [];
     
-    return allProducts.filter(product => {
-      const productCategoryId = product.category?._id || product.category?.id;
-      return productCategoryId === categoryId;
-    }).slice(0, 8); // عرض أول 8 منتجات فقط
+    // الحصول على جميع معرفات الفئة بما في ذلك الفئات الفرعية
+    const allCategoryIds = getAllCategoryIds(categoryId);
+    
+    return allProducts.filter(product => 
+      productBelongsToCategories(product, allCategoryIds)
+    ).slice(0, 8); // عرض أول 8 منتجات فقط
   };
 
   // دالة إنشاء refs للكاتيجوريات
