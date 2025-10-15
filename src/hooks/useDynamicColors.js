@@ -15,12 +15,13 @@ const useDynamicColors = () => {
       const primaryColor = mainColor;
       const primaryLight = lightenColor(primaryColor, 20);
       const primaryDark = darkenColor(primaryColor, 20);
-      
+      const primaryVeryLight = blendWithWhite(primaryColor, 90);
+
       // تحديث CSS variables
       document.documentElement.style.setProperty('--primary-color', primaryColor);
       document.documentElement.style.setProperty('--primary-light', primaryLight);
       document.documentElement.style.setProperty('--primary-dark', primaryDark);
-      
+      document.documentElement.style.setProperty('--primary-very-light', primaryVeryLight);
       // console.log('Dynamic colors updated:', {
       //   primary: primaryColor,
       //   light: primaryLight,
@@ -61,10 +62,33 @@ const useDynamicColors = () => {
       (B > 255 ? 255 : B < 0 ? 0 : B)).toString(16).slice(1);
   };
 
+  // دالة لتفتيح اللون بالدمج مع الأبيض (Blend with White)
+  // percent: نسبة من 0 إلى 100 (0 = اللون الأصلي، 100 = أبيض كامل)
+  const blendWithWhite = (color, percent) => {
+    // تحويل اللون من hex إلى RGB
+    const num = parseInt(color.replace('#', ''), 16);
+    const R = num >> 16;
+    const G = (num >> 8) & 0x00FF;
+    const B = num & 0x0000FF;
+    
+    // حساب النسبة (من 0 إلى 1)
+    const ratio = percent / 100;
+    
+    // دمج كل قناة لونية مع الأبيض (255)
+    const newR = Math.round(R + (255 - R) * ratio);
+    const newG = Math.round(G + (255 - G) * ratio);
+    const newB = Math.round(B + (255 - B) * ratio);
+    
+    // تحويل النتيجة إلى hex
+    return '#' + ((1 << 24) + (newR << 16) + (newG << 8) + newB).toString(16).slice(1);
+  };
+
   return {
     primaryColor: store?.settings?.mainColor || '#1976d2',
     primaryLight: store?.settings?.mainColor ? lightenColor(store.settings.mainColor, 20) : '#4791db',
-    primaryDark: store?.settings?.mainColor ? darkenColor(store.settings.mainColor, 20) : '#115293'
+    primaryDark: store?.settings?.mainColor ? darkenColor(store.settings.mainColor, 20) : '#115293',
+    primaryVeryLight: store?.settings?.mainColor ? lightenColor(store.settings.mainColor, 85) : '#4791db',
+    blendWithWhite, // دالة لدمج أي لون مع الأبيض
   };
 };
 

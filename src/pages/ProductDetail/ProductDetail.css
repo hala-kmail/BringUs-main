@@ -12,6 +12,11 @@
  left: auto;
  right: 5px ;
 }
+.variant-thumbnails-title{
+  margin: 12px 0;
+  font-size: 1rem;
+  font-family: 'Tajawal', sans-serif;
+}
 [dir="rtl"] .zoom-modal-nav-btn-next{
   transform: rotate(180deg);
 left: 5px; 
@@ -527,7 +532,7 @@ right: auto;
 }
 
 .product-title {
-  font-size: 2rem;
+  font-size: 28px;
   font-weight: 700;
   color: #1f2937;
   margin: 0 ;
@@ -894,7 +899,7 @@ right: auto;
   }
   .mobile-variant-thumbnails {
     order: 3;
-    margin:  10px 0;
+    margin: 0 0 10px 0;
     display: flex;
   }
   .product-detail-content {
@@ -914,7 +919,7 @@ width: 100%;}
   }
 .product-options-container{
   order: 2;
-  gap: 0.5rem !important;
+  /* gap: 0.5rem !important; */
 }
   .product-detail-container {
     max-width: 100%;
@@ -1090,7 +1095,7 @@ width: 100%;}
   }
 
   .product-title {
-    font-size: 1.5rem;
+    font-size: 22px;
     margin-bottom: 0.75rem;
   }
 
@@ -1303,7 +1308,7 @@ width: 100%;}
 
   .product-title {
     order: 2;
-    font-size: 1.375rem;
+     font-size:18px; 
     line-height: 1.4;
   }
 
@@ -1445,10 +1450,7 @@ width: 100%;}
     margin-top: 0;
   }
 
-  .product-title {
-    font-size: 1.375rem;
-    margin-bottom: 0;
-  }
+ 
 
   .product-description {
     font-size: 0.875rem;
@@ -1456,7 +1458,7 @@ width: 100%;}
   }
 
   .product-current-price {
-    font-size: 1.75rem;
+    font-size: 22px;
   }
 
   .product-original-price {
@@ -1535,7 +1537,9 @@ width: 100%;}
     bottom: 0.5rem;
     right: 0.5rem;
   }
-
+  .stock-info-out{
+    font-size: 12px !important;
+  }
   .product-zoom-btn svg {
     width: 0.875rem;
     height: 0.875rem;
@@ -1618,13 +1622,9 @@ width: 100%;}
     height: 200px;
   }
 
-  .product-title {
-    font-size: 1rem;
-  }
 
-  .product-current-price {
-    font-size: 1.1rem;
-  }
+
+ 
 
   .product-whatsapp-btn,
   .product-detail .add-to-cart-btn,
@@ -1691,8 +1691,8 @@ width: 100%;}
 
 .selection-title {
   font-size: 1rem;
-  font-weight: 600;
-  color: #1f2937;
+  /* font-weight: 600;
+  color: #1f2937; */
   margin-bottom: 0.75rem;
   margin-top: 0;
   font-family: 'Tajawal', sans-serif;
@@ -2547,12 +2547,12 @@ width: 100%;}
   flex-direction: column;
   gap: 1rem;
 border-bottom: 1px solid #f3f4f6;
-padding-bottom: 1rem;
+padding: 1rem 0;
 }
 
 
 .specification-title {
-  font-size: 1.08rem;
+  font-size: 16px;
   font-weight: 700;
   color: #374151;
   margin-bottom: 0.5rem;
@@ -2599,7 +2599,7 @@ padding-bottom: 1rem;
 }
 .specification-option.selected {
   border-color: var(--primary-color, #666666);
-  background: linear-gradient(90deg, #e0e7ff 0%, #f0f9ff 100%);
+  background: linear-gradient(90deg, var(--primary-very-light) 0%, #f0f9ff 100%);
   
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(59,130,246,0.08);
@@ -2607,7 +2607,7 @@ padding-bottom: 1rem;
 
 .specification-option.active {
   border-color: var(--primary-color, #666666);
-  background: linear-gradient(90deg, #e0e7ff 0%, #f0f9ff 100%);
+  background: linear-gradient(90deg, var(--primary-very-light) 0%, #f0f9ff 100%);
   font-weight: 700;
   box-shadow: 0 0 0 2px rgba(99, 76, 159, 0.3), 0 2px 8px rgba(59,130,246,0.12);
   outline: none;
@@ -2617,7 +2617,7 @@ padding-bottom: 1rem;
 
 .specification-option.selected.active {
   border-color: var(--primary-color, #666666);
-  background: linear-gradient(90deg, #e0e7ff 0%, #f0f9ff 100%);
+  background: linear-gradient(90deg, var(--primary-very-light) 0%, #f0f9ff 100%);
   font-weight: 700;
   box-shadow: 0 0 0 2px rgba(99, 76, 159, 0.4), 0 4px 12px rgba(59,130,246,0.15);
   transform: scale(1.02);
@@ -2683,7 +2683,7 @@ padding-bottom: 1rem;
   background: #ffffff;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  padding: 0.5rem;
+  padding: 5px;
   width: fit-content;
 }
 
@@ -2841,7 +2841,7 @@ padding-bottom: 1rem;
 
   .quantity-selector {
     gap: 0.75rem;
-    padding: 0.375rem;
+   
   }
 
   .quantity-btn {
@@ -2884,7 +2884,15 @@ padding-bottom: 1rem;
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
   }
-
+  .specification-title{
+    font-size: 14px;
+  }
+  .specification-option{
+    min-height: 24px;
+  }
+  .selection-title,.variant-thumbnails-title{
+    font-size: 14px;
+  }
   .color-display-item {
     width: 28px;
     height: 28px;
@@ -3064,13 +3072,13 @@ padding-bottom: 1rem;
 
 /* المنتج منتهي */
 .stock-info-out {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   color: #b91c1c;
   background: #fef2f2;
   border-radius: 6px;
   padding: 0.35rem 0.7rem;
-  font-size: 0.98rem;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -3111,6 +3119,7 @@ padding-bottom: 1rem;
 /* Mobile styles for show more/less */
 @media (max-width: 768px) {
   .show-more-btn {
+    font-size: 12px;
     display: inline-block;
   }
 

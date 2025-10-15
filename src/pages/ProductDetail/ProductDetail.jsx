@@ -48,6 +48,7 @@ const ProductDetail = () => {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [wishlistAction, setWishlistAction] = useState(null); // 'add' or 'remove'
 
+  
   const { 
     fetchProductById, 
     fetchProductWithVariants,
@@ -582,8 +583,16 @@ const ProductDetail = () => {
               key={`options-${product._id}`} // Force re-render when product changes
             />
   {/* Variant main-image thumbnails + base product thumbnail */}
-  {(variants && variants.length > 0) || baseProduct ? (
+  {(() => {
+    const hasVariants = variants && variants.length > 0;
+    const hasBaseProduct = baseProduct && product?._id !== baseProduct._id;
+    const hasFilteredVariants = hasVariants && variants.filter(v => v._id !== product?._id).length > 0;
+    
+    return hasFilteredVariants || hasBaseProduct;
+  })() ? (
               <div className="variant-thumbnails mobile-variant-thumbnails">
+                <div className='flex flex-col gap-2 items-center justify-center'>
+                <h4 className="variant-thumbnails-title">{currentLang === 'ar' ? 'أصناف اخرى' : 'Variants'}</h4>
                 {/* Base product thumbnail first (only if not currently displayed) */}
                 {baseProduct && product?._id !== baseProduct._id && (
                                       <button
@@ -629,6 +638,7 @@ const ProductDetail = () => {
                       </button>
                     );
                   })}
+                  </div>
               </div>
             ) : null}
             <ProductActions

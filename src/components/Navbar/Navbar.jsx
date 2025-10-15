@@ -9,9 +9,10 @@ import MobileSearch from '../MobileSearch/MobileSearch';
 import { getPriceByUserRole, getPriceWithUserDiscount, getUserDiscountPercentage, getCartTotalDiscount } from '../../utils/productUtils';
 import { formatPrice } from '../../utils/currencyUtils';
 import logo from '../../assets/logo_arabic-1.png';
-import defaultStoreLogo from '../../assets/store-logo.png';
 import LoginModal from '../Auth/LoginModal';
 import useProducts from '../../hooks/useProducts';
+import useDynamicColors from '../../hooks/useDynamicColors';
+import { FaStore } from 'react-icons/fa';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -24,6 +25,7 @@ const Navbar = () => {
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
   const { searchProducts, loading: productsLoading, products,variants, allProducts } = useProducts();
+  const { primaryColor } = useDynamicColors();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   // Mobile search modal state
   const [isMobileSearchModalOpen, setIsMobileSearchModalOpen] = useState(false);
@@ -440,11 +442,17 @@ const Navbar = () => {
               alt={storeDataFinal.nameEn || storeDataFinal.nameAr || 'Store Logo'}
               onError={(e) => {
                 console.log('Logo failed to load:', storeDataFinal.logo.url);
-                e.target.src = defaultStoreLogo;
+                e.target.onerror = null;
+                const icon = document.createElement('div');
+                icon.className = 'default-store-icon';
+                icon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="${primaryColor}"><path d="M20 7h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 4h4v3h-4V4zm10 16H4V9h16v11z"/><path d="M9 12h6v2H9z"/></svg>`;
+                e.target.parentNode.replaceChild(icon, e.target);
               }}
             />
           ) : (
-            <img src={defaultStoreLogo} alt="Store Logo" />
+            <div className="default-store-icon">
+              <FaStore style={{ color: primaryColor, fontSize: '40px' }} />
+            </div>
           )}
           <span className="logo-text">
             {storeDataFinal ? currentLang==='ar'? (storeDataFinal.nameAr) : (storeDataFinal.nameEn) : 'Hala Store'}

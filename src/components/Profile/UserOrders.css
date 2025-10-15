@@ -290,7 +290,7 @@
 .order-actions {
   display: flex;
   gap: 15px;
-  
+justify-content: space-between;  
   margin-top: 30px;
   padding-top: 20px;
   border-top: 1px solid #e5e7eb;
@@ -313,7 +313,7 @@
 }
 
 .close-details-btn {
-  padding: 12px 24px;
+  padding: 10px ;
   background: #6b7280;
   color: white;
   border: none;
@@ -649,7 +649,7 @@
 
 .item-total {
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: flex-end;
   justify-content: center;
   gap: 4px;
@@ -694,7 +694,11 @@
   resize: vertical;
   font-family: inherit;
 }
-
+.cancel-order-btn,
+.close-details-btn {
+  width: 100%;
+  max-width: 200px;
+}
 .cancel-reason textarea:focus {
   outline: none;
   border-color: var(--primary-color);
@@ -744,10 +748,32 @@
 
 /* Responsive Design */
 @media (max-width: 480px) {
+  .detail-label,.detail-value,.status-badge,.total-row .detail-label,.total-row .total-amount,.item-info h5,
+  .item-info .quantity,.item-total .total-label,.item-colors-label,.specification-tag,.item-price
+  ,.item-total .total-amount,.modal-header h3,.cancel-order-btn, .close-details-btn{
+    font-size: 12px;
+  }
+  .modal-header{
+    padding: 10px 20px;
+  }
+  .item-total ,[dir="rtl"] .item-total{
+    justify-content: center;
+    align-items: center !important;
+  }
+  .order-items-details h4{
+    font-size: 1rem;
+  }
+  .item-info{
+    align-items: center;
+  }
   .order-items-preview {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
+  }
+  .color-preview{
+    width: 20px;
+    height: 20px;
   }
 
   .item-image {
@@ -782,7 +808,10 @@
     flex-direction: column;
     gap: 10px;
   }
-
+  .item-total ,[dir="rtl"] .item-total{
+    justify-content: center;
+    align-items: center !important;
+  }
   .order-info {
     flex-direction: column;
     align-items: flex-start;
@@ -817,6 +846,7 @@
     align-items: center;
   }
 
+
   .view-details-btn,
   .cancel-order-btn {
     width: 100%;
@@ -833,7 +863,7 @@
     justify-content: center;
     margin-top: 10px;
   }
-
+  
   .modal-content {
     overflow-y: scroll;
     margin: 10px;
@@ -841,7 +871,7 @@
   }
 
   .detail-row {
-    flex-direction: column;
+    /* flex-direction: column; */
     align-items: flex-start;
     gap: 5px;
   }
@@ -859,6 +889,7 @@
   }
 
   .item-info {
+    align-items: center;
     text-align: center;
   }
 
@@ -886,17 +917,10 @@
     width: 100%;
   }
 
-  .cancel-order-btn,
-  .close-details-btn {
-    width: 100%;
-    max-width: 200px;
-  }
+ 
 }
 
 
-[dir="rtl"] .order-actions {
-  justify-content: flex-start;
-}
 
 
 [dir="rtl"] .item-colors-label {

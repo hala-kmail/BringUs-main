@@ -2232,6 +2232,7 @@ const handleSendWhatsApp = async () => {
                   padding: '14px 0', 
                   fontSize: 18, 
                   fontWeight: 600, 
+                  textAlign: 'center',
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
@@ -2896,6 +2897,7 @@ const handleSendWhatsApp = async () => {
                   fontSize: '18px',
                   fontWeight: '600',
                   display: 'flex',
+                  textAlign: 'center',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 12,
@@ -2919,7 +2921,7 @@ const handleSendWhatsApp = async () => {
               >
                 {orderLoading ? (
                   <>
-                    <div className="loading-spinner" style={{width: 20, height: 20, border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <div className="loading-spinner" style={{width: 20, height: 20,textAlign: 'center', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                     {currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}
                   </>
                 ) : (

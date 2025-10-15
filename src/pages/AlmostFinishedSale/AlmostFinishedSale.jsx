@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAffiliateNavigation } from '../../hooks/useAffiliateNavigation';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import { useAppData } from '../../contexts/AppDataContext';
@@ -12,6 +13,7 @@ import './AlmostFinishedSale.css';
 
 const AlmostFinishedSale = () => {
   const { t, i18n } = useTranslation();
+  const { navigate } = useAffiliateNavigation();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { store } = useAppData();
@@ -112,9 +114,12 @@ const AlmostFinishedSale = () => {
               {t('almost_finished_sale.no_products_message')}
             </p>
             <div className="no-products-actions">
-              <a href={`/${storeSlug}/shop`} className="browse-shop-btn">
+              <button 
+                className="browse-shop-btn"
+                onClick={() => navigate('/shop')}
+              >
                 {t('almost_finished_sale.browse_shop')}
-              </a>
+              </button>
             </div>
           </div>
         </div>

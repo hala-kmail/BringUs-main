@@ -430,13 +430,19 @@ const Cart = () => {
       <div className="cart-content">
         {/* Breadcrumb Navigation */}
         <nav className="cart-breadcrumb">
-          <Link to="/">
+          <span 
+            onClick={() => navigate('/')}
+            style={{ cursor: 'pointer' }}
+          >
             <span>{currentLang === 'ar' ? 'الرئيسية' : 'Home'}</span>
-          </Link>
+          </span>
           <span className="breadcrumb-separator">›</span>
-          <Link to="/shop">
+          <span 
+            onClick={() => navigate('/shop')}
+            style={{ cursor: 'pointer' }}
+          >
             <span>{currentLang === 'ar' ? 'المتجر' : 'Shop'}</span>
-          </Link>
+          </span>
           <span className="breadcrumb-separator">›</span>
           <span className="breadcrumb-current">
             {currentLang === 'ar' ? 'سلة التسوق' : 'Shopping Cart'}
