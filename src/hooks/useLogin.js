@@ -280,22 +280,28 @@ const useLogin = () => {
   }
   }, [fetchUserInfo, fetchStoreInfo, user, store, isLoadingData, updateUser, updateStore, lastLoadTime]);
 //-----------------------------------login------------------------------------------------
-  const  login = useCallback(async (email, password) => {
+  const  login = useCallback(async (loginPayload) => {
     setLoading(true);
     setError(null);
     setErrorAr(null);
     
 
     try {
+      // Build complete login payload
+      const requestBody = {
+        email: loginPayload.email,
+        password: loginPayload.password,
+        panelType: loginPayload.panelType || 'client',
+        storeSlug: loginPayload.storeSlug,
+        rememberMe: loginPayload.rememberMe || false
+      };
+
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
