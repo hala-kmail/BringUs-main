@@ -382,7 +382,7 @@ const ProductOptions = ({
           </button>
         </div>
         {/* تحذير المخزون حسب المواصفة المختارة */}
-        {effectiveAvailable > 0 && effectiveAvailable <= 3 && (
+        {effectiveAvailable > 0 && effectiveAvailable <= (product.lowStockThreshold ) && (
           <div className="stock-info-low">
             <span className="stock-warning-icon" role="img" aria-label="low stock">⚠️</span>
             <span>
