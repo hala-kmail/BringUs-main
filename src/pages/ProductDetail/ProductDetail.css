@@ -816,7 +816,12 @@ right: auto;
   border-color: #25d366;
   color: white;
 }
-
+.zoom-modal-nav-prev {
+ left:-60px;
+}
+.zoom-modal-nav-next {
+   right:-60px;
+}
 .product-action-btn.product-whatsapp-action:hover {
   background: #128c7e;
   border-color: #128c7e;
@@ -908,6 +913,7 @@ right: auto;
     flex-direction: column;
     gap: 0rem;
   }
+
 .product-image-gallery{
 width: 100%;}
 .product-media-column {
@@ -1299,7 +1305,12 @@ width: 100%;}
     flex-direction: column;
   
   }
-
+.zoom-modal-nav-prev {
+ left:-40px;
+}
+.zoom-modal-nav-next {
+   right:-40px;
+}
   .product-detail-badges {
     order: 1;
     gap: 0.5rem;
