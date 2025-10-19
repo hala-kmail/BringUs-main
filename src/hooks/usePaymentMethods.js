@@ -59,6 +59,7 @@ const usePaymentMethods = () => {
         email: orderData.email,
         first_name: orderData.customerInfo.firstName,
         last_name: orderData.customerInfo.lastName,
+
         // customer: {
         //   name: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`,
         //   email: orderData.customerInfo.email || 'customer@example.com',
@@ -79,7 +80,7 @@ const usePaymentMethods = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${PAYMENT_API_CONFIG.SECRET_KEY}`
+          'Authorization': `Bearer ${storeData.settings.lahzaToken}`
         },
         body: JSON.stringify(paymentData)
       });
@@ -125,12 +126,13 @@ const usePaymentMethods = () => {
       if (!storeData?.settings?.lahzaToken) {
         throw new Error('Lahza token not configured for this store');
       }
+      console.log('storeData.settings.lahzaToken', storeData.settings.lahzaToken);
 
       const response = await fetch(`${PAYMENT_API_CONFIG.BASE_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY}/${transactionId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${PAYMENT_API_CONFIG.SECRET_KEY}`
+          'Authorization': `Bearer ${storeData.settings.lahzaToken}`
         }
       });
 
@@ -161,12 +163,13 @@ const usePaymentMethods = () => {
       if (!storeData?.settings?.lahzaToken) {
         throw new Error('Lahza token not configured for this store');
       }
+      console.log('storeData.settings.lahzaToken', storeData.settings.lahzaToken);
 
       const response = await fetch(`${PAYMENT_API_CONFIG.BASE_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY}/${reference}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${PAYMENT_API_CONFIG.SECRET_KEY}`
+          'Authorization': `Bearer ${storeData.settings.lahzaToken}`
         }
       });
 

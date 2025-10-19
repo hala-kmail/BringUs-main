@@ -14,7 +14,7 @@ const usePaymentVerification = () => {
       const response = await fetch(`${PAYMENT_API_CONFIG.BASE_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY}/${reference}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${PAYMENT_API_CONFIG.SECRET_KEY}`,
+          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('storeData'))?.settings?.lahzaToken}`,
           'Content-Type': 'application/json'
         }
       });

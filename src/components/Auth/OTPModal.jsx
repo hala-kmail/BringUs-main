@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import useOTP from '../../hooks/useOTP';
+import useEmailChange from '../../hooks/useEmailChange';
 import './Auth.css';
 
-const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose }) => {
+const OTPModal = ({ email, userId, onVerificationSuccess, onResendCode, onBack, onClose }) => {
   const { t, i18n } = useTranslation();
   const { verifyOTP, resendOTP, loading, error: otpError, errorAr: otpErrorAr, successMessage, successMessageAr, reset } = useOTP();
+  const { requestEmailChangeByUserId, error: emailChangeError, errorAr: emailChangeErrorAr } = useEmailChange();
   const currentLang = i18n.language;
 
   const [otp, setOtp] = useState(['', '', '', '', '']);
@@ -140,20 +142,31 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
       return;
     }
 
+    // Check if userId is available
+    if (!userId) {
+      setEmailError(t('auth.otp.user_id_missing') || 'User ID is required to change email');
+      return;
+    }
+
     setIsUpdatingEmail(true);
     try {
-      const storeSlug = window.location.pathname.split('/')[1] || 'default';
-      const result = await resendOTP(newEmail, storeSlug);
+      console.log('📧 Requesting email change from', email, 'to', newEmail, 'for userId:', userId);
+      
+      // Call the email change API
+      const result = await requestEmailChangeByUserId(userId, newEmail);
       
       if (result.success) {
+        console.log('✅ Email change request successful, OTP sent to new email');
         setShowChangeEmailModal(false);
         setCountdown(60);
+        // Notify parent component about the email change
         onResendCode && onResendCode(newEmail);
       } else {
-        setEmailError(result.error || t('auth.otp.email_update_failed'));
+        console.error('❌ Email change request failed:', result.error);
+        setEmailError(currentLang === 'ar' ? (result.errorAr || result.error) : result.error);
       }
     } catch (err) {
-      console.error('Error updating email:', err);
+      console.error('❌ Error requesting email change:', err);
       setEmailError(t('auth.otp.email_update_failed'));
     } finally {
       setIsUpdatingEmail(false);
@@ -176,9 +189,11 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
         </p>
       </div>
 
-      {(otpError || otpErrorAr) && (
+      {(otpError || otpErrorAr || emailChangeError || emailChangeErrorAr) && (
         <div className="error-message">
-          {currentLang === 'ar' ? (otpErrorAr || otpError) : (otpError || otpErrorAr)}
+          {currentLang === 'ar' 
+            ? (otpErrorAr || emailChangeErrorAr || otpError || emailChangeError) 
+            : (otpError || emailChangeError || otpErrorAr || emailChangeErrorAr)}
         </div>
       )}
 
@@ -231,9 +246,9 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
 
       <div className="auth-footer">
         <span>{t('auth.otp.wrong_email')}</span>
-        <button type="button" className="auth-link" onClick={handleChangeEmail}>
+        {/* <button type="button" className="auth-link" onClick={handleChangeEmail}>
           {t('auth.otp.change_email')}
-        </button>
+        </button> */}
       </div>
 
       {/* Change Email Modal */}
@@ -260,6 +275,22 @@ const OTPModal = ({ email, onVerificationSuccess, onResendCode, onBack, onClose 
                 {emailError}
               </div>
             )}
+
+            <div className="form-group">
+              <label className="form-label">{t('auth.otp.current_email_label')}</label>
+              <input
+                type="email"
+                className="form-input"
+                value={email}
+                disabled
+                readOnly
+                style={{ 
+                  backgroundColor: '#f5f5f5', 
+                  cursor: 'not-allowed',
+                  color: '#666'
+                }}
+              />
+            </div>
 
             <div className="form-group">
               <label className="form-label">{t('auth.otp.new_email_label')}</label>

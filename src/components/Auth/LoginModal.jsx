@@ -21,6 +21,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: false,
   });
   
   
@@ -97,7 +98,21 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     }
 
     console.log('Calling login function...');
-    const result = await login(formData.email, formData.password);
+    // Get current store slug from hook or URL
+    const currentStoreSlug = storeSlug || window.location.pathname.split('/')[1] || 'default';
+    
+    // Build complete login payload
+    const loginPayload = {
+      email: formData.email,
+      password: formData.password,
+      panelType: 'client',
+      storeSlug: currentStoreSlug,
+      rememberMe: formData.rememberMe
+    };
+
+    console.log('LoginModal payload:', loginPayload);
+
+    const result = await login(loginPayload);
     console.log('Login result:', result);
     console.log('Result type:', typeof result);
     console.log('Result keys:', result ? Object.keys(result) : 'result is null/undefined');
@@ -165,7 +180,19 @@ const handleOTPSuccess = async () => {
   console.log('OTP verified successfully, auto-logging in...');
   
   try {
-    const result = await login(formData.email, formData.password);
+    // Get current store slug from hook or URL
+    const currentStoreSlug = storeSlug || window.location.pathname.split('/')[1] || 'default';
+    
+    // Build complete login payload for auto-login
+    const loginPayload = {
+      email: formData.email,
+      password: formData.password,
+      panelType: 'client',
+      storeSlug: currentStoreSlug,
+      rememberMe: formData.rememberMe
+    };
+
+    const result = await login(loginPayload);
     
     if (result && result.success) {
       console.log('Auto-login successful, closing modal and navigating to home');
@@ -213,6 +240,7 @@ if (showOTP) {
 
         <OTPModal
           email={formData.email}
+          userId={loginData?.userId || loginData?.id || loginData?._id}
           onVerificationSuccess={handleOTPSuccess}
           onResendCode={handleOTPResend}
           onBack={handleOTPBack}
@@ -298,6 +326,22 @@ if (showOTP) {
               {errors.password && (
                 <span className="error-text">{errors.password}</span>
               )}
+            </div>
+            
+            {/* Remember Me Checkbox */}
+            <div className="form-group remember-me-group">
+              <label className="remember-me-label">
+                <input
+                  type="checkbox"
+                  name="rememberMe"
+                  checked={formData.rememberMe}
+                  onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
+                  className="remember-me-checkbox"
+                />
+                <span className="remember-me-text">
+                  {currentLang === 'ar' ? 'تذكرني' : 'Remember Me'}
+                </span>
+              </label>
             </div>
             
             <div className="forgot-password-link">

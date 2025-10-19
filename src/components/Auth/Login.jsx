@@ -22,6 +22,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: false,
   });
   
   const [errors, setErrors] = useState({});
@@ -125,7 +126,21 @@ const Login = () => {
       return;
     }
 
-    const result = await login(formData.email, formData.password);
+    // Get current store slug from hook or URL
+    const currentStoreSlug = storeSlug || window.location.pathname.split('/')[1] || 'default';
+    
+    // Build complete login payload
+    const loginPayload = {
+      email: formData.email,
+      password: formData.password,
+      panelType: 'client',
+      storeSlug: currentStoreSlug,
+      rememberMe: formData.rememberMe
+    };
+
+    console.log('Login payload:', loginPayload);
+
+    const result = await login(loginPayload);
    
     
     if (result && result.success) {
@@ -274,6 +289,22 @@ const Login = () => {
             {errors.password && (
               <span className="error-text">{errors.password}</span>
             )}
+          </div>
+          
+          {/* Remember Me Checkbox */}
+          <div className="form-group remember-me-group">
+            <label className="remember-me-label">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                checked={formData.rememberMe}
+                onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
+                className="remember-me-checkbox"
+              />
+              <span className="remember-me-text">
+                {currentLang === 'ar' ? 'تذكرني' : 'Remember Me'}
+              </span>
+            </label>
           </div>
           
           {(error || errorAr) && (
