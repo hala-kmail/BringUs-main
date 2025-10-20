@@ -2243,7 +2243,7 @@ const handleSendWhatsApp = async () => {
                 {orderLoading ? (
                   <>
                     <div className="loading-spinner" style={{textAlign: 'center', width: 20, height: 20, border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    {currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}
+                    <span style={{textAlign: 'center'}}>{currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}</span>
                   </>
                 ) : (
                   <>
@@ -2922,7 +2922,7 @@ const handleSendWhatsApp = async () => {
                 {orderLoading ? (
                   <>
                     <div className="loading-spinner" style={{width: 20, height: 20,textAlign: 'center', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    {currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}
+                    <span style={{textAlign: 'center'}}>{currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}</span>
                   </>
                 ) : (
                   <>
