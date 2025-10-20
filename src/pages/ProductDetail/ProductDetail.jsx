@@ -742,6 +742,62 @@ const ProductDetail = () => {
         )}
       </div>
 
+      {/* Image Zoom Modal */}
+      {isZoomModalOpen && (
+        <div className="zoom-modal-overlay" onClick={() => setIsZoomModalOpen(false)}>
+          <div className="zoom-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="zoom-modal-close" 
+              onClick={() => setIsZoomModalOpen(false)}
+              aria-label={currentLang === 'ar' ? 'إغلاق' : 'Close'}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            
+            {mediaItems.length > 1 && (
+              <>
+                <button
+                  className="zoom-modal-nav zoom-modal-nav-prev"
+                  onClick={() => setSelectedMediaIndex((selectedMediaIndex - 1 + mediaItems.length) % mediaItems.length)}
+                  aria-label={currentLang === 'ar' ? 'السابق' : 'Previous'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button
+                  className="zoom-modal-nav zoom-modal-nav-next"
+                  onClick={() => setSelectedMediaIndex((selectedMediaIndex + 1) % mediaItems.length)}
+                  aria-label={currentLang === 'ar' ? 'التالي' : 'Next'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </>
+            )}
+            
+            <img 
+              src={mediaItems[selectedMediaIndex]?.url} 
+              alt={displayName}
+              className="zoom-modal-image"
+              onError={(e) => {
+                console.log('Zoom image failed to load:', mediaItems[selectedMediaIndex]?.url);
+                e.target.style.display = 'none';
+              }}
+            />
+            
+            {mediaItems.length > 1 && (
+              <div className="zoom-modal-counter">
+                {selectedMediaIndex + 1} / {mediaItems.length}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
      
     </div>
   );
