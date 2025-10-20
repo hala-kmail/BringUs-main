@@ -2241,10 +2241,10 @@ const handleSendWhatsApp = async () => {
                 }}
               >
                 {orderLoading ? (
-                  <>
+                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
                     <div className="loading-spinner" style={{textAlign: 'center', width: 20, height: 20, border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                     <span style={{textAlign: 'center'}}>{currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}</span>
-                  </>
+                  </div>
                 ) : (
                   <>
                     {t('checkout.send_whatsapp')}
@@ -2920,10 +2920,10 @@ const handleSendWhatsApp = async () => {
                 }}
               >
                 {orderLoading ? (
-                  <>
+                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
                     <div className="loading-spinner" style={{width: 20, height: 20,textAlign: 'center', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                     <span style={{textAlign: 'center'}}>{currentLang === 'ar' ? 'جاري إنشاء الطلب...' : 'Creating order...'}</span>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
