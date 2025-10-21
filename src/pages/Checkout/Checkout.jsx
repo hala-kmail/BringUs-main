@@ -137,24 +137,151 @@ const Checkout = () => {
         const result = await checkPaymentFromURL();
        
         if (result && result.status === 'success') {
-        
-          // حماية من إنشاء الطلب المكرر
+          console.log('✅ Payment successful! Result:', result);
+          console.log('🔍 LocalStorage check:', {
+            pendingOrderId: localStorage.getItem('pendingOrderId'),
+            paymentReference: localStorage.getItem('paymentReference'),
+            storeSlug: localStorage.getItem('storeSlug'),
+            checkout_data: localStorage.getItem('checkout_data') ? 'exists' : 'missing'
+          });
+          
+          // حماية من التنفيذ المكرر
           if (isCreatingOrder) {
-            console.log('⚠️ Order creation already in progress, skipping...');
+            console.log('⚠️ Already processing payment success, skipping...');
             return;
           }
           
-          // إنشاء الطلب مباشرة عند نجاح الدفع
           try {
             setIsCreatingOrder(true);
             
-            // انتظار قصير فقط لضمان تحميل البيانات
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Check if order was already created by backend
+            const pendingOrderId = localStorage.getItem('pendingOrderId');
+            const savedPaymentReference = localStorage.getItem('paymentReference');
             
-            await handleCreateOrderAndShowWhatsApp();
-            console.log('🎉 Order created successfully after payment verification');
+            // Get current payment reference from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentReference = urlParams.get('reference') || urlParams.get('trxref');
             
-            // تنظيف URL من معاملات الدفع بعد إنشاء الطلب بنجاح
+            console.log('📦 Checking for existing order:', { 
+              pendingOrderId, 
+              savedPaymentReference, 
+              currentReference,
+              match: savedPaymentReference === currentReference
+            });
+            
+            // Only use pending order if it matches current payment reference
+            if (pendingOrderId && savedPaymentReference === currentReference) {
+              // Order already exists from backend - show success with WhatsApp popup
+              console.log('✅ Order already created by backend, showing WhatsApp popup...');
+              
+              // Update order payment status as fallback (in case webhook didn't fire)
+              try {
+                console.log('📝 Updating order payment status...');
+                const paymentReference = localStorage.getItem('paymentReference');
+                const storeData = JSON.parse(localStorage.getItem('storeData'));
+                
+                // if (paymentReference && storeData?._id) {
+                //   const updateResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://bringus-backend.onrender.com/api'}/customer-payment/${storeData._id}/update-order-status/${paymentReference}`, {
+                //     method: 'PATCH',
+                //     headers: {
+                //       'Content-Type': 'application/json'
+                //     }
+                //   });
+                  
+                //   if (updateResponse.ok) {
+                //     const updateData = await updateResponse.json();
+                //     console.log('✅ Order payment status updated successfully:', updateData);
+                //   } else {
+                //     console.warn('⚠️ Could not update order payment status (webhook should handle this)');
+                //   }
+                // } else {
+                //   console.warn('⚠️ Missing payment reference or store ID');
+                // }
+              } catch (updateError) {
+                console.warn('⚠️ Error updating order:', updateError);
+                // Don't fail the whole process if update fails - webhook should handle it
+              }
+              
+              // Load saved checkout data to show WhatsApp popup
+              const savedData = loadCheckoutData();
+              if (savedData) {
+                console.log('📦 Loaded checkout data for WhatsApp popup:', savedData);
+                
+                // Create WhatsApp order data from saved checkout data
+                const whatsappOrderData = {
+                  orderNumber: pendingOrderId, // Use the pending order ID as order number
+                  customerInfo: savedData.formData || formData,
+                  items: savedData.cartItems || cartItems,
+                  pricing: {
+                    subtotal: (savedData.cartTotals || cartTotalsState).subtotal,
+                    shipping: getShippingPrice(),
+                    total: (savedData.cartTotals || cartTotalsState).subtotal + getShippingPrice(),
+                    discount: 0
+                  },
+                  totals: { 
+                    ...(savedData.cartTotals || cartTotalsState), 
+                    shipping: getShippingPrice(), 
+                    total: (savedData.cartTotals || cartTotalsState).subtotal + getShippingPrice() 
+                  },
+                  orderDate: new Date().toISOString(),
+                  deliveryMethod: savedData.deliveryMethod || deliveryMethod,
+                  deliveryMethodId: savedData.formData?.deliveryMethodId || formData.deliveryMethodId,
+                  paymentMethod: savedData.selectedPaymentMethod?.label,
+                  paymentVerificationData: result // Include payment verification data
+                };
+                
+                // Show WhatsApp popup
+                handleWhatsAppOrder(whatsappOrderData);
+              } else {
+                console.warn('⚠️ No saved checkout data found, showing simple success message');
+                // Show simple success message if no saved data
+                // Just show a simple success notification without WhatsApp
+                setShowSuccessModal(true);
+                setSuccessOrderData({
+                  orderNumber: pendingOrderId,
+                  total: 0,
+                  items: []
+                });
+              }
+              
+              // Clear cart
+              await clearCart();
+              
+              // Clean up localStorage
+              localStorage.removeItem('pendingOrderId');
+              localStorage.removeItem('paymentReference');
+              clearCheckoutData();
+              
+              // Note: Don't redirect here - let the WhatsApp popup handle it
+              
+            } else {
+              // Fallback: Order not created by backend OR reference mismatch
+              console.error('❌ CRITICAL: Attempting to create duplicate order!', {
+                pendingOrderId,
+                savedPaymentReference,
+                currentReference,
+                shouldMatch: savedPaymentReference === currentReference
+              });
+              
+              if (pendingOrderId && savedPaymentReference !== currentReference) {
+                console.warn('⚠️ Payment reference mismatch! Clearing old data...', {
+                  saved: savedPaymentReference,
+                  current: currentReference
+                });
+                localStorage.removeItem('pendingOrderId');
+                localStorage.removeItem('paymentReference');
+              } else if (!pendingOrderId) {
+                console.error('❌ No pendingOrderId in localStorage - This should NOT happen!');
+              } else if (!currentReference) {
+                console.error('❌ No reference in URL - This should NOT happen!');
+              }
+              
+              console.warn('📝 Falling back to old flow - creating new order...');
+              console.warn('⚠️ THIS CREATES DUPLICATE ORDER - INVESTIGATE WHY pendingOrderId IS MISSING!');
+              await handleCreateOrderAndShowWhatsApp();
+            }
+            
+            // Clean URL
             const url = new URL(window.location);
             url.searchParams.delete('reference');
             url.searchParams.delete('trxref');
@@ -163,10 +290,10 @@ const Checkout = () => {
             window.history.replaceState({}, '', url);
             
           } catch (error) {
-            console.error('❌ Error creating order after payment verification:', error);
+            console.error('❌ Error after payment verification:', error);
             const errorMessage = currentLang === 'ar' 
-              ? 'حدث خطأ في إنشاء الطلب. يرجى المحاولة مرة أخرى.'
-              : 'Error creating order. Please try again.';
+              ? 'حدث خطأ بعد الدفع. يرجى التواصل مع الدعم.'
+              : 'Error after payment. Please contact support.';
             showErrorNotification(errorMessage);
           } finally {
             setIsCreatingOrder(false);
@@ -576,6 +703,8 @@ const handlePlaceOrderClick = (e) => {
   else if (method.methodType === 'lahza') {
     try {
       console.log('Initializing Lahza payment...');
+      setIsProcessing(true);
+      setShowPaymentPopup(false);
       
       // حفظ البيانات قبل الدفع
       saveCheckoutData();
@@ -586,36 +715,121 @@ const handlePlaceOrderClick = (e) => {
         console.log('💾 Store slug saved before payment:', store.slug);
       }
       
-      // Prepare order data for Lahza
+      // Prepare FULL order data for Lahza (same as cash payment)
       const orderData = {
-        email: formData.email,
-        total: cartTotalsState.total + getShippingPrice(),
-        currency: store?.settings?.currency || 'ILS',
-        orderNumber: `ORDER-${Date.now()}`, // Generate temporary order number
-        customerInfo: formData,
-        deliveryMethod: deliveryMethod
+        store: {
+          _id: store?._id,
+          nameAr: store?.nameAr,
+          nameEn: store?.nameEn,
+          logo: store?.logo,
+          contact: store?.contact
+        },
+        user: user?._id || null,
+        items: cartItems.map(item => {
+          let productId = null;
+          
+          if (item.productId) {
+            productId = item.productId;
+          } else if (item.product && typeof item.product === 'string') {
+            productId = item.product;
+          } else if (item.product && typeof item.product === 'object') {
+            productId = item.product._id || item.product.id;
+          } else if (item._id) {
+            productId = item._id;
+          }
+          
+          return {
+            product: productId,
+            quantity: item.quantity
+          };
+        }),
+        cartItems: cartItems.map(item => ({
+          product: item.productId || (item.product && typeof item.product === 'string' ? item.product : item.product?._id || item.product?.id || item._id),
+          quantity: item.quantity,
+          selectedSpecifications: item.selectedSpecifications || [],
+          selectedColors: item.selectedColors || []
+        })),
+        shippingAddress: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email || '',
+          phone: formData.phone,
+          street: formData.address,
+          city: formData.city,
+          district: formData.district,
+          country: '',
+          zipCode: ''
+        },
+        billingAddress: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email || '',
+          phone: formData.phone,
+          street: formData.address,
+          city: formData.city,
+          district: formData.district,
+          country: '',
+          zipCode: ''
+        },
+        paymentInfo: {
+          method: 'lahza',
+          paymentMethodId: method.key,
+          status: 'pending' // Will be updated by webhook to 'paid'
+        },
+        shippingInfo: {
+          method: deliveryMethod === 'delivery' ? 'delivery' : 'pickup',
+          cost: getShippingPrice(),
+          deliveryMethodId: formData.deliveryMethodId || null
+        },
+        notes: {
+          customer: formData.notes || ''
+        },
+        isGift: false,
+        giftMessage: '',
+        deliveryArea: formData.deliveryMethodId || undefined,
+        currency: store?.settings?.currency || 'ILS'
       };
       
-      // Initialize Lahza payment
-
-      //lahza payment
+      console.log('📦 Full order data prepared for Lahza:', orderData);
       
-      const lahzaResult = await initializeLahzaPayment(orderData);
+      // Initialize Lahza payment with FULL order data
+      const lahzaResult = await initializeLahzaPayment({
+        ...orderData,
+        // Add payment-specific fields
+        email: formData.email,
+        total: cartTotalsState.total + getShippingPrice(),
+        orderNumber: `ORDER-${Date.now()}`, // Temporary, backend will generate real one
+        customerInfo: formData,
+        deliveryMethod: deliveryMethod
+      });
       
       if (lahzaResult.success) {
+        console.log('✅ Lahza payment initialized:', lahzaResult);
+        
+        // Save order ID and payment reference for later
+        if (lahzaResult.data?.orderId) {
+          localStorage.setItem('pendingOrderId', lahzaResult.data.orderId);
+          console.log('💾 Pending order ID saved:', lahzaResult.data.orderId);
+        }
+        if (lahzaResult.data?.reference) {
+          localStorage.setItem('paymentReference', lahzaResult.data.reference);
+          console.log('💾 Payment reference saved:', lahzaResult.data.reference);
+        }
+        
         setLahzaPaymentData(lahzaResult);
         setSelectedPaymentMethod(method);
-        setShowPaymentPopup(false);
         setShowLahzaPayment(true);
+        setIsProcessing(false);
       } else {
-        throw new Error('Failed to initialize Lahza payment');
+        throw new Error(lahzaResult.message || 'Failed to initialize Lahza payment');
       }
     } catch (error) {
-      console.error('Error initializing Lahza payment:', error);
+      console.error('❌ Error initializing Lahza payment:', error);
       const errorMessage = currentLang === 'ar' 
         ? 'حدث خطأ في تهيئة الدفع. يرجى المحاولة مرة أخرى.'
         : 'Error initializing payment. Please try again.';
       showErrorNotification(errorMessage);
+      setIsProcessing(false);
     }
   } else {
     // Handle other payment methods as before
@@ -2258,19 +2472,33 @@ const handleSendWhatsApp = async () => {
 
       {/* Success Modal */}
       {showSuccessModal && successOrderData && (
-        <div className="privacy-popup-overlay" style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'rgba(0,0,0,0.6)', 
-          zIndex: 3000, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}>
-          <div className="success-modal" style={{ 
+        <div 
+          className="privacy-popup-overlay" 
+          onClick={(e) => {
+            // Only close if clicking on the overlay itself (not the modal content)
+            if (e.target === e.currentTarget) {
+              console.log('🔴 Clicked outside modal - not closing (WhatsApp button required)');
+            }
+          }}
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            background: 'rgba(0,0,0,0.6)', 
+            zIndex: 3000, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center' 
+          }}
+        >
+          <div 
+            className="success-modal" 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent closing when clicking inside modal
+            }}
+            style={{ 
             background: '#fff', 
             borderRadius: 16, 
             maxWidth: 500, 
@@ -2378,33 +2606,64 @@ const handleSendWhatsApp = async () => {
 
             {/* WhatsApp Button */}
             <button 
-              onClick={() => {
-                // إغلاق البوب أب فوراً
-                setShowSuccessModal(false);
-                setSuccessOrderData(null);
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 
-                const whatsappUrl = `https://wa.me/${successOrderData.phoneNumber}?text=${encodeURIComponent(successOrderData.whatsappMessage)}`;
-                window.open(whatsappUrl, '_blank');
+                console.log('🟢 WhatsApp button clicked - Starting process...');
+                console.log('📊 Current state:', { 
+                  showSuccessModal, 
+                  hasSuccessOrderData: !!successOrderData 
+                });
                 
-                // مسح السلة
-                clearCart();
+                // Get data before closing modal
+                const phoneNumber = successOrderData?.phoneNumber;
+                const whatsappMessage = successOrderData?.whatsappMessage;
                 
-                // إعادة التوجيه - تحقق من وجود كود مسوق
+                console.log('📱 Phone:', phoneNumber);
+                console.log('💬 Message length:', whatsappMessage?.length);
+                
+                // Open WhatsApp first
+                if (phoneNumber && whatsappMessage) {
+                  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+                  console.log('🔗 Opening WhatsApp...');
+                  window.open(whatsappUrl, '_blank');
+                } else {
+                  console.warn('⚠️ Missing WhatsApp data:', { phoneNumber, hasMessage: !!whatsappMessage });
+                }
+                
+                // Use setTimeout to ensure WhatsApp opens first
                 setTimeout(() => {
+                  // Close modal
+                  console.log('🚪 Closing success modal...');
+                  setShowSuccessModal(false);
+                  setSuccessOrderData(null);
+                  
+                  // Clear cart
+                  console.log('🛒 Clearing cart...');
+                  clearCart();
+                  
+                  // Navigate to home
+                  // Check if path already contains store slug to avoid duplication
                   const affiliateCode = getCurrentAffiliateCode();
                   const storeSlug = store?.slug || localStorage.getItem('storeSlug');
+                  const currentPath = window.location.pathname;
                   
+                  let targetPath = '/home';
                   if (affiliateCode) {
-                    // إذا كان مسوق، اذهب إلى /home فقط
-                    navigate('/home');
+                    targetPath = '/home';
                   } else if (storeSlug) {
-                    // إذا لم يكن مسوق وكان هناك storeSlug
-                    navigate(`/${storeSlug}/home`);
-                  } else {
-                    // الحالة الافتراضية
-                    navigate('/home');
+                    // Don't duplicate if already in store route
+                    if (currentPath.startsWith(`/${storeSlug}/`)) {
+                      targetPath = 'home'; // Relative path to avoid duplication
+                    } else {
+                      targetPath = `/${storeSlug}/home`;
+                    }
                   }
-                }, 500);
+                  
+                  console.log('🏠 Navigating from:', currentPath, 'to:', targetPath);
+                  navigate(targetPath);
+                }, 300);
               }}
               style={{
                 width: '100%',

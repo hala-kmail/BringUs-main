@@ -11,16 +11,26 @@ const usePaymentVerification = () => {
     setVerificationResult(null);
 
     try {
-      const response = await fetch(`${PAYMENT_API_CONFIG.BASE_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY}/${reference}`, {
+      // Get store ID from localStorage
+      const storeData = JSON.parse(localStorage.getItem('storeData'));
+      if (!storeData?._id) {
+        throw new Error('Store information not available');
+      }
+
+      // Call backend API instead of Lahza directly
+      const backendUrl = `${PAYMENT_API_CONFIG.BACKEND_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY(storeData._id, reference)}`;
+      console.log('🔍 Verifying payment via backend:', backendUrl);
+
+      const response = await fetch(backendUrl, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('storeData'))?.settings?.lahzaToken}`,
           'Content-Type': 'application/json'
+          // No Authorization header needed - backend handles the secret key
         }
       });
 
       const data = await response.json();
-      console.log('Payment verification response:', data);
+      console.log('✅ Payment verification response:', data);
       console.log('Payment status:', data.data?.status);
 
       const result = {

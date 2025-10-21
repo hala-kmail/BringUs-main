@@ -33,75 +33,105 @@ const usePaymentMethods = () => {
   }, [store]);
 
 
-  // amount: '',
-  // email: '',
-  // currency: 'USD',
-  // first_name: '',
-  // last_name: '',
-  // callback_url: PAYMENT_API_CONFIG.CALLBACK_URL,
-  // metadata: JSON.stringify({ storeId, userId })
-  // Initialize Lahza payment
-  const initializeLahzaPayment = useCallback(async (orderData) => {
+  // Initialize Lahza payment - NOW USING SECURE BACKEND WITH ORDER CREATION
+  const initializeLahzaPayment = useCallback(async (fullOrderData) => {
     try {
-      console.log('Initializing Lahza payment for order:', orderData);
+      console.log('🔒 Initializing Lahza payment via backend with full order data');
       
-      // Get store data for Lahza configuration
+      // Get store data
       const storeData = JSON.parse(localStorage.getItem('storeData'));
-      if (!storeData?.settings?.lahzaToken) {
-        throw new Error('Lahza token not configured for this store');
+      if (!storeData?._id) {
+        throw new Error('Store information not available');
       }
-      console.log('storeData', storeData?.settings?.lahzaToken);
 
-      // Prepare payment data for Lahza
+      // Prepare payment data for backend
       const paymentData = {
-        amount: Math.round(orderData.total * CURRENCY_CONVERSION[orderData.currency || 'ILS']), // Convert to smallest unit
-        currency: orderData.currency || 'ILS',
-        email: orderData.email,
-        first_name: orderData.customerInfo.firstName,
-        last_name: orderData.customerInfo.lastName,
-
-        // customer: {
-        //   name: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`,
-        //   email: orderData.customerInfo.email || 'customer@example.com',
-        //   phone: orderData.customerInfo.phone
-        // },
+        // Payment info
+        amount: fullOrderData.total, // Backend will convert to smallest unit
+        currency: fullOrderData.currency || 'ILS',
+        email: fullOrderData.email || fullOrderData.customerInfo?.email || 'customer@example.com',
+        first_name: fullOrderData.customerInfo?.firstName || fullOrderData.shippingAddress?.firstName,
+        last_name: fullOrderData.customerInfo?.lastName || fullOrderData.shippingAddress?.lastName,
+        phone: fullOrderData.customerInfo?.phone || fullOrderData.shippingAddress?.phone,
         callback_url: getCallbackUrl(),
         metadata: {
-          store_id: storeData._id,
-          order_type: orderData.deliveryMethod,
-          customer_address: orderData.customerInfo.address
+          order_type: fullOrderData.deliveryMethod || fullOrderData.shippingInfo?.method,
+          customer_address: fullOrderData.customerInfo?.address || fullOrderData.shippingAddress?.street,
+          order_number: fullOrderData.orderNumber
+        },
+        // FULL ORDER DATA - Backend will create order with "unpaid" status
+        orderData: {
+          user: fullOrderData.user,
+          store: fullOrderData.store || {
+            _id: storeData._id,
+            nameAr: storeData.nameAr,
+            nameEn: storeData.nameEn,
+            logo: storeData.logo,
+            contact: storeData.contact,
+            slug: storeData.slug
+          },
+          items: fullOrderData.items,
+          cartItems: fullOrderData.cartItems,
+          shippingAddress: fullOrderData.shippingAddress,
+          billingAddress: fullOrderData.billingAddress,
+          paymentInfo: fullOrderData.paymentInfo,
+          shippingInfo: fullOrderData.shippingInfo,
+          notes: fullOrderData.notes,
+          isGift: fullOrderData.isGift,
+          giftMessage: fullOrderData.giftMessage,
+          deliveryArea: fullOrderData.deliveryArea,
+          currency: fullOrderData.currency
         }
       };
 
-      console.log('Lahza payment data:', paymentData);
+      console.log('📤 Sending payment + order data to backend:', paymentData);
 
-      // Initialize payment with Lahza API
-      const response = await fetch(`${PAYMENT_API_CONFIG.BASE_URL}${PAYMENT_API_CONFIG.ENDPOINTS.CHARGES}`, {
+      // Call backend API
+      const backendUrl = `${PAYMENT_API_CONFIG.BACKEND_URL}${PAYMENT_API_CONFIG.ENDPOINTS.INITIALIZE(storeData._id)}`;
+      console.log('🌐 Backend URL:', backendUrl);
+
+      const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${storeData.settings.lahzaToken}`
+          'Content-Type': 'application/json'
+          // No Authorization header needed - backend handles the secret key
         },
         body: JSON.stringify(paymentData)
       });
 
       const result = await response.json();
-      console.log('Lahza payment response:', result);
+      console.log('✅ Backend payment response:', result);
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to initialize Lahza payment');
+        throw new Error(result.message || result.messageAr || 'Failed to initialize Lahza payment');
       }
 
       // Check if the response contains the payment URL
-      if ((result.success || result.status) && result.data) {
+      if (result.success && result.data) {
         // Look for payment URL in different possible locations
-        const paymentUrl = result.data.payment_url || result.data.url || result.data.checkout_url || result.data.redirect_url || result.data.authorization_url;
+        const paymentUrl = result.data.authorization_url || result.data.payment_url || result.data.url;
+        
+        console.log('📦 Backend response data:', {
+          hasOrderId: !!result.data.orderId,
+          hasReference: !!result.data.reference,
+          orderId: result.data.orderId,
+          reference: result.data.reference,
+          orderNumber: result.data.orderNumber
+        });
         
         if (paymentUrl) {
           return {
             success: true,
             paymentUrl: paymentUrl,
-            transactionId: result.data.transaction_id || result.data.id,
+            transactionId: result.data.transaction_id || result.data.reference,
+            data: {
+              ...result.data,
+              // Ensure these are at the top level for easy access
+              orderId: result.data.orderId,
+              reference: result.data.reference,
+              orderNumber: result.data.orderNumber
+            },
+            // Keep for backward compatibility
             paymentData: result.data
           };
         } else {
@@ -109,38 +139,41 @@ const usePaymentMethods = () => {
           throw new Error('Payment URL not found in response');
         }
       } else {
-        throw new Error(result.message || 'Invalid response from Lahza');
+        throw new Error(result.message || result.messageAr || 'Invalid response from backend');
       }
     } catch (error) {
-      console.error('Error initializing Lahza payment:', error);
+      console.error('❌ Error initializing Lahza payment:', error);
       throw error;
     }
   }, []);
 
-  // Verify Lahza payment
+  // Verify Lahza payment - NOW USING SECURE BACKEND
   const verifyLahzaPayment = useCallback(async (transactionId) => {
     try {
-      console.log('Verifying Lahza payment for transaction:', transactionId);
+      console.log('🔍 Verifying Lahza payment via backend for transaction:', transactionId);
       
       const storeData = JSON.parse(localStorage.getItem('storeData'));
-      if (!storeData?.settings?.lahzaToken) {
-        throw new Error('Lahza token not configured for this store');
+      if (!storeData?._id) {
+        throw new Error('Store information not available');
       }
-      console.log('storeData.settings.lahzaToken', storeData.settings.lahzaToken);
 
-      const response = await fetch(`${PAYMENT_API_CONFIG.BASE_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY}/${transactionId}`, {
+      // Call backend API instead of Lahza directly
+      const backendUrl = `${PAYMENT_API_CONFIG.BACKEND_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY(storeData._id, transactionId)}`;
+      console.log('🌐 Backend verification URL:', backendUrl);
+
+      const response = await fetch(backendUrl, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${storeData.settings.lahzaToken}`
+          'Content-Type': 'application/json'
+          // No Authorization header needed - backend handles the secret key
         }
       });
 
       const result = await response.json();
-      console.log('Lahza verification response:', result);
+      console.log('✅ Backend verification response:', result);
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to verify Lahza payment');
+        throw new Error(result.message || result.messageAr || 'Failed to verify Lahza payment');
       }
 
       return {
@@ -149,35 +182,38 @@ const usePaymentMethods = () => {
         paymentData: result.data
       };
     } catch (error) {
-      console.error('Error verifying Lahza payment:', error);
+      console.error('❌ Error verifying Lahza payment:', error);
       throw error;
     }
   }, []);
 
-  // Verify payment by reference
+  // Verify payment by reference - NOW USING SECURE BACKEND
   const verifyPayment = useCallback(async (reference) => {
     try {
-      console.log('Verifying payment for reference:', reference);
+      console.log('🔍 Verifying payment via backend for reference:', reference);
       
       const storeData = JSON.parse(localStorage.getItem('storeData'));
-      if (!storeData?.settings?.lahzaToken) {
-        throw new Error('Lahza token not configured for this store');
+      if (!storeData?._id) {
+        throw new Error('Store information not available');
       }
-      console.log('storeData.settings.lahzaToken', storeData.settings.lahzaToken);
 
-      const response = await fetch(`${PAYMENT_API_CONFIG.BASE_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY}/${reference}`, {
+      // Call backend API instead of Lahza directly
+      const backendUrl = `${PAYMENT_API_CONFIG.BACKEND_URL}${PAYMENT_API_CONFIG.ENDPOINTS.VERIFY(storeData._id, reference)}`;
+      console.log('🌐 Backend verification URL:', backendUrl);
+
+      const response = await fetch(backendUrl, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${storeData.settings.lahzaToken}`
+          'Content-Type': 'application/json'
+          // No Authorization header needed - backend handles the secret key
         }
       });
 
       const result = await response.json();
-      console.log('Payment verification response:', result);
+      console.log('✅ Backend verification response:', result);
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to verify payment');
+        throw new Error(result.message || result.messageAr || 'Failed to verify payment');
       }
 
       return {
@@ -186,7 +222,7 @@ const usePaymentMethods = () => {
         paymentData: result.data
       };
     } catch (error) {
-      console.error('Error verifying payment:', error);
+      console.error('❌ Error verifying payment:', error);
       throw error;
     }
   }, []);
