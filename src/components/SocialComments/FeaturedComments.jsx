@@ -47,10 +47,7 @@ const FeaturedComments = ({ comments = [] }) => {
   if (isLoading) {
     return (
       <div className="featured-comments">
-        <div className="featured-header">
-          <h3>{t('social_comments.featured_reviews', 'التعليقات المميزة')}</h3>
-          <p>{t('social_comments.featured_subtitle', 'أفضل تقييمات عملائنا')}</p>
-        </div>
+        
         <div className="loading-skeleton single">
           <div className="skeleton-card">
             <div className="skeleton-avatar"></div>
@@ -67,10 +64,7 @@ const FeaturedComments = ({ comments = [] }) => {
 
   return (
     <div className="featured-comments">
-      <div className="featured-header">
-        <h3>{t('social_comments.featured_reviews', 'التعليقات المميزة')}</h3>
-        <p>{t('social_comments.featured_subtitle', 'أفضل تقييمات عملائنا')}</p>
-      </div>
+     
 
       <div className="carousel-container">
         <button className="carousel-btn prev-btn" onClick={prevPage} aria-label={t('common.previous', 'السابق')}>

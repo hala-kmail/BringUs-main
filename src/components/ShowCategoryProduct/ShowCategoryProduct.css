@@ -29,7 +29,7 @@
 }
 
 .category-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0;
@@ -46,8 +46,8 @@
   gap: 8px;
   color: var(--primary-color);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 1rem;
+
+  font-size: 14px;
   transition: all 0.3s ease;
   padding: 8px 16px;
   border-radius: 8px;

@@ -10,6 +10,7 @@ import AlmostFinishedCard from '../../components/AlmostFinishedCard/AlmostFinish
 import SocialComments from '../../components/SocialComments/SocialComments';
 import WholesaleRegisterModal from '../../components/WholesaleRegisterModal';
 import ShowCategoryProduct from '../../components/ShowCategoryProduct/ShowCategoryProduct';
+import StoreVideos from '../../components/StoreVideos/StoreVideos';
 import './Home.css';
 import { useTranslation } from 'react-i18next';
 //-----------------------------------Home------------------------------------------------  
@@ -78,6 +79,10 @@ const Home = () => {
 
         <LazyRevealSection>
           <CategoriesGrid />
+        </LazyRevealSection>
+
+        <LazyRevealSection>
+          <StoreVideos />
         </LazyRevealSection>
 
         <LazyRevealSection>
