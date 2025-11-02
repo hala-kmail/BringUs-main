@@ -475,10 +475,10 @@ const Cart = () => {
             </div>
             <h2>{currentLang === 'ar' ? 'سلة التسوق فارغة' : 'Your cart is empty'}</h2>
             <p>{currentLang === 'ar' 
-              ? 'لم تقم بإضافة أي منتجات إلى سلة التسوق بعد. استكشف مجموعتنا المتنوعة من المنتجات الطازجة والعضوية!' 
-              : 'You haven\'t added any products to your cart yet. Explore our diverse collection of fresh and organic products!'
+              ? 'لم تقم بإضافة أي منتجات إلى سلة التسوق بعد. استكشف مجموعتنا المتنوعة من المنتجات !' 
+              : 'You haven\'t added any products to your cart yet. Explore our diverse collection of our products!'
             }</p>
-            <div className="empty-cart-features">
+            {/* <div className="empty-cart-features">
               <div className="feature-item">
                 <span className="feature-icon">🚚</span>
                 <span className="feature-text">
@@ -497,7 +497,7 @@ const Cart = () => {
                   {currentLang === 'ar' ? 'جودة مضمونة' : 'Quality Guaranteed'}
                 </span>
               </div>
-            </div>
+            </div> */}
             <button 
               className="start-shopping-btn"
               onClick={() => navigate('/shop')}

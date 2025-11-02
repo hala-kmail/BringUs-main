@@ -123,11 +123,17 @@ export const AppDataProvider = ({ children, initialStoreData = null }) => {
 
   // Update store when initialStoreData changes
   useEffect(() => {
-    if (initialStoreData && (!store || store._id !== initialStoreData._id)) {
-      setStore(initialStoreData);
-      localStorage.setItem('storeData', JSON.stringify(initialStoreData));
-      if (process.env.NODE_ENV === 'development') {
-        // console.log('AppData - Store updated from initialStoreData:', initialStoreData);
+    if (initialStoreData) {
+      // Check if settings.mainColor changed to detect admin color updates
+      const mainColorChanged = store?.settings?.mainColor !== initialStoreData?.settings?.mainColor;
+      const storeIdChanged = !store || store._id !== initialStoreData._id;
+      
+      if (mainColorChanged || storeIdChanged) {
+        setStore(initialStoreData);
+        localStorage.setItem('storeData', JSON.stringify(initialStoreData));
+        if (process.env.NODE_ENV === 'development') {
+          // console.log('AppData - Store updated from initialStoreData:', initialStoreData);
+        }
       }
     }
   }, [initialStoreData, store]);

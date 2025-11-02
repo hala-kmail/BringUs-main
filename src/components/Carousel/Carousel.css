@@ -440,7 +440,7 @@
   .carousel-container {
     width: auto;
     border-radius: 1.5rem;
-    margin: 2rem auto;
+    margin: 0rem auto;
   }
   
   .carousel-wrapper {
@@ -520,8 +520,8 @@
 
 @media (max-width: 768px) {
   .carousel-wrapper {
-    height: 45vh;
-    min-height: 350px;
+    height: 40vh;
+    min-height: 280px;
   }
 
   .slide-content {
@@ -552,7 +552,8 @@
 
 @media (max-width: 480px) {
   .carousel-wrapper {
-    height: 250px;
+    min-height: 220px;
+    height: 220px;
   }
 
   .slide-content {

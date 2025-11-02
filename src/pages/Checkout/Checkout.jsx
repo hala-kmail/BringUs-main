@@ -90,7 +90,7 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDirectOrderProcessing, setIsDirectOrderProcessing] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState('delivery'); 
-  const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [privacyChecked, setPrivacyChecked] = useState(true);
   const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);

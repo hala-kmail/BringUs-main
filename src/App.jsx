@@ -273,9 +273,9 @@ function App() {
   const { storeSlug, storeData, loading, error, initializeStore } = useStoreSlug();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
-  // Initialize store on mount
+  // Initialize store on mount - force refresh to get latest mainColor
   useEffect(() => {
-    initializeStore();
+    initializeStore(true);
   }, [initializeStore]);
 
   // Check if current URL contains affiliate pattern

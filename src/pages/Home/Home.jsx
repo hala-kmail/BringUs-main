@@ -88,9 +88,9 @@ const Home = () => {
 
         <WholesaleRegisterModal isOpen={isWholesaleModalOpen} onClose={handleWholesaleModalClose} />
 
-        <LazyRevealSection>
+        {/* <LazyRevealSection>
           <Features />
-        </LazyRevealSection>
+        </LazyRevealSection> */}
 
         <LazyRevealSection>
           <NewArrivals />

@@ -202,24 +202,27 @@ const useStoreSlug = () => {
         }
         
         // Check if we already have store data in localStorage for this slug
+        // Skip localStorage if forceRefresh is true to get fresh data
         let storeInfo = null;
-        try {
-          const storedData = localStorage.getItem('storeData');
-          if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            if (parsedData && parsedData.slug === slug) {
-              storeInfo = parsedData;
-              setStoreData(storeInfo);
-              setCurrentUrl(newUrl);
-              hasInitialized.current = true;
-              return { slug, storeData: storeInfo };
+        if (!forceRefresh) {
+          try {
+            const storedData = localStorage.getItem('storeData');
+            if (storedData) {
+              const parsedData = JSON.parse(storedData);
+              if (parsedData && parsedData.slug === slug) {
+                storeInfo = parsedData;
+                setStoreData(storeInfo);
+                setCurrentUrl(newUrl);
+                hasInitialized.current = true;
+                return { slug, storeData: storeInfo };
+              }
             }
+          } catch (err) {
+            // Continue to fetch from API if localStorage fails
           }
-        } catch (err) {
-          // Continue to fetch from API if localStorage fails
         }
         
-        // Fetch store data from API if not found in localStorage
+        // Fetch store data from API if not found in localStorage or if forceRefresh is true
         storeInfo = await fetchStoreBySlug(slug);
         if (storeInfo) {
           setStoreData(storeInfo);
@@ -314,12 +317,8 @@ const useStoreSlug = () => {
     }
   }, []); // إزالة dependencies لتجنب الحلقة
 
-  // تهيئة المتجر عند التحميل
-  useEffect(() => {
-    if (!hasInitialized.current) {
-      initializeStore(false);
-    }
-  }, []);
+  // Store initialization is now handled by App.jsx with force refresh
+  // This useEffect was removed to prevent duplicate initialization
 
   // Update URL when slug changes (only for initial redirect)
   useEffect(() => {
