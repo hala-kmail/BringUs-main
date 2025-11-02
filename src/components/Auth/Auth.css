@@ -482,6 +482,11 @@ body::before {
   animation: shake 0.5s ease-in-out;
 }
 
+.form-input.success {
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }

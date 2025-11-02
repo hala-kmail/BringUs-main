@@ -93,20 +93,48 @@ const ProductDetail = () => {
         // Load product with its variants
         const result = await fetchProductWithVariants(productId);
         if (result && result.product) {
-          const loadedBase = result.product;
-          setBaseProduct(loadedBase);
-          setProduct(loadedBase);
-          setVariants(result.variants || []);
+          const loadedProduct = result.product;
+          
+          // Check if this is a variant (has parentProduct) or a parent product
+          if (result.parentProduct) {
+            // This is a variant, so set the parent and variants accordingly
+            console.log('📦 Loading variant product:', {
+              variantId: loadedProduct._id,
+              variantName: loadedProduct.nameAr || loadedProduct.nameEn,
+              parentId: result.parentProduct._id,
+              parentName: result.parentProduct.nameAr || result.parentProduct.nameEn
+            });
+            
+            setBaseProduct(result.parentProduct); // The actual parent
+            setProduct(loadedProduct); // The variant we're viewing
+            // Get all variants from the parent (excluding the current one)
+            setVariants(result.parentProduct.variants?.map(variantId => {
+              // If we have the full variant data from result.variants, use it
+              const fullVariant = result.variants?.find(v => v._id === variantId || v.id === variantId);
+              return fullVariant || { _id: variantId }; // Fallback to just ID if not found
+            }).filter(v => (v._id || v.id) !== loadedProduct._id) || []);
+          } else {
+            // This is a parent product
+            console.log('📦 Loading parent product:', {
+              parentId: loadedProduct._id,
+              parentName: loadedProduct.nameAr || loadedProduct.nameEn,
+              variantsCount: result.variants?.length || 0
+            });
+            
+            setBaseProduct(loadedProduct); // The parent itself
+            setProduct(loadedProduct); // Display the parent
+            setVariants(result.variants || []); // Its child variants
+          }
 
           // Set default color if available
-          const simpleColors = getSimpleColorsFromColorsField(loadedBase);
+          const simpleColors = getSimpleColorsFromColorsField(loadedProduct);
           if (simpleColors && simpleColors.length > 0) {
             setSelectedColor(simpleColors[0]);
           }
 
           // Optionally set default spec
-          if (loadedBase.specificationValues) {
-            const sizeSpecs = loadedBase.specificationValues.filter(spec =>
+          if (loadedProduct.specificationValues) {
+            const sizeSpecs = loadedProduct.specificationValues.filter(spec =>
               spec.title === 'الحجم' || spec.title === 'Size'
             );
             if (sizeSpecs.length > 0) {
@@ -131,43 +159,45 @@ const ProductDetail = () => {
     if (!variant) return;
     
     try {
-      console.log('🔄 Fetching detailed variant information for:', {
-      variantId: variant._id || variant.id,
-      variantName: variant.nameAr || variant.nameEn,
-      productId
-    });
+      const variantId = variant._id || variant.id;
+      console.log('🔄 Fetching variant with full structure:', {
+        variantId,
+        variantName: variant.nameAr || variant.nameEn
+      });
       
-      // Fetch detailed variant information from API
-      const detailedVariant = await fetchSpecificVariant(productId, variant._id || variant.id);
+      // Use fetchProductWithVariants to get the full structure including parentProduct
+      const result = await fetchProductWithVariants(variantId);
       
-      if (detailedVariant) {
-        console.log('✅ Variant details loaded successfully:', detailedVariant);
-        console.log('   - Name:', detailedVariant.nameAr || detailedVariant.nameEn);
-        console.log('   - Price:', detailedVariant.price);
-        console.log('   - Stock:', detailedVariant.availableQuantity);
-        console.log('   - Images:', detailedVariant.images?.length || 0);
-        console.log('   - Main Image:', detailedVariant.mainImage);
-        console.log('   - Specification Values:', detailedVariant.specificationValues?.length || 0);
-        console.log('   - Category:', detailedVariant.category?.nameAr || detailedVariant.category?.nameEn);
-        console.log('   - Display Name:', displayName);
+      if (result && result.product) {
+        const detailedVariant = result.product;
         
-        // The detailedVariant should already be enriched from the hook
-        // Just ensure we have the category information
+        console.log('✅ Variant loaded with full data:', {
+          variantId: detailedVariant._id,
+          variantName: detailedVariant.nameAr || detailedVariant.nameEn,
+          hasParent: !!result.parentProduct,
+          parentId: result.parentProduct?._id,
+          siblingVariantsCount: result.variants?.length || 0
+        });
+        
+        // Update baseProduct if we have parentProduct info
+        if (result.parentProduct) {
+          setBaseProduct(result.parentProduct);
+          
+          // Get all sibling variants (excluding the current one)
+          const siblingVariants = result.parentProduct.variants?.map(vid => {
+            const fullVariant = result.variants?.find(v => (v._id || v.id) === vid);
+            return fullVariant || { _id: vid };
+          }).filter(v => (v._id || v.id) !== detailedVariant._id) || [];
+          
+          setVariants(siblingVariants);
+        }
+        
+        // Ensure category information is preserved
         const enrichedVariant = {
           ...detailedVariant,
-          // Ensure category information is preserved
-          category: detailedVariant.category || baseProduct?.category
+          category: detailedVariant.category || result.parentProduct?.category || baseProduct?.category
         };
         
-        console.log('🔄 Setting enriched variant as current product:', {
-          id: enrichedVariant._id,
-          name: enrichedVariant.nameAr || enrichedVariant.nameEn,
-          price: enrichedVariant.price,
-          stock: enrichedVariant.availableQuantity,
-          images: enrichedVariant.images?.length || 0,
-          mainImage: enrichedVariant.mainImage,
-          category: enrichedVariant.category?.nameAr || enrichedVariant.category?.nameEn
-        });
         setProduct(enrichedVariant);
         
         // Reset UI state for the new variant
@@ -179,9 +209,8 @@ const ProductDetail = () => {
         setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
         setSelectedSpecs({});
         
-        // Force a small delay to ensure state updates properly
+        // Scroll to top of gallery for better UX
         setTimeout(() => {
-          // Scroll to top of gallery for better UX
           try {
             const container = document.querySelector('.product-detail-container');
             if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -191,19 +220,21 @@ const ProductDetail = () => {
         // Fallback to the variant data we already have
         console.log('⚠️ Using fallback variant data:', {
           id: variant._id,
-          name: variant.nameAr || variant.nameEn,
-          price: variant.price,
-          stock: variant.availableQuantity
+          name: variant.nameAr || variant.nameEn
         });
-        setProduct(variant);
         
+        const enrichedVariant = {
+          ...variant,
+          category: variant.category || baseProduct?.category
+        };
+        
+        setProduct(enrichedVariant);
         setSelectedImageIndex(0);
         setSelectedMediaIndex(0);
-        const simpleColors = getSimpleColorsFromColorsField(variant);
+        const simpleColors = getSimpleColorsFromColorsField(enrichedVariant);
         setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
         setSelectedSpecs({});
         
-        // Force a small delay to ensure state updates properly
         setTimeout(() => {
           try {
             const container = document.querySelector('.product-detail-container');
@@ -213,22 +244,20 @@ const ProductDetail = () => {
       }
     } catch (error) {
       console.error('❌ Error fetching variant details:', error);
-      console.log('🔄 Falling back to original variant data:', {
-        id: variant._id,
-        name: variant.nameAr || variant.nameEn,
-        price: variant.price,
-        stock: variant.availableQuantity
-      });
-      // Fallback to the variant data we already have
-      setProduct(variant);
       
+      // Fallback to the variant data we already have
+      const enrichedVariant = {
+        ...variant,
+        category: variant.category || baseProduct?.category
+      };
+      
+      setProduct(enrichedVariant);
       setSelectedImageIndex(0);
       setSelectedMediaIndex(0);
-      const simpleColors = getSimpleColorsFromColorsField(variant);
+      const simpleColors = getSimpleColorsFromColorsField(enrichedVariant);
       setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
       setSelectedSpecs({});
       
-      // Force a small delay to ensure state updates properly
       setTimeout(() => {
         try {
           const container = document.querySelector('.product-detail-container');
@@ -236,36 +265,84 @@ const ProductDetail = () => {
         } catch (_) {}
       }, 100);
     }
-  }, [fetchSpecificVariant, productId]);
+  }, [fetchProductWithVariants, baseProduct]);
 
-  const handleParentClick = useCallback(() => {
+  const handleParentClick = useCallback(async () => {
     if (!baseProduct) return;
     
-    console.log('🔄 Switching to parent product:', {
-      id: baseProduct._id,
-      name: baseProduct.nameAr || baseProduct.nameEn,
-      price: baseProduct.price,
-      stock: baseProduct.availableQuantity,
-      images: baseProduct.images?.length || 0,
-      mainImage: baseProduct.mainImage,
-      category: baseProduct.category?.nameAr || baseProduct.category?.nameEn
-    });
-    
-    setProduct(baseProduct);
-    setSelectedImageIndex(0);
-    setSelectedMediaIndex(0);
-    const simpleColors = getSimpleColorsFromColorsField(baseProduct);
-    setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
-    setSelectedSpecs({});
-    
-    // Force a small delay to ensure state updates properly
-    setTimeout(() => {
-      try {
-        const container = document.querySelector('.product-detail-container');
-        if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (_) {}
-    }, 100);
-  }, [baseProduct]);
+    try {
+      console.log('🔄 Fetching parent product with full structure:', {
+        parentId: baseProduct._id,
+        parentName: baseProduct.nameAr || baseProduct.nameEn
+      });
+      
+      // Fetch the parent product with its variants
+      const result = await fetchProductWithVariants(baseProduct._id);
+      
+      if (result && result.product) {
+        const parentProduct = result.product;
+        
+        console.log('✅ Parent product loaded:', {
+          parentId: parentProduct._id,
+          parentName: parentProduct.nameAr || parentProduct.nameEn,
+          variantsCount: result.variants?.length || 0
+        });
+        
+        // Update all states
+        setBaseProduct(parentProduct);
+        setProduct(parentProduct);
+        setVariants(result.variants || []);
+        
+        // Reset UI state
+        setSelectedImageIndex(0);
+        setSelectedMediaIndex(0);
+        const simpleColors = getSimpleColorsFromColorsField(parentProduct);
+        setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+        setSelectedSpecs({});
+        
+        // Scroll to top
+        setTimeout(() => {
+          try {
+            const container = document.querySelector('.product-detail-container');
+            if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+        }, 100);
+      } else {
+        // Fallback to current baseProduct data
+        console.log('⚠️ Using cached parent product data');
+        setProduct(baseProduct);
+        setSelectedImageIndex(0);
+        setSelectedMediaIndex(0);
+        const simpleColors = getSimpleColorsFromColorsField(baseProduct);
+        setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+        setSelectedSpecs({});
+        
+        setTimeout(() => {
+          try {
+            const container = document.querySelector('.product-detail-container');
+            if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+        }, 100);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching parent product:', error);
+      
+      // Fallback to current baseProduct data
+      setProduct(baseProduct);
+      setSelectedImageIndex(0);
+      setSelectedMediaIndex(0);
+      const simpleColors = getSimpleColorsFromColorsField(baseProduct);
+      setSelectedColor(simpleColors && simpleColors.length > 0 ? simpleColors[0] : '');
+      setSelectedSpecs({});
+      
+      setTimeout(() => {
+        try {
+          const container = document.querySelector('.product-detail-container');
+          if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
+      }, 100);
+    }
+  }, [baseProduct, fetchProductWithVariants]);
 
   function getColorKey(hex) {
     if (!hex) return '';

@@ -524,12 +524,12 @@ const useProducts = () => {
       const result = await response.json();
 
       if (result.success && result.data) {
-        // Expecting shape: { product, variants, variantsCount }
+        // Expecting shape: { product, variants, variantsCount, parentProduct }
         return {
-          
           product: result.data.product || result.data,
           variants: result.data.variants || [],
           variantsCount: result.data.variantsCount ?? (result.data.variants ? result.data.variants.length : 0),
+          parentProduct: result.data.parentProduct || null, // Include parentProduct if it exists
         };
       } else {
         throw new Error('Product not found');

@@ -1,10 +1,3 @@
-
-// Payment API Constants
-const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-// const storeData=JSON.parse(localStorage.getItem('storeData')).settings;
-// const lahzaToken=storeData.lahzaToken;
-const storeSlug=localStorage.getItem('storeSlug');
-
 // Get current domain dynamically
 const getCurrentDomain = () => {
   if (typeof window !== 'undefined') {
@@ -13,22 +6,42 @@ const getCurrentDomain = () => {
   return 'http://localhost:5175';
 };
 
+// Get backend API base URL
+const getBackendBaseUrl = () => {
+  // Use environment variable or fallback to production
+  return import.meta.env.VITE_API_BASE_URL || 'https://bringus-backend.onrender.com/api';
+};
+
 // Get callback URL for payment processing
 export const getCallbackUrl = () => {
   const storeSlug = localStorage.getItem('storeSlug');
   return `${getCurrentDomain()}/${storeSlug}/checkout`;
 };
 
-export const PAYMENT_API_CONFIG = {
-  
-    BASE_URL: 'https://api.lahza.io/transaction',
-    // SECRET_KEY: lahzaToken,
-    CALLBACK_URL: `${getCurrentDomain()}/${storeSlug}/checkout`,
-    ENDPOINTS: {
-      CHARGES: '/initialize',
-      VERIFY: '/verify'
+// Get store ID from localStorage
+const getStoreId = () => {
+  try {
+    const storeData = localStorage.getItem('storeData');
+    if (storeData) {
+      const parsed = JSON.parse(storeData);
+      return parsed._id;
     }
-  };
+  } catch (error) {
+    console.error('Error getting store ID:', error);
+  }
+  return null;
+};
+
+export const PAYMENT_API_CONFIG = {
+  // Now using backend proxy for security - NO MORE EXPOSED TOKENS!
+  BACKEND_URL: getBackendBaseUrl(),
+  CALLBACK_URL: getCallbackUrl(),
+  ENDPOINTS: {
+    INITIALIZE: (storeId) => `/customer-payment/${storeId || getStoreId()}/initialize`,
+    VERIFY: (storeId, reference) => `/customer-payment/${storeId || getStoreId()}/verify/${reference}`,
+    STATUS: (storeId, reference) => `/customer-payment/${storeId || getStoreId()}/status/${reference}`
+  }
+};
   
   // Currency conversion rates (to smallest unit)
   export const CURRENCY_CONVERSION = {

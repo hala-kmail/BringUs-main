@@ -16,7 +16,16 @@ const Register = () => {
   const { t, i18n } = useTranslation();
   const { navigate } = useAffiliateNavigation();
   const { createUser, loading, error, reset } = useCreateUser();
-  const { checkEmailFromError, emailExists, emailError, reset: resetEmailCheck } = useCheckEmail();
+  const { 
+    checkEmailAvailability, 
+    checkEmailFromError, 
+    emailExists, 
+    emailError, 
+    isCheckingEmail,
+    emailAvailable,
+    existingAccounts,
+    reset: resetEmailCheck 
+  } = useCheckEmail();
   const { store } = useAppData();
   const { sendOTP } = useOTP();
   const { login } = useLogin();
@@ -106,6 +115,15 @@ const Register = () => {
     const isValid = validateForm();
     setIsFormValid(isValid);
   }, [validateForm]);
+
+  // Real-time email availability check
+  useEffect(() => {
+    // Only check if email is valid format
+    if (email && email.includes('@') && email.length >= 5) {
+      const storeSlug = store?.slug || window.location.pathname.split('/')[1] || 'default';
+      checkEmailAvailability(email, storeSlug);
+    }
+  }, [email, store?.slug, checkEmailAvailability]);
 ///////////////////////////////////////////////////////////////////////////////////////
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -386,21 +404,235 @@ const Register = () => {
                 
                 {t('auth.register.email')} <span className='required'>*</span>
               </label>
-              <input
-                type="email"
-                className={`form-input ${emailExists ? 'error' : ''}`}
-                placeholder={t('auth.register.email_placeholder')}
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  // إعادة تعيين خطأ البريد الإلكتروني عند تغييره
-                  if (emailExists) {
-                    resetEmailCheck();
-                  }
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="email"
+                  className={`form-input ${emailExists ? 'error' : ''} ${emailAvailable ? 'success' : ''}`}
+                  placeholder={t('auth.register.email_placeholder')}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    // إعادة تعيين خطأ البريد الإلكتروني عند تغييره
+                    if (emailExists) {
+                      resetEmailCheck();
+                    }
+                  }}
+                  style={{ paddingRight: currentLang === 'ar' ? '40px' : '12px', paddingLeft: currentLang === 'ar' ? '12px' : '40px' }}
+                />
+                {/* Email checking indicator */}
+                {isCheckingEmail && (
+                  <span style={{
+                    position: 'absolute',
+                    [currentLang === 'ar' ? 'right' : 'left']: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#3b82f6'
+                  }}>
+                    <svg style={{ animation: 'spin 1s linear infinite' }} width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="31.4 31.4" strokeLinecap="round"/>
+                    </svg>
+                  </span>
+                )}
+                {/* Email available indicator */}
+                {!isCheckingEmail && emailAvailable && !emailExists && email && (
+                  <span style={{
+                    position: 'absolute',
+                    [currentLang === 'ar' ? 'right' : 'left']: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#10b981'
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+                    </svg>
+                  </span>
+                )}
+                {/* Email exists indicator */}
+                {!isCheckingEmail && emailExists && (
+                  <span style={{
+                    position: 'absolute',
+                    [currentLang === 'ar' ? 'right' : 'left']: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#ef4444'
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+                    </svg>
+                  </span>
+                )}
+              </div>
               {formErrors.email && <span className="error-message">{formErrors.email}</span>}
               {emailError && !formErrors.email && <span className="error-message">{emailError}</span>}
+              
+              {/* Email Available - Simple green checkmark */}
+              {!formErrors.email && !emailError && emailAvailable && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  color: '#10b981', 
+                  fontSize: '0.875rem', 
+                  marginTop: '6px' 
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+                  </svg>
+                  <span>{currentLang === 'ar' ? 'البريد الإلكتروني متاح' : 'Email is available'}</span>
+                </div>
+              )}
+              
+              {/* Existing Accounts Info */}
+              {!formErrors.email && existingAccounts && existingAccounts.length > 0 && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '8px',
+                    color: '#991b1b',
+                    fontWeight: '600',
+                    fontSize: '0.875rem'
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+                    </svg>
+                    <span>
+                      {currentLang === 'ar' 
+                        ? `هذا البريد مسجل في ${existingAccounts.length} ${existingAccounts.length === 1 ? 'متجر' : 'متاجر'}`
+                        : `This email is registered in ${existingAccounts.length} ${existingAccounts.length === 1 ? 'store' : 'stores'}`
+                      }
+                    </span>
+                  </div>
+                  
+                  {existingAccounts.map((account, index) => (
+                    <div 
+                      key={index}
+                      style={{
+                        padding: '10px',
+                        marginBottom: index < existingAccounts.length - 1 ? '8px' : '0',
+                        borderRadius: '6px',
+                        backgroundColor: '#fff',
+                        border: '1px solid #fee2e2',
+                        fontSize: '0.8125rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between',
+                          marginBottom: '4px'
+                        }}>
+                          <span style={{ 
+                            fontWeight: '600', 
+                            color: '#1f2937',
+                            fontSize: '0.875rem'
+                          }}>
+                            {account.storeName}
+                          </span>
+                          {account.isActive && (
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '12px',
+                              backgroundColor: '#dcfce7',
+                              color: '#166534',
+                              fontSize: '0.75rem',
+                              fontWeight: '500'
+                            }}>
+                              {currentLang === 'ar' ? 'نشط' : 'Active'}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          gap: '4px',
+                          color: '#6b7280' 
+                        }}>
+                          <span style={{ fontWeight: '500' }}>
+                            {currentLang === 'ar' ? 'الدور:' : 'Role:'}
+                          </span>
+                          <span style={{
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: account.role === 'admin' ? '#dbeafe' : '#e0e7ff',
+                            color: account.role === 'admin' ? '#1e40af' : '#4338ca',
+                            fontSize: '0.75rem',
+                            fontWeight: '500'
+                          }}>
+                            {account.role === 'admin' 
+                              ? (currentLang === 'ar' ? 'مدير' : 'Admin')
+                              : account.role === 'wholesaler'
+                              ? (currentLang === 'ar' ? 'تاجر جملة' : 'Wholesaler')
+                              : (currentLang === 'ar' ? 'عميل' : 'Customer')
+                            }
+                          </span>
+                        </div>
+                        
+                        {account.redirectUrl && (
+                          <div style={{ marginTop: '8px' }}>
+                            <a
+                              href={account.redirectUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                backgroundColor: '#3b82f6',
+                                color: '#fff',
+                                textDecoration: 'none',
+                                fontSize: '0.8125rem',
+                                fontWeight: '500',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#2563eb';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#3b82f6';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                              }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+                              </svg>
+                              {currentLang === 'ar' ? 'الذهاب إلى المتجر' : 'Go to Store'}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div style={{
+                    marginTop: '10px',
+                    padding: '8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#fffbeb',
+                    border: '1px solid #fde68a',
+                    fontSize: '0.8125rem',
+                    color: '#92400e',
+                    textAlign: 'center'
+                  }}>
+                    {currentLang === 'ar' 
+                      ? 'إذا كنت ترغب في التسجيل في متجر مختلف، استخدم بريد إلكتروني آخر'
+                      : 'If you want to register in a different store, use another email'
+                    }
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="form-row">
@@ -438,8 +670,8 @@ const Register = () => {
 
           <button 
             type="submit" 
-            className={`submit-button ${!isFormValid ? 'disabled' : ''}`} 
-            disabled={loading || !isFormValid}
+            className={`submit-button ${(!isFormValid || isCheckingEmail || emailExists) ? 'disabled' : ''}`} 
+            disabled={loading || !isFormValid || isCheckingEmail || emailExists}
           >
             {loading ? (
               <>
