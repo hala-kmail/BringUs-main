@@ -827,6 +827,11 @@
     "fill_required_fields": "يرجى ملء جميع الحقول المطلوبة"
   },
   "error_loading_products": "خطأ في تحميل المنتجات",
+  "store_videos": {
+    "title": "فيديوهات",
+    "subtitle": "شاهد أحدث فيديوهاتنا",
+    "open_video": "افتح الفيديو"
+  },
   "store": {
     "whatsappNoLeadingZero": "لا يجب أن يبدأ الرقم بـ 0 بعد مقدمة الدولة",
     "whatsappLengthError": "طول الرقم غير صحيح",

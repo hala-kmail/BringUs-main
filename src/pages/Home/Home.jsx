@@ -10,6 +10,7 @@ import AlmostFinishedCard from '../../components/AlmostFinishedCard/AlmostFinish
 import SocialComments from '../../components/SocialComments/SocialComments';
 import WholesaleRegisterModal from '../../components/WholesaleRegisterModal';
 import ShowCategoryProduct from '../../components/ShowCategoryProduct/ShowCategoryProduct';
+import StoreVideos from '../../components/StoreVideos/StoreVideos';
 import './Home.css';
 import { useTranslation } from 'react-i18next';
 //-----------------------------------Home------------------------------------------------  
@@ -81,6 +82,10 @@ const Home = () => {
         </LazyRevealSection>
 
         <LazyRevealSection>
+          <StoreVideos />
+        </LazyRevealSection>
+
+        <LazyRevealSection>
           <div className="almost-finished-with-register">
             <AlmostFinishedCard />
           </div>
@@ -88,9 +93,9 @@ const Home = () => {
 
         <WholesaleRegisterModal isOpen={isWholesaleModalOpen} onClose={handleWholesaleModalClose} />
 
-        <LazyRevealSection>
+        {/* <LazyRevealSection>
           <Features />
-        </LazyRevealSection>
+        </LazyRevealSection> */}
 
         <LazyRevealSection>
           <NewArrivals />

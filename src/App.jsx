@@ -371,7 +371,7 @@ function App() {
 
   // Initialize store on mount
   useEffect(() => {
-    initializeStore();
+    initializeStore(true);
   }, [initializeStore]);
 
   // Check if current URL contains affiliate pattern
