@@ -9,6 +9,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
     <title id="page-title">Store</title>
     <script>
+      // Redirect root path to admin panel (admin.bring2.us)
+      (function() {
+        try {
+          const pathname = window.location.pathname;
+          const hostname = window.location.hostname;
+          const port = window.location.port;
+          const frontendPort = '5174';
+          const adminUrl = 'https://admin.bring2.us';
+          
+          // If we're at root path on frontend port, redirect to admin
+          if ((pathname === '/' || pathname === '') && (port === frontendPort || (!port && window.location.hostname === 'localhost'))) {
+            const search = window.location.search || '';
+            const hash = window.location.hash || '';
+            const fullAdminUrl = adminUrl + '/' + search + hash;
+            window.location.replace(fullAdminUrl);
+            return;
+          }
+          
+          // Only redirect if we're on wrong port (but not root) - preserve the current path
+          if (port && port !== '' && port !== frontendPort && pathname !== '/') {
+            // We're on wrong port - redirect to correct port but keep same path
+            const protocol = window.location.protocol;
+            const search = window.location.search || '';
+            const hash = window.location.hash || '';
+            const correctUrl = protocol + '//' + hostname + ':' + frontendPort + pathname + search + hash;
+            window.location.replace(correctUrl);
+          }
+        } catch (e) {
+          console.error('Redirect error:', e);
+        }
+      })();
+    </script>
+    <script>
       // Function to update page title and favicon based on store data
       function updateStoreBranding() {
         try {

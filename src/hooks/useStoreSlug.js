@@ -321,13 +321,14 @@ const useStoreSlug = () => {
     }
   }, []);
 
-  // Update URL when slug changes (only for initial redirect)
-  useEffect(() => {
-    if (storeSlug && window.location.pathname === '/') {
-      // Redirect to /{slug}/home if we're at root
-      window.history.replaceState(null, '', `/${storeSlug}/home`);
-    }
-  }, [storeSlug]);
+  // Don't auto-redirect root URL - let App.jsx RootRedirect handle it
+  // This prevents unwanted redirects to admin login or incorrect routes
+  // useEffect(() => {
+  //   if (storeSlug && window.location.pathname === '/') {
+  //     // Redirect to /{slug}/home if we're at root
+  //     window.history.replaceState(null, '', `/${storeSlug}/home`);
+  //   }
+  // }, [storeSlug]);
 
   return {
     storeSlug,

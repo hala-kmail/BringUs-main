@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, Suspense, createContext, useContext, lazy } from 'react';
+import React, { useEffect, useMemo, useState, Suspense, createContext, useContext, lazy, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAffiliateInfo } from './hooks/useAffiliateInfo';
 import useStoreSlug from './hooks/useStoreSlug';
@@ -128,6 +128,86 @@ const getCurrentAffiliateInfo = () => {
   } catch (err) {
   }
   return null;
+};
+
+// Component to handle root path - redirect to admin panel
+const RootRedirect = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const currentPort = window.location.port;
+    const frontendPort = '5174';
+    const adminUrl = 'https://admin.bring2.us';
+    
+    // If we're at root path on frontend port, redirect to admin
+    if ((currentPath === '/' || currentPath === '') && (currentPort === frontendPort || (!currentPort && window.location.hostname === 'localhost'))) {
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+      const fullAdminUrl = `${adminUrl}/${search}${hash}`;
+      window.location.replace(fullAdminUrl);
+      return;
+    }
+  }, [location.pathname]);
+  
+  // Show loading while redirecting
+  return (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh',
+      fontSize: '1.2rem',
+      color: '#666'
+    }}>
+      جاري التوجيه...
+    </div>
+  );
+};
+
+// Component to handle store slug redirects
+const StoreSlugRedirect = () => {
+  const params = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { storeSlug } = params;
+  
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // Never handle root path - let RootRedirect handle it
+    if (currentPath === '/' || currentPath === '') {
+      // RootRedirect should handle this, but as a fallback redirect to /home
+      navigate('/home', { replace: true });
+      return;
+    }
+    
+    // Only redirect if we have a valid store slug and we're not at root
+    // Exclude known routes that should not be treated as store slugs
+    const knownRoutes = ['home', 'shop', 'login', 'register', 'cart', 'checkout', 'wishlist', 'profile', 'orders', 'mobile-categories', 'almost-finished-sale', 'otp-verification', 'forgot-password', 'reset-password'];
+    
+    // If we have a store slug that's not a known route, redirect to /{storeSlug}/home
+    if (storeSlug && !knownRoutes.includes(storeSlug)) {
+      // Make sure we're at the exact path /{storeSlug} (no additional path segments)
+      const pathParts = currentPath.split('/').filter(Boolean);
+      if (pathParts.length === 1 && pathParts[0] === storeSlug) {
+        navigate(`/${storeSlug}/home`, { replace: true });
+      }
+    }
+  }, [storeSlug, navigate, location.pathname]);
+  
+  return (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh',
+      fontSize: '1.2rem',
+      color: '#666'
+    }}>
+      جاري التوجيه...
+    </div>
+  );
 };
 
 // Component to handle affiliate redirects
@@ -273,6 +353,22 @@ function App() {
   const { storeSlug, storeData, loading, error, initializeStore } = useStoreSlug();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
+  // Redirect root path to admin panel (backup in case index.html script didn't run)
+  useEffect(() => {
+    const currentPort = window.location.port;
+    const currentPath = window.location.pathname;
+    const frontendPort = '5174';
+    const adminUrl = 'https://admin.bring2.us';
+    
+    // If we're at root path on frontend port, redirect to admin
+    if ((currentPath === '/' || currentPath === '') && (currentPort === frontendPort || (!currentPort && window.location.hostname === 'localhost'))) {
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+      const fullAdminUrl = `${adminUrl}/${search}${hash}`;
+      window.location.replace(fullAdminUrl);
+    }
+  }, []); // Empty dependency array - run once on mount
+
   // Initialize store on mount
   useEffect(() => {
     initializeStore();
@@ -290,8 +386,24 @@ function App() {
   //   currentPath: window.location.pathname
   // });
   
-  // If it's an affiliate URL, we need to handle it differently
-  const routerProps = storeSlug ? { basename: `/${storeSlug}` } : {};
+  // Don't use basename for root URL - it causes routing issues
+  // Only use basename if we're already in a store slug context in the URL
+  const currentPath = window.location.pathname;
+  
+  // Never use basename for root path - this prevents redirect issues
+  let routerProps = {};
+  if (currentPath !== '/' && currentPath !== '') {
+    // Check if URL has a store slug (not a known route)
+    const pathParts = currentPath.split('/').filter(Boolean);
+    const firstPart = pathParts[0];
+    const knownRoutes = ['home', 'shop', 'category', 'product', 'cart', 'checkout', 'wishlist', 'profile', 'orders', 'login', 'register', 'almost-finished-sale', 'mobile-categories', 'affiliate', 'otp-verification', 'forgot-password', 'reset-password'];
+    const hasStoreSlugInUrl = firstPart && !knownRoutes.includes(firstPart);
+    
+    // Only use basename if we have a store slug in the URL
+    if (storeSlug && hasStoreSlugInUrl) {
+      routerProps = { basename: `/${storeSlug}` };
+    }
+  }
 
   const handleMobileSearchToggle = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
@@ -407,8 +519,11 @@ function App() {
         <AffiliateStateMonitor />
         
          <AdvertisementPopup /> 
-        <div className="main-content">
+                 <div className="main-content">
           <Routes>
+            {/* Root route - must be first to prevent incorrect matching with store slug routes */}
+            <Route path="/" element={<RootRedirect />} />
+            
             {/* Affiliate routes - these will handle all affiliate URLs */}
             <Route path="/affiliate/:affiliateCode" element={
               <AffiliateRedirect />
@@ -513,7 +628,7 @@ function App() {
             } />
             
             {/* Store-specific routes with slug */}
-            <Route path="/:storeSlug" element={<Navigate to="/:storeSlug/home" replace />} />
+            <Route path="/:storeSlug" element={<StoreSlugRedirect />} />
             <Route path="/:storeSlug/home" element={
               <Suspense fallback={<LoadingFallback />}>
                 <Home />
@@ -611,7 +726,6 @@ function App() {
                 <ResetPassword />
               </Suspense>
             } />
-            <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={
               <Suspense fallback={<LoadingFallback />}>
                 <Home />
